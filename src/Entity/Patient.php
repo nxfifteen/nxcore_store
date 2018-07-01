@@ -17,19 +17,24 @@ class Patient
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $fname;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $lname;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="datetime", nullable=true)
      */
-    private $dname;
+    private $birthday;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $height;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -37,19 +42,14 @@ class Patient
     private $email;
 
     /**
+     * @ORM\Column(type="string", length=6, nullable=true)
+     */
+    private $gender;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $password;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $avatar;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $joined;
 
     public function getId()
     {
@@ -61,7 +61,7 @@ class Patient
         return $this->fname;
     }
 
-    public function setFname(string $fname): self
+    public function setFname(?string $fname): self
     {
         $this->fname = $fname;
 
@@ -73,21 +73,33 @@ class Patient
         return $this->lname;
     }
 
-    public function setLname(string $lname): self
+    public function setLname(?string $lname): self
     {
         $this->lname = $lname;
 
         return $this;
     }
 
-    public function getDname(): ?string
+    public function getBirthday(): ?\DateTimeInterface
     {
-        return $this->dname;
+        return $this->birthday;
     }
 
-    public function setDname(string $dname): self
+    public function setBirthday(?\DateTimeInterface $birthday): self
     {
-        $this->dname = $dname;
+        $this->birthday = $birthday;
+
+        return $this;
+    }
+
+    public function getHeight(): ?int
+    {
+        return $this->height;
+    }
+
+    public function setHeight(?int $height): self
+    {
+        $this->height = $height;
 
         return $this;
     }
@@ -104,6 +116,18 @@ class Patient
         return $this;
     }
 
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?string $gender): self
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
     public function getPassword(): ?string
     {
         return $this->password;
@@ -111,31 +135,13 @@ class Patient
 
     public function setPassword(string $password): self
     {
-        $this->password = $password;
+        if (array_key_exists("DATABASE_SALT", $_ENV)) {
+            $dbSalt = $_ENV['DATABASE_SALT'];
+        } else {
+            $dbSalt = '$0m3 $4lt 1$ b3tt3r th4n n0n3, but y0u y0u r34lly $h0uld h4v3 4 DATABASE_SALT 3nv v4r14bl3';
+        }
 
-        return $this;
-    }
-
-    public function getAvatar(): ?string
-    {
-        return $this->avatar;
-    }
-
-    public function setAvatar(string $avatar): self
-    {
-        $this->avatar = $avatar;
-
-        return $this;
-    }
-
-    public function getJoined(): ?\DateTimeInterface
-    {
-        return $this->joined;
-    }
-
-    public function setJoined(\DateTimeInterface $joined): self
-    {
-        $this->joined = $joined;
+        $this->password = hash("sha256", $dbSalt . $password);
 
         return $this;
     }
