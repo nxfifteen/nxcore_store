@@ -140,10 +140,10 @@ class Patient
         if (array_key_exists("DATABASE_SALT", $_ENV)) {
             $dbSalt = $_ENV['DATABASE_SALT'];
         } else {
-            $dbSalt = '$0m3 $4lt 1$ b3tt3r th4n n0n3, but y0u y0u r34lly $h0uld h4v3 4 DATABASE_SALT 3nv v4r14bl3';
+            $dbSalt = $_SERVER[ 'SERVER_NAME' ] . $_SERVER[ 'SERVER_ADDR' ];
         }
 
-        $this->password = hash("sha256", $dbSalt . $password);
+        $this->password = hash("sha256", $dbSalt . $password . $_SERVER[ 'SERVER_NAME' ] . $_SERVER[ 'SERVER_ADDR' ]);
 
         return $this;
     }
