@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -50,6 +52,21 @@ class Patient
      * @ORM\Column(type="string", length=255)
      */
     private $password;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\BodyWeight", mappedBy="patient", orphanRemoval=true)
+     */
+    private $bodyWeights;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\BodyFat", mappedBy="patient", orphanRemoval=true)
+     */
+    private $bodyFats;
+
+    public function __construct()
+    {
+        $this->bodyWeights = new ArrayCollection();
+    }
 
     public function getId()
     {
@@ -142,6 +159,68 @@ class Patient
         }
 
         $this->password = hash("sha256", $dbSalt . $password);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|BodyWeight[]
+     */
+    public function getBodyWeights(): Collection
+    {
+        return $this->bodyWeights;
+    }
+
+    public function addBodyWeight(BodyWeight $bodyWeight): self
+    {
+        if (!$this->bodyWeights->contains($bodyWeight)) {
+            $this->bodyWeights[] = $bodyWeight;
+            $bodyWeight->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBodyWeight(BodyWeight $bodyWeight): self
+    {
+        if ($this->bodyWeights->contains($bodyWeight)) {
+            $this->bodyWeights->removeElement($bodyWeight);
+            // set the owning side to null (unless already changed)
+            if ($bodyWeight->getPatient() === $this) {
+                $bodyWeight->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|BodyFat[]
+     */
+    public function getBodyFats(): Collection
+    {
+        return $this->bodyFats;
+    }
+
+    public function addBodyFat(BodyFat $bodyFat): self
+    {
+        if (!$this->bodyFats->contains($bodyFat)) {
+            $this->bodyFats[] = $bodyFat;
+            $bodyFat->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBodyFat(BodyFat $bodyFat): self
+    {
+        if ($this->bodyFats->contains($bodyFat)) {
+            $this->bodyFats->removeElement($bodyFat);
+            // set the owning side to null (unless already changed)
+            if ($bodyFat->getPatient() === $this) {
+                $bodyFat->setPatient(null);
+            }
+        }
 
         return $this;
     }
