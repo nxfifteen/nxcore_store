@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\BodyFat;
 use App\Entity\BodyWeight;
+use App\Entity\PartOfDay;
 use App\Entity\Patient;
+use App\Entity\UnitOfMeasurement;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -50,15 +52,8 @@ class PatientController extends Controller
             $product->setEmail($patientArray[ 2 ]);
             $product->setPassword($patientArray[ 3 ]);
 
-            $bodyWeight = new BodyWeight();
-            $bodyWeight->setPatient($product);
-            $bodyWeight->setDatetime(new \DateTime());
-            $bodyWeight->setMeasurement(rand(200, 500));
-            $bodyWeight->setUnit("lb");
-            $bodyWeight->setPartOfDay("night");
-
-            $entityManager->persist($bodyWeight);
-            $product->addBodyWeight($bodyWeight);
+            $product->addBodyWeight($this->createBodyWeight($product, $entityManager));
+            $product->addBodyFat($this->createBodyFat($product, $entityManager));
 
             $entityManager->persist($product);
             $entityManager->flush();
@@ -95,5 +90,53 @@ class PatientController extends Controller
         }
 
         return __LINE__;
+    }
+
+    /**
+     * @param Patient                                    $product
+     * @param \Doctrine\Common\Persistence\ObjectManager $entityManager
+     * @return \App\Entity\BodyWeight
+     */
+    private function createBodyWeight( $product, $entityManager )
+    {
+        $bodyWeight = new BodyWeight();
+        $bodyWeight->setPatient($product);
+        $bodyWeight->setDatetime(new \DateTime());
+        $bodyWeight->setMeasurement(rand(200, 500));
+
+        $unit = $this->getDoctrine()->getRepository(UnitOfMeasurement::class)->findOneBy(['name' => "lb"]);
+        /** @var UnitOfMeasurement $unit */
+        $bodyWeight->setUnitOfMeasurement($unit);
+
+        $partOfDay = $this->getDoctrine()->getRepository(PartOfDay::class)->findOneBy(['name' => "night"]);
+        /** @var PartOfDay $partOfDay */
+        $bodyWeight->setPartOfDay($partOfDay);
+
+        $entityManager->persist($bodyWeight);
+        return $bodyWeight;
+    }
+
+    /**
+     * @param Patient                                    $product
+     * @param \Doctrine\Common\Persistence\ObjectManager $entityManager
+     * @return \App\Entity\BodyFat
+     */
+    private function createBodyFat( $product, $entityManager )
+    {
+        $bodyFat = new BodyFat();
+        $bodyFat->setPatient($product);
+        $bodyFat->setDatetime(new \DateTime());
+        $bodyFat->setMeasurement(rand(5, 90));
+
+        $unit = $this->getDoctrine()->getRepository(UnitOfMeasurement::class)->findOneBy(['name' => "%"]);
+        /** @var UnitOfMeasurement $unit */
+        $bodyFat->setUnitOfMeasurement($unit);
+
+        $partOfDay = $this->getDoctrine()->getRepository(PartOfDay::class)->findOneBy(['name' => "night"]);
+        /** @var PartOfDay $partOfDay */
+        $bodyFat->setPartOfDay($partOfDay);
+
+        $entityManager->persist($bodyFat);
+        return $bodyFat;
     }
 }

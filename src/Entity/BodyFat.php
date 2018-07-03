@@ -1,49 +1,49 @@
 <?php
-
 namespace App\Entity;
-
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\BodyFatRepository")
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"date_time","patient_id"})})
  */
 class BodyFat
 {
     /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
+     * @ORM\Id
      * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $measurement;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="date", nullable=true)
      */
     private $date_time;
 
     /**
-     * @ORM\Column(type="string", length=9, columnDefinition="enum('morning', 'afternoon', 'evening', 'night')")
-     */
-    private $part_of_day;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="bodyFats")
+     * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
      */
     private $patient;
 
-    public function __construct()
-    {
-        $this->patient = new ArrayCollection();
-    }
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\UnitOfMeasurement")
+     * @ORM\JoinColumn(name="unit", referencedColumnName="id")
+     */
+    private $unitOfMeasurement;
 
-    public function getId()
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\PartOfDay")
+     * @ORM\JoinColumn(name="part_of_day", referencedColumnName="id")
+     */
+    private $partOfDay;
+
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -53,7 +53,7 @@ class BodyFat
         return $this->measurement;
     }
 
-    public function setMeasurement(float $measurement): self
+    public function setMeasurement(?float $measurement): self
     {
         $this->measurement = $measurement;
 
@@ -65,21 +65,9 @@ class BodyFat
         return $this->date_time;
     }
 
-    public function setDateTime(\DateTimeInterface $date_time): self
+    public function setDateTime(?\DateTimeInterface $date_time): self
     {
         $this->date_time = $date_time;
-
-        return $this;
-    }
-
-    public function getPartOfDay(): ?string
-    {
-        return $this->part_of_day;
-    }
-
-    public function setPartOfDay(string $part_of_day): self
-    {
-        $this->part_of_day = $part_of_day;
 
         return $this;
     }
@@ -92,6 +80,30 @@ class BodyFat
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getUnitOfMeasurement(): ?UnitOfMeasurement
+    {
+        return $this->unitOfMeasurement;
+    }
+
+    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
+    {
+        $this->unitOfMeasurement = $unitOfMeasurement;
+
+        return $this;
+    }
+
+    public function getPartOfDay(): ?PartOfDay
+    {
+        return $this->partOfDay;
+    }
+
+    public function setPartOfDay(?PartOfDay $partOfDay): self
+    {
+        $this->partOfDay = $partOfDay;
 
         return $this;
     }

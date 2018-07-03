@@ -12,8 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
 class Patient
 {
     /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
      */
     private $id;
@@ -39,7 +39,7 @@ class Patient
     private $height;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $email;
 
@@ -49,7 +49,7 @@ class Patient
     private $gender;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $password;
 
@@ -59,6 +59,16 @@ class Patient
     private $bodyWeights;
 
     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\StepCountDaily", mappedBy="patient")
+     */
+    private $stepCount;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\FloorCountDaily", mappedBy="patient")
+     */
+    private $floorCount;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Entity\BodyFat", mappedBy="patient", orphanRemoval=true)
      */
     private $bodyFats;
@@ -66,6 +76,9 @@ class Patient
     public function __construct()
     {
         $this->bodyWeights = new ArrayCollection();
+        $this->stepCount = new ArrayCollection();
+        $this->floorCount = new ArrayCollection();
+        $this->bodyFats = new ArrayCollection();
     }
 
     public function getId()
@@ -219,6 +232,68 @@ class Patient
             // set the owning side to null (unless already changed)
             if ($bodyFat->getPatient() === $this) {
                 $bodyFat->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|StepCountDaily[]
+     */
+    public function getStepCount(): Collection
+    {
+        return $this->stepCount;
+    }
+
+    public function addStepCount(StepCountDaily $stepCount): self
+    {
+        if (!$this->stepCount->contains($stepCount)) {
+            $this->stepCount[] = $stepCount;
+            $stepCount->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStepCount(StepCountDaily $stepCount): self
+    {
+        if ($this->stepCount->contains($stepCount)) {
+            $this->stepCount->removeElement($stepCount);
+            // set the owning side to null (unless already changed)
+            if ($stepCount->getPatient() === $this) {
+                $stepCount->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|FloorCountDaily[]
+     */
+    public function getFloorCount(): Collection
+    {
+        return $this->floorCount;
+    }
+
+    public function addFloorCount(FloorCountDaily $floorCount): self
+    {
+        if (!$this->floorCount->contains($floorCount)) {
+            $this->floorCount[] = $floorCount;
+            $floorCount->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFloorCount(FloorCountDaily $floorCount): self
+    {
+        if ($this->floorCount->contains($floorCount)) {
+            $this->floorCount->removeElement($floorCount);
+            // set the owning side to null (unless already changed)
+            if ($floorCount->getPatient() === $this) {
+                $floorCount->setPatient(null);
             }
         }
 
