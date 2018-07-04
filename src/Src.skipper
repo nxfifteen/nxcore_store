@@ -1,0 +1,379 @@
+<?xml version="1.0"?>
+<skipper version="3.2.12.1400" mvc="Symfony" orm="Doctrine2" name="Src" uuid="3dd3da29-aa91-4b53-99cc-856eb007ab14">
+  <module name="\Entity" local-name="Entity" namespace="\App\Entity" local-namespace="\App\Entity" export-format="Doctrine2Php" export-path="Entity" uuid="af3795c2-38c1-4c19-80ab-00a6e36fa062">
+    <entity name="\App\Entity\BodyFat" local-name="BodyFat" namespace="\App\Entity" uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466">
+      <field name="id" type="integer" required="true" primary="true" uuid="9f2fd4ae-5f54-47c3-a2b2-4ed0d954aef3">
+        <orm-attributes>
+          <attribute name="generator">
+            <attribute name="strategy">AUTO</attribute>
+          </attribute>
+        </orm-attributes>
+      </field>
+      <field name="patient_id" uuid="4c5a86cb-5dbc-489b-89e0-fba774c56676"/>
+      <field name="date_time" type="date" uuid="fc941b96-67b5-4f0c-8c80-198e2f0219a3"/>
+      <field name="part_of_day" type="integer" uuid="934c1971-1a33-41c8-b448-666d87fb1848"/>
+      <field name="measurement" type="float" uuid="da29156d-7f26-4818-a735-0dc8b3602e2d"/>
+      <field name="unit" type="integer" uuid="6282b1b2-6b53-4147-b8dc-77f91781c864"/>
+      <index name="DateReading" unique="true">
+        <index-field name="date_time"/>
+        <index-field name="patient_id"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\BodyFatRepository</attribute>
+        <attribute name="export-file-name">BodyFat.php</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\BodyFat" to="\App\Entity\Patient" owner-alias="bodyFats" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="f01775f2-cf49-44fd-95c7-2f7ccede6d64">
+      <association-field from="patient_id" to="id"/>
+      <orm-attributes>
+        <attribute name="side-owning"/>
+        <attribute name="side-inverse">
+          <attribute name="orphan-removal">true</attribute>
+        </attribute>
+      </orm-attributes>
+    </association>
+    <association from="\App\Entity\BodyFat" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="9c775c90-5568-469a-9ea4-156e79c46010">
+      <association-field from="unit" to="id"/>
+    </association>
+    <association from="\App\Entity\BodyFat" to="\App\Entity\PartOfDay" inverse-alias="partOfDay" many-owner="true" many-inverse="false" uuid="3222df04-0639-4734-8897-aed05ebd4f56">
+      <association-field from="part_of_day" to="id"/>
+    </association>
+    <entity name="\App\Entity\BodyWeight" local-name="BodyWeight" namespace="\App\Entity" uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7">
+      <field name="id" type="integer" required="true" primary="true" uuid="23fd0fc7-e788-4174-92f0-f51438723375">
+        <orm-attributes>
+          <attribute name="generator">
+            <attribute name="strategy">AUTO</attribute>
+          </attribute>
+        </orm-attributes>
+      </field>
+      <field name="patient_id" uuid="7e882656-ebe7-4756-9a8d-6f1a1b0195c2"/>
+      <field name="date_time" type="date" uuid="3eac2f13-22fd-42b9-9217-b4747ccf9eac"/>
+      <field name="part_of_day" type="integer" uuid="693fd83c-0870-4b28-882a-6de647304f92"/>
+      <field name="measurement" type="float" uuid="67aef4f7-9be1-4590-ba5c-cb4829907d93"/>
+      <field name="unit" type="integer" uuid="2e760d89-e6fd-4c10-9c0c-4b24c2fbe7c7"/>
+      <index name="DateReading" unique="true">
+        <index-field name="date_time"/>
+        <index-field name="patient_id"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\BodyWeightRepository</attribute>
+        <attribute name="export-file-name">BodyWeight.php</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\BodyWeight" to="\App\Entity\Patient" owner-alias="bodyWeights" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="5d2c14f5-6a61-42a7-89f1-7fe1683499a2">
+      <association-field from="patient_id" to="id"/>
+      <orm-attributes>
+        <attribute name="side-owning"/>
+        <attribute name="side-inverse">
+          <attribute name="orphan-removal">true</attribute>
+        </attribute>
+      </orm-attributes>
+    </association>
+    <association from="\App\Entity\BodyWeight" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="8f0a67c0-d372-4cf7-a6f9-61b4db089ec3">
+      <association-field from="unit" to="id"/>
+    </association>
+    <association from="\App\Entity\BodyWeight" to="\App\Entity\PartOfDay" inverse-alias="partOfDay" many-owner="true" many-inverse="false" uuid="1666a97a-abd0-43f5-9113-173a57fe2236">
+      <association-field from="part_of_day" to="id"/>
+    </association>
+    <entity name="\App\Entity\Patient" local-name="Patient" namespace="\App\Entity" uuid="fdbbb4fa-0d96-44c5-9773-32d99b7c8ef5">
+      <field name="id" type="integer" required="true" primary="true" uuid="fe490148-8451-4ef1-98c2-d3d60d465215">
+        <orm-attributes>
+          <attribute name="generator">
+            <attribute name="strategy">AUTO</attribute>
+          </attribute>
+        </orm-attributes>
+      </field>
+      <field name="fname" type="string" size="255" uuid="531294cb-1144-4b68-8bd9-bd013ee35eaf"/>
+      <field name="lname" type="string" size="255" uuid="ecba2cb0-c8b8-4e82-ba25-9a161c8e984a"/>
+      <field name="birthday" type="datetime" uuid="5593b1ff-196f-48a2-bd19-9da093e7ea35"/>
+      <field name="height" type="integer" uuid="f3cae5dd-0187-44a4-99ec-a0075018a08f"/>
+      <field name="email" type="string" size="255" uuid="e635fea2-4e32-4086-9db0-15238ad49ce8"/>
+      <field name="gender" type="string" size="6" uuid="36424dbc-ee60-4060-b1ea-be0728b1a38b"/>
+      <field name="password" type="string" size="255" uuid="b52b885d-48f9-4e2b-9eff-3972ec94e131"/>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\PatientRepository</attribute>
+        <attribute name="export-file-name">Patient.php</attribute>
+      </orm-attributes>
+    </entity>
+    <entity name="\App\Entity\CountDailyStep" local-name="CountDailyStep" namespace="\App\Entity" uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="60495820-dedf-46cd-b79b-a6cf8d334954"/>
+      <field name="patient_id" type="integer" uuid="c84fd71d-189c-49d3-a1ff-ee009cb25f9d"/>
+      <field name="date_time" type="date" uuid="36c6c80f-d389-46f3-8456-e4837170a9d9"/>
+      <field name="value" type="integer" uuid="ca6f4781-6c34-4c2b-b943-43e4a6552bf8"/>
+      <field name="goal" type="integer" uuid="fab7f4a9-15ef-42d5-83e8-81775b969db3"/>
+      <index name="DateReading" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="date_time"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\CountDailyStepRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\CountDailyStep" to="\App\Entity\Patient" owner-alias="stepCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\CountDailyFloor" local-name="CountDailyFloor" namespace="\App\Entity" uuid="1697e6c1-fa41-4da8-a51e-3f449817bfd6">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="f6f03f52-a5e9-4281-ae39-9a4afb9c069f"/>
+      <field name="patient_id" type="integer" uuid="538a5403-e4b2-4938-aa50-4378a78ed75d"/>
+      <field name="date_time" type="date" uuid="3d977e12-ad04-4ebe-9782-53ea8802048b"/>
+      <field name="value" type="integer" uuid="55d608e9-c159-4ec6-becd-4e0e0a84857e"/>
+      <field name="goal" type="integer" uuid="c4d346ae-b70f-445f-a8e9-1d26840714ac"/>
+      <index name="DateReading" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="date_time"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\CountDailyFloorRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\CountDailyFloor" to="\App\Entity\Patient" owner-alias="floorCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="75ca6ce1-c09e-42b3-a874-838b3bcda73b">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\UnitOfMeasurement" local-name="UnitOfMeasurement" namespace="\App\Entity" uuid="74bcff2a-0148-4688-b831-9f571594dfe8">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="02f79d50-23b7-4f6f-aaa2-9c31a7cb34e0"/>
+      <field name="name" type="string" size="10" required="true" unique="true" uuid="d4c19b1b-f8e0-4028-a5d6-e111b45d6f32"/>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\UnitOfMeasurementRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <entity name="\App\Entity\PartOfDay" local-name="PartOfDay" namespace="\App\Entity" uuid="b665d13e-d44f-4f69-929b-32c04ee3499d">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="11dfa7c5-6d3e-49ba-979e-9f42fbad027d"/>
+      <field name="name" type="string" size="9" required="true" unique="true" uuid="128abbef-800b-4dca-834e-c7021dc343e8"/>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\PartOfDayRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <entity name="\App\Entity\ThirdPartyRelations" local-name="ThirdPartyRelations" namespace="\App\Entity" uuid="818769ef-5ef2-4206-b439-6f8ec54321df">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="ca4940b6-c8aa-44d4-b601-3c8845d50c60"/>
+      <field name="patient_id" type="integer" uuid="de679ee8-987b-4b52-a019-379e7e9f77a3"/>
+      <field name="username" type="string" size="30" uuid="f0994bb5-d1f7-478b-8806-2abee2b9aacf"/>
+      <index name="RemoteUserName" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="username"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\ThirdPartyRelationsRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\ThirdPartyRelations" to="\App\Entity\Patient" owner-alias="thirdPartyRelations" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="2bb9b46c-7b43-48f5-adda-a4dfccc31ed0">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\BodyBmi" local-name="BodyBmi" namespace="\App\Entity" uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c">
+      <field name="id" type="integer" required="true" primary="true" uuid="e60f53bd-438b-4b00-ac36-24bdf9c6b946">
+        <orm-attributes>
+          <attribute name="generator">
+            <attribute name="strategy">AUTO</attribute>
+          </attribute>
+        </orm-attributes>
+      </field>
+      <field name="patient_id" type="integer" uuid="87c383f7-1ed6-41de-862d-728e9ffc256d"/>
+      <field name="date_time" type="date" uuid="a8298167-ead9-4c33-aed6-d79c986de8e4"/>
+      <field name="measurement" type="float" uuid="17172e38-cb91-4eca-8e85-a9b6630f4033"/>
+      <index name="DateReading" unique="true">
+        <index-field name="date_time"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\BodyBmiRepository</attribute>
+        <attribute name="export-file-name">BodyBmi.php</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\BodyBmi" to="\App\Entity\Patient" owner-alias="bodyBmi" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\CountDailyDistance" local-name="CountDailyDistance" namespace="\App\Entity" uuid="649ad552-9d9e-480f-9108-fdca11ceb536">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="deaa6b81-0dcd-405c-9213-c202f1952da0"/>
+      <field name="patient_id" type="integer" uuid="dac9b8b8-5acd-4db6-85b7-d7f165f51706"/>
+      <field name="date_time" type="date" uuid="c1466272-0c48-445e-a2c1-7459af3ba62c"/>
+      <field name="value" type="integer" uuid="00927329-6391-4649-82ef-470cfcf3c096"/>
+      <field name="goal" type="integer" uuid="eedd528c-7b1b-4497-bef5-951fcd4da496"/>
+      <index name="DateReading" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="date_time"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\CountDailyDistanceRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\CountDailyDistance" to="\App\Entity\Patient" owner-alias="distanceCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\CountDailyCalories" local-name="CountDailyCalories" namespace="\App\Entity" uuid="7ccbdeca-182c-4379-8727-b223c740f9cc">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="f106ba86-138d-4379-965d-e17cd56a1a0b"/>
+      <field name="patient_id" type="integer" uuid="ac786980-e381-4c4c-9f5a-9699371cd973"/>
+      <field name="date_time" type="date" uuid="3f00dc84-d3bb-46c8-8caa-a7dabd49510e"/>
+      <field name="value" type="integer" uuid="e8449e67-787b-41c3-8ac0-82ea9a5d69b2"/>
+      <field name="goal" type="integer" uuid="3b625f0c-9c9e-4c26-8ee3-58409201f1e0"/>
+      <index name="DateReading" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="date_time"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\CountDailyCaloriesRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\CountDailyCalories" to="\App\Entity\Patient" owner-alias="calorieCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="7a3b1a2c-7d7e-4176-9696-d6544b35e030">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\CountDailyElevation" local-name="CountDailyElevation" namespace="\App\Entity" uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="fd62ffd3-6bf0-4358-8ac4-d0bb41a3e540"/>
+      <field name="patient_id" type="integer" uuid="2df1a5a2-8c8c-4562-b73c-865df5c1c9da"/>
+      <field name="date_time" type="date" uuid="f88f3b24-42a6-4288-810e-17a7ea640a9d"/>
+      <field name="value" type="integer" uuid="4bcf7457-48df-49cd-a13d-bcbfc854f6d2"/>
+      <index name="DateReading" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="date_time"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\CountDailyElevationRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\CountDailyElevation" to="\App\Entity\Patient" owner-alias="elevationCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="23b327d0-2e27-4333-84f7-c03b7b2dc943">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\NutritionInformation" local-name="NutritionInformation" namespace="\App\Entity" uuid="9528ea35-c382-4f82-a477-702a4f6ec893">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="258f3ca3-df9a-4618-8cf0-abfee0aecc86"/>
+      <field name="patient_id" type="integer" required="true" uuid="70bb7f66-6bbf-4905-9c91-b1a26ab590e0"/>
+      <field name="date_time" type="date" required="true" uuid="8a74e536-2dc6-4328-ad7d-f17a1b55982e"/>
+      <field name="period" type="string" size="4" enum-values="'meal','day'" required="true" uuid="545e9ca1-e6c4-414d-b794-cab72e2746a8"/>
+      <field name="amount" type="integer" size="5" uuid="d4e627e0-02c1-43df-86d3-c4db362ba349"/>
+      <field name="unit" type="integer" size="4" uuid="2170ac44-a2d4-4fae-9ba2-ef336643415c"/>
+      <field name="brand" type="string" size="50" uuid="7d86637d-f302-419a-bc7c-e543c776f2af"/>
+      <field name="meal" type="string" size="50" uuid="afa632fe-f603-4df4-a0d6-bf3c8b153a89"/>
+      <field name="calories" type="integer" size="5" uuid="a852d38f-0eaf-4970-a9f6-ff8ae1893442"/>
+      <field name="goal" type="integer" size="5" uuid="0680b1f8-ff65-4dd8-8390-c15f1f5f13be"/>
+      <field name="carbs" type="integer" size="4" uuid="64b14937-7f4b-45c0-8415-893efe0e418d"/>
+      <field name="fat" type="integer" size="4" uuid="04bf7f76-5735-47e1-91ad-5d1220670f4f"/>
+      <field name="fiber" type="integer" size="4" uuid="c39a3017-f766-4555-bd17-d2ada4a1cbd6"/>
+      <field name="protein" type="integer" size="4" uuid="99777e4a-dfbe-4088-9248-ff625d2107bf"/>
+      <field name="sodium" type="integer" size="4" uuid="703a5014-fe11-4d74-9ec8-87c6c6b853db"/>
+      <field name="water" type="integer" size="5" uuid="bd066af4-d991-48a5-a41f-ae0c2027e9a0"/>
+      <index name="DateReading" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="date_time"/>
+        <index-field name="period"/>
+        <index-field name="meal"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\NutritionInformationRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\NutritionInformation" to="\App\Entity\Patient" owner-alias="nutritionInformation" inverse-alias="patient" many-owner="true" many-inverse="false" parent-required="true" uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\NutritionInformation" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="b290f492-f1ba-4c6e-9a3c-e93ef67e7e9c">
+      <association-field from="unit" to="id"/>
+    </association>
+    <region namespace="\App\Entity" caption="Minutes Active" uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d">
+      <entity name="\App\Entity\MinDailyVery" local-name="MinDailyVery" namespace="\App\Entity" uuid="9078df85-8c86-46d4-8bb4-80ad9d892291">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="3cfd8b2c-016e-4d83-b9ce-6461baa3383e"/>
+        <field name="patient_id" type="integer" uuid="3e62e99c-b748-470a-9508-0d0c886385ad"/>
+        <field name="date_time" type="date" uuid="aa51ab72-354b-428b-bbe0-c27fbf57dcce"/>
+        <field name="value" type="integer" uuid="06aca05b-d670-4425-b17f-76c300bdcb5e"/>
+        <field name="goal" type="integer" uuid="ee385309-65b9-42fd-a674-6fe37ed3faf3"/>
+        <index name="DateReading" unique="true">
+          <index-field name="patient_id"/>
+          <index-field name="date_time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\MinDailyVeryRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\MinDailySedentary" local-name="MinDailySedentary" namespace="\App\Entity" uuid="12e92ba4-e715-44f1-b881-0c906232351f">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="a4fa8e09-a117-46e2-9696-b1f61bb8ff8b"/>
+        <field name="patient_id" type="integer" uuid="bbc54c4e-c658-4e21-9582-621eb7baced9"/>
+        <field name="date_time" type="date" uuid="66455604-2dcf-4892-a78c-d69c3498e752"/>
+        <field name="value" type="integer" uuid="fcda6e16-be7d-48dc-accf-c3e2d4f41dae"/>
+        <index name="DateReading" unique="true">
+          <index-field name="patient_id"/>
+          <index-field name="date_time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\MinDailySedentaryRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\MinDailyLightly" local-name="MinDailyLightly" namespace="\App\Entity" uuid="5c06b2d1-c0fc-4651-8857-46b2ffc922b7">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="7984b573-c925-4f4e-9baf-985508625d2d"/>
+        <field name="patient_id" type="integer" uuid="b39bebb1-1ecf-49ed-b0cb-dc1eff291649"/>
+        <field name="date_time" type="date" uuid="1f8deedd-f08e-486e-8950-67a75cce6a92"/>
+        <field name="value" type="integer" uuid="d6fb4c21-d227-4e30-bf5e-89846489733b"/>
+        <index name="DateReading" unique="true">
+          <index-field name="patient_id"/>
+          <index-field name="date_time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\MinDailyLightlyRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\MinDailyFairly" local-name="MinDailyFairly" namespace="\App\Entity" uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="96bc0eb0-8152-4237-91a1-284f3c9f374f"/>
+        <field name="patient_id" type="integer" uuid="bc04034a-650c-446b-9c91-efb4b2539f69"/>
+        <field name="date_time" type="date" uuid="3f4d94e0-0d68-4ae2-bea1-8ac47cb5aeb0"/>
+        <field name="value" type="integer" uuid="b786da6b-d6e9-4b4d-b8fb-4730acac2181"/>
+        <index name="DateReading" unique="true">
+          <index-field name="patient_id"/>
+          <index-field name="date_time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\MinDailyFairlyRepository</attribute>
+        </orm-attributes>
+      </entity>
+    </region>
+    <association from="\App\Entity\MinDailyVery" to="\App\Entity\Patient" owner-alias="calorieCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="aeafa729-4238-4ace-a17f-88b926625d98">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\MinDailySedentary" to="\App\Entity\Patient" owner-alias="calorieCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="12d5e0e2-f913-4c18-97f9-25972b6af88c">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\MinDailyLightly" to="\App\Entity\Patient" owner-alias="calorieCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="f03afd69-268f-4761-b6da-09a736cd7ffc">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\MinDailyFairly" to="\App\Entity\Patient" owner-alias="calorieCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="cf93e85b-4d70-4f5f-b82b-ac5df1d83a3e">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <orm-attributes>
+      <attribute name="filename-format">entity-name-only</attribute>
+      <attribute name="db-naming-strategy">underscore-lower</attribute>
+    </orm-attributes>
+  </module>
+  <visual-data>
+    <association uuid="12d5e0e2-f913-4c18-97f9-25972b6af88c" caption1-position-x="-40" caption1-position-y="0" center-position-x="-81" center-position-y="5" color="#969696"/>
+    <association uuid="1666a97a-abd0-43f5-9113-173a57fe2236" center-position-x="0" center-position-y="2" color="#969696"/>
+    <association uuid="23b327d0-2e27-4333-84f7-c03b7b2dc943" center-position-x="0" center-position-y="10" color="#969696"/>
+    <association uuid="2bb9b46c-7b43-48f5-adda-a4dfccc31ed0" center-position-x="-1" center-position-y="7" color="#969696"/>
+    <association uuid="3222df04-0639-4734-8897-aed05ebd4f56" center-position-x="0" center-position-y="7" color="#969696"/>
+    <association uuid="5d2c14f5-6a61-42a7-89f1-7fe1683499a2" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="11" color="#61D351"/>
+    <association uuid="75ca6ce1-c09e-42b3-a874-838b3bcda73b" center-position-x="0" center-position-y="10" color="#969696"/>
+    <association uuid="7a3b1a2c-7d7e-4176-9696-d6544b35e030" caption1-position-x="-40" caption1-position-y="0" center-position-x="-180" center-position-y="6" color="#969696"/>
+    <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="1" center-position-y="0" color="#969696"/>
+    <association uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f" color="#969696"/>
+    <association uuid="8f0a67c0-d372-4cf7-a6f9-61b4db089ec3" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="9c775c90-5568-469a-9ea4-156e79c46010" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="aeafa729-4238-4ace-a17f-88b926625d98" caption1-position-x="-40" caption1-position-y="0" center-position-x="16" center-position-y="0" color="#969696"/>
+    <association uuid="b290f492-f1ba-4c6e-9a3c-e93ef67e7e9c" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="cf93e85b-4d70-4f5f-b82b-ac5df1d83a3e" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21" caption1-position-x="-40" caption1-position-y="0" center-position-x="-7" center-position-y="16" color="#969696"/>
+    <association uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="15" color="#969696"/>
+    <association uuid="f01775f2-cf49-44fd-95c7-2f7ccede6d64" color="#0A783D"/>
+    <association uuid="f03afd69-268f-4761-b6da-09a736cd7ffc" caption1-position-x="-40" caption1-position-y="0" center-position-x="-15" center-position-y="0" color="#969696"/>
+    <entity uuid="12e92ba4-e715-44f1-b881-0c906232351f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="20" position-y="2" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="1697e6c1-fa41-4da8-a51e-3f449817bfd6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="503" position-y="391" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="573" position-y="264" size-x="0" size-x2="113" size-y="0" size-y2="101"/>
+    <entity uuid="5c06b2d1-c0fc-4651-8857-46b2ffc922b7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="21" position-y="96" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="649ad552-9d9e-480f-9108-fdca11ceb536" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="394" position-y="391" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="733" position-y="169" size-x="0" size-x2="96" size-y="0" size-y2="45"/>
+    <entity uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="177" position-y="390" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="285" position-y="390" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="225" position-y="14" size-x="0" size-x2="114" size-y="0" size-y2="59"/>
+    <entity uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="178" position-y="493" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="9078df85-8c86-46d4-8bb4-80ad9d892291" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="24" position-y="291" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="286" position-y="493" size-x="0" size-x2="102" size-y="0" size-y2="45"/>
+    <entity uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="378" position-y="66" size-x="0" size-x2="110" size-y="0" size-y2="73"/>
+    <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="193" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="782" position-y="242" size-x="0" size-x2="91" size-y="0" size-y2="45"/>
+    <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="498" position-y="143" size-x="0" size-x2="113" size-y="0" size-y2="101"/>
+    <entity uuid="fdbbb4fa-0d96-44c5-9773-32d99b7c8ef5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="208" position-y="177" size-x="0" size-x2="117" size-y="0" size-y2="129"/>
+    <module uuid="af3795c2-38c1-4c19-80ab-00a6e36fa062" bg-color="#FEFCE8" position-x="50" position-y="50" size-x="0" size-x2="1017" size-y="0" size-y2="740"/>
+    <project uuid="3dd3da29-aa91-4b53-99cc-856eb007ab14" size-x="0" size-x2="1117" size-y="0" size-y2="812"/>
+    <region uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d" bg-color="#E7F3E7" position-x="11" position-y="52" size-x="0" size-x2="145" size-y="21" size-y2="394"/>
+  </visual-data>
+</skipper>
