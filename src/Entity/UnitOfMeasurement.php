@@ -1,9 +1,15 @@
 <?php
 namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UnitOfMeasurementRepository")
+ *
+ * @ApiResource
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "name": "exact"})
  */
 class UnitOfMeasurement
 {

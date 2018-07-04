@@ -1,0 +1,13 @@
+security:
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        api_key_user_provider:
+            id: App\Security\ApiKeyUserProvider
+
+    firewalls:
+        main:
+            pattern: ^/api
+            stateless: true
+            simple_preauth:
+                authenticator: App\Security\ApiKeyAuthenticator
+            provider: api_key_user_provider

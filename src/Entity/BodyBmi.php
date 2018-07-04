@@ -6,13 +6,13 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\BodyFatRepository")
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"date_time","patient_id"})})
+ * @ORM\Entity(repositoryClass="App\Repository\BodyBmiRepository")
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"date_time"})})
  *
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact"})
  */
-class BodyFat
+class BodyBmi
 {
     /**
      * @ORM\Id
@@ -27,27 +27,15 @@ class BodyFat
     private $measurement;
 
     /**
-     * @ORM\Column(type="date", nullable=true)
-     */
-    private $date_time;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="bodyFats")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="bodyBmi")
      * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
      */
     private $patient;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\UnitOfMeasurement")
-     * @ORM\JoinColumn(name="unit", referencedColumnName="id")
+     * @ORM\Column(type="date", nullable=true)
      */
-    private $unitOfMeasurement;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\PartOfDay")
-     * @ORM\JoinColumn(name="part_of_day", referencedColumnName="id")
-     */
-    private $partOfDay;
+    private $date_time;
 
     public function getId(): ?int
     {
@@ -86,30 +74,6 @@ class BodyFat
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
-
-        return $this;
-    }
-
-    public function getUnitOfMeasurement(): ?UnitOfMeasurement
-    {
-        return $this->unitOfMeasurement;
-    }
-
-    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
-    {
-        $this->unitOfMeasurement = $unitOfMeasurement;
-
-        return $this;
-    }
-
-    public function getPartOfDay(): ?PartOfDay
-    {
-        return $this->partOfDay;
-    }
-
-    public function setPartOfDay(?PartOfDay $partOfDay): self
-    {
-        $this->partOfDay = $partOfDay;
 
         return $this;
     }
