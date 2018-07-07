@@ -68,9 +68,9 @@ class Friends
         return $this->remote_id;
     }
 
-    public function setRemoteId(?string $remote_id): self
+    public function setRemoteId(?string $remoteId): self
     {
-        $this->remote_id = $remote_id;
+        $this->remote_id = $remoteId;
 
         return $this;
     }

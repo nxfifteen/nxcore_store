@@ -25,6 +25,11 @@ class ThirdPartyService
      */
     private $name;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $member_since;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -38,6 +43,18 @@ class ThirdPartyService
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getMemberSince(): ?\DateTimeInterface
+    {
+        return $this->member_since;
+    }
+
+    public function setMemberSince(?\DateTimeInterface $member_since): self
+    {
+        $this->member_since = $member_since;
 
         return $this;
     }

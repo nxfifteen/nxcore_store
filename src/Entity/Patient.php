@@ -32,12 +32,12 @@ class Patient
     private $lname;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="date", nullable=true)
      */
     private $birthday;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="float", nullable=true)
      */
     private $height;
 
@@ -50,6 +50,16 @@ class Patient
      * @ORM\Column(type="string", length=6, nullable=true)
      */
     private $gender;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private $timezone;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $avatar;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -177,12 +187,12 @@ class Patient
         return $this;
     }
 
-    public function getHeight(): ?int
+    public function getHeight(): ?float
     {
         return $this->height;
     }
 
-    public function setHeight(?int $height): self
+    public function setHeight(?float $height): self
     {
         $this->height = $height;
 
@@ -599,6 +609,30 @@ class Patient
                 $trackingDevice->setPatient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTimezone(): ?string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(?string $timezone): self
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?string $avatar): self
+    {
+        $this->avatar = $avatar;
 
         return $this;
     }

@@ -85,13 +85,15 @@
           </attribute>
         </orm-attributes>
       </field>
+      <field name="email" type="string" size="255" uuid="e635fea2-4e32-4086-9db0-15238ad49ce8"/>
+      <field name="password" type="string" size="255" uuid="b52b885d-48f9-4e2b-9eff-3972ec94e131"/>
       <field name="fname" type="string" size="255" uuid="531294cb-1144-4b68-8bd9-bd013ee35eaf"/>
       <field name="lname" type="string" size="255" uuid="ecba2cb0-c8b8-4e82-ba25-9a161c8e984a"/>
-      <field name="birthday" type="datetime" uuid="5593b1ff-196f-48a2-bd19-9da093e7ea35"/>
-      <field name="height" type="integer" uuid="f3cae5dd-0187-44a4-99ec-a0075018a08f"/>
-      <field name="email" type="string" size="255" uuid="e635fea2-4e32-4086-9db0-15238ad49ce8"/>
+      <field name="birthday" type="date" uuid="5593b1ff-196f-48a2-bd19-9da093e7ea35"/>
+      <field name="height" type="float" uuid="f3cae5dd-0187-44a4-99ec-a0075018a08f"/>
       <field name="gender" type="string" size="6" uuid="36424dbc-ee60-4060-b1ea-be0728b1a38b"/>
-      <field name="password" type="string" size="255" uuid="b52b885d-48f9-4e2b-9eff-3972ec94e131"/>
+      <field name="timezone" type="string" uuid="0b0a59fc-626a-4719-958a-fd8492aca2e1"/>
+      <field name="avatar" type="string" size="255" uuid="03e2ebb7-e112-42f1-9999-109d4798ac10"/>
       <orm-attributes>
         <attribute name="repository-class">App\Repository\PatientRepository</attribute>
         <attribute name="export-file-name">Patient.php</attribute>
@@ -282,6 +284,7 @@
     <entity name="\App\Entity\ThirdPartyService" local-name="ThirdPartyService" namespace="\App\Entity" uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="38665bc8-1cf4-41a0-82dc-bf6870f74910"/>
       <field name="name" type="string" size="50" required="true" uuid="e9ff872a-2700-4bb3-a3d2-2e9498b6b504"/>
+      <field name="member_since" type="datetime" uuid="891a246d-e08b-41a5-8096-ae5d9679d67b"/>
       <orm-attributes>
         <attribute name="repository-class">App\Repository\ThirdPartyServiceRepository</attribute>
       </orm-attributes>
@@ -638,7 +641,7 @@
     <association uuid="7ee8111d-e535-40e4-8f38-3e77fcc5af75" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="81ddd366-29c3-4579-90e7-93d5f62ae782" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="830bf475-c17e-41b4-9514-ca160afa8c60" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
-    <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="1" center-position-y="3" color="#969696"/>
+    <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="-1" center-position-y="3" color="#969696"/>
     <association uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f" color="#969696"/>
     <association uuid="8e1cfc3c-9163-404a-8686-f579f33a3985" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="8f0a67c0-d372-4cf7-a6f9-61b4db089ec3" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -652,7 +655,7 @@
     <association uuid="b290f492-f1ba-4c6e-9a3c-e93ef67e7e9c" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="cf93e85b-4d70-4f5f-b82b-ac5df1d83a3e" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21" caption1-position-x="-40" caption1-position-y="0" center-position-x="-7" center-position-y="15" color="#969696"/>
-    <association uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="15" color="#969696"/>
+    <association uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="5" color="#969696"/>
     <association uuid="f01775f2-cf49-44fd-95c7-2f7ccede6d64" color="#0A783D"/>
     <association uuid="f03afd69-268f-4761-b6da-09a736cd7ffc" caption1-position-x="-40" caption1-position-y="0" center-position-x="-15" center-position-y="0" color="#969696"/>
     <association uuid="fc6a69b2-1090-4fdc-9032-607a83052df7" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="15" color="#969696"/>
@@ -680,17 +683,17 @@
     <entity uuid="a4c0aa4e-df9f-4e01-a747-dac0e20eab1d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="300" position-y="207" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
     <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="183" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="806" position-y="275" size-x="0" size-x2="91" size-y="0" size-y2="45"/>
-    <entity uuid="c9f04400-71d8-4c25-acab-ed902dbc49f7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="11" position-y="494" size-x="0" size-x2="114" size-y="0" size-y2="129"/>
-    <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="190" position-y="25" size-x="0" size-x2="96" size-y="0" size-y2="45"/>
+    <entity uuid="c9f04400-71d8-4c25-acab-ed902dbc49f7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="125" position-y="473" size-x="0" size-x2="114" size-y="0" size-y2="129"/>
+    <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="141" position-y="21" size-x="0" size-x2="131" size-y="0" size-y2="59"/>
     <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="718" position-y="65" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="db12bf76-9152-40d5-9911-c0c8263bd128" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="190" position-y="-316" size-x="0" size-x2="97" size-y="0" size-y2="45"/>
     <entity uuid="e14a06fc-ed45-41ae-b996-dbe2a27d30c8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="322" position-y="-295" size-x="0" size-x2="112" size-y="0" size-y2="115"/>
     <entity uuid="e475797c-6f95-48a0-955f-4506297dc0f4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="390" position-y="88" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
-    <entity uuid="fdbbb4fa-0d96-44c5-9773-32d99b7c8ef5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="400" position-y="206" size-x="0" size-x2="117" size-y="0" size-y2="129"/>
+    <entity uuid="fdbbb4fa-0d96-44c5-9773-32d99b7c8ef5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="403" position-y="193" size-x="0" size-x2="117" size-y="0" size-y2="157"/>
     <entity uuid="ffaceb68-b171-4778-810e-7eac4eee10f1" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="22" position-y="69" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
     <module uuid="af3795c2-38c1-4c19-80ab-00a6e36fa062" bg-color="#FEFCE8" position-x="50" position-y="50" size-x="74" size-x2="1878" size-y="0" size-y2="1549"/>
     <project uuid="3dd3da29-aa91-4b53-99cc-856eb007ab14" size-x="74" size-x2="1978" size-y="0" size-y2="1649"/>
     <region uuid="2c1dc659-6cd5-455c-aabd-d5328a71d963" bg-color="#BBE87D" position-x="146" position-y="970" size-x="0" size-x2="633" size-y="334" size-y2="343"/>
-    <region uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d" bg-color="#E7F3E7" position-x="11" position-y="52" size-x="0" size-x2="145" size-y="21" size-y2="394"/>
+    <region uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d" bg-color="#E7F3E7" position-x="-21" position-y="65" size-x="0" size-x2="145" size-y="21" size-y2="394"/>
   </visual-data>
 </skipper>
