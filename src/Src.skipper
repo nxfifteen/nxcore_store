@@ -288,13 +288,35 @@
     </entity>
     <entity name="\App\Entity\TrackingDevice" local-name="TrackingDevice" namespace="\App\Entity" uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="697d6554-15f6-4275-b5b2-d7107bb2b480"/>
-      <field name="name" type="string" size="150" uuid="c3260fa2-9c31-4a0b-b642-b93f484c43b8"/>
       <field name="patient_id" type="integer" uuid="598943b6-7bcf-4943-a391-3a218c4d7e30"/>
+      <field name="name" type="string" size="150" uuid="c3260fa2-9c31-4a0b-b642-b93f484c43b8"/>
+      <field name="battery" type="integer" size="3" uuid="51f8964b-d17c-4076-82b6-65a4202cafec"/>
+      <field name="lastSyncTime" type="datetime" uuid="16ebf1b8-85cb-454f-90e0-2b8e7558199b"/>
+      <field name="remote_id" type="string" size="20" unique="true" uuid="e092608d-2754-4ae3-bb68-b23d54bcea7f"/>
+      <field name="type" type="string" size="150" uuid="7de340c3-e5e0-43bb-812e-0ecd75f44f1b"/>
       <orm-attributes>
         <attribute name="repository-class">App\Repository\TrackingDeviceRepository</attribute>
       </orm-attributes>
     </entity>
     <association from="\App\Entity\TrackingDevice" to="\App\Entity\Patient" owner-alias="trackingDevice" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="9312f6bd-0266-4d02-8c2d-33362601ca92">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\IntradayStep" local-name="IntradayStep" namespace="\App\Entity" uuid="1f6d7586-1bec-4ad1-a358-f740156146b5">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="84bce4c8-380d-455f-b77e-24ce9a042bd9"/>
+      <field name="patient_id" type="integer" uuid="7931fff4-2ec9-40dc-b3b3-e508ded3c13a"/>
+      <field name="date" type="date" uuid="fc3a2c51-a7dc-4512-9246-5e8edf9c2097"/>
+      <field name="hour" type="integer" size="2" uuid="4fac41b7-cb2a-4e60-819c-e7226cb12777"/>
+      <field name="value" type="integer" size="6" uuid="14b87f9e-e113-44b9-824e-6b459e30e2b0"/>
+      <index name="DateReading" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="date"/>
+        <index-field name="hour"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\IntradayStepRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\IntradayStep" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="fc6a69b2-1090-4fdc-9032-607a83052df7">
       <association-field from="patient_id" to="id"/>
     </association>
     <region namespace="\App\Entity" caption="Minutes Active" uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d">
@@ -603,20 +625,22 @@
     <association uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="15" color="#969696"/>
     <association uuid="f01775f2-cf49-44fd-95c7-2f7ccede6d64" color="#0A783D"/>
     <association uuid="f03afd69-268f-4761-b6da-09a736cd7ffc" caption1-position-x="-40" caption1-position-y="0" center-position-x="-15" center-position-y="0" color="#969696"/>
+    <association uuid="fc6a69b2-1090-4fdc-9032-607a83052df7" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="15" color="#969696"/>
     <entity uuid="00635351-1235-46f9-9558-c27b48de644c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="483" position-y="-270" size-x="0" size-x2="121" size-y="0" size-y2="129"/>
     <entity uuid="12e92ba4-e715-44f1-b881-0c906232351f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="20" position-y="2" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="1697e6c1-fa41-4da8-a51e-3f449817bfd6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="496" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="1f6d7586-1bec-4ad1-a358-f740156146b5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="272" position-y="114" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="21c34069-a808-48ee-b968-1358d4cbe3b1" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="193" position-y="-176" size-x="0" size-x2="115" size-y="0" size-y2="87"/>
     <entity uuid="32555b44-0569-47eb-81ea-c6ad6584d3c6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="17" position-y="-286" size-x="0" size-x2="131" size-y="0" size-y2="171"/>
     <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="885" position-y="108" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="192" position-y="45" size-x="0" size-x2="140" size-y="0" size-y2="101"/>
-    <entity uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="265" position-y="459" size-x="0" size-x2="102" size-y="0" size-y2="59"/>
+    <entity uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="260" position-y="444" size-x="0" size-x2="127" size-y="0" size-y2="115"/>
     <entity uuid="5c06b2d1-c0fc-4651-8857-46b2ffc922b7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="21" position-y="96" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="649ad552-9d9e-480f-9108-fdca11ceb536" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="618" position-y="415" size-x="0" size-x2="102" size-y="0" size-y2="101"/>
     <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="666" position-y="325" size-x="0" size-x2="101" size-y="0" size-y2="45"/>
     <entity uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="398" position-y="413" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="386" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="442" position-y="17" size-x="0" size-x2="114" size-y="0" size-y2="73"/>
+    <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="441" position-y="16" size-x="0" size-x2="114" size-y="0" size-y2="73"/>
     <entity uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="397" position-y="511" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="9078df85-8c86-46d4-8bb4-80ad9d892291" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="24" position-y="277" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="791" position-y="428" size-x="0" size-x2="139" size-y="0" size-y2="269"/>
