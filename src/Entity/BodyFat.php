@@ -27,6 +27,11 @@ class BodyFat
     private $measurement;
 
     /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $goal;
+
+    /**
      * @ORM\Column(type="date", nullable=true)
      */
     private $date_time;
@@ -110,6 +115,18 @@ class BodyFat
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
+
+        return $this;
+    }
+
+    public function getGoal(): ?float
+    {
+        return $this->goal;
+    }
+
+    public function setGoal(?float $goal): self
+    {
+        $this->goal = $goal;
 
         return $this;
     }

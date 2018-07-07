@@ -7,10 +7,13 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\NutritionInformationRepository")
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"patient_id","date_time","period","meal"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(
+ *             name="DateReading",
+ *             columns={"patient_id","date_time","period","meal","amount","unit","brand","calories"}
+ *         )})
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact", "meal": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact", "meal": "exact", "name": "exact", "amount": "exact", "calories": "exact"})
  */
 class NutritionInformation
 {
@@ -40,6 +43,11 @@ class NutritionInformation
      * @ORM\Column(type="string", length=50, nullable=true)
      */
     private $brand;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $name;
 
     /**
      * @ORM\Column(type="string", length=50, nullable=true)
@@ -85,6 +93,11 @@ class NutritionInformation
      * @ORM\Column(type="integer", length=5, nullable=true)
      */
     private $water;
+
+    /**
+     * @ORM\Column(type="integer", length=5, nullable=true)
+     */
+    private $goalCaloriesOut;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="nutritionInformation")
@@ -279,6 +292,30 @@ class NutritionInformation
     public function setWater(?int $water): self
     {
         $this->water = $water;
+
+        return $this;
+    }
+
+    public function getGoalCaloriesOut(): ?int
+    {
+        return $this->goalCaloriesOut;
+    }
+
+    public function setGoalCaloriesOut(?int $goalCaloriesOut): self
+    {
+        $this->goalCaloriesOut = $goalCaloriesOut;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }

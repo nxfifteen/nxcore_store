@@ -27,12 +27,12 @@ class CountDailyDistance
     private $date_time;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="float", nullable=true)
      */
     private $value;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="float", nullable=true)
      */
     private $goal;
 
@@ -41,6 +41,12 @@ class CountDailyDistance
      * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
      */
     private $patient;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\UnitOfMeasurement")
+     * @ORM\JoinColumn(name="unit", referencedColumnName="id")
+     */
+    private $unitOfMeasurement;
 
     public function getId(): ?int
     {
@@ -59,24 +65,24 @@ class CountDailyDistance
         return $this;
     }
 
-    public function getValue(): ?int
+    public function getValue(): ?float
     {
         return $this->value;
     }
 
-    public function setValue(?int $value): self
+    public function setValue(?float $value): self
     {
         $this->value = $value;
 
         return $this;
     }
 
-    public function getGoal(): ?int
+    public function getGoal(): ?float
     {
         return $this->goal;
     }
 
-    public function setGoal(?int $goal): self
+    public function setGoal(?float $goal): self
     {
         $this->goal = $goal;
 
@@ -91,6 +97,18 @@ class CountDailyDistance
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getUnitOfMeasurement(): ?UnitOfMeasurement
+    {
+        return $this->unitOfMeasurement;
+    }
+
+    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
+    {
+        $this->unitOfMeasurement = $unitOfMeasurement;
 
         return $this;
     }

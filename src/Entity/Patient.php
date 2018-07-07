@@ -106,6 +106,16 @@ class Patient
     private $nutritionInformation;
 
     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\TrackingDevice", mappedBy="patient")
+     */
+    private $trackingDevice;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\SportActivity", mappedBy="patient")
+     */
+    private $sportActivity;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Entity\BodyFat", mappedBy="patient", orphanRemoval=true)
      */
     private $bodyFats;
@@ -122,6 +132,8 @@ class Patient
         $this->calorieCount = new ArrayCollection();
         $this->elevationCount = new ArrayCollection();
         $this->nutritionInformation = new ArrayCollection();
+        $this->sportActivity = new ArrayCollection();
+        $this->trackingDevice = new ArrayCollection();
     }
 
     public function getId()
@@ -523,6 +535,68 @@ class Patient
             // set the owning side to null (unless already changed)
             if ($nutritionInformation->getPatient() === $this) {
                 $nutritionInformation->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|SportActivity[]
+     */
+    public function getSportActivity(): Collection
+    {
+        return $this->sportActivity;
+    }
+
+    public function addSportActivity(SportActivity $sportActivity): self
+    {
+        if (!$this->sportActivity->contains($sportActivity)) {
+            $this->sportActivity[] = $sportActivity;
+            $sportActivity->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSportActivity(SportActivity $sportActivity): self
+    {
+        if ($this->sportActivity->contains($sportActivity)) {
+            $this->sportActivity->removeElement($sportActivity);
+            // set the owning side to null (unless already changed)
+            if ($sportActivity->getPatient() === $this) {
+                $sportActivity->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|TrackingDevice[]
+     */
+    public function getTrackingDevice(): Collection
+    {
+        return $this->trackingDevice;
+    }
+
+    public function addTrackingDevice(TrackingDevice $trackingDevice): self
+    {
+        if (!$this->trackingDevice->contains($trackingDevice)) {
+            $this->trackingDevice[] = $trackingDevice;
+            $trackingDevice->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrackingDevice(TrackingDevice $trackingDevice): self
+    {
+        if ($this->trackingDevice->contains($trackingDevice)) {
+            $this->trackingDevice->removeElement($trackingDevice);
+            // set the owning side to null (unless already changed)
+            if ($trackingDevice->getPatient() === $this) {
+                $trackingDevice->setPatient(null);
             }
         }
 

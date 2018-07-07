@@ -10,7 +10,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="RemoteUserName", columns={"patient_id","username"})})
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "username": "exact", "patient": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "username": "exact", "patient": "exact", "thirdPartyService": "exact"})
  */
 class ThirdPartyRelations
 {
@@ -31,6 +31,12 @@ class ThirdPartyRelations
      * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
      */
     private $patient;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
+     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     */
+    private $thirdPartyService;
 
     public function getId(): ?int
     {
@@ -57,6 +63,18 @@ class ThirdPartyRelations
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getThirdPartyService(): ?ThirdPartyService
+    {
+        return $this->thirdPartyService;
+    }
+
+    public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
+    {
+        $this->thirdPartyService = $thirdPartyService;
 
         return $this;
     }

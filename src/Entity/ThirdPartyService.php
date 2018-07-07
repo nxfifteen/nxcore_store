@@ -6,13 +6,12 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\UnitOfMeasurementRepository")
- * 
+ * @ORM\Entity(repositoryClass="App\Repository\ThirdPartyServiceRepository")
  *
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"id": "exact", "name": "exact"})
  */
-class UnitOfMeasurement
+class ThirdPartyService
 {
     /**
      * @ORM\Id
@@ -22,7 +21,7 @@ class UnitOfMeasurement
     private $id;
 
     /**
-     * @ORM\Column(type="string", unique=true, length=100, nullable=false)
+     * @ORM\Column(type="string", length=50, nullable=false)
      */
     private $name;
 
