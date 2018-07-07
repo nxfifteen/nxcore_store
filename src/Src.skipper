@@ -13,6 +13,7 @@
       <field name="date_time" type="date" uuid="fc941b96-67b5-4f0c-8c80-198e2f0219a3"/>
       <field name="part_of_day" type="integer" uuid="934c1971-1a33-41c8-b448-666d87fb1848"/>
       <field name="measurement" type="float" uuid="da29156d-7f26-4818-a735-0dc8b3602e2d"/>
+      <field name="goal" type="float" uuid="133c8c31-6454-4144-8ce5-f7cd0a3cfab0"/>
       <field name="unit" type="integer" uuid="6282b1b2-6b53-4147-b8dc-77f91781c864"/>
       <index name="DateReading" unique="true">
         <index-field name="date_time"/>
@@ -50,6 +51,7 @@
       <field name="date_time" type="date" uuid="3eac2f13-22fd-42b9-9217-b4747ccf9eac"/>
       <field name="part_of_day" type="integer" uuid="693fd83c-0870-4b28-882a-6de647304f92"/>
       <field name="measurement" type="float" uuid="67aef4f7-9be1-4590-ba5c-cb4829907d93"/>
+      <field name="goal" type="float" uuid="f3f820fe-3024-41f6-ab24-1157f7da6fd0"/>
       <field name="unit" type="integer" uuid="2e760d89-e6fd-4c10-9c0c-4b24c2fbe7c7"/>
       <index name="DateReading" unique="true">
         <index-field name="date_time"/>
@@ -131,7 +133,7 @@
     </association>
     <entity name="\App\Entity\UnitOfMeasurement" local-name="UnitOfMeasurement" namespace="\App\Entity" uuid="74bcff2a-0148-4688-b831-9f571594dfe8">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="02f79d50-23b7-4f6f-aaa2-9c31a7cb34e0"/>
-      <field name="name" type="string" size="10" required="true" unique="true" uuid="d4c19b1b-f8e0-4028-a5d6-e111b45d6f32"/>
+      <field name="name" type="string" size="100" required="true" unique="true" uuid="d4c19b1b-f8e0-4028-a5d6-e111b45d6f32"/>
       <orm-attributes>
         <attribute name="repository-class">App\Repository\UnitOfMeasurementRepository</attribute>
       </orm-attributes>
@@ -146,6 +148,7 @@
     <entity name="\App\Entity\ThirdPartyRelations" local-name="ThirdPartyRelations" namespace="\App\Entity" uuid="818769ef-5ef2-4206-b439-6f8ec54321df">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="ca4940b6-c8aa-44d4-b601-3c8845d50c60"/>
       <field name="patient_id" type="integer" uuid="de679ee8-987b-4b52-a019-379e7e9f77a3"/>
+      <field name="service" type="integer" uuid="8e85454c-edfe-4294-a60d-dcf7650ffb9a"/>
       <field name="username" type="string" size="30" uuid="f0994bb5-d1f7-478b-8806-2abee2b9aacf"/>
       <index name="RemoteUserName" unique="true">
         <index-field name="patient_id"/>
@@ -157,6 +160,9 @@
     </entity>
     <association from="\App\Entity\ThirdPartyRelations" to="\App\Entity\Patient" owner-alias="thirdPartyRelations" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="2bb9b46c-7b43-48f5-adda-a4dfccc31ed0">
       <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\ThirdPartyRelations" to="\App\Entity\ThirdPartyService" inverse-alias="thirdPartyService" many-owner="true" many-inverse="false" uuid="8e1cfc3c-9163-404a-8686-f579f33a3985">
+      <association-field from="service" to="id"/>
     </association>
     <entity name="\App\Entity\BodyBmi" local-name="BodyBmi" namespace="\App\Entity" uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c">
       <field name="id" type="integer" required="true" primary="true" uuid="e60f53bd-438b-4b00-ac36-24bdf9c6b946">
@@ -184,8 +190,9 @@
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="deaa6b81-0dcd-405c-9213-c202f1952da0"/>
       <field name="patient_id" type="integer" uuid="dac9b8b8-5acd-4db6-85b7-d7f165f51706"/>
       <field name="date_time" type="date" uuid="c1466272-0c48-445e-a2c1-7459af3ba62c"/>
-      <field name="value" type="integer" uuid="00927329-6391-4649-82ef-470cfcf3c096"/>
-      <field name="goal" type="integer" uuid="eedd528c-7b1b-4497-bef5-951fcd4da496"/>
+      <field name="value" type="float" uuid="00927329-6391-4649-82ef-470cfcf3c096"/>
+      <field name="goal" type="float" uuid="eedd528c-7b1b-4497-bef5-951fcd4da496"/>
+      <field name="unit" type="integer" uuid="9012508a-f64b-4531-9ec1-089e75830b41"/>
       <index name="DateReading" unique="true">
         <index-field name="patient_id"/>
         <index-field name="date_time"/>
@@ -196,6 +203,9 @@
     </entity>
     <association from="\App\Entity\CountDailyDistance" to="\App\Entity\Patient" owner-alias="distanceCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21">
       <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\CountDailyDistance" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="aff56f69-d1be-42a6-93d3-6adbfb86ad02">
+      <association-field from="unit" to="id"/>
     </association>
     <entity name="\App\Entity\CountDailyCalories" local-name="CountDailyCalories" namespace="\App\Entity" uuid="7ccbdeca-182c-4379-8727-b223c740f9cc">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="f106ba86-138d-4379-965d-e17cd56a1a0b"/>
@@ -238,6 +248,7 @@
       <field name="amount" type="integer" size="5" uuid="d4e627e0-02c1-43df-86d3-c4db362ba349"/>
       <field name="unit" type="integer" size="4" uuid="2170ac44-a2d4-4fae-9ba2-ef336643415c"/>
       <field name="brand" type="string" size="50" uuid="7d86637d-f302-419a-bc7c-e543c776f2af"/>
+      <field name="name" type="string" size="255" uuid="c571811a-a19b-4e98-8053-29654a0cc1eb"/>
       <field name="meal" type="string" size="50" uuid="afa632fe-f603-4df4-a0d6-bf3c8b153a89"/>
       <field name="calories" type="integer" size="5" uuid="a852d38f-0eaf-4970-a9f6-ff8ae1893442"/>
       <field name="goal" type="integer" size="5" uuid="0680b1f8-ff65-4dd8-8390-c15f1f5f13be"/>
@@ -247,11 +258,16 @@
       <field name="protein" type="integer" size="4" uuid="99777e4a-dfbe-4088-9248-ff625d2107bf"/>
       <field name="sodium" type="integer" size="4" uuid="703a5014-fe11-4d74-9ec8-87c6c6b853db"/>
       <field name="water" type="integer" size="5" uuid="bd066af4-d991-48a5-a41f-ae0c2027e9a0"/>
+      <field name="goalCaloriesOut" type="integer" size="5" uuid="53953063-c30b-49f7-b6c8-fc10d7f2ae5c"/>
       <index name="DateReading" unique="true">
         <index-field name="patient_id"/>
         <index-field name="date_time"/>
         <index-field name="period"/>
         <index-field name="meal"/>
+        <index-field name="amount"/>
+        <index-field name="unit"/>
+        <index-field name="brand"/>
+        <index-field name="calories"/>
       </index>
       <orm-attributes>
         <attribute name="repository-class">App\Repository\NutritionInformationRepository</attribute>
@@ -262,6 +278,24 @@
     </association>
     <association from="\App\Entity\NutritionInformation" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="b290f492-f1ba-4c6e-9a3c-e93ef67e7e9c">
       <association-field from="unit" to="id"/>
+    </association>
+    <entity name="\App\Entity\ThirdPartyService" local-name="ThirdPartyService" namespace="\App\Entity" uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="38665bc8-1cf4-41a0-82dc-bf6870f74910"/>
+      <field name="name" type="string" size="50" required="true" uuid="e9ff872a-2700-4bb3-a3d2-2e9498b6b504"/>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\ThirdPartyServiceRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <entity name="\App\Entity\TrackingDevice" local-name="TrackingDevice" namespace="\App\Entity" uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="697d6554-15f6-4275-b5b2-d7107bb2b480"/>
+      <field name="name" type="string" size="150" uuid="c3260fa2-9c31-4a0b-b642-b93f484c43b8"/>
+      <field name="patient_id" type="integer" uuid="598943b6-7bcf-4943-a391-3a218c4d7e30"/>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\TrackingDeviceRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\TrackingDevice" to="\App\Entity\Patient" owner-alias="trackingDevice" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="9312f6bd-0266-4d02-8c2d-33362601ca92">
+      <association-field from="patient_id" to="id"/>
     </association>
     <region namespace="\App\Entity" caption="Minutes Active" uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d">
       <entity name="\App\Entity\MinDailyVery" local-name="MinDailyVery" namespace="\App\Entity" uuid="9078df85-8c86-46d4-8bb4-80ad9d892291">
@@ -330,6 +364,204 @@
     <association from="\App\Entity\MinDailyFairly" to="\App\Entity\Patient" owner-alias="calorieCount" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="cf93e85b-4d70-4f5f-b82b-ac5df1d83a3e">
       <association-field from="patient_id" to="id"/>
     </association>
+    <region namespace="\App\Entity" caption="Sports" uuid="2c1dc659-6cd5-455c-aabd-d5328a71d963">
+      <entity name="\App\Entity\SportActivity" local-name="SportActivity" namespace="\App\Entity" uuid="32555b44-0569-47eb-81ea-c6ad6584d3c6">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="135c93ca-5e40-4588-bde9-2c3d29549c86"/>
+        <field name="patient_id" type="integer" uuid="02cfb97e-af97-4f5d-8b6a-58f93abfc341"/>
+        <field name="remote_id" type="bigint" uuid="043fe69f-cc3b-4182-9a7d-5d46c31669f7"/>
+        <field name="activityName" type="string" uuid="96b9c994-95f5-457d-88c1-5330de0ccb9c"/>
+        <field name="source" type="integer" uuid="fa69cd83-334d-4409-95ff-f687337118d2"/>
+        <field name="part_of_day" type="integer" uuid="605417c9-0e35-4551-984f-ce70d6437127"/>
+        <field name="startTime" type="datetime" uuid="943b6cab-4e89-4d45-95c1-987b76488955"/>
+        <field name="duration" type="integer" uuid="fa221dd6-bd56-4e2c-a89b-1d6c20506236"/>
+        <field name="steps" type="integer" size="6" uuid="88cfcbbf-8b19-4313-af3b-51f021c9aca1"/>
+        <field name="calories" type="integer" size="4" uuid="de11eaa3-176c-436f-b473-42d1cb74cb88"/>
+        <field name="elevationGain" type="float" uuid="04bd8ebd-09d2-48ab-aa0c-2f4ae253af64"/>
+        <field name="heart_rate_id" type="integer" uuid="ededbe56-5cc5-4cfc-a52f-34f56dc7839d"/>
+        <field name="activity_level_id" type="integer" uuid="e6dd8a01-1cd8-40ae-87f2-8d33fc3311ed"/>
+        <field name="sport_track" type="integer" unique="true" uuid="8153dd98-d02f-42b2-8e6c-f0449381854f"/>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\SportActivityRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\SportActivitySource" local-name="SportActivitySource" namespace="\App\Entity" uuid="db12bf76-9152-40d5-9911-c0c8263bd128">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="1c22637a-ca79-4391-980e-f6fc7f73da14"/>
+        <field name="name" type="string" size="50" required="true" uuid="11bdd5c8-ac89-4989-adfd-4e7df5459e18"/>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\SportActivitySourceRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\ActivityLevel" local-name="ActivityLevel" namespace="\App\Entity" uuid="21c34069-a808-48ee-b968-1358d4cbe3b1">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="5ce9485e-cbcd-415c-a13a-3e82ea854409"/>
+        <field name="sedentary" type="integer" size="3" uuid="a981547f-a4d3-4612-8b9e-45fd3b3f2296"/>
+        <field name="lightly" type="integer" size="3" uuid="8a1b1358-28c1-47ec-8bb0-fd95c46d9569"/>
+        <field name="fairly" type="integer" size="3" uuid="cc07c547-b675-499a-9ea4-01bf55697b15"/>
+        <field name="very" type="integer" size="3" uuid="41b9f9a0-f373-46ff-b83e-ec3ecf11791c"/>
+        <index name="UniqueReading" unique="true">
+          <index-field name="sedentary"/>
+          <index-field name="lightly"/>
+          <index-field name="fairly"/>
+          <index-field name="very"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\ActivityLevelRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\HeartRate" local-name="HeartRate" namespace="\App\Entity" uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="ef940bb2-2c64-4b4a-b149-81cea9e72a33"/>
+        <field name="average" type="integer" size="3" uuid="fc2847b4-e440-4da9-95d8-476d9d4f9d03"/>
+        <field name="out_of_range_id" type="integer" size="3" uuid="f38ee396-0ca9-4ce7-9bed-d9f040a9be0d"/>
+        <field name="fat_burn_id" type="integer" size="3" uuid="9f269054-68da-4b71-8140-cc6d84cd3a31"/>
+        <field name="cardio_id" type="integer" size="3" uuid="017a3890-9fec-4a6d-ba50-805038e312fa"/>
+        <field name="peak_id" type="integer" size="3" uuid="423eb214-b88c-4b41-8d9f-c9170dda8103"/>
+        <index name="UniqueReading" unique="true">
+          <index-field name="average"/>
+          <index-field name="out_of_range_id"/>
+          <index-field name="fat_burn_id"/>
+          <index-field name="cardio_id"/>
+          <index-field name="peak_id"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\HeartRateRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\HeartRateOutOfRange" local-name="HeartRateOutOfRange" namespace="\App\Entity" uuid="ffaceb68-b171-4778-810e-7eac4eee10f1">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="19b93f97-30b7-4d23-a69a-fb29fc2ed407"/>
+        <field name="average" type="integer" size="3" uuid="b56811b4-5042-4353-a3e9-6455c0628891"/>
+        <field name="min" type="integer" size="3" uuid="a7c4b6a6-5eef-467c-a790-7e5ae8da7f38"/>
+        <field name="max" type="integer" size="3" uuid="120dc3d0-4141-4dc1-acd4-9f14ab078b2b"/>
+        <field name="time" type="integer" size="3" uuid="eb0d53b1-866d-4da3-bbb1-c8bb6db53927"/>
+        <index name="UniqueReading" unique="true">
+          <index-field name="average"/>
+          <index-field name="min"/>
+          <index-field name="max"/>
+          <index-field name="time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\HeartRateOutOfRangeRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\HeartRateFatBurn" local-name="HeartRateFatBurn" namespace="\App\Entity" uuid="99378b42-66bc-484b-9eec-5d454204a238">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="3ef97023-8819-40c3-9583-3be01dcabb89"/>
+        <field name="average" type="integer" size="3" uuid="b11fb21d-0b6c-4eba-8ed7-3f0ea8dba7d8"/>
+        <field name="min" type="integer" size="3" uuid="7a3e7abc-d175-4188-899a-281c8483317a"/>
+        <field name="max" type="integer" size="3" uuid="6efd5df2-6313-46df-89af-417f4ca29890"/>
+        <field name="time" type="integer" size="3" uuid="880823ac-c322-4a29-b63c-e5b258a7e2e3"/>
+        <index name="UniqueReading" unique="true">
+          <index-field name="average"/>
+          <index-field name="min"/>
+          <index-field name="max"/>
+          <index-field name="time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\HeartRateFatBurnRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\HeartRateCardio" local-name="HeartRateCardio" namespace="\App\Entity" uuid="a4c0aa4e-df9f-4e01-a747-dac0e20eab1d">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="e8b5874a-7364-4496-bc13-ac070dae2132"/>
+        <field name="average" type="integer" size="3" uuid="10b6fff5-7980-4f9d-9e2f-05f57e7754af"/>
+        <field name="min" type="integer" size="3" uuid="e373b5c8-50e2-4874-98d7-d90b533568d6"/>
+        <field name="max" type="integer" size="3" uuid="08afe3c5-838c-437a-a8b2-0249b47d9d23"/>
+        <field name="time" type="integer" size="3" uuid="17e8e1b1-21e8-4086-a14a-b2a44e0a69f9"/>
+        <index name="UniqueReading" unique="true">
+          <index-field name="average"/>
+          <index-field name="min"/>
+          <index-field name="max"/>
+          <index-field name="time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\HeartRateCardioRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\HeartRatePeak" local-name="HeartRatePeak" namespace="\App\Entity" uuid="e475797c-6f95-48a0-955f-4506297dc0f4">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="804b004d-fc7f-4348-a471-c88b52f89874"/>
+        <field name="average" type="integer" size="3" uuid="8246fb3b-3a92-4b2c-934c-88d7d22036d8"/>
+        <field name="min" type="integer" size="3" uuid="f063ebfe-5068-4534-a048-5c5c3fbedb7f"/>
+        <field name="max" type="integer" size="3" uuid="20691a86-0a43-484d-beef-c7f7fb23a750"/>
+        <field name="time" type="integer" size="3" uuid="2c7e43c4-cdb0-4085-84c5-f439d99c986d"/>
+        <index name="UniqueReading" unique="true">
+          <index-field name="average"/>
+          <index-field name="min"/>
+          <index-field name="max"/>
+          <index-field name="time"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\HeartRatePeakRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\SportTrack" local-name="SportTrack" namespace="\App\Entity" uuid="e14a06fc-ed45-41ae-b996-dbe2a27d30c8">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="4df8df3e-ca7f-428e-bae4-007adaa92217"/>
+        <field name="start_time" type="datetime" uuid="6ef7ad10-9123-43b2-938e-54d4ef20845a"/>
+        <field name="total_time" type="float" uuid="2d7bf913-915d-4cdd-9b0c-244c5fe9941f"/>
+        <field name="total_distance" type="float" uuid="214d6eb7-240e-4143-b67e-96c8224f54e4"/>
+        <field name="calories" type="integer" uuid="72416b07-d288-4a1a-bcc6-298474b569d4"/>
+        <field name="intensity" type="string" uuid="6a890ba6-39ba-4c96-8d2f-d5db8e8e9331"/>
+        <field name="method" type="string" uuid="562fea49-98b8-4dab-b4d5-239ff33e3b0c"/>
+        <field name="patient_id" type="integer" uuid="74e718ac-c400-4b3f-a324-93945c4d9f46"/>
+        <field name="tracking_device" type="integer" uuid="31f6b037-a550-426e-86a5-86e6f95c9948"/>
+        <index name="ActivityTrack" unique="true">
+          <index-field name="total_time"/>
+          <index-field name="start_time"/>
+          <index-field name="total_distance"/>
+          <index-field name="patient_id"/>
+        </index>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\SportTrackRepository</attribute>
+        </orm-attributes>
+      </entity>
+      <entity name="\App\Entity\SportTrackPoint" local-name="SportTrackPoint" namespace="\App\Entity" uuid="00635351-1235-46f9-9558-c27b48de644c">
+        <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="dafba150-51ed-477d-af45-439c46425e8d"/>
+        <field name="sport_track_id" type="integer" uuid="1bd40610-c415-4308-9a16-e0d7e02d77e1"/>
+        <field name="time" type="datetime" uuid="c3b27c82-917c-48e4-9714-5e0292399ea0"/>
+        <field name="lat" type="string" size="20" uuid="0bb55429-c646-4978-910a-148a7ccbdd4f"/>
+        <field name="lon" type="string" size="20" uuid="5eedc3e7-afa2-4adf-bd1d-b1c17f12a0a4"/>
+        <field name="altitude" type="string" size="18" uuid="45b71f1f-3b23-4ac0-af52-1b45077ae0dc"/>
+        <field name="distrance" type="float" uuid="97418d6a-1963-4c7a-b040-6d03f917f852"/>
+        <field name="heart_rate" type="integer" size="3" uuid="0fd34bfc-5042-47dd-992f-b9d47fcd607d"/>
+        <orm-attributes>
+          <attribute name="repository-class">App\Repository\SportTrackPointRepository</attribute>
+        </orm-attributes>
+      </entity>
+    </region>
+    <association from="\App\Entity\SportActivity" to="\App\Entity\Patient" owner-alias="sportActivity" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="2a2068cf-58ee-4043-951f-0d4b78ab0ace">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\SportActivity" to="\App\Entity\SportActivitySource" inverse-alias="activitySource" many-owner="true" many-inverse="false" uuid="9f1e649d-57f7-4fbd-8832-03c26770410a">
+      <association-field from="source" to="id"/>
+    </association>
+    <association from="\App\Entity\SportActivity" to="\App\Entity\HeartRate" inverse-alias="heartRate" many-owner="true" many-inverse="false" uuid="81ddd366-29c3-4579-90e7-93d5f62ae782">
+      <association-field from="heart_rate_id" to="id"/>
+    </association>
+    <association from="\App\Entity\SportActivity" to="\App\Entity\ActivityLevel" inverse-alias="activityLevel" many-owner="true" many-inverse="false" uuid="1423305d-6ed7-43b6-85d7-6cb54d6cc848">
+      <association-field from="activity_level_id" to="id"/>
+    </association>
+    <association from="\App\Entity\SportActivity" to="\App\Entity\PartOfDay" inverse-alias="partOfDay" many-owner="true" many-inverse="false" uuid="4accd5ae-efa7-4c31-8df2-6c9423677e4f">
+      <association-field from="part_of_day" to="id"/>
+    </association>
+    <association from="\App\Entity\SportActivity" to="\App\Entity\SportTrack" owner-alias="sportActivity" inverse-alias="sportTrack" many-owner="false" many-inverse="false" uuid="7ee8111d-e535-40e4-8f38-3e77fcc5af75">
+      <association-field from="sport_track" to="id"/>
+    </association>
+    <association from="\App\Entity\HeartRate" to="\App\Entity\HeartRateOutOfRange" inverse-alias="heartRateOutOfRange" many-owner="true" many-inverse="false" uuid="a065f14f-be32-498b-bbc0-54f5f2d342c9">
+      <association-field from="out_of_range_id" to="id"/>
+    </association>
+    <association from="\App\Entity\HeartRate" to="\App\Entity\HeartRateFatBurn" inverse-alias="heartRateFatBurn" many-owner="true" many-inverse="false" uuid="60dd517b-224e-45cc-b44f-73d744042758">
+      <association-field from="fat_burn_id" to="id"/>
+    </association>
+    <association from="\App\Entity\HeartRate" to="\App\Entity\HeartRateCardio" inverse-alias="heartRateCardio" many-owner="true" many-inverse="false" uuid="830bf475-c17e-41b4-9514-ca160afa8c60">
+      <association-field from="cardio_id" to="id"/>
+    </association>
+    <association from="\App\Entity\HeartRate" to="\App\Entity\HeartRatePeak" inverse-alias="heartRatePeak" many-owner="true" many-inverse="false" uuid="58c7653c-ea70-49e5-ae84-a202853bbcb5">
+      <association-field from="peak_id" to="id"/>
+    </association>
+    <association from="\App\Entity\SportTrack" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="63bf07bc-48ec-4293-a355-f5a7faaf1fea">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\SportTrack" to="\App\Entity\TrackingDevice" inverse-alias="trackingDevice" many-owner="true" many-inverse="false" uuid="55585f06-00de-41ef-86e4-550e89e87266">
+      <association-field from="tracking_device" to="id"/>
+    </association>
+    <association from="\App\Entity\SportTrackPoint" to="\App\Entity\SportTrack" inverse-alias="sportTrack" many-owner="true" many-inverse="false" uuid="a77024eb-3b3a-4ade-8f2a-9702012553c0">
+      <association-field from="sport_track_id" to="id"/>
+    </association>
     <orm-attributes>
       <attribute name="filename-format">entity-name-only</attribute>
       <attribute name="db-naming-strategy">underscore-lower</attribute>
@@ -337,43 +569,72 @@
   </module>
   <visual-data>
     <association uuid="12d5e0e2-f913-4c18-97f9-25972b6af88c" caption1-position-x="-40" caption1-position-y="0" center-position-x="-81" center-position-y="5" color="#969696"/>
+    <association uuid="1423305d-6ed7-43b6-85d7-6cb54d6cc848" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="1666a97a-abd0-43f5-9113-173a57fe2236" center-position-x="0" center-position-y="2" color="#969696"/>
-    <association uuid="23b327d0-2e27-4333-84f7-c03b7b2dc943" center-position-x="0" center-position-y="10" color="#969696"/>
+    <association uuid="23b327d0-2e27-4333-84f7-c03b7b2dc943" center-position-x="0" center-position-y="14" color="#969696"/>
+    <association uuid="2a2068cf-58ee-4043-951f-0d4b78ab0ace" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="2bb9b46c-7b43-48f5-adda-a4dfccc31ed0" center-position-x="-1" center-position-y="7" color="#969696"/>
-    <association uuid="3222df04-0639-4734-8897-aed05ebd4f56" center-position-x="0" center-position-y="7" color="#969696"/>
+    <association uuid="3222df04-0639-4734-8897-aed05ebd4f56" center-position-x="0" center-position-y="-5" color="#969696"/>
+    <association uuid="4accd5ae-efa7-4c31-8df2-6c9423677e4f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="55585f06-00de-41ef-86e4-550e89e87266" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="58c7653c-ea70-49e5-ae84-a202853bbcb5" caption1-position-x="0" caption1-position-y="0" center-position-x="-4" center-position-y="0" color="#969696"/>
     <association uuid="5d2c14f5-6a61-42a7-89f1-7fe1683499a2" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="11" color="#61D351"/>
+    <association uuid="60dd517b-224e-45cc-b44f-73d744042758" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="63bf07bc-48ec-4293-a355-f5a7faaf1fea" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="75ca6ce1-c09e-42b3-a874-838b3bcda73b" center-position-x="0" center-position-y="10" color="#969696"/>
-    <association uuid="7a3b1a2c-7d7e-4176-9696-d6544b35e030" caption1-position-x="-40" caption1-position-y="0" center-position-x="-180" center-position-y="6" color="#969696"/>
-    <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="1" center-position-y="0" color="#969696"/>
+    <association uuid="7a3b1a2c-7d7e-4176-9696-d6544b35e030" caption1-position-x="-40" caption1-position-y="0" center-position-x="-180" center-position-y="0" color="#969696"/>
+    <association uuid="7ee8111d-e535-40e4-8f38-3e77fcc5af75" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="81ddd366-29c3-4579-90e7-93d5f62ae782" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="830bf475-c17e-41b4-9514-ca160afa8c60" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="1" center-position-y="3" color="#969696"/>
     <association uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f" color="#969696"/>
+    <association uuid="8e1cfc3c-9163-404a-8686-f579f33a3985" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="8f0a67c0-d372-4cf7-a6f9-61b4db089ec3" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="9312f6bd-0266-4d02-8c2d-33362601ca92" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="9c775c90-5568-469a-9ea4-156e79c46010" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="9f1e649d-57f7-4fbd-8832-03c26770410a" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="a065f14f-be32-498b-bbc0-54f5f2d342c9" caption1-position-x="0" caption1-position-y="0" center-position-x="8" center-position-y="0" color="#969696"/>
+    <association uuid="a77024eb-3b3a-4ade-8f2a-9702012553c0" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="aeafa729-4238-4ace-a17f-88b926625d98" caption1-position-x="-40" caption1-position-y="0" center-position-x="16" center-position-y="0" color="#969696"/>
+    <association uuid="aff56f69-d1be-42a6-93d3-6adbfb86ad02" color="#969696"/>
     <association uuid="b290f492-f1ba-4c6e-9a3c-e93ef67e7e9c" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="cf93e85b-4d70-4f5f-b82b-ac5df1d83a3e" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
-    <association uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21" caption1-position-x="-40" caption1-position-y="0" center-position-x="-7" center-position-y="16" color="#969696"/>
+    <association uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21" caption1-position-x="-40" caption1-position-y="0" center-position-x="-7" center-position-y="15" color="#969696"/>
     <association uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="15" color="#969696"/>
     <association uuid="f01775f2-cf49-44fd-95c7-2f7ccede6d64" color="#0A783D"/>
     <association uuid="f03afd69-268f-4761-b6da-09a736cd7ffc" caption1-position-x="-40" caption1-position-y="0" center-position-x="-15" center-position-y="0" color="#969696"/>
+    <entity uuid="00635351-1235-46f9-9558-c27b48de644c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="483" position-y="-270" size-x="0" size-x2="121" size-y="0" size-y2="129"/>
     <entity uuid="12e92ba4-e715-44f1-b881-0c906232351f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="20" position-y="2" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="1697e6c1-fa41-4da8-a51e-3f449817bfd6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="503" position-y="391" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="573" position-y="264" size-x="0" size-x2="113" size-y="0" size-y2="101"/>
+    <entity uuid="1697e6c1-fa41-4da8-a51e-3f449817bfd6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="496" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="21c34069-a808-48ee-b968-1358d4cbe3b1" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="193" position-y="-176" size-x="0" size-x2="115" size-y="0" size-y2="87"/>
+    <entity uuid="32555b44-0569-47eb-81ea-c6ad6584d3c6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="17" position-y="-286" size-x="0" size-x2="131" size-y="0" size-y2="171"/>
+    <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="885" position-y="108" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
+    <entity uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="192" position-y="45" size-x="0" size-x2="140" size-y="0" size-y2="101"/>
+    <entity uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="265" position-y="459" size-x="0" size-x2="102" size-y="0" size-y2="59"/>
     <entity uuid="5c06b2d1-c0fc-4651-8857-46b2ffc922b7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="21" position-y="96" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="649ad552-9d9e-480f-9108-fdca11ceb536" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="394" position-y="391" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="733" position-y="169" size-x="0" size-x2="96" size-y="0" size-y2="45"/>
-    <entity uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="177" position-y="390" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="285" position-y="390" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="225" position-y="14" size-x="0" size-x2="114" size-y="0" size-y2="59"/>
-    <entity uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="178" position-y="493" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="9078df85-8c86-46d4-8bb4-80ad9d892291" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="24" position-y="291" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="286" position-y="493" size-x="0" size-x2="102" size-y="0" size-y2="45"/>
-    <entity uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="378" position-y="66" size-x="0" size-x2="110" size-y="0" size-y2="73"/>
-    <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="193" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="782" position-y="242" size-x="0" size-x2="91" size-y="0" size-y2="45"/>
-    <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="498" position-y="143" size-x="0" size-x2="113" size-y="0" size-y2="101"/>
-    <entity uuid="fdbbb4fa-0d96-44c5-9773-32d99b7c8ef5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="208" position-y="177" size-x="0" size-x2="117" size-y="0" size-y2="129"/>
-    <module uuid="af3795c2-38c1-4c19-80ab-00a6e36fa062" bg-color="#FEFCE8" position-x="50" position-y="50" size-x="0" size-x2="1017" size-y="0" size-y2="740"/>
-    <project uuid="3dd3da29-aa91-4b53-99cc-856eb007ab14" size-x="0" size-x2="1117" size-y="0" size-y2="812"/>
+    <entity uuid="649ad552-9d9e-480f-9108-fdca11ceb536" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="618" position-y="415" size-x="0" size-x2="102" size-y="0" size-y2="101"/>
+    <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="666" position-y="325" size-x="0" size-x2="101" size-y="0" size-y2="45"/>
+    <entity uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="398" position-y="413" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="386" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="442" position-y="17" size-x="0" size-x2="114" size-y="0" size-y2="73"/>
+    <entity uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="397" position-y="511" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
+    <entity uuid="9078df85-8c86-46d4-8bb4-80ad9d892291" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="24" position-y="277" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="791" position-y="428" size-x="0" size-x2="139" size-y="0" size-y2="269"/>
+    <entity uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="556" position-y="113" size-x="0" size-x2="110" size-y="0" size-y2="73"/>
+    <entity uuid="99378b42-66bc-484b-9eec-5d454204a238" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="127" position-y="206" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="a4c0aa4e-df9f-4e01-a747-dac0e20eab1d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="300" position-y="207" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="183" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
+    <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="806" position-y="275" size-x="0" size-x2="91" size-y="0" size-y2="45"/>
+    <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="291" position-y="27" size-x="0" size-x2="96" size-y="0" size-y2="45"/>
+    <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="739" position-y="89" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
+    <entity uuid="db12bf76-9152-40d5-9911-c0c8263bd128" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="190" position-y="-316" size-x="0" size-x2="97" size-y="0" size-y2="45"/>
+    <entity uuid="e14a06fc-ed45-41ae-b996-dbe2a27d30c8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="322" position-y="-295" size-x="0" size-x2="112" size-y="0" size-y2="115"/>
+    <entity uuid="e475797c-6f95-48a0-955f-4506297dc0f4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="390" position-y="88" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="fdbbb4fa-0d96-44c5-9773-32d99b7c8ef5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="400" position-y="206" size-x="0" size-x2="117" size-y="0" size-y2="129"/>
+    <entity uuid="ffaceb68-b171-4778-810e-7eac4eee10f1" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="22" position-y="69" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <module uuid="af3795c2-38c1-4c19-80ab-00a6e36fa062" bg-color="#FEFCE8" position-x="50" position-y="50" size-x="74" size-x2="1878" size-y="0" size-y2="1549"/>
+    <project uuid="3dd3da29-aa91-4b53-99cc-856eb007ab14" size-x="74" size-x2="1978" size-y="0" size-y2="1649"/>
+    <region uuid="2c1dc659-6cd5-455c-aabd-d5328a71d963" bg-color="#BBE87D" position-x="146" position-y="970" size-x="0" size-x2="633" size-y="334" size-y2="343"/>
     <region uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d" bg-color="#E7F3E7" position-x="11" position-y="52" size-x="0" size-x2="145" size-y="21" size-y2="394"/>
   </visual-data>
 </skipper>
