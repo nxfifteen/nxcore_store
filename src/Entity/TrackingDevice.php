@@ -51,6 +51,12 @@ class TrackingDevice
      */
     private $patient;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
+     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     */
+    private $service;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -124,6 +130,18 @@ class TrackingDevice
     public function setType(?string $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getService(): ?ThirdPartyService
+    {
+        return $this->service;
+    }
+
+    public function setService(?ThirdPartyService $service): self
+    {
+        $this->service = $service;
 
         return $this;
     }
