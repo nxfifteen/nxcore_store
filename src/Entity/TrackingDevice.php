@@ -9,7 +9,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ORM\Entity(repositoryClass="App\Repository\TrackingDeviceRepository")
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "name": "exact", "patient": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "name": "exact", "patient": "exact", "type": "exact", "remote_id": "exact"})
  */
 class TrackingDevice
 {
@@ -24,6 +24,26 @@ class TrackingDevice
      * @ORM\Column(type="string", length=150, nullable=true)
      */
     private $name;
+
+    /**
+     * @ORM\Column(type="integer", length=3, nullable=true)
+     */
+    private $battery;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $lastSyncTime;
+
+    /**
+     * @ORM\Column(type="string", unique=true, length=20, nullable=true)
+     */
+    private $remote_id;
+
+    /**
+     * @ORM\Column(type="string", length=150, nullable=true)
+     */
+    private $type;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="trackingDevice")
@@ -56,6 +76,54 @@ class TrackingDevice
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getBattery(): ?int
+    {
+        return $this->battery;
+    }
+
+    public function setBattery(?int $battery): self
+    {
+        $this->battery = $battery;
+
+        return $this;
+    }
+
+    public function getLastSyncTime(): ?\DateTimeInterface
+    {
+        return $this->lastSyncTime;
+    }
+
+    public function setLastSyncTime(?\DateTimeInterface $lastSyncTime): self
+    {
+        $this->lastSyncTime = $lastSyncTime;
+
+        return $this;
+    }
+
+    public function getRemoteId(): ?string
+    {
+        return $this->remote_id;
+    }
+
+    public function setRemoteId(?string $remote_id): self
+    {
+        $this->remote_id = $remote_id;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }
