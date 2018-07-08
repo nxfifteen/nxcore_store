@@ -152,6 +152,7 @@
       <field name="patient_id" type="integer" uuid="de679ee8-987b-4b52-a019-379e7e9f77a3"/>
       <field name="service" type="integer" uuid="8e85454c-edfe-4294-a60d-dcf7650ffb9a"/>
       <field name="username" type="string" size="30" uuid="f0994bb5-d1f7-478b-8806-2abee2b9aacf"/>
+      <field name="member_since" type="datetime" uuid="c15432c3-27fa-4e62-9658-e7f3a5d7bada"/>
       <index name="RemoteUserName" unique="true">
         <index-field name="patient_id"/>
         <index-field name="username"/>
@@ -284,7 +285,6 @@
     <entity name="\App\Entity\ThirdPartyService" local-name="ThirdPartyService" namespace="\App\Entity" uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="38665bc8-1cf4-41a0-82dc-bf6870f74910"/>
       <field name="name" type="string" size="50" required="true" uuid="e9ff872a-2700-4bb3-a3d2-2e9498b6b504"/>
-      <field name="member_since" type="datetime" uuid="891a246d-e08b-41a5-8096-ae5d9679d67b"/>
       <orm-attributes>
         <attribute name="repository-class">App\Repository\ThirdPartyServiceRepository</attribute>
       </orm-attributes>
@@ -349,6 +349,108 @@
     </association>
     <association from="\App\Entity\Friends" to="\App\Entity\ThirdPartyService" inverse-alias="thirdPartyService" many-owner="true" many-inverse="false" uuid="fc9164c6-2dc0-4f48-8bda-7ec6041587dc">
       <association-field from="service" to="id"/>
+    </association>
+    <entity name="\App\Entity\Reward" local-name="Reward" namespace="\App\Entity" uuid="4196bbef-73e6-412b-b125-c5e4cc6a3d3c">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="76f5a3c3-199e-43a2-80c1-c469134ff25a"/>
+      <field name="service" type="integer" uuid="29a88422-19ae-4038-8e75-d77cfd4425d6"/>
+      <field name="remote_id" type="string" size="50" uuid="74d9379d-0a3d-4611-b3b6-84761b4862da"/>
+      <field name="name" type="string" size="255" uuid="31f4639e-487f-4bf2-98b7-6766300d37c6"/>
+      <field name="value" type="integer" size="6" uuid="2e78b55b-a95f-49aa-9c46-6b55e306caf2"/>
+      <field name="type" type="string" size="50" uuid="93409d7d-cf7a-472d-9408-51987e946421"/>
+      <field name="category" type="string" size="255" uuid="108b6000-c701-4224-b9d0-7ced1988f79e"/>
+      <field name="message" type="text" uuid="9aa4e2cd-3b3f-472d-8abb-b25f0089e602"/>
+      <field name="description" type="string" size="255" uuid="e22f0676-be31-490f-bfd8-26fea8426b85"/>
+      <field name="descriptionFull" type="text" uuid="09ddc29c-01de-4370-977e-4a9b84ac72cb"/>
+      <field name="image" type="string" size="255" uuid="6fb2caa7-efc7-492e-8445-4cce8d681db6"/>
+      <field name="gradientEndColor" type="string" size="6" uuid="e668e565-5cf6-469e-927b-82e680e47d58"/>
+      <field name="gradientStartColor" type="string" size="6" uuid="d2e49f34-04d5-4a61-85fb-8feba826d91d"/>
+      <index name="Reward" unique="true">
+        <index-field name="service"/>
+        <index-field name="remote_id"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\RewardRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\Reward" to="\App\Entity\ThirdPartyService" inverse-alias="thirdPartyService" many-owner="true" many-inverse="false" uuid="8bc925c5-1e3c-45a2-b6c6-c162b9159c2f">
+      <association-field from="service" to="id"/>
+    </association>
+    <entity name="\App\Entity\RewardsEarned" local-name="RewardsEarned" namespace="\App\Entity" uuid="9e0e648d-f386-48b9-a45e-d9022ff1d81b">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="b7597f37-8552-4832-a2eb-6166db1f7c86"/>
+      <field name="date" type="date" uuid="51acce1d-a685-4e0b-a810-e475d4b45fc4"/>
+      <field name="reward" type="integer" uuid="0b36059d-6afe-404e-a884-e4fc5d2441c4"/>
+      <field name="patient_id" type="integer" uuid="8bdbf6f0-7f03-4ce5-a085-fafb00553147"/>
+      <field name="part_of_day" type="integer" uuid="f11dc9c9-fac8-4875-8003-d1f241f017a2"/>
+      <index name="Rewarded" unique="true">
+        <index-field name="date"/>
+        <index-field name="reward"/>
+        <index-field name="patient_id"/>
+        <index-field name="part_of_day"/>
+      </index>
+    </entity>
+    <association from="\App\Entity\RewardsEarned" to="\App\Entity\Reward" inverse-alias="reward" many-owner="true" many-inverse="false" uuid="eb4555ef-321d-4880-b45e-2f6c91b7c31f">
+      <association-field from="reward" to="id"/>
+    </association>
+    <association from="\App\Entity\RewardsEarned" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="3efcec49-c9fe-41d6-ab2c-91ea18223d29">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\RewardsEarned" to="\App\Entity\PartOfDay" inverse-alias="partOfDay" many-owner="true" many-inverse="false" uuid="639bc0f2-e307-485c-a688-fc77aaf7e1a9">
+      <association-field from="part_of_day" to="id"/>
+    </association>
+    <entity name="\App\Entity\SleepEpisode" local-name="SleepEpisode" namespace="\App\Entity" description="This schema represents one sleep episode, which can be the main sleep event (i.e., a night sleep for most people) or a nap." uuid="775137c8-4f3a-43b7-9f80-02cfd8b24207">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="71e9511c-d81c-48d8-a730-5dfe46f44db3"/>
+      <field name="patient_id" type="integer" uuid="2791b6b2-9830-49cf-b747-1180c06e6ef7"/>
+      <field name="service" type="integer" uuid="c7ebd50e-4e2e-4f6c-bfbe-d55aff88c315"/>
+      <field name="remoteId" type="bigint" uuid="d0a82a22-88bd-4881-a034-aa4bd67979de"/>
+      <field name="unit" type="integer" uuid="991f1a2e-eea6-4007-a28e-591dfb02b939"/>
+      <field name="start_time" type="datetime" uuid="7d6ff184-12d0-45e2-8ed2-c89dc2495260"/>
+      <field name="end_time" type="datetime" uuid="c73d714b-985e-4c5d-a656-71cf2f97635c"/>
+      <field name="latency_to_sleep_onset" description="Amount of time between when person starts to want to go to sleep and sleep onset." type="integer" size="5" uuid="9134e502-980a-4455-a55e-3ea6bb7c7bd9"/>
+      <field name="latency_to_arising" description="Amount of time between final awakening and when person stops wanting to go to sleep." type="integer" size="5" uuid="07b5d0e8-9d5d-4b24-b997-b1fd4ff8356f"/>
+      <field name="total_sleep_time" description="The total amount of time spent asleep within the effective time frame." type="integer" size="5" uuid="8fc7da84-861d-4d88-a7be-3d03e64d34ba"/>
+      <field name="number_of_awakenings" type="integer" size="5" uuid="77b67b92-46bf-4de7-8a92-1709080f387c"/>
+      <field name="is_main_sleep" type="boolean" uuid="017b9fe6-06ac-44cb-8ba0-75a5c5d8d045"/>
+      <field name="efficiency_percentage" description="The amount of time spent asleep as a percentage of the sleep episode bounded by the effective time frame." type="integer" size="3" uuid="1eda1360-3083-4a6b-b4be-aca03896c9d1"/>
+      <index name="DateRecord" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="service"/>
+        <index-field name="start_time"/>
+      </index>
+      <index name="RemoteId" unique="true">
+        <index-field name="patient_id"/>
+        <index-field name="remoteId"/>
+        <index-field name="service"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\SleepEpisodeRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\SleepEpisode" to="\App\Entity\Patient" owner-alias="sleepEpisode" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="da2616ee-59fa-420c-bdd3-de90f0f8c4e8">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\SleepEpisode" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="5b6645ea-d1cf-40e5-9c18-96951bb4d332">
+      <association-field from="unit" to="id"/>
+    </association>
+    <association from="\App\Entity\SleepEpisode" to="\App\Entity\ThirdPartyService" inverse-alias="thirdPartyService" many-owner="true" many-inverse="false" uuid="04dca909-a192-4261-b8bc-d6045f7cdcba">
+      <association-field from="service" to="id"/>
+    </association>
+    <entity name="\App\Entity\SleepLevels" local-name="SleepLevels" namespace="\App\Entity" uuid="0b1c4687-80a1-4302-82ce-a7a123f18e70">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="8d1e659e-6024-4709-ab89-0a34d12ebb00"/>
+      <field name="sleep_episode" type="integer" uuid="9b96d0bb-4963-4a80-bdb7-52277a21db7b"/>
+      <field name="date_time" type="datetime" uuid="b056eff7-cc60-4fa7-8104-416a457f6543"/>
+      <field name="level" type="string" size="6" uuid="046b38b8-6614-4384-bf79-2db78fce7cbd"/>
+      <field name="value" type="integer" size="5" uuid="dd7b3e18-1490-4c5c-8dba-7d16be538d03"/>
+      <field name="unit" type="integer" uuid="1a100020-1a15-4280-b1a9-3f1e4d7ec369"/>
+      <index name="SleepLevel" unique="true">
+        <index-field name="sleep_episode"/>
+        <index-field name="date_time"/>
+      </index>
+    </entity>
+    <association from="\App\Entity\SleepLevels" to="\App\Entity\SleepEpisode" owner-alias="sleepLevels" inverse-alias="sleepEpisode" many-owner="true" many-inverse="false" uuid="11be0f74-8d71-4ed8-b6fb-4cf2b2ce4a7d">
+      <association-field from="sleep_episode" to="id"/>
+    </association>
+    <association from="\App\Entity\SleepLevels" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="a173c375-0102-4f3f-a3e6-171aa7e86c5a">
+      <association-field from="unit" to="id"/>
     </association>
     <region namespace="\App\Entity" caption="Minutes Active" uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d">
       <entity name="\App\Entity\MinDailyVery" local-name="MinDailyVery" namespace="\App\Entity" uuid="9078df85-8c86-46d4-8bb4-80ad9d892291">
@@ -460,7 +562,7 @@
           <attribute name="repository-class">App\Repository\ActivityLevelRepository</attribute>
         </orm-attributes>
       </entity>
-      <entity name="\App\Entity\HeartRate" local-name="HeartRate" namespace="\App\Entity" uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888">
+      <entity name="\App\Entity\HeartRate" local-name="HeartRate" namespace="\App\Entity" description="This schema represents a person's heart rate." uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888">
         <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="ef940bb2-2c64-4b4a-b149-81cea9e72a33"/>
         <field name="average" type="integer" size="3" uuid="fc2847b4-e440-4da9-95d8-476d9d4f9d03"/>
         <field name="out_of_range_id" type="integer" size="3" uuid="f38ee396-0ca9-4ce7-9bed-d9f040a9be0d"/>
@@ -621,7 +723,9 @@
     </orm-attributes>
   </module>
   <visual-data>
+    <association uuid="04dca909-a192-4261-b8bc-d6045f7cdcba" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="070b5002-15a7-4bdd-9cf2-f94b8ad2c85e" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="11be0f74-8d71-4ed8-b6fb-4cf2b2ce4a7d" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="12d5e0e2-f913-4c18-97f9-25972b6af88c" caption1-position-x="-40" caption1-position-y="0" center-position-x="-81" center-position-y="5" color="#969696"/>
     <association uuid="1423305d-6ed7-43b6-85d7-6cb54d6cc848" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="1666a97a-abd0-43f5-9113-173a57fe2236" center-position-x="0" center-position-y="2" color="#969696"/>
@@ -630,11 +734,14 @@
     <association uuid="2a2068cf-58ee-4043-951f-0d4b78ab0ace" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="2bb9b46c-7b43-48f5-adda-a4dfccc31ed0" center-position-x="-1" center-position-y="7" color="#969696"/>
     <association uuid="3222df04-0639-4734-8897-aed05ebd4f56" center-position-x="0" center-position-y="-5" color="#969696"/>
+    <association uuid="3efcec49-c9fe-41d6-ab2c-91ea18223d29" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="4accd5ae-efa7-4c31-8df2-6c9423677e4f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="55585f06-00de-41ef-86e4-550e89e87266" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="58c7653c-ea70-49e5-ae84-a202853bbcb5" caption1-position-x="0" caption1-position-y="0" center-position-x="-4" center-position-y="0" color="#969696"/>
+    <association uuid="5b6645ea-d1cf-40e5-9c18-96951bb4d332" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="5d2c14f5-6a61-42a7-89f1-7fe1683499a2" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="11" color="#61D351"/>
     <association uuid="60dd517b-224e-45cc-b44f-73d744042758" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="639bc0f2-e307-485c-a688-fc77aaf7e1a9" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="63bf07bc-48ec-4293-a355-f5a7faaf1fea" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="75ca6ce1-c09e-42b3-a874-838b3bcda73b" center-position-x="0" center-position-y="10" color="#969696"/>
     <association uuid="7a3b1a2c-7d7e-4176-9696-d6544b35e030" caption1-position-x="-40" caption1-position-y="0" center-position-x="-180" center-position-y="0" color="#969696"/>
@@ -642,6 +749,7 @@
     <association uuid="81ddd366-29c3-4579-90e7-93d5f62ae782" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="830bf475-c17e-41b4-9514-ca160afa8c60" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="-1" center-position-y="3" color="#969696"/>
+    <association uuid="8bc925c5-1e3c-45a2-b6c6-c162b9159c2f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f" color="#969696"/>
     <association uuid="8e1cfc3c-9163-404a-8686-f579f33a3985" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="8f0a67c0-d372-4cf7-a6f9-61b4db089ec3" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -649,18 +757,22 @@
     <association uuid="9c775c90-5568-469a-9ea4-156e79c46010" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="9f1e649d-57f7-4fbd-8832-03c26770410a" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="a065f14f-be32-498b-bbc0-54f5f2d342c9" caption1-position-x="0" caption1-position-y="0" center-position-x="8" center-position-y="0" color="#969696"/>
+    <association uuid="a173c375-0102-4f3f-a3e6-171aa7e86c5a" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="a77024eb-3b3a-4ade-8f2a-9702012553c0" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="aeafa729-4238-4ace-a17f-88b926625d98" caption1-position-x="-40" caption1-position-y="0" center-position-x="16" center-position-y="0" color="#969696"/>
     <association uuid="aff56f69-d1be-42a6-93d3-6adbfb86ad02" color="#969696"/>
     <association uuid="b290f492-f1ba-4c6e-9a3c-e93ef67e7e9c" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="cf93e85b-4d70-4f5f-b82b-ac5df1d83a3e" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21" caption1-position-x="-40" caption1-position-y="0" center-position-x="-7" center-position-y="15" color="#969696"/>
+    <association uuid="da2616ee-59fa-420c-bdd3-de90f0f8c4e8" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="5" color="#969696"/>
+    <association uuid="eb4555ef-321d-4880-b45e-2f6c91b7c31f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="f01775f2-cf49-44fd-95c7-2f7ccede6d64" color="#0A783D"/>
     <association uuid="f03afd69-268f-4761-b6da-09a736cd7ffc" caption1-position-x="-40" caption1-position-y="0" center-position-x="-15" center-position-y="0" color="#969696"/>
     <association uuid="fc6a69b2-1090-4fdc-9032-607a83052df7" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="15" color="#969696"/>
     <association uuid="fc9164c6-2dc0-4f48-8bda-7ec6041587dc" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <entity uuid="00635351-1235-46f9-9558-c27b48de644c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="483" position-y="-270" size-x="0" size-x2="121" size-y="0" size-y2="129"/>
+    <entity uuid="0b1c4687-80a1-4302-82ce-a7a123f18e70" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1221" position-y="569" size-x="0" size-x2="121" size-y="0" size-y2="45"/>
     <entity uuid="12e92ba4-e715-44f1-b881-0c906232351f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="20" position-y="2" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="1697e6c1-fa41-4da8-a51e-3f449817bfd6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="496" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="1f6d7586-1bec-4ad1-a358-f740156146b5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="272" position-y="114" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
@@ -668,18 +780,21 @@
     <entity uuid="32555b44-0569-47eb-81ea-c6ad6584d3c6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="17" position-y="-286" size-x="0" size-x2="131" size-y="0" size-y2="171"/>
     <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="885" position-y="108" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="192" position-y="45" size-x="0" size-x2="140" size-y="0" size-y2="101"/>
+    <entity uuid="4196bbef-73e6-412b-b125-c5e4cc6a3d3c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1014" position-y="5" size-x="0" size-x2="143" size-y="0" size-y2="199"/>
     <entity uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="260" position-y="444" size-x="0" size-x2="127" size-y="0" size-y2="115"/>
     <entity uuid="5c06b2d1-c0fc-4651-8857-46b2ffc922b7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="21" position-y="96" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="649ad552-9d9e-480f-9108-fdca11ceb536" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="618" position-y="415" size-x="0" size-x2="102" size-y="0" size-y2="101"/>
-    <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="666" position-y="325" size-x="0" size-x2="101" size-y="0" size-y2="45"/>
+    <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="666" position-y="342" size-x="0" size-x2="101" size-y="0" size-y2="45"/>
+    <entity uuid="775137c8-4f3a-43b7-9f80-02cfd8b24207" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="958" position-y="575" size-x="0" size-x2="167" size-y="0" size-y2="199"/>
     <entity uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="398" position-y="413" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="386" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="415" position-y="17" size-x="0" size-x2="114" size-y="0" size-y2="73"/>
+    <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="411" position-y="15" size-x="0" size-x2="131" size-y="0" size-y2="87"/>
     <entity uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="397" position-y="511" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="9078df85-8c86-46d4-8bb4-80ad9d892291" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="24" position-y="277" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="791" position-y="428" size-x="0" size-x2="139" size-y="0" size-y2="269"/>
     <entity uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="556" position-y="113" size-x="0" size-x2="110" size-y="0" size-y2="73"/>
     <entity uuid="99378b42-66bc-484b-9eec-5d454204a238" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="127" position-y="206" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="9e0e648d-f386-48b9-a45e-d9022ff1d81b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1056" position-y="330" size-x="0" size-x2="20" size-y="0" size-y2="20"/>
     <entity uuid="a4c0aa4e-df9f-4e01-a747-dac0e20eab1d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="300" position-y="207" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
     <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="183" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="806" position-y="275" size-x="0" size-x2="91" size-y="0" size-y2="45"/>

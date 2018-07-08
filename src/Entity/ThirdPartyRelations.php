@@ -27,6 +27,11 @@ class ThirdPartyRelations
     private $username;
 
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $member_since;
+
+    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="thirdPartyRelations")
      * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
      */
@@ -75,6 +80,18 @@ class ThirdPartyRelations
     public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
     {
         $this->thirdPartyService = $thirdPartyService;
+
+        return $this;
+    }
+
+    public function getMemberSince(): ?\DateTimeInterface
+    {
+        return $this->member_since;
+    }
+
+    public function setMemberSince(?\DateTimeInterface $member_since): self
+    {
+        $this->member_since = $member_since;
 
         return $this;
     }
