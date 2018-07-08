@@ -452,6 +452,25 @@
     <association from="\App\Entity\SleepLevels" to="\App\Entity\UnitOfMeasurement" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="a173c375-0102-4f3f-a3e6-171aa7e86c5a">
       <association-field from="unit" to="id"/>
     </association>
+    <entity name="\App\Entity\PersonalPlan" local-name="PersonalPlan" namespace="\App\Entity" uuid="a943c709-2161-46b1-a6e5-aaf405540d51">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="c4fcad96-c7ef-4366-a7b9-263f2135fa89"/>
+      <field name="patient_id" type="integer" uuid="043c9c90-3709-4188-aac9-7de75cc37693"/>
+      <field name="service" type="integer" uuid="e080be76-4f95-436f-a766-51c18f3515fb"/>
+      <field name="goals" type="string" size="50" uuid="b836b0d2-06a7-44dd-ae58-ad9649a2056e"/>
+      <field name="intensity" type="string" size="50" uuid="d41a5772-9139-4374-b3e1-52f498cd2e97"/>
+      <field name="estimatedDate" type="date" uuid="46f18e7d-fd3b-40ac-8c05-fa87ee6f6080"/>
+      <index name="PersonalGoal" unique="true">
+        <index-field name="goals"/>
+        <index-field name="patient_id"/>
+        <index-field name="service"/>
+      </index>
+    </entity>
+    <association from="\App\Entity\PersonalPlan" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="908f2dea-e2a8-4da3-8d61-d794f713dbf9">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\PersonalPlan" to="\App\Entity\ThirdPartyService" caption="ThirdPartyService PersonalPlan" inverse-alias="thirdPartyService" many-owner="true" many-inverse="false" uuid="332b0802-2866-4415-a400-406ba0f1d0c3">
+      <association-field from="service" to="id"/>
+    </association>
     <region namespace="\App\Entity" caption="Minutes Active" uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d">
       <entity name="\App\Entity\MinDailyVery" local-name="MinDailyVery" namespace="\App\Entity" uuid="9078df85-8c86-46d4-8bb4-80ad9d892291">
         <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="3cfd8b2c-016e-4d83-b9ce-6461baa3383e"/>
@@ -734,6 +753,7 @@
     <association uuid="2a2068cf-58ee-4043-951f-0d4b78ab0ace" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="2bb9b46c-7b43-48f5-adda-a4dfccc31ed0" center-position-x="-1" center-position-y="7" color="#969696"/>
     <association uuid="3222df04-0639-4734-8897-aed05ebd4f56" center-position-x="0" center-position-y="-5" color="#969696"/>
+    <association uuid="332b0802-2866-4415-a400-406ba0f1d0c3" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="3efcec49-c9fe-41d6-ab2c-91ea18223d29" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="4accd5ae-efa7-4c31-8df2-6c9423677e4f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="55585f06-00de-41ef-86e4-550e89e87266" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -753,6 +773,7 @@
     <association uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f" color="#969696"/>
     <association uuid="8e1cfc3c-9163-404a-8686-f579f33a3985" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="8f0a67c0-d372-4cf7-a6f9-61b4db089ec3" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="908f2dea-e2a8-4da3-8d61-d794f713dbf9" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="9312f6bd-0266-4d02-8c2d-33362601ca92" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="9c775c90-5568-469a-9ea4-156e79c46010" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="9f1e649d-57f7-4fbd-8832-03c26770410a" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -778,7 +799,7 @@
     <entity uuid="1f6d7586-1bec-4ad1-a358-f740156146b5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="272" position-y="114" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="21c34069-a808-48ee-b968-1358d4cbe3b1" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="193" position-y="-176" size-x="0" size-x2="115" size-y="0" size-y2="87"/>
     <entity uuid="32555b44-0569-47eb-81ea-c6ad6584d3c6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="17" position-y="-286" size-x="0" size-x2="131" size-y="0" size-y2="171"/>
-    <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="885" position-y="108" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
+    <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="865" position-y="89" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="192" position-y="45" size-x="0" size-x2="140" size-y="0" size-y2="101"/>
     <entity uuid="4196bbef-73e6-412b-b125-c5e4cc6a3d3c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1014" position-y="5" size-x="0" size-x2="143" size-y="0" size-y2="199"/>
     <entity uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="260" position-y="444" size-x="0" size-x2="127" size-y="0" size-y2="115"/>
@@ -794,13 +815,14 @@
     <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="791" position-y="428" size-x="0" size-x2="139" size-y="0" size-y2="269"/>
     <entity uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="556" position-y="113" size-x="0" size-x2="110" size-y="0" size-y2="73"/>
     <entity uuid="99378b42-66bc-484b-9eec-5d454204a238" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="127" position-y="206" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
-    <entity uuid="9e0e648d-f386-48b9-a45e-d9022ff1d81b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1056" position-y="330" size-x="0" size-x2="20" size-y="0" size-y2="20"/>
+    <entity uuid="9e0e648d-f386-48b9-a45e-d9022ff1d81b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1096" position-y="380" size-x="0" size-x2="113" size-y="0" size-y2="87"/>
     <entity uuid="a4c0aa4e-df9f-4e01-a747-dac0e20eab1d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="300" position-y="207" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="a943c709-2161-46b1-a6e5-aaf405540d51" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1244" position-y="207" size-x="0" size-x2="113" size-y="0" size-y2="87"/>
     <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="183" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="806" position-y="275" size-x="0" size-x2="91" size-y="0" size-y2="45"/>
     <entity uuid="c9f04400-71d8-4c25-acab-ed902dbc49f7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="125" position-y="473" size-x="0" size-x2="114" size-y="0" size-y2="129"/>
     <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="141" position-y="21" size-x="0" size-x2="131" size-y="0" size-y2="59"/>
-    <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="718" position-y="65" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
+    <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="722" position-y="35" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="db12bf76-9152-40d5-9911-c0c8263bd128" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="190" position-y="-316" size-x="0" size-x2="97" size-y="0" size-y2="45"/>
     <entity uuid="e14a06fc-ed45-41ae-b996-dbe2a27d30c8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="322" position-y="-295" size-x="0" size-x2="112" size-y="0" size-y2="115"/>
     <entity uuid="e475797c-6f95-48a0-955f-4506297dc0f4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="390" position-y="88" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
