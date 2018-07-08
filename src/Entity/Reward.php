@@ -194,11 +194,13 @@ class Reward
     {
         $rewardImagePath = __DIR__ . "/../../public/cache/rewards";
         $fileSystem = new Filesystem();
-        if (!$fileSystem->exists($rewardImagePath)) {
-            $fileSystem->mkdir($rewardImagePath);
-        }
-        if ($fileSystem->exists($rewardImagePath)) {
-            $fileSystem->dumpFile($rewardImagePath . '/' . basename($image), file_get_contents($image));
+        if (!$fileSystem->exists($rewardImagePath . '/' . basename($image))) {
+            if (!$fileSystem->exists($rewardImagePath)) {
+                $fileSystem->mkdir($rewardImagePath);
+            }
+            if ($fileSystem->exists($rewardImagePath)) {
+                $fileSystem->dumpFile($rewardImagePath . '/' . basename($image), file_get_contents($image));
+            }
         }
 
         $this->image = $image;
