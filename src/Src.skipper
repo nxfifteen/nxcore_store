@@ -464,12 +464,103 @@
         <index-field name="patient_id"/>
         <index-field name="service"/>
       </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\PersonalPlanRepository</attribute>
+      </orm-attributes>
     </entity>
     <association from="\App\Entity\PersonalPlan" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="908f2dea-e2a8-4da3-8d61-d794f713dbf9">
       <association-field from="patient_id" to="id"/>
     </association>
     <association from="\App\Entity\PersonalPlan" to="\App\Entity\ThirdPartyService" caption="ThirdPartyService PersonalPlan" inverse-alias="thirdPartyService" many-owner="true" many-inverse="false" uuid="332b0802-2866-4415-a400-406ba0f1d0c3">
       <association-field from="service" to="id"/>
+    </association>
+    <entity name="\App\Entity\HeartRateResting" local-name="HeartRateResting" namespace="\App\Entity" uuid="836ebbc8-a513-43b6-8e47-40f1e36b4a24">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="f59e2b24-8ecf-45fa-b623-c2435d184bed"/>
+      <field name="patient_id" type="integer" uuid="e4bd1edc-69a7-4129-a6f5-02ed01fbcce0"/>
+      <field name="date" type="date" uuid="8975bb5a-d4ea-42dc-8ae4-d53e9501bf5a"/>
+      <field name="value" type="integer" size="3" uuid="e26570cf-a6ae-4833-ae13-4e0a053c27d1"/>
+      <index name="DailyRestRate" unique="true">
+        <index-field name="date"/>
+        <index-field name="patient_id"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\HeartRateRestingRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\HeartRateResting" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="83db7dd2-ebc6-41e8-a260-c3d76c344f17">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <entity name="\App\Entity\LifeTracker" local-name="LifeTracker" namespace="\App\Entity" uuid="0f93263d-5f74-47bc-b359-fdcf45e43132">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="86c254cc-7849-4036-84ae-7c200af889ff"/>
+      <field name="service" type="integer" uuid="a55c9418-ef24-42fc-90bd-404befda5089"/>
+      <field name="remote_id" type="string" size="150" uuid="9c7b992d-eda9-4ca1-a830-d974d42dbb4f"/>
+      <field name="patient_id" type="integer" uuid="552712b6-22e3-4631-b644-830019dbcbd1"/>
+      <field name="name" type="string" size="150" uuid="7763e718-601a-41c2-943e-71fb5151e1c7"/>
+      <field name="icon" type="string" size="150" uuid="c30165e9-56dd-4019-8e79-e58fc249cfa1"/>
+      <field name="charge" type="integer" size="1" uuid="249a0d08-66a1-4515-901d-d1c4daa4d309"/>
+      <field name="colour" type="string" size="6" uuid="e81dcb56-29ec-4eaf-b190-5405851a0300"/>
+      <field name="config" type="integer" uuid="b6d4f084-629c-4a6c-acb2-cd5e90e4b16b"/>
+      <index name="LifeIndex" unique="true">
+        <index-field name="service"/>
+        <index-field name="patient_id"/>
+        <index-field name="remote_id"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\LifeTrackerRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\LifeTracker" to="\App\Entity\ThirdPartyService" inverse-alias="thirdPartyService" many-owner="true" many-inverse="false" uuid="6367fc0e-2f4e-41d9-93b6-093e622f858c">
+      <association-field from="service" to="id"/>
+    </association>
+    <association from="\App\Entity\LifeTracker" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="d6f8f465-9857-43be-bfab-6c60f2051279">
+      <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\LifeTracker" to="\App\Entity\LifeTrackerConfig" inverse-alias="lifeTrackerConfig" many-owner="true" many-inverse="false" uuid="4019eabe-556b-4f0f-ad99-1a796d794da0">
+      <association-field from="config" to="id"/>
+    </association>
+    <entity name="\App\Entity\LifeTrackerConfig" local-name="LifeTrackerConfig" namespace="\App\Entity" uuid="2b4d1e99-468d-489d-b8de-d63cc92cd960">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="bf96f2e3-e3fb-4b4f-9d56-c9fb7760d610"/>
+      <field name="type" type="string" uuid="46fe36d0-715a-4c09-93f5-6eef6106f25b"/>
+      <field name="uom" type="string" uuid="1109f521-37a4-4733-a1cf-a122a12405af"/>
+      <field name="min" type="integer" uuid="e2ed484c-bc2b-46c3-8bd2-d0a15eb34263"/>
+      <field name="max" type="integer" uuid="2735847e-39ee-4f40-a50f-5d844466530d"/>
+      <field name="math" type="string" uuid="3b60a3ce-8680-4985-aa7f-08835f1c9d76"/>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\LifeTrackerConfigRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <entity name="\App\Entity\LifeTrackerScore" local-name="LifeTrackerScore" namespace="\App\Entity" uuid="e565ccde-2307-450b-8969-dacb72572467">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="7958930d-2d30-473d-81e2-ad372b7b5c04"/>
+      <field name="life_tracker" type="integer" uuid="092c7323-af7b-4cea-80a2-a71026048462"/>
+      <field name="cond" type="string" uuid="414edb4e-5b4d-4c34-a7ae-f2ad33135761"/>
+      <field name="compare" type="integer" uuid="2e7d06f9-b85a-4789-a6e6-7d035060609e"/>
+      <field name="charge" type="integer" uuid="f727792f-a994-48aa-9829-2fcd0d056bc3"/>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\LifeTrackerScoreRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\LifeTrackerScore" to="\App\Entity\LifeTracker" inverse-alias="lifeTracker" many-owner="true" many-inverse="false" uuid="729b8ca7-52e9-42c8-b29d-3cbff970590a">
+      <association-field from="life_tracker" to="id"/>
+    </association>
+    <entity name="\App\Entity\LifeTracked" local-name="LifeTracked" namespace="\App\Entity" uuid="1205e312-065b-452f-bab1-d760fb4fbf32">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="c279d4ef-d40b-4f53-8590-dc1a409fd0ef"/>
+      <field name="tracker" type="integer" uuid="50c1bdf8-581a-4446-8439-8ac140a62aa6"/>
+      <field name="date_time" type="datetime" uuid="da070e71-c27c-4e07-9620-ac01bb2f670d"/>
+      <field name="lat" type="string" size="20" uuid="8a45638c-3435-4b75-ae30-9d8191b25eb6"/>
+      <field name="lon" type="string" size="20" uuid="496fa090-6556-48b0-91dd-7ea6709bd51e"/>
+      <field name="value" type="integer" size="4" uuid="04b291e1-ab6a-421c-b516-6a303086ca67"/>
+      <field name="score" type="integer" size="1" uuid="5a547a2f-f124-432c-be52-8f5cd47b02cb"/>
+      <index name="Tracked" unique="true">
+        <index-field name="tracker"/>
+        <index-field name="date_time"/>
+        <index-field name="value"/>
+      </index>
+      <orm-attributes>
+        <attribute name="repository-class">App\Repository\LifeTrackedRepository</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="\App\Entity\LifeTracked" to="\App\Entity\LifeTracker" caption="LifeTracker LifeTracked" inverse-alias="tracker" many-owner="true" many-inverse="false" uuid="179df2c2-7eec-44bc-8b92-6ade57a5aab8">
+      <association-field from="tracker" to="id"/>
     </association>
     <region namespace="\App\Entity" caption="Minutes Active" uuid="6790c024-4f5c-418c-b1e5-9f0494b3aa4d">
       <entity name="\App\Entity\MinDailyVery" local-name="MinDailyVery" namespace="\App\Entity" uuid="9078df85-8c86-46d4-8bb4-80ad9d892291">
@@ -748,6 +839,7 @@
     <association uuid="12d5e0e2-f913-4c18-97f9-25972b6af88c" caption1-position-x="-40" caption1-position-y="0" center-position-x="-81" center-position-y="5" color="#969696"/>
     <association uuid="1423305d-6ed7-43b6-85d7-6cb54d6cc848" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="1666a97a-abd0-43f5-9113-173a57fe2236" center-position-x="0" center-position-y="2" color="#969696"/>
+    <association uuid="179df2c2-7eec-44bc-8b92-6ade57a5aab8" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="19c15341-5164-45bc-b7aa-46405f80fa4d" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="23b327d0-2e27-4333-84f7-c03b7b2dc943" center-position-x="0" center-position-y="14" color="#969696"/>
     <association uuid="2a2068cf-58ee-4043-951f-0d4b78ab0ace" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -755,19 +847,23 @@
     <association uuid="3222df04-0639-4734-8897-aed05ebd4f56" center-position-x="0" center-position-y="-5" color="#969696"/>
     <association uuid="332b0802-2866-4415-a400-406ba0f1d0c3" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="3efcec49-c9fe-41d6-ab2c-91ea18223d29" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="4019eabe-556b-4f0f-ad99-1a796d794da0" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="4accd5ae-efa7-4c31-8df2-6c9423677e4f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="55585f06-00de-41ef-86e4-550e89e87266" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="58c7653c-ea70-49e5-ae84-a202853bbcb5" caption1-position-x="0" caption1-position-y="0" center-position-x="-4" center-position-y="0" color="#969696"/>
     <association uuid="5b6645ea-d1cf-40e5-9c18-96951bb4d332" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="5d2c14f5-6a61-42a7-89f1-7fe1683499a2" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="11" color="#61D351"/>
     <association uuid="60dd517b-224e-45cc-b44f-73d744042758" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="6367fc0e-2f4e-41d9-93b6-093e622f858c" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="639bc0f2-e307-485c-a688-fc77aaf7e1a9" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="63bf07bc-48ec-4293-a355-f5a7faaf1fea" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="729b8ca7-52e9-42c8-b29d-3cbff970590a" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="75ca6ce1-c09e-42b3-a874-838b3bcda73b" center-position-x="0" center-position-y="10" color="#969696"/>
     <association uuid="7a3b1a2c-7d7e-4176-9696-d6544b35e030" caption1-position-x="-40" caption1-position-y="0" center-position-x="-180" center-position-y="0" color="#969696"/>
     <association uuid="7ee8111d-e535-40e4-8f38-3e77fcc5af75" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="81ddd366-29c3-4579-90e7-93d5f62ae782" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="830bf475-c17e-41b4-9514-ca160afa8c60" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="83db7dd2-ebc6-41e8-a260-c3d76c344f17" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="-1" center-position-y="3" color="#969696"/>
     <association uuid="8bc925c5-1e3c-45a2-b6c6-c162b9159c2f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f" color="#969696"/>
@@ -784,6 +880,7 @@
     <association uuid="aff56f69-d1be-42a6-93d3-6adbfb86ad02" color="#969696"/>
     <association uuid="b290f492-f1ba-4c6e-9a3c-e93ef67e7e9c" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="cf93e85b-4d70-4f5f-b82b-ac5df1d83a3e" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="d6f8f465-9857-43be-bfab-6c60f2051279" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="d7130c9a-b3ac-4b93-9dce-fd46d91bec21" caption1-position-x="-40" caption1-position-y="0" center-position-x="-7" center-position-y="15" color="#969696"/>
     <association uuid="da2616ee-59fa-420c-bdd3-de90f0f8c4e8" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="dd581f7b-f4e0-4439-b535-74900dbdc08b" caption1-position-x="-40" caption1-position-y="0" center-position-x="0" center-position-y="5" color="#969696"/>
@@ -794,10 +891,13 @@
     <association uuid="fc9164c6-2dc0-4f48-8bda-7ec6041587dc" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <entity uuid="00635351-1235-46f9-9558-c27b48de644c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="483" position-y="-270" size-x="0" size-x2="121" size-y="0" size-y2="129"/>
     <entity uuid="0b1c4687-80a1-4302-82ce-a7a123f18e70" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1221" position-y="569" size-x="0" size-x2="121" size-y="0" size-y2="45"/>
+    <entity uuid="0f93263d-5f74-47bc-b359-fdcf45e43132" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="796" position-y="839" size-x="0" size-x2="119" size-y="0" size-y2="129"/>
+    <entity uuid="1205e312-065b-452f-bab1-d760fb4fbf32" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1128" position-y="789" size-x="0" size-x2="111" size-y="0" size-y2="115"/>
     <entity uuid="12e92ba4-e715-44f1-b881-0c906232351f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="20" position-y="2" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="1697e6c1-fa41-4da8-a51e-3f449817bfd6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="496" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="1f6d7586-1bec-4ad1-a358-f740156146b5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="272" position-y="114" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="21c34069-a808-48ee-b968-1358d4cbe3b1" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="193" position-y="-176" size-x="0" size-x2="115" size-y="0" size-y2="87"/>
+    <entity uuid="2b4d1e99-468d-489d-b8de-d63cc92cd960" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="993" position-y="902" size-x="0" size-x2="89" size-y="0" size-y2="101"/>
     <entity uuid="32555b44-0569-47eb-81ea-c6ad6584d3c6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="17" position-y="-286" size-x="0" size-x2="131" size-y="0" size-y2="171"/>
     <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="865" position-y="89" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="192" position-y="45" size-x="0" size-x2="140" size-y="0" size-y2="101"/>
@@ -810,6 +910,7 @@
     <entity uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="398" position-y="413" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="386" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="411" position-y="15" size-x="0" size-x2="131" size-y="0" size-y2="87"/>
+    <entity uuid="836ebbc8-a513-43b6-8e47-40f1e36b4a24" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="-23" position-y="545" size-x="0" size-x2="96" size-y="0" size-y2="59"/>
     <entity uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="397" position-y="511" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="9078df85-8c86-46d4-8bb4-80ad9d892291" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="24" position-y="277" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="791" position-y="428" size-x="0" size-x2="139" size-y="0" size-y2="269"/>
@@ -821,11 +922,12 @@
     <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="183" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="806" position-y="275" size-x="0" size-x2="91" size-y="0" size-y2="45"/>
     <entity uuid="c9f04400-71d8-4c25-acab-ed902dbc49f7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="125" position-y="473" size-x="0" size-x2="114" size-y="0" size-y2="129"/>
-    <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="141" position-y="21" size-x="0" size-x2="131" size-y="0" size-y2="59"/>
+    <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="144" position-y="140" size-x="0" size-x2="96" size-y="0" size-y2="45"/>
     <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="722" position-y="35" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="db12bf76-9152-40d5-9911-c0c8263bd128" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="190" position-y="-316" size-x="0" size-x2="97" size-y="0" size-y2="45"/>
     <entity uuid="e14a06fc-ed45-41ae-b996-dbe2a27d30c8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="322" position-y="-295" size-x="0" size-x2="112" size-y="0" size-y2="115"/>
     <entity uuid="e475797c-6f95-48a0-955f-4506297dc0f4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="390" position-y="88" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="e565ccde-2307-450b-8969-dacb72572467" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="909" position-y="1023" size-x="0" size-x2="98" size-y="0" size-y2="73"/>
     <entity uuid="fdbbb4fa-0d96-44c5-9773-32d99b7c8ef5" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="403" position-y="193" size-x="0" size-x2="117" size-y="0" size-y2="157"/>
     <entity uuid="ffaceb68-b171-4778-810e-7eac4eee10f1" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="22" position-y="69" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
     <module uuid="af3795c2-38c1-4c19-80ab-00a6e36fa062" bg-color="#FEFCE8" position-x="50" position-y="50" size-x="74" size-x2="1878" size-y="0" size-y2="1549"/>
