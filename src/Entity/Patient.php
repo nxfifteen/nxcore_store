@@ -121,6 +121,11 @@ class Patient
     private $trackingDevice;
 
     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\SleepEpisode", mappedBy="patient")
+     */
+    private $sleepEpisode;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Entity\SportActivity", mappedBy="patient")
      */
     private $sportActivity;
@@ -144,6 +149,7 @@ class Patient
         $this->nutritionInformation = new ArrayCollection();
         $this->sportActivity = new ArrayCollection();
         $this->trackingDevice = new ArrayCollection();
+        $this->sleepEpisode = new ArrayCollection();
     }
 
     public function getId()
@@ -633,6 +639,37 @@ class Patient
     public function setAvatar(?string $avatar): self
     {
         $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|SleepEpisode[]
+     */
+    public function getSleepEpisode(): Collection
+    {
+        return $this->sleepEpisode;
+    }
+
+    public function addSleepEpisode(SleepEpisode $sleepEpisode): self
+    {
+        if (!$this->sleepEpisode->contains($sleepEpisode)) {
+            $this->sleepEpisode[] = $sleepEpisode;
+            $sleepEpisode->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSleepEpisode(SleepEpisode $sleepEpisode): self
+    {
+        if ($this->sleepEpisode->contains($sleepEpisode)) {
+            $this->sleepEpisode->removeElement($sleepEpisode);
+            // set the owning side to null (unless already changed)
+            if ($sleepEpisode->getPatient() === $this) {
+                $sleepEpisode->setPatient(null);
+            }
+        }
 
         return $this;
     }
