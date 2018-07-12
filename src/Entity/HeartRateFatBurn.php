@@ -7,7 +7,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\HeartRateFatBurnRepository")
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="UniqueReading", columns={"average","min","max","time"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="UniqueReading", columns={"average","min","max"})})
  *
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"id": "exact", "average": "exact", "min": "exact", "max": "exact", "time": "exact"})
@@ -37,9 +37,14 @@ class HeartRateFatBurn
     private $max;
 
     /**
-     * @ORM\Column(type="integer", length=3, nullable=true)
+     * 
      */
     private $time;
+
+    /**
+     * 
+     */
+    private $heartRateResting;
 
     public function getId(): ?int
     {

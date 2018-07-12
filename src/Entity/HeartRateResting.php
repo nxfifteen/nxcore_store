@@ -37,6 +37,12 @@ class HeartRateResting
      */
     private $patient;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\HeartRate")
+     * @ORM\JoinColumn(name="heart_rate_id", referencedColumnName="id")
+     */
+    private $heartRate;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -74,6 +80,18 @@ class HeartRateResting
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getHeartRate(): ?HeartRate
+    {
+        return $this->heartRate;
+    }
+
+    public function setHeartRate(?HeartRate $heartRate): self
+    {
+        $this->heartRate = $heartRate;
 
         return $this;
     }

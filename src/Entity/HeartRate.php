@@ -30,6 +30,26 @@ class HeartRate
     private $average;
 
     /**
+     * @ORM\Column(type="integer", length=4, nullable=true)
+     */
+    private $out_of_range_time;
+
+    /**
+     * @ORM\Column(type="integer", length=4, nullable=true)
+     */
+    private $fat_burn_time;
+
+    /**
+     * @ORM\Column(type="integer", length=4, nullable=true)
+     */
+    private $cardio_time;
+
+    /**
+     * @ORM\Column(type="integer", length=4, nullable=true)
+     */
+    private $peak_time;
+
+    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\HeartRateOutOfRange")
      * @ORM\JoinColumn(name="out_of_range_id", referencedColumnName="id")
      */
@@ -52,6 +72,12 @@ class HeartRate
      * @ORM\JoinColumn(name="peak_id", referencedColumnName="id")
      */
     private $heartRatePeak;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\UnitOfMeasurement")
+     * @ORM\JoinColumn(name="unit", referencedColumnName="id")
+     */
+    private $unitOfMeasurement;
 
     public function getId(): ?int
     {
@@ -114,6 +140,66 @@ class HeartRate
     public function setHeartRatePeak(?HeartRatePeak $heartRatePeak): self
     {
         $this->heartRatePeak = $heartRatePeak;
+
+        return $this;
+    }
+
+    public function getOutOfRangeTime(): ?int
+    {
+        return $this->out_of_range_time;
+    }
+
+    public function setOutOfRangeTime(?int $out_of_range_time): self
+    {
+        $this->out_of_range_time = $out_of_range_time;
+
+        return $this;
+    }
+
+    public function getFatBurnTime(): ?int
+    {
+        return $this->fat_burn_time;
+    }
+
+    public function setFatBurnTime(?int $fat_burn_time): self
+    {
+        $this->fat_burn_time = $fat_burn_time;
+
+        return $this;
+    }
+
+    public function getCardioTime(): ?int
+    {
+        return $this->cardio_time;
+    }
+
+    public function setCardioTime(?int $cardio_time): self
+    {
+        $this->cardio_time = $cardio_time;
+
+        return $this;
+    }
+
+    public function getPeakTime(): ?int
+    {
+        return $this->peak_time;
+    }
+
+    public function setPeakTime(?int $peak_time): self
+    {
+        $this->peak_time = $peak_time;
+
+        return $this;
+    }
+
+    public function getUnitOfMeasurement(): ?UnitOfMeasurement
+    {
+        return $this->unitOfMeasurement;
+    }
+
+    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
+    {
+        $this->unitOfMeasurement = $unitOfMeasurement;
 
         return $this;
     }
