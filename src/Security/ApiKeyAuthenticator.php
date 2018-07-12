@@ -20,12 +20,9 @@
             // or if you want to use an "apikey" header, then do something like this:
             // $apiKey = $request->headers->get('apikey');
 
-            /*if ( !$apiKey || $apiKey != $_ENV['API_KEY'] ) {
-                throw new BadCredentialsException();
-
-                // or to just skip api key authentication
-                // return null;
-            }*/
+//            if ( !$apiKey || $apiKey != $_ENV['API_KEY'] ) {
+//                throw new BadCredentialsException();
+//            }
 
             return new PreAuthenticatedToken(
                 'anon.',
