@@ -35,7 +35,7 @@ class NutritionInformation
     private $period;
 
     /**
-     * @ORM\Column(type="integer", length=5, nullable=true)
+     * @ORM\Column(type="decimal", nullable=true)
      */
     private $amount;
 
@@ -136,18 +136,6 @@ class NutritionInformation
     public function setPeriod(string $period): self
     {
         $this->period = $period;
-
-        return $this;
-    }
-
-    public function getAmount(): ?int
-    {
-        return $this->amount;
-    }
-
-    public function setAmount(?int $amount): self
-    {
-        $this->amount = $amount;
 
         return $this;
     }
@@ -316,6 +304,18 @@ class NutritionInformation
     public function setName(?string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getAmount()
+    {
+        return $this->amount;
+    }
+
+    public function setAmount($amount): self
+    {
+        $this->amount = $amount;
 
         return $this;
     }
