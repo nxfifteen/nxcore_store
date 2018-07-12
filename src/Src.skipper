@@ -248,7 +248,7 @@
       <field name="patient_id" type="integer" required="true" uuid="70bb7f66-6bbf-4905-9c91-b1a26ab590e0"/>
       <field name="date_time" type="date" required="true" uuid="8a74e536-2dc6-4328-ad7d-f17a1b55982e"/>
       <field name="period" type="string" size="4" enum-values="'meal','day'" required="true" uuid="545e9ca1-e6c4-414d-b794-cab72e2746a8"/>
-      <field name="amount" type="integer" size="5" uuid="d4e627e0-02c1-43df-86d3-c4db362ba349"/>
+      <field name="amount" type="decimal" uuid="d4e627e0-02c1-43df-86d3-c4db362ba349"/>
       <field name="unit" type="integer" size="4" uuid="2170ac44-a2d4-4fae-9ba2-ef336643415c"/>
       <field name="brand" type="string" size="50" uuid="7d86637d-f302-419a-bc7c-e543c776f2af"/>
       <field name="name" type="string" size="255" uuid="c571811a-a19b-4e98-8053-29654a0cc1eb"/>
@@ -479,6 +479,7 @@
       <field name="patient_id" type="integer" uuid="e4bd1edc-69a7-4129-a6f5-02ed01fbcce0"/>
       <field name="date" type="date" uuid="8975bb5a-d4ea-42dc-8ae4-d53e9501bf5a"/>
       <field name="value" type="integer" size="3" uuid="e26570cf-a6ae-4833-ae13-4e0a053c27d1"/>
+      <field name="heart_rate_id" type="integer" uuid="b42325cf-e26b-4ea9-a1c2-a4d22f63f11c"/>
       <index name="DailyRestRate" unique="true">
         <index-field name="date"/>
         <index-field name="patient_id"/>
@@ -489,6 +490,9 @@
     </entity>
     <association from="\App\Entity\HeartRateResting" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="83db7dd2-ebc6-41e8-a260-c3d76c344f17">
       <association-field from="patient_id" to="id"/>
+    </association>
+    <association from="\App\Entity\HeartRateResting" to="\App\Entity\HeartRate" caption="HeartRate HeartRateResting" inverse-alias="heartRate" many-owner="true" many-inverse="false" uuid="185b761c-1cd4-476b-8d41-9c42ab76dd31">
+      <association-field from="heart_rate_id" to="id"/>
     </association>
     <entity name="\App\Entity\LifeTracker" local-name="LifeTracker" namespace="\App\Entity" uuid="0f93263d-5f74-47bc-b359-fdcf45e43132">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="86c254cc-7849-4036-84ae-7c200af889ff"/>
@@ -675,10 +679,15 @@
       <entity name="\App\Entity\HeartRate" local-name="HeartRate" namespace="\App\Entity" description="This schema represents a person's heart rate." uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888">
         <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="ef940bb2-2c64-4b4a-b149-81cea9e72a33"/>
         <field name="average" type="integer" size="3" uuid="fc2847b4-e440-4da9-95d8-476d9d4f9d03"/>
-        <field name="out_of_range_id" type="integer" size="3" uuid="f38ee396-0ca9-4ce7-9bed-d9f040a9be0d"/>
-        <field name="fat_burn_id" type="integer" size="3" uuid="9f269054-68da-4b71-8140-cc6d84cd3a31"/>
-        <field name="cardio_id" type="integer" size="3" uuid="017a3890-9fec-4a6d-ba50-805038e312fa"/>
-        <field name="peak_id" type="integer" size="3" uuid="423eb214-b88c-4b41-8d9f-c9170dda8103"/>
+        <field name="unit" type="integer" uuid="ee7edfc6-3314-456b-9980-916411bcd510"/>
+        <field name="out_of_range_id" type="integer" uuid="f38ee396-0ca9-4ce7-9bed-d9f040a9be0d"/>
+        <field name="out_of_range_time" type="integer" size="4" uuid="ca9b2bcb-9148-4902-ae2c-8837c70a26ee"/>
+        <field name="fat_burn_id" type="integer" uuid="9f269054-68da-4b71-8140-cc6d84cd3a31"/>
+        <field name="fat_burn_time" type="integer" size="4" uuid="9fc000c4-d33f-4de6-be22-e6e31526b9dc"/>
+        <field name="cardio_id" type="integer" uuid="017a3890-9fec-4a6d-ba50-805038e312fa"/>
+        <field name="cardio_time" type="integer" size="4" uuid="99db45d1-6fb3-4af6-922d-49aa4e7bb860"/>
+        <field name="peak_id" type="integer" uuid="423eb214-b88c-4b41-8d9f-c9170dda8103"/>
+        <field name="peak_time" type="integer" size="4" uuid="fc61c658-8a6f-4407-8eba-109fd301133e"/>
         <index name="UniqueReading" unique="true">
           <index-field name="average"/>
           <index-field name="out_of_range_id"/>
@@ -695,12 +704,10 @@
         <field name="average" type="integer" size="3" uuid="b56811b4-5042-4353-a3e9-6455c0628891"/>
         <field name="min" type="integer" size="3" uuid="a7c4b6a6-5eef-467c-a790-7e5ae8da7f38"/>
         <field name="max" type="integer" size="3" uuid="120dc3d0-4141-4dc1-acd4-9f14ab078b2b"/>
-        <field name="time" type="integer" size="3" uuid="eb0d53b1-866d-4da3-bbb1-c8bb6db53927"/>
         <index name="UniqueReading" unique="true">
           <index-field name="average"/>
           <index-field name="min"/>
           <index-field name="max"/>
-          <index-field name="time"/>
         </index>
         <orm-attributes>
           <attribute name="repository-class">App\Repository\HeartRateOutOfRangeRepository</attribute>
@@ -711,12 +718,10 @@
         <field name="average" type="integer" size="3" uuid="b11fb21d-0b6c-4eba-8ed7-3f0ea8dba7d8"/>
         <field name="min" type="integer" size="3" uuid="7a3e7abc-d175-4188-899a-281c8483317a"/>
         <field name="max" type="integer" size="3" uuid="6efd5df2-6313-46df-89af-417f4ca29890"/>
-        <field name="time" type="integer" size="3" uuid="880823ac-c322-4a29-b63c-e5b258a7e2e3"/>
         <index name="UniqueReading" unique="true">
           <index-field name="average"/>
           <index-field name="min"/>
           <index-field name="max"/>
-          <index-field name="time"/>
         </index>
         <orm-attributes>
           <attribute name="repository-class">App\Repository\HeartRateFatBurnRepository</attribute>
@@ -727,12 +732,10 @@
         <field name="average" type="integer" size="3" uuid="10b6fff5-7980-4f9d-9e2f-05f57e7754af"/>
         <field name="min" type="integer" size="3" uuid="e373b5c8-50e2-4874-98d7-d90b533568d6"/>
         <field name="max" type="integer" size="3" uuid="08afe3c5-838c-437a-a8b2-0249b47d9d23"/>
-        <field name="time" type="integer" size="3" uuid="17e8e1b1-21e8-4086-a14a-b2a44e0a69f9"/>
         <index name="UniqueReading" unique="true">
           <index-field name="average"/>
           <index-field name="min"/>
           <index-field name="max"/>
-          <index-field name="time"/>
         </index>
         <orm-attributes>
           <attribute name="repository-class">App\Repository\HeartRateCardioRepository</attribute>
@@ -743,12 +746,10 @@
         <field name="average" type="integer" size="3" uuid="8246fb3b-3a92-4b2c-934c-88d7d22036d8"/>
         <field name="min" type="integer" size="3" uuid="f063ebfe-5068-4534-a048-5c5c3fbedb7f"/>
         <field name="max" type="integer" size="3" uuid="20691a86-0a43-484d-beef-c7f7fb23a750"/>
-        <field name="time" type="integer" size="3" uuid="2c7e43c4-cdb0-4085-84c5-f439d99c986d"/>
         <index name="UniqueReading" unique="true">
           <index-field name="average"/>
           <index-field name="min"/>
           <index-field name="max"/>
-          <index-field name="time"/>
         </index>
         <orm-attributes>
           <attribute name="repository-class">App\Repository\HeartRatePeakRepository</attribute>
@@ -818,6 +819,9 @@
     <association from="\App\Entity\HeartRate" to="\App\Entity\HeartRatePeak" inverse-alias="heartRatePeak" many-owner="true" many-inverse="false" uuid="58c7653c-ea70-49e5-ae84-a202853bbcb5">
       <association-field from="peak_id" to="id"/>
     </association>
+    <association from="\App\Entity\HeartRate" to="\App\Entity\UnitOfMeasurement" caption="UnitOfMeasurement HeartRate" inverse-alias="unitOfMeasurement" many-owner="true" many-inverse="false" uuid="85ad1a32-b3b8-4506-81f3-7dea986a2b92">
+      <association-field from="unit" to="id"/>
+    </association>
     <association from="\App\Entity\SportTrack" to="\App\Entity\Patient" inverse-alias="patient" many-owner="true" many-inverse="false" uuid="63bf07bc-48ec-4293-a355-f5a7faaf1fea">
       <association-field from="patient_id" to="id"/>
     </association>
@@ -840,6 +844,7 @@
     <association uuid="1423305d-6ed7-43b6-85d7-6cb54d6cc848" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="1666a97a-abd0-43f5-9113-173a57fe2236" center-position-x="0" center-position-y="2" color="#969696"/>
     <association uuid="179df2c2-7eec-44bc-8b92-6ade57a5aab8" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="185b761c-1cd4-476b-8d41-9c42ab76dd31" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="19c15341-5164-45bc-b7aa-46405f80fa4d" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="23b327d0-2e27-4333-84f7-c03b7b2dc943" center-position-x="0" center-position-y="14" color="#969696"/>
     <association uuid="2a2068cf-58ee-4043-951f-0d4b78ab0ace" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -850,7 +855,7 @@
     <association uuid="4019eabe-556b-4f0f-ad99-1a796d794da0" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="4accd5ae-efa7-4c31-8df2-6c9423677e4f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="55585f06-00de-41ef-86e4-550e89e87266" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
-    <association uuid="58c7653c-ea70-49e5-ae84-a202853bbcb5" caption1-position-x="0" caption1-position-y="0" center-position-x="-4" center-position-y="0" color="#969696"/>
+    <association uuid="58c7653c-ea70-49e5-ae84-a202853bbcb5" caption1-position-x="0" caption1-position-y="0" center-position-x="-3" center-position-y="0" color="#969696"/>
     <association uuid="5b6645ea-d1cf-40e5-9c18-96951bb4d332" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="5d2c14f5-6a61-42a7-89f1-7fe1683499a2" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="11" color="#61D351"/>
     <association uuid="60dd517b-224e-45cc-b44f-73d744042758" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -864,7 +869,8 @@
     <association uuid="81ddd366-29c3-4579-90e7-93d5f62ae782" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="830bf475-c17e-41b4-9514-ca160afa8c60" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="83db7dd2-ebc6-41e8-a260-c3d76c344f17" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
-    <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="-1" center-position-y="3" color="#969696"/>
+    <association uuid="85ad1a32-b3b8-4506-81f3-7dea986a2b92" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
+    <association uuid="87bdb7b8-4c7b-4746-adbe-3439e6d42e51" center-position-x="1" center-position-y="3" color="#969696"/>
     <association uuid="8bc925c5-1e3c-45a2-b6c6-c162b9159c2f" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
     <association uuid="8cb63aaa-31cd-439f-a1f1-274f66cb4a8f" color="#969696"/>
     <association uuid="8e1cfc3c-9163-404a-8686-f579f33a3985" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="#969696"/>
@@ -900,29 +906,29 @@
     <entity uuid="2b4d1e99-468d-489d-b8de-d63cc92cd960" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="993" position-y="902" size-x="0" size-x2="89" size-y="0" size-y2="101"/>
     <entity uuid="32555b44-0569-47eb-81ea-c6ad6584d3c6" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="17" position-y="-286" size-x="0" size-x2="131" size-y="0" size-y2="171"/>
     <entity uuid="33a2dbe8-8471-4aa9-8dc1-58480b6f5466" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="865" position-y="89" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
-    <entity uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="192" position-y="45" size-x="0" size-x2="140" size-y="0" size-y2="101"/>
+    <entity uuid="3d668c51-6ac0-4e44-bd4c-1a672a714888" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="192" position-y="34" size-x="0" size-x2="151" size-y="0" size-y2="157"/>
     <entity uuid="4196bbef-73e6-412b-b125-c5e4cc6a3d3c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1014" position-y="5" size-x="0" size-x2="143" size-y="0" size-y2="199"/>
     <entity uuid="578b1d3f-5ed4-4719-b128-30940c3aad9f" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="260" position-y="444" size-x="0" size-x2="127" size-y="0" size-y2="115"/>
     <entity uuid="5c06b2d1-c0fc-4651-8857-46b2ffc922b7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="21" position-y="96" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="649ad552-9d9e-480f-9108-fdca11ceb536" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="618" position-y="415" size-x="0" size-x2="102" size-y="0" size-y2="101"/>
-    <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="666" position-y="342" size-x="0" size-x2="101" size-y="0" size-y2="45"/>
+    <entity uuid="74bcff2a-0148-4688-b831-9f571594dfe8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="666" position-y="326" size-x="0" size-x2="101" size-y="0" size-y2="45"/>
     <entity uuid="775137c8-4f3a-43b7-9f80-02cfd8b24207" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="958" position-y="575" size-x="0" size-x2="167" size-y="0" size-y2="199"/>
     <entity uuid="788f5575-1af2-4532-a26b-4ba59e7a49bd" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="398" position-y="413" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
-    <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="386" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
+    <entity uuid="7ccbdeca-182c-4379-8727-b223c740f9cc" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="510" position-y="393" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="818769ef-5ef2-4206-b439-6f8ec54321df" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="411" position-y="15" size-x="0" size-x2="131" size-y="0" size-y2="87"/>
-    <entity uuid="836ebbc8-a513-43b6-8e47-40f1e36b4a24" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="-23" position-y="545" size-x="0" size-x2="96" size-y="0" size-y2="59"/>
+    <entity uuid="836ebbc8-a513-43b6-8e47-40f1e36b4a24" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="-51" position-y="882" size-x="0" size-x2="151" size-y="0" size-y2="185"/>
     <entity uuid="900aa181-31ab-4bb7-8a3b-664a70bb7ca4" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="397" position-y="511" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="9078df85-8c86-46d4-8bb4-80ad9d892291" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="24" position-y="277" size-x="0" size-x2="102" size-y="0" size-y2="87"/>
     <entity uuid="9528ea35-c382-4f82-a477-702a4f6ec893" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="791" position-y="428" size-x="0" size-x2="139" size-y="0" size-y2="269"/>
-    <entity uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="556" position-y="113" size-x="0" size-x2="110" size-y="0" size-y2="73"/>
-    <entity uuid="99378b42-66bc-484b-9eec-5d454204a238" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="127" position-y="206" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="9878cb5a-6b71-4e0d-ae37-26403785f90c" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="556" position-y="121" size-x="0" size-x2="110" size-y="0" size-y2="73"/>
+    <entity uuid="99378b42-66bc-484b-9eec-5d454204a238" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="127" position-y="229" size-x="0" size-x2="107" size-y="0" size-y2="73"/>
     <entity uuid="9e0e648d-f386-48b9-a45e-d9022ff1d81b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1096" position-y="380" size-x="0" size-x2="113" size-y="0" size-y2="87"/>
-    <entity uuid="a4c0aa4e-df9f-4e01-a747-dac0e20eab1d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="300" position-y="207" size-x="0" size-x2="107" size-y="0" size-y2="87"/>
+    <entity uuid="a4c0aa4e-df9f-4e01-a747-dac0e20eab1d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="333" position-y="223" size-x="0" size-x2="107" size-y="0" size-y2="73"/>
     <entity uuid="a943c709-2161-46b1-a6e5-aaf405540d51" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="1244" position-y="207" size-x="0" size-x2="113" size-y="0" size-y2="87"/>
     <entity uuid="b62c2462-5ff4-4fda-8a65-c80c13a42396" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="23" position-y="183" size-x="0" size-x2="102" size-y="0" size-y2="73"/>
     <entity uuid="b665d13e-d44f-4f69-929b-32c04ee3499d" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="806" position-y="275" size-x="0" size-x2="91" size-y="0" size-y2="45"/>
     <entity uuid="c9f04400-71d8-4c25-acab-ed902dbc49f7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="125" position-y="473" size-x="0" size-x2="114" size-y="0" size-y2="129"/>
-    <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="144" position-y="140" size-x="0" size-x2="96" size-y="0" size-y2="45"/>
+    <entity uuid="d311f3b4-4fe2-4c15-866c-ebd60288101b" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="143" position-y="114" size-x="0" size-x2="96" size-y="0" size-y2="45"/>
     <entity uuid="dad20d4d-2abd-4135-8b53-c959b5715fe7" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="722" position-y="35" size-x="0" size-x2="113" size-y="0" size-y2="115"/>
     <entity uuid="db12bf76-9152-40d5-9911-c0c8263bd128" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="190" position-y="-316" size-x="0" size-x2="97" size-y="0" size-y2="45"/>
     <entity uuid="e14a06fc-ed45-41ae-b996-dbe2a27d30c8" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="322" position-y="-295" size-x="0" size-x2="112" size-y="0" size-y2="115"/>

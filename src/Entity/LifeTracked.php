@@ -50,7 +50,7 @@ class LifeTracked
      * @ORM\ManyToOne(targetEntity="App\Entity\LifeTracker")
      * @ORM\JoinColumn(name="tracker", referencedColumnName="id")
      */
-    private $lifeTracker;
+    private $tracker;
 
     public function getId(): ?int
     {
@@ -117,14 +117,14 @@ class LifeTracked
         return $this;
     }
 
-    public function getLifeTracker(): ?LifeTracker
+    public function getTracker(): ?LifeTracker
     {
-        return $this->lifeTracker;
+        return $this->tracker;
     }
 
-    public function setLifeTracker(?LifeTracker $lifeTracker): self
+    public function setTracker(?LifeTracker $tracker): self
     {
-        $this->lifeTracker = $lifeTracker;
+        $this->tracker = $tracker;
 
         return $this;
     }
