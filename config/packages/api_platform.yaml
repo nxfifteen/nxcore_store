@@ -1,3 +1,88 @@
 api_platform:
+    # The title of the API.
+    title: 'NxHealth Store'
+
+    # The description of the API.
+    description: 'Stores babels in a centra database for future access'
+
+    # The version of the API.
+    version: '0.0.1'
+
+    # Specify a name converter to use.
+    name_converter: ~
+
+    # Enable the Swagger documentation and export.
+    enable_swagger: true
+
+    # Enable Swagger ui.
+    enable_swagger_ui: true
+
+    swagger:
+        # The swagger api keys.
+        api_keys: []
+
+    # Enable the entrypoint.
+    enable_entrypoint: true
+
+    # Enable the docs.
+    enable_docs: true
+
+    oauth:
+        # To enable or disable oauth.
+        enabled: false
+
+        # The oauth client id.
+        clientId: ''
+
+        # The oauth client secret.
+        clientSecret: ''
+
+        # The oauth type.
+        type: 'oauth2'
+
+        # The oauth flow grant type.
+        flow: 'application'
+
+        # The oauth token url.
+        tokenUrl: '/oauth/v2/token'
+
+        # The oauth authentication url.
+        authorizationUrl: '/oauth/v2/auth'
+
+        # The oauth scopes.
+        scopes: []
+
     mapping:
-        paths: ['%kernel.project_dir%/src/Entity']
+        paths:
+            - '%kernel.project_dir%/src/Entity'
+            #- '%kernel.project_dir%/src/Plugins/LifeTracker/Entity'
+
+#- '%kernel.project_dir%/src/Plugins/LifeTracker/Entity'
+# - '%kernel.project_dir%/src/Entity'
+
+#    http_cache:
+#        # Automatically generate etags for API responses.
+#        etag: true
+#
+#        # Default value for the response max age.
+#        max_age: 120
+#
+#        # Default value for the response shared (proxy) max age.
+#        shared_max_age: 240
+#
+#        # Default values of the "Vary" HTTP header.
+#        vary: ['Accept']
+#
+#        # To make all responses public by default.
+#        public: ~
+#
+#        invalidation:
+#          # To enable the tags-based cache invalidation system.
+#          enabled: false
+#
+#          # URLs of the Varnish servers to purge using cache tags when a resource is updated.
+#          varnish_urls: []
+#
+#          # To pass options to the client charged with the request.
+#          request_options: []
+
