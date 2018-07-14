@@ -8,8 +8,16 @@
     use App\Entity\CountDailyFloor;
     use App\Entity\CountDailyStep;
     use App\Entity\IntradayStep;
+    use App\Entity\MinDailyFairly;
+    use App\Entity\MinDailyLightly;
+    use App\Entity\MinDailySedentary;
+    use App\Entity\MinDailyVery;
+    use App\Entity\NutritionInformation;
+    use App\Entity\SleepEpisode;
+    use App\Entity\SportActivity;
     use App\Logger\SiteLogManager;
     use App\Service\MessageGenerator;
+    use Doctrine\ORM\EntityManager;
     use Symfony\Component\Routing\Annotation\Route;
     use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -64,6 +72,48 @@
                         ->getRepository(CountDailyCalories::class)
                         ->findBy(['patient' => $patient], ['id' => 'DESC']);
                     break;
+                case "SleepEpisode":
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(SleepEpisode::class)
+                        ->findBy(['patient' => $patient], ['id' => 'DESC']);
+                    break;
+                case "SportActivity":
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(SportActivity::class)
+                        ->findBy(['patient' => $patient], ['id' => 'DESC']);
+                    break;
+                case "MinDailyVery":
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(MinDailyVery::class)
+                        ->findBy(['patient' => $patient], ['id' => 'DESC']);
+                    break;
+                case "MinDailyFairly":
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(MinDailyFairly::class)
+                        ->findBy(['patient' => $patient], ['id' => 'DESC']);
+                    break;
+                case "MinDailyLightly":
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(MinDailyLightly::class)
+                        ->findBy(['patient' => $patient], ['id' => 'DESC']);
+                    break;
+                case "MinDailySedentary":
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(MinDailySedentary::class)
+                        ->findBy(['patient' => $patient], ['id' => 'DESC']);
+                    break;
+                case "NutritionInformation":
+                    /** @noinspection PhpUndefinedMethodInspection */
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(NutritionInformation::class)
+                        ->findLastMeal($patient);
+                    break;
+                case "WaterInformation":
+                    /** @noinspection PhpUndefinedMethodInspection */
+                    $trackers = $this->getDoctrine()
+                        ->getRepository(NutritionInformation::class)
+                        ->findLastWater($patient);
+                    break;
             }
 
             if (!$trackers) {
@@ -71,13 +121,15 @@
                     'Class not found for ' . $endpoint
                 );
             } else {
-                /** @var BodyWeight $returnValue */
-                $returnValue = $trackers[0];
+                /** @var BodyWeight $returnObject */
+                $returnObject = $trackers[0];
                 $returnDate = "";
-                if (method_exists($returnValue, "getDateTime")) {
-                    $returnDate = $returnValue->getDateTime()->format("Y-m-d H:i:s");
-                } else if (method_exists($returnValue, "getDate")) {
-                    $returnDate = $returnValue->getDate()->format("Y-m-d H:i:s");
+                if (method_exists($returnObject, "getDateTime")) {
+                    $returnDate = $returnObject->getDateTime()->format("Y-m-d H:i:s");
+                } else if (method_exists($returnObject, "getDate")) {
+                    $returnDate = $returnObject->getDate()->format("Y-m-d H:i:s");
+                } else if (method_exists($returnObject, "getStartTime")) {
+                    $returnDate = $returnObject->getStartTime()->format("Y-m-d H:i:s");
                 }
 
                 return $this->json([ $returnDate ]);
