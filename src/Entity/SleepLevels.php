@@ -27,7 +27,7 @@ class SleepLevels
     private $date_time;
 
     /**
-     * @ORM\Column(type="string", length=6, nullable=true)
+     * @ORM\Column(type="string", length=10, nullable=true)
      */
     private $level;
 
