@@ -4,8 +4,6 @@ use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RewardRepository")
@@ -192,17 +190,6 @@ class Reward
 
     public function setImage(?string $image): self
     {
-        $rewardImagePath = __DIR__ . "/../../public/cache/rewards";
-        $fileSystem = new Filesystem();
-        if (!$fileSystem->exists($rewardImagePath . '/' . basename($image))) {
-            if (!$fileSystem->exists($rewardImagePath)) {
-                $fileSystem->mkdir($rewardImagePath);
-            }
-            if ($fileSystem->exists($rewardImagePath)) {
-                $fileSystem->dumpFile($rewardImagePath . '/' . basename($image), file_get_contents($image));
-            }
-        }
-
         $this->image = $image;
 
         return $this;
