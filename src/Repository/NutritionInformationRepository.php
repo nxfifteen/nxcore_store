@@ -19,6 +19,32 @@ class NutritionInformationRepository extends ServiceEntityRepository
         parent::__construct($registry, NutritionInformation::class);
     }
 
+    public function findLastMeal($patient)
+    {
+        $em = $this->createQueryBuilder('n');
+        return $em
+            ->andWhere('n.patient = :patient')
+            ->andWhere($em->expr()->isNotNull('n.calories'))
+            ->setParameter('patient', $patient)
+            ->orderBy('n.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findLastWater($patient)
+    {
+        $em = $this->createQueryBuilder('n');
+        return $em
+            ->andWhere('n.patient = :patient')
+            ->andWhere($em->expr()->isNotNull('n.water'))
+            ->setParameter('patient', $patient)
+            ->orderBy('n.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return NutritionInformation[] Returns an array of NutritionInformation objects
 //     */
