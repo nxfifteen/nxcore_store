@@ -1,6 +1,7 @@
 <?php
     namespace App\Controller;
 
+    use App\Entity\ApiAccessLog;
     use App\Entity\BodyWeight;
     use App\Entity\CountDailyCalories;
     use App\Entity\CountDailyDistance;
@@ -15,9 +16,12 @@
     use App\Entity\NutritionInformation;
     use App\Entity\SleepEpisode;
     use App\Entity\SportActivity;
+    use App\Entity\ThirdPartyRelations;
     use App\Logger\SiteLogManager;
     use App\Service\MessageGenerator;
+    use DateTime;
     use Doctrine\ORM\EntityManager;
+    use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
     use Symfony\Component\Routing\Annotation\Route;
     use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -29,12 +33,11 @@
          * @param                            $patient
          * @param                            $endpoint
          * @param \App\Logger\SiteLogManager $logManager
+         *
          * @return \Symfony\Component\HttpFoundation\JsonResponse
          */
-        public function last($patient, $endpoint, SiteLogManager $logManager)
+        public function entityClassSearch( $patient, $endpoint, SiteLogManager $logManager )
         {
-            $logManager->nxrInfo("Last entry for $patient in $endpoint was:");
-
             $trackers = null;
             switch ($endpoint) {
                 case "BodyWeight":
@@ -135,4 +138,132 @@
                 return $this->json([ $returnDate ]);
             }
         }
+
+        /**
+         * @Route("/api/last/{patient}/{endpoint}/{service}", name="last_recorded_api_access")
+         * @param                            $patient
+         * @param                            $endpoint
+         * @param                            $service
+         * @param \App\Logger\SiteLogManager $logManager
+         *
+         * @return \Symfony\Component\HttpFoundation\JsonResponse
+         */
+        public function apiAccessLogSearch( $patient, $endpoint, $service, SiteLogManager $logManager )
+        {
+//            $dbRecordSearch = $this->entityClassSearch($patient, $endpoint, $logManager);
+//            return $dbRecordSearch;
+
+            $apiAccessDoctrine = $this->getDoctrine()
+                ->getRepository(ApiAccessLog::class)
+                ->findBy(['patient' => $patient, 'thirdPartyService' => $service, 'entity' => $endpoint], ['id' => 'DESC']);
+
+            if (!$apiAccessDoctrine) {
+
+                try {
+                    $dbRecordSearch = $this->entityClassSearch($patient, $endpoint, $logManager);
+                    return $dbRecordSearch;
+                } catch (NotFoundHttpException $exception) {
+                    $serviceRelationsDoctrine = $this->getDoctrine()
+                        ->getRepository(ThirdPartyRelations::class)
+                        ->findBy(['patient' => $patient, 'thirdPartyService' => $service]);
+
+                    if (!$serviceRelationsDoctrine) {
+                        throw $this->createNotFoundException(
+                            'Class not found for ' . $endpoint
+                        );
+                    }
+
+                    $serviceRelationsDoctrine = $serviceRelationsDoctrine[0];
+
+                    /** @var ThirdPartyRelations $serviceRelationsDoctrine */
+                    return $this->json([ $serviceRelationsDoctrine->getMemberSince()->format("Y-m-d H:i:s") ]);
+                }
+
+            } else {
+                $apiAccessDoctrine = $apiAccessDoctrine[0];
+
+                /** @var ApiAccessLog $apiAccessDoctrine */
+                return $this->json([ $apiAccessDoctrine->getLastRetrieved()->format("Y-m-d H:i:s") ]);
+            }
+        }
+
+        /**
+         * @Route("/api/cooldown/{patient}/{endpoint}/{service}", name="cooldown_api_access")
+         * @param                            $patient
+         * @param                            $endpoint
+         * @param                            $service
+         * @param \App\Logger\SiteLogManager $logManager
+         *
+         * @return \Symfony\Component\HttpFoundation\JsonResponse
+         */
+        public function apiAccessLogCooled( $patient, $endpoint, $service, SiteLogManager $logManager )
+        {
+            $apiAccessDoctrine = $this->getDoctrine()
+                ->getRepository(ApiAccessLog::class)
+                ->findBy(['patient' => $patient, 'thirdPartyService' => $service, 'entity' => $endpoint], ['id' => 'DESC']);
+
+            if (!$apiAccessDoctrine) {
+                $this->json([ TRUE ]);
+            } else {
+                $apiAccessDoctrine = $apiAccessDoctrine[0];
+                /** @var ApiAccessLog $apiAccessDoctrine */
+
+                $currentDate = new DateTime ('now');
+                $coolDownTill = $apiAccessDoctrine->getCooldown();
+
+                if ( $coolDownTill->format("U") < $currentDate->format("U") ) {
+                    return $this->json([ TRUE ]);
+                } else {
+                    return $this->json([ FALSE ]);
+                }
+            }
+        }
+
+        /**
+         * @Route("/api/list/{patient}", name="last_recorded_api_list")
+         * @param                            $patient
+         * @param \App\Logger\SiteLogManager $logManager
+         *
+         * @return \Symfony\Component\HttpFoundation\JsonResponse
+         */
+        public function apiAccessLogList( $patient, SiteLogManager $logManager )
+        {
+            $apiAccessDoctrine = $this->getDoctrine()
+                ->getRepository(ApiAccessLog::class)
+                ->findBy(['patient' => $patient], ['entity' => 'ASC']);
+
+            if (!$apiAccessDoctrine) {
+                throw $this->createNotFoundException(
+                    'Class not found for ' . $patient
+                );
+            } else {
+                $returnJsonArray = [];
+                /** @var ApiAccessLog $classDoctrine */
+                foreach ( $apiAccessDoctrine as $classDoctrine ) {
+                    $returnJsonArray[ $classDoctrine->getEntity() ] = [];
+
+                    if (!is_null($classDoctrine->getLastPulled())) {
+                        $returnJsonArray[ $classDoctrine->getEntity() ]['LastPulled'] = $classDoctrine->getLastPulled()->format("Y-m-d H:i:s");
+                    } else {
+                        $returnJsonArray[ $classDoctrine->getEntity() ]['LastPulled'] = NULL;
+                    }
+
+                    if (!is_null($classDoctrine->getLastRetrieved())) {
+                        $returnJsonArray[ $classDoctrine->getEntity() ]['LastRetrieved'] = $classDoctrine->getLastRetrieved()->format("Y-m-d H:i:s");
+                        $daysLeft = ( strtotime(date("Y-m-d")) - strtotime($classDoctrine->getLastRetrieved()->format("Y-m-d")) ) / ( 60 * 60 * 24 );
+                        $returnJsonArray[ $classDoctrine->getEntity() ]['daysLeft'] = round($daysLeft, 0);
+                        if ($returnJsonArray[ $classDoctrine->getEntity() ]['daysLeft'] <= 1) {
+                            unset($returnJsonArray[ $classDoctrine->getEntity() ]);
+                        }
+                    } else {
+                        $returnJsonArray[ $classDoctrine->getEntity() ]['LastRetrieved'] = NULL;
+                        $returnJsonArray[ $classDoctrine->getEntity() ]['daysLeft'] = -1;
+                        unset($returnJsonArray[ $classDoctrine->getEntity() ]);
+                    }
+                }
+
+                return $this->json( $returnJsonArray );
+            }
+        }
+
     }
