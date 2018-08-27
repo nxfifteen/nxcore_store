@@ -17,9 +17,7 @@
                 ->findBy(['sportTrack' => $id]);
 
             if (!$product) {
-                throw $this->createNotFoundException(
-                    'No product found for id '.$id
-                );
+                return $this->json([]);
             }
 
             $timeStampsInTrack = [];
