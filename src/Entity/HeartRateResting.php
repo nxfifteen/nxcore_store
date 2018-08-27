@@ -10,7 +10,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DailyRestRate", columns={"date","patient_id"})})
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date": "exact", "patient": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date": "exact", "patient": "exact", "service": "exact"})
  */
 class HeartRateResting
 {
@@ -42,6 +42,12 @@ class HeartRateResting
      * @ORM\JoinColumn(name="heart_rate_id", referencedColumnName="id")
      */
     private $heartRate;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
+     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     */
+    private $thirdPartyService;
 
     public function getId(): ?int
     {
@@ -92,6 +98,18 @@ class HeartRateResting
     public function setHeartRate(?HeartRate $heartRate): self
     {
         $this->heartRate = $heartRate;
+
+        return $this;
+    }
+
+    public function getThirdPartyService(): ?ThirdPartyService
+    {
+        return $this->thirdPartyService;
+    }
+
+    public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
+    {
+        $this->thirdPartyService = $thirdPartyService;
 
         return $this;
     }

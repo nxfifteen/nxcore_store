@@ -54,6 +54,12 @@ class BodyFat
      */
     private $partOfDay;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
+     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     */
+    private $thirdPartyService;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -127,6 +133,18 @@ class BodyFat
     public function setGoal(?float $goal): self
     {
         $this->goal = $goal;
+
+        return $this;
+    }
+
+    public function getThirdPartyService(): ?ThirdPartyService
+    {
+        return $this->thirdPartyService;
+    }
+
+    public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
+    {
+        $this->thirdPartyService = $thirdPartyService;
 
         return $this;
     }

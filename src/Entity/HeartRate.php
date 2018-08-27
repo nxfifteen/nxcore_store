@@ -13,7 +13,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  *         )})
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "average": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "average": "exact", "service": "exact"})
  */
 class HeartRate
 {
@@ -23,6 +23,12 @@ class HeartRate
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
+     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     */
+    private $thirdPartyService;
 
     /**
      * @ORM\Column(type="integer", length=3, nullable=true)
@@ -200,6 +206,18 @@ class HeartRate
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;
+
+        return $this;
+    }
+
+    public function getThirdPartyService(): ?ThirdPartyService
+    {
+        return $this->thirdPartyService;
+    }
+
+    public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
+    {
+        $this->thirdPartyService = $thirdPartyService;
 
         return $this;
     }

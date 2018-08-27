@@ -10,7 +10,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"patient_id","date_time"})})
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact", "service": "exact"})
  */
 class CountDailyDistance
 {
@@ -47,6 +47,12 @@ class CountDailyDistance
      * @ORM\JoinColumn(name="unit", referencedColumnName="id")
      */
     private $unitOfMeasurement;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
+     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     */
+    private $thirdPartyService;
 
     public function getId(): ?int
     {
@@ -109,6 +115,18 @@ class CountDailyDistance
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;
+
+        return $this;
+    }
+
+    public function getThirdPartyService(): ?ThirdPartyService
+    {
+        return $this->thirdPartyService;
+    }
+
+    public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
+    {
+        $this->thirdPartyService = $thirdPartyService;
 
         return $this;
     }
