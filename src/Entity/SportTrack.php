@@ -12,7 +12,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="ActivityTrack", columns={"total_time","start_time","total_distance","patient_id"})})
  *
  * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "start_time": "exact", "total_time": "exact", "total_distance": "exact", "method": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "start_time": "exact", "total_time": "exact", "total_distance": "exact", "method": "exact", "patient": "exact", "trackingDevice": "exact"})
  */
 class SportTrack
 {
