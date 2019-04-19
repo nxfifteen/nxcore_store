@@ -163,6 +163,7 @@
                 "Id" => "LifeTracked",
                 "User" => $trackedEntity->getTracker()->getPatient()->getId(),
                 "Name" => $trackedEntity->getTracker()->getName(),
+                "Colour" => $trackedEntity->getTracker()->getColour(),
                 "Value" => $trackedEntity->getValue(),
                 "Score" => $trackedEntity->getScore(),
                 "DateTime" => $trackedEntity->getDateTime()->format("Y-m-d")
