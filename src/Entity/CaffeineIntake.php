@@ -1,43 +1,41 @@
 <?php
+
 namespace App\Entity;
-use Doctrine\ORM\Mapping as ORM;
+
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\CountDailyFloorRepository")
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"patient_id","date_time", "service"})})
+ * @ApiResource()
+ * @ORM\Entity(repositoryClass="App\Repository\CaffeineIntakeRepository")
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"date_time","patient_id","tracker"})})
  *
- * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact", "service": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact"})
  */
-class CountDailyFloor
+class CaffeineIntake
 {
     /**
-     * @ORM\Id
+     * @ORM\Id()
+     * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="datetime")
      */
     private $date_time;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="App\Entity\PartOfDay")
+     * @ORM\JoinColumn(name="part_of_day", referencedColumnName="id")
      */
-    private $value;
+    private $partOfDay;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $goal;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="floorCount")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="waterIntakes")
      * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
      */
     private $patient;
@@ -54,6 +52,16 @@ class CountDailyFloor
      */
     private $trackingDevice;
 
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $measurement;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private $comment;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -64,33 +72,21 @@ class CountDailyFloor
         return $this->date_time;
     }
 
-    public function setDateTime(?\DateTimeInterface $date_time): self
+    public function setDateTime(\DateTimeInterface $date_time): self
     {
         $this->date_time = $date_time;
 
         return $this;
     }
 
-    public function getValue(): ?int
+    public function getPartOfDay(): ?PartOfDay
     {
-        return $this->value;
+        return $this->partOfDay;
     }
 
-    public function setValue(?int $value): self
+    public function setPartOfDay(?PartOfDay $partOfDay): self
     {
-        $this->value = $value;
-
-        return $this;
-    }
-
-    public function getGoal(): ?int
-    {
-        return $this->goal;
-    }
-
-    public function setGoal(?int $goal): self
-    {
-        $this->goal = $goal;
+        $this->partOfDay = $partOfDay;
 
         return $this;
     }
@@ -119,6 +115,18 @@ class CountDailyFloor
         return $this;
     }
 
+    public function getMeasurement(): ?float
+    {
+        return $this->measurement;
+    }
+
+    public function setMeasurement( float $measurement): self
+    {
+        $this->measurement = $measurement;
+
+        return $this;
+    }
+
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
@@ -127,6 +135,18 @@ class CountDailyFloor
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment( string $comment): self
+    {
+        $this->comment = $comment;
 
         return $this;
     }

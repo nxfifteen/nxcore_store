@@ -2,21 +2,21 @@
 
 namespace App\Repository;
 
-use App\Entity\CountDailyFloor;
+use App\Entity\CaffeineIntake;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
- * @method CountDailyFloor|null find($id, $lockMode = null, $lockVersion = null)
- * @method CountDailyFloor|null findOneBy(array $criteria, array $orderBy = null)
- * @method CountDailyFloor[]    findAll()
- * @method CountDailyFloor[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method CaffeineIntake|null find($id, $lockMode = null, $lockVersion = null)
+ * @method CaffeineIntake|null findOneBy(array $criteria, array $orderBy = null)
+ * @method CaffeineIntake[]    findAll()
+ * @method CaffeineIntake[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class CountDailyFloorRepository extends ServiceEntityRepository
+class CaffeineIntakeRepository extends ServiceEntityRepository
 {
     public function __construct(RegistryInterface $registry)
     {
-        parent::__construct($registry, CountDailyFloor::class);
+        parent::__construct($registry, CaffeineIntake::class);
     }
 
     public function findByDateRange( String $patientId, String $date ) {

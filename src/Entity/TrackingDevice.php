@@ -36,7 +36,7 @@ class TrackingDevice
     private $lastSyncTime;
 
     /**
-     * @ORM\Column(type="string", unique=true, length=20, nullable=true)
+     * @ORM\Column(type="string", unique=true, length=255, nullable=true)
      */
     private $remote_id;
 

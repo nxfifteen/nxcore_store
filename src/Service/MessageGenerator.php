@@ -17,6 +17,11 @@
             $this->logger->critical($msg);
         }
 
+        public function nxrDebug(String $msg)
+        {
+            $this->logger->debug($msg);
+        }
+
         public function nxrInfo(String $msg)
         {
             $this->logger->info($msg);

@@ -10,7 +10,7 @@
      * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="AccessLog", columns={"patient_id","service","entity"})})
      *
      * @ApiResource
-     * @ApiFilter(SearchFilter::class, properties={"id": "exact", "patient_id": "exact", "service": "exact", "entity": "exact"})
+     * @ApiFilter(SearchFilter::class, properties={"id": "exact", "patient": "exact", "thirdPartyService": "exact", "entity": "exact"})
      */
     class ApiAccessLog
     {

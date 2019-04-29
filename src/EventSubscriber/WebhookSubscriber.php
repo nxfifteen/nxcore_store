@@ -70,6 +70,10 @@
                 return $trackedEntity;
             }
 
+            if (!array_key_exists("WEBHOOK_POSTWRITE", $_SERVER)) {
+                return $trackedEntity;
+            }
+
             $entityClass = str_ireplace("App\\Entity\\","", get_class($trackedEntity));
             if (!$trackedEntity instanceof CountDailyCalories &&
                 !$trackedEntity instanceof CountDailyDistance &&
@@ -91,10 +95,6 @@
             }
 
             $this->logManager->nxrInfo("Event write from " . $entityClass);
-
-            if (!array_key_exists("WEBHOOK_POSTWRITE", $_SERVER)) {
-                return $trackedEntity;
-            }
 
             $content = null;
             if ($trackedEntity instanceof CountDailyCalories) {

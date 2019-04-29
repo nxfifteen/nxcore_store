@@ -19,32 +19,20 @@ class CountDailyStepRepository extends ServiceEntityRepository
         parent::__construct($registry, CountDailyStep::class);
     }
 
-//    /**
-//     * @return CountDailyStep[] Returns an array of CountDailyStep objects
-//     */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+    public function findByDateRange( String $patientId, String $date ) {
+        $today = $date . " 00:00:00";
+        $todayEnd = $date . " 23:59:00";
 
-    /*
-    public function findOneBySomeField($value): ?CountDailyStep
-    {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('c.date_time >= :val')
+            ->setParameter('val', $today)
+            ->andWhere('c.date_time <= :valEnd')
+            ->setParameter('valEnd', $todayEnd)
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.date_time', 'ASC')
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
     }
-    */
 }

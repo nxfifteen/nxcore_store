@@ -19,32 +19,14 @@ class TrackingDeviceRepository extends ServiceEntityRepository
         parent::__construct($registry, TrackingDevice::class);
     }
 
-//    /**
-//     * @return TrackingDevice[] Returns an array of TrackingDevice objects
-//     */
-    /*
-    public function findByExampleField($value)
+    public function findOneByRemoteId($value): ?TrackingDevice
     {
         return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?TrackingDevice
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
+            ->andWhere('t.remote_id = :val')
             ->setParameter('val', $value)
             ->getQuery()
             ->getOneOrNullResult()
-        ;
+            ;
     }
-    */
+
 }

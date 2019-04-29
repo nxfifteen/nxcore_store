@@ -1,13 +1,26 @@
 security:
-    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
-    providers:
-        api_key_user_provider:
-            id: App\Security\ApiKeyUserProvider
+  encoders:
+    App\Entity\Patient:
+      cost: 12
+      algorithm: bcrypt
 
-    firewalls:
-        main:
-            pattern: ^/api
-            stateless: true
-            simple_preauth:
-                authenticator: App\Security\ApiKeyAuthenticator
-            provider: api_key_user_provider
+  # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+  providers:
+    app_user_key_provider:
+      entity:
+        class: App\Entity\Patient
+        property: apiToken
+
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js|api)/
+      security: false
+
+    main:
+      anonymous: ~
+      guard:
+        authenticators:
+        - App\Security\TokenAuthenticator
+
+  access_control:
+    - { path: ^/json, roles: ROLE_USER }

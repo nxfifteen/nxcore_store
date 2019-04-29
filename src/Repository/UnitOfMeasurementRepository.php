@@ -19,6 +19,16 @@ class UnitOfMeasurementRepository extends ServiceEntityRepository
         parent::__construct($registry, UnitOfMeasurement::class);
     }
 
+    public function findOneByName($value): ?UnitOfMeasurement
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.name = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
+    }
+
 //    /**
 //     * @return UnitOfMeasurement[] Returns an array of UnitOfMeasurement objects
 //     */
@@ -37,14 +47,6 @@ class UnitOfMeasurementRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?UnitOfMeasurement
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
+
     */
 }

@@ -29,6 +29,11 @@
             $this->messageGenerator->nxrInfo($msg);
         }
 
+        public function nxrDebug(String $msg)
+        {
+            $this->messageGenerator->nxrDebug($msg);
+        }
+
         public function nxrError(String $msg)
         {
             $this->messageGenerator->nxrError($msg);
