@@ -10,9 +10,9 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 /**
  * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\ExerciseRepository")
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"start_time","patient_id","tracker_id"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"date_time","patient_id","tracker_id"})})
  *
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "start_time": "exact", "end_time": "exact", "patient": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "date_time_end": "exact", "patient": "exact"})
  */
 class Exercise
 {
@@ -26,12 +26,12 @@ class Exercise
     /**
      * @ORM\Column(type="datetime")
      */
-    private $start_time;
+    private $date_time;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $end_time;
+    private $date_time_end;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
@@ -91,35 +91,41 @@ class Exercise
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\TrackingDevice")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="id")
      */
     private $tracker;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="id")
+     */
+    private $thirdPartyService;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getStartTime(): ?\DateTimeInterface
+    public function getDateTime(): ?\DateTimeInterface
     {
-        return $this->start_time;
+        return $this->date_time;
     }
 
-    public function setStartTime(\DateTimeInterface $start_time): self
+    public function setDateTime(\DateTimeInterface $date_time): self
     {
-        $this->start_time = $start_time;
+        $this->date_time = $date_time;
 
         return $this;
     }
 
-    public function getEndTime(): ?\DateTimeInterface
+    public function getDateTimeEnd(): ?\DateTimeInterface
     {
-        return $this->end_time;
+        return $this->date_time_end;
     }
 
-    public function setEndTime(\DateTimeInterface $end_time): self
+    public function setDateTimeEnd(\DateTimeInterface $date_time_end): self
     {
-        $this->end_time = $end_time;
+        $this->date_time_end = $date_time_end;
 
         return $this;
     }
@@ -264,6 +270,18 @@ class Exercise
     public function setTracker(?TrackingDevice $tracker): self
     {
         $this->tracker = $tracker;
+
+        return $this;
+    }
+
+    public function getThirdPartyService(): ?ThirdPartyService
+    {
+        return $this->thirdPartyService;
+    }
+
+    public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
+    {
+        $this->thirdPartyService = $thirdPartyService;
 
         return $this;
     }

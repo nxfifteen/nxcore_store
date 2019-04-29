@@ -405,8 +405,8 @@
 
         public function modifyWriteExercise( Exercise $trackedEntity, Request $request ) {
             /** @var Exercise[] $previousData */
-            $trackerStartDate = $trackedEntity->getStartTime();
-            $trackerEndDate = $trackedEntity->getEndTime();
+            $trackerStartDate = $trackedEntity->getDateTime();
+            $trackerEndDate = $trackedEntity->getDateTimeEnd();
             $trackerPatient = $trackedEntity->getPatient();
             $trackingDevice = $trackedEntity->getTracker();
             if (!$trackingDevice instanceof TrackingDevice) {
@@ -414,8 +414,10 @@
                 $trackedEntity->setTracker($trackingDevice);
             }
 
+            $trackedEntity->setDuration($trackerEndDate->format("U") - $trackerStartDate->format("U"));
+
             $previousData = $this->em->getRepository(Exercise::class)
-                ->findBy([ 'start_time' => $trackerStartDate, 'end_time' => $trackerEndDate, 'patient' => $trackerPatient, 'trackingDevice' => $trackingDevice ]);
+                ->findBy([ 'date_time' => $trackerStartDate, 'date_time_end' => $trackerEndDate, 'patient' => $trackerPatient, 'tracker' => $trackingDevice ]);
 
             if (!$previousData) {
                 return [TRUE, $trackedEntity];
