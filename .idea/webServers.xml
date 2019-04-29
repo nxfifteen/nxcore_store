@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="3ab79b87-b134-4c0b-a7b6-d098139dd8db" name="Odin" url="https://stuartma.synology.me:8124/">
+        <fileTransfer host="192.168.0.201" port="22" rootFolder="/var/www/dev/nxhealth" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

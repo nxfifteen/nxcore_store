@@ -14,6 +14,7 @@
     use App\Entity\BodyWeight;
     use App\Entity\CaffeineIntake;
     use App\Entity\CountDailyFloor;
+    use App\Entity\Exercise;
     use App\Entity\Patient;
     use App\Entity\ThirdPartyService;
     use App\Entity\TrackingDevice;
@@ -95,7 +96,8 @@
                 !$trackedEntity instanceof BodyFat &&
                 !$trackedEntity instanceof CountDailyFloor &&
                 !$trackedEntity instanceof WaterIntake &&
-                !$trackedEntity instanceof CaffeineIntake) {
+                !$trackedEntity instanceof CaffeineIntake &&
+                !$trackedEntity instanceof Exercise) {
                 $this->logManager->nxrInfo("Unknown write event from " . $entityClass);
 
                 if (!method_exists($this, $modifyWriteMethod)) {
@@ -393,6 +395,41 @@
                 $dataChanged = true;
                 $previousData->setComment($trackedEntity->getComment());
             }
+
+            if($dataChanged) {
+                $this->em->flush();
+            }
+
+            return [FALSE, $trackedEntity];
+        }
+
+        public function modifyWriteExercise( Exercise $trackedEntity, Request $request ) {
+            /** @var Exercise[] $previousData */
+            $trackerStartDate = $trackedEntity->getDateTime();
+            $trackerEndDate = $trackedEntity->getDateTimeEnd();
+            $trackerPatient = $trackedEntity->getPatient();
+            $trackingDevice = $trackedEntity->getTracker();
+            if (!$trackingDevice instanceof TrackingDevice) {
+                $trackingDevice = $this->getTrackerEntry($trackedEntity, $request);
+                $trackedEntity->setTracker($trackingDevice);
+            }
+
+            $trackedEntity->setDuration($trackerEndDate->format("U") - $trackerStartDate->format("U"));
+
+            $previousData = $this->em->getRepository(Exercise::class)
+                ->findBy([ 'date_time' => $trackerStartDate, 'date_time_end' => $trackerEndDate, 'patient' => $trackerPatient, 'tracker' => $trackingDevice ]);
+
+            if (!$previousData) {
+                return [TRUE, $trackedEntity];
+            }
+
+            $dataChanged = false;
+//            $previousData = $previousData[0];
+//
+//            if ( $previousData->getMeasurement() != $trackedEntity->getMeasurement() ) {
+//                $dataChanged = true;
+//                $previousData->setMeasurement($trackedEntity->getMeasurement());
+//            }
 
             if($dataChanged) {
                 $this->em->flush();

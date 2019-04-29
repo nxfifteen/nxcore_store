@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Odin">
+    <serverData>
+      <paths name="Odin">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/store" local="$PROJECT_DIR$" web="/api/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/var/cache" />
+            <excludedPath local="true" path="$PROJECT_DIR$/var/log" />
+            <excludedPath local="true" path="$PROJECT_DIR$/vendor" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
