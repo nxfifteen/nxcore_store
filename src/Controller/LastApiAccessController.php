@@ -49,7 +49,7 @@ class LastApiAccessController extends AbstractController
             $return['status'] = "error";
             $return['code'] = "404";
             $return['message'] = "Patient not found with UUID specified";
-            $return['payload'] = "2000-01-01 00:00:00";
+            $return['payload'] = "2000-01-01 00:00:00.000";
 
             return $this->json($return);
         }
@@ -63,7 +63,7 @@ class LastApiAccessController extends AbstractController
             $return['status'] = "warning";
             $return['code'] = "201";
             $return['message'] = "No last access log for Service/EndPoint combination";
-            $return['payload'] = "2000-01-01 00:00:00";
+            $return['payload'] = "2000-01-01 00:00:00.000";
 
             return $this->json($return);
         }
@@ -71,7 +71,7 @@ class LastApiAccessController extends AbstractController
         $return['status'] = "okay";
         $return['code'] = "200";
         $return['message'] = "";
-        $return['payload'] = $apiAccessLog->getLastRetrieved()->format("Y-m-d H:i:s");
+        $return['payload'] = $apiAccessLog->getLastRetrieved()->format("Y-m-d H:i:s.v");
 
         return $this->json($return);
     }
