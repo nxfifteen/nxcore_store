@@ -44,22 +44,32 @@
          */
         public function countDailyStep( String $id )
         {
-
-            return $this->countDailyStepDate($id, date("Y-m-d"));
+            return $this->countDailyStepDateTracker($id, date("Y-m-d"), -1);
         }
 
         /**
-         * @Route("/json/{id}/count/daily/steps/{date}", name="count_daily_step_date")
+         * @Route("/json/{id}/count/daily/steps/{trackingDevice}", name="count_daily_step_trackingDevice")
          * @param String $id
-         * @param String $date
+         * @param int $trackingDevice
          * @return \Symfony\Component\HttpFoundation\JsonResponse
          */
-        public function countDailyStepDate( String $id, String $date )
+        public function countDailyStepTracker(String $id, int $trackingDevice)
+        {
+            return $this->countDailyStepDateTracker($id, date("Y-m-d"), $trackingDevice);
+        }
+        /**
+         * @Route("/json/{id}/count/daily/steps/{trackingDevice}/{date}", name="count_daily_step_date_trackingDevice")
+         * @param String $id
+         * @param String $date
+         * @param int $trackingDevice
+         * @return \Symfony\Component\HttpFoundation\JsonResponse
+         */
+        public function countDailyStepDateTracker(String $id, String $date, int $trackingDevice)
         {
             /** @noinspection PhpUndefinedMethodInspection */
             $product = $this->getDoctrine()
                 ->getRepository(CountDailyStep::class)
-                ->findByDateRange($id, $date);
+                ->findByDateRange($id, $date, $trackingDevice);
 
             $timeStampsInTrack = [];
             $timeStampsInTrack[ 'uuid' ] = $id;
@@ -84,6 +94,7 @@
                         $recordItem = [];
                         $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
                         $recordItem[ 'value' ] = $item->getValue();
+                        $recordItem['tracker'] = $item->getTrackingDevice()->getName();
                         $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
 
                         $timeStampsInTrack[ 'values' ][] = $recordItem;
