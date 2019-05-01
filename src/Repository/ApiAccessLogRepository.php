@@ -19,32 +19,17 @@ class ApiAccessLogRepository extends ServiceEntityRepository
         parent::__construct($registry, ApiAccessLog::class);
     }
 
-//    /**
-//     * @return ApiAccessLog[] Returns an array of ApiAccessLog objects
-//     */
-    /*
-    public function findByExampleField($value)
+    public function findLastAccess($patient, $service, $entity): ?ApiAccessLog
     {
         return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('a.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?ApiAccessLog
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('a.patient = :patientId')
+            ->setParameter('patientId', $patient)
+            ->andWhere('a.thirdPartyService = :serviceId')
+            ->setParameter('serviceId', $service)
+            ->andWhere('a.entity = :val')
+            ->setParameter('val', $entity)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-    */
 }
