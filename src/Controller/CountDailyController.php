@@ -51,11 +51,16 @@
             $timeStampsInTrack[ 'values' ] = [];
 
             if ( count($product) > 0 ) {
+                $goals = 0;
+
                 /** @var CountDailyFloor[] $product */
                 foreach ( $product as $item ) {
                     if ( is_numeric($item->getValue()) ) {
                         $timeStampsInTrack[ 'sum' ] = $timeStampsInTrack[ 'sum' ] + $item->getValue();
-                        $timeStampsInTrack[ 'goal' ] = $timeStampsInTrack[ 'goal' ] + $item->getGoal();
+                        if (is_numeric($item->getGoal())) {
+                            $goals = $goals + 1;
+                            $timeStampsInTrack['goal'] = $timeStampsInTrack['goal'] + $item->getGoal();
+                        }
 
                         $recordItem = [];
                         $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
@@ -69,7 +74,11 @@
                     $timeStampsInTrack[ 'lastReading' ] = $item->getDateTime()->format("H:i:s");
                 }
 
-                $timeStampsInTrack[ 'goal' ] = $timeStampsInTrack[ 'goal' ] / count($product);
+                if ($goals > 0) {
+                    $timeStampsInTrack['goal'] = $timeStampsInTrack['goal'] / $goals;
+                } else {
+                    $timeStampsInTrack['goal'] = 0;
+                }
             }
 
             if ( $timeStampsInTrack[ 'goal' ] == 0 ) {
