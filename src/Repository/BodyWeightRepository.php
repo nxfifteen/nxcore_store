@@ -43,7 +43,7 @@ class BodyWeightRepository extends ServiceEntityRepository
             ->leftJoin('c.patient', 'p')
             ->andWhere('p.uuid = :patientId')
             ->setParameter('patientId', $patientId)
-            ->orderBy('c.date_time', 'DEC')
+            ->orderBy('c.date_time', 'DESC')
             ->getQuery()
             ->getResult();
     }
