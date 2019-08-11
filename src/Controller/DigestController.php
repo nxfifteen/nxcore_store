@@ -58,7 +58,10 @@
             $jsonDigest['steps'] = $this->compileSteps($id, date("Y-m-d"), -1);
             $jsonDigest['floors'] = $this->compileFloor($id, date("Y-m-d"));
             $jsonDigest['water'] = $this->compileWater($id, date("Y-m-d"));
-            $jsonDigest['body'] = $this->compileBody($id, date("Y-m-d"));
+            $body = $this->compileBody($id, date("Y-m-d"));
+            $jsonDigest['weight'] = $body['weight'];
+            $jsonDigest['fat'] = $body['fat'];
+            $jsonDigest['bmi'] = $body['bmi'];
 
             return $this->json($jsonDigest);
         }
@@ -77,10 +80,9 @@
                 ->findByDateRange($id, $date, $trackingDevice);
 
             $timeStampsInTrack = [];
-            $timeStampsInTrack[ 'lastReading' ] = $date;
-            $timeStampsInTrack[ 'sum' ] = 0;
+            $timeStampsInTrack[ 'value' ] = 0;
             $timeStampsInTrack[ 'goal' ] = 0;
-            $timeStampsInTrack[ 'values' ] = [];
+            // $timeStampsInTrack[ 'values' ] = [];
 
             if ( count($product) > 0 ) {
                 $goals = 0;
@@ -88,19 +90,19 @@
                 /** @var CountDailyFloor[] $product */
                 foreach ( $product as $item ) {
                     if ( is_numeric($item->getValue()) ) {
-                        $timeStampsInTrack[ 'sum' ] = $timeStampsInTrack[ 'sum' ] + $item->getValue();
+                        $timeStampsInTrack[ 'value' ] = $timeStampsInTrack[ 'value' ] + $item->getValue();
                         if (is_numeric($item->getGoal())) {
                             $goals = $goals + 1;
                             $timeStampsInTrack['goal'] = $timeStampsInTrack['goal'] + $item->getGoal();
                         }
 
-                        $recordItem = [];
-                        $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
-                        $recordItem[ 'value' ] = $item->getValue();
-                        $recordItem['tracker'] = $item->getTrackingDevice()->getName();
-                        $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
+                        // $recordItem = [];
+                        // $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
+                        // $recordItem[ 'value' ] = $item->getValue();
+                        // $recordItem['tracker'] = $item->getTrackingDevice()->getName();
+                        // $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
 
-                        $timeStampsInTrack[ 'values' ][] = $recordItem;
+                        // $timeStampsInTrack[ 'values' ][] = $recordItem;
                     }
                 }
                 if ( isset($item) ) {
@@ -143,24 +145,23 @@
                 ->findByDateRange($id, $date);
 
             $timeStampsInTrack = [];
-            $timeStampsInTrack[ 'lastReading' ] = $date;
-            $timeStampsInTrack[ 'sum' ] = 0;
+            $timeStampsInTrack[ 'value' ] = 0;
             $timeStampsInTrack[ 'goal' ] = 0;
-            $timeStampsInTrack[ 'values' ] = [];
+            // $timeStampsInTrack[ 'values' ] = [];
 
             if ( count($product) > 0 ) {
                 /** @var CountDailyFloor[] $product */
                 foreach ( $product as $item ) {
                     if ( is_numeric($item->getValue()) ) {
-                        $timeStampsInTrack[ 'sum' ] = $timeStampsInTrack[ 'sum' ] + $item->getValue();
+                        $timeStampsInTrack[ 'value' ] = $timeStampsInTrack[ 'value' ] + $item->getValue();
                         $timeStampsInTrack[ 'goal' ] = $timeStampsInTrack[ 'goal' ] + $item->getGoal();
 
-                        $recordItem = [];
-                        $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
-                        $recordItem[ 'value' ] = $item->getValue();
-                        $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
+                        // $recordItem = [];
+                        // $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
+                        // $recordItem[ 'value' ] = $item->getValue();
+                        // $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
 
-                        $timeStampsInTrack[ 'values' ][] = $recordItem;
+                        // $timeStampsInTrack[ 'values' ][] = $recordItem;
                     }
                 }
                 if ( isset($item) ) {
@@ -199,24 +200,23 @@
                 ->findByDateRange($id, $date);
 
             $timeStampsInTrack = [];
-            $timeStampsInTrack[ 'lastReading' ] = $date;
-            $timeStampsInTrack[ 'sum' ] = 0;
+            $timeStampsInTrack[ 'value' ] = 0;
             $timeStampsInTrack[ 'goal' ] = 2000;
-            $timeStampsInTrack[ 'values' ] = [];
+            // $timeStampsInTrack[ 'values' ] = [];
 
             if ( count($product) > 0 ) {
                 /** @var WaterIntake[] $product */
                 foreach ( $product as $item ) {
                     if ( is_numeric($item->getMeasurement()) ) {
-                        $timeStampsInTrack[ 'sum' ] = $timeStampsInTrack[ 'sum' ] + $item->getMeasurement();
+                        $timeStampsInTrack[ 'value' ] = $timeStampsInTrack[ 'value' ] + $item->getMeasurement();
 
-                        $recordItem = [];
-                        $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
-                        $recordItem[ 'value' ] = $item->getMeasurement();
-                        $recordItem[ 'comment' ] = $item->getComment();
-                        $recordItem[ 'service' ] = $item->getTrackingDevice()->getName();
+                        // $recordItem = [];
+                        // $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
+                        // $recordItem[ 'value' ] = $item->getMeasurement();
+                        // $recordItem[ 'comment' ] = $item->getComment();
+                        // $recordItem[ 'service' ] = $item->getTrackingDevice()->getName();
 
-                        $timeStampsInTrack[ 'values' ][] = $recordItem;
+                        // $timeStampsInTrack[ 'values' ][] = $recordItem;
                     }
                 }
                 if ( isset($item) ) {
@@ -270,20 +270,17 @@
 
             $bodyWeight = $bodyWeight[0];
             $timeStampsInTrack[ 'weight' ] = [];
-            $timeStampsInTrack[ 'weight' ][ 'date' ] = $bodyWeight->getDateTime()->format("Y-m-d");
-            $timeStampsInTrack[ 'weight' ][ 'measurement' ] = round($bodyWeight->getMeasurement() * 2.20462, 2);
+            $timeStampsInTrack[ 'weight' ][ 'value' ] = round($bodyWeight->getMeasurement() * 2.20462, 2);
             $timeStampsInTrack[ 'weight' ][ 'goal' ] = round($bodyWeight->getGoal() * 2.20462, 2);
 
             $bodyFat = $bodyFat[0];
             $timeStampsInTrack[ 'fat' ] = [];
-            $timeStampsInTrack[ 'fat' ][ 'date' ] = $bodyWeight->getDateTime()->format("Y-m-d");
-            $timeStampsInTrack[ 'fat' ][ 'measurement' ] = $bodyFat->getMeasurement();
+            $timeStampsInTrack[ 'fat' ][ 'value' ] = $bodyFat->getMeasurement();
             $timeStampsInTrack[ 'fat' ][ 'goal' ] = 21;
 
             $bodyBmi = $bodyBmi[0];
             $timeStampsInTrack[ 'bmi' ] = [];
-            $timeStampsInTrack[ 'bmi' ][ 'date' ] = $bodyWeight->getDateTime()->format("Y-m-d");
-            $timeStampsInTrack[ 'bmi' ][ 'measurement' ] = $bodyBmi->getMeasurement();
+            $timeStampsInTrack[ 'bmi' ][ 'value' ] = $bodyBmi->getMeasurement();
             $timeStampsInTrack[ 'bmi' ][ 'goal' ] = 22;
 
             return $timeStampsInTrack;
