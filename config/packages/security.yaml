@@ -1,0 +1,26 @@
+security:
+  encoders:
+    App\Entity\Patient:
+      cost: 12
+      algorithm: bcrypt
+
+  # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+  providers:
+    app_user_key_provider:
+      entity:
+        class: App\Entity\Patient
+        property: apiToken
+
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js|api)/
+      security: false
+
+    main:
+      anonymous: ~
+      guard:
+        authenticators:
+        - App\Security\TokenAuthenticator
+
+  access_control:
+    - { path: ^/json, roles: ROLE_USER }

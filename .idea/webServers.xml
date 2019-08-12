@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="3ab79b87-b134-4c0b-a7b6-d098139dd8db" name="Odin" url="https://core.ha.anderson.eu.com/">
+        <fileTransfer host="192.168.80.1" port="22" rootFolder="/var/www/localhost/htdocs/store" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
