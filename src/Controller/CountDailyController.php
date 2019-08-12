@@ -28,8 +28,6 @@
     use App\Entity\CountDailyStep;
     use App\Entity\Patient;
     use App\Entity\WaterIntake;
-    use App\Repository\CountDailyFloorRepository;
-    use DateTime;
     use Doctrine\Common\Collections\Criteria;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\Routing\Annotation\Route;
@@ -82,7 +80,7 @@
             if ( count($product) > 0 ) {
                 $goals = 0;
 
-                /** @var CountDailyFloor[] $product */
+                /** @var CountDailyStep[] $product */
                 foreach ( $product as $item ) {
                     if ( is_numeric($item->getValue()) ) {
                         $timeStampsInTrack[ 'sum' ] = $timeStampsInTrack[ 'sum' ] + $item->getValue();
@@ -94,8 +92,8 @@
                         $recordItem = [];
                         $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
                         $recordItem[ 'value' ] = $item->getValue();
-                        $recordItem['tracker'] = $item->getTrackingDevice()->getName();
-                        $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
+                        if (!is_null($item->getTrackingDevice())) $recordItem[ 'tracker' ] = $item->getTrackingDevice()->getName();
+                        if (!is_null($item->getThirdPartyService())) $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
 
                         $timeStampsInTrack[ 'values' ][] = $recordItem;
                     }
@@ -168,7 +166,7 @@
                         $recordItem = [];
                         $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
                         $recordItem[ 'value' ] = $item->getValue();
-                        $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
+                        if (!is_null($item->getThirdPartyService())) $recordItem[ 'service' ] = $item->getThirdPartyService()->getName();
 
                         $timeStampsInTrack[ 'values' ][] = $recordItem;
                     }
@@ -237,7 +235,7 @@
                         $recordItem[ 'dateTime' ] = $item->getDateTime()->format("H:i:s");
                         $recordItem[ 'value' ] = $item->getMeasurement();
                         $recordItem[ 'comment' ] = $item->getComment();
-                        $recordItem[ 'service' ] = $item->getTrackingDevice()->getName();
+                        if (!is_null($item->getTrackingDevice())) $recordItem[ 'service' ] = $item->getTrackingDevice()->getName();
 
                         $timeStampsInTrack[ 'values' ][] = $recordItem;
                     }
