@@ -20,14 +20,10 @@
 */
 
 namespace App\Entity;
-use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\IntradayStepRepository")
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"patient_id","date","hour"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"patient_id","date","hour","service","tracker"})})
  *
  * @ApiResource
  * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date": "exact", "patient": "exact", "hour": "exact", "service": "exact"})
@@ -42,7 +38,7 @@ class IntradayStep
     private $id;
 
     /**
-     * @ORM\Column(type="date", nullable=true)
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $date;
 
@@ -57,6 +53,11 @@ class IntradayStep
     private $value;
 
     /**
+     * @ORM\Column(type="integer", length=6, nullable=true)
+     */
+    private $duration;
+
+    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
      */
@@ -67,6 +68,12 @@ class IntradayStep
      * @ORM\JoinColumn(name="service", referencedColumnName="id")
      */
     private $thirdPartyService;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\TrackingDevice")
+     * @ORM\JoinColumn(name="tracker", referencedColumnName="id")
+     */
+    private $trackingDevice;
 
     public function getId(): ?int
     {
@@ -109,6 +116,18 @@ class IntradayStep
         return $this;
     }
 
+    public function getDuration(): ?int
+    {
+        return $this->duration;
+    }
+
+    public function setDuration(?int $duration): self
+    {
+        $this->duration = $duration;
+
+        return $this;
+    }
+
     public function getPatient(): ?Patient
     {
         return $this->patient;
@@ -129,6 +148,18 @@ class IntradayStep
     public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
     {
         $this->thirdPartyService = $thirdPartyService;
+
+        return $this;
+    }
+
+    public function getTrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
 
         return $this;
     }

@@ -20,10 +20,6 @@
 */
 
 namespace App\Entity;
-use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TrackingDeviceRepository")
@@ -46,6 +42,11 @@ class TrackingDevice
     private $name;
 
     /**
+     * @ORM\Column(type="string", length=200, nullable=true)
+     */
+    private $comment;
+
+    /**
      * @ORM\Column(type="integer", length=3, nullable=true)
      */
     private $battery;
@@ -64,6 +65,16 @@ class TrackingDevice
      * @ORM\Column(type="string", length=150, nullable=true)
      */
     private $type;
+
+    /**
+     * @ORM\Column(type="string", length=200, nullable=true)
+     */
+    private $manufacturer;
+
+    /**
+     * @ORM\Column(type="string", length=200, nullable=true)
+     */
+    private $model;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="trackingDevice")
@@ -162,6 +173,42 @@ class TrackingDevice
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;
+
+        return $this;
+    }
+
+    public function getManufacturer(): ?string
+    {
+        return $this->manufacturer;
+    }
+
+    public function setManufacturer(?string $manufacturer): self
+    {
+        $this->manufacturer = $manufacturer;
+
+        return $this;
+    }
+
+    public function getModel(): ?string
+    {
+        return $this->model;
+    }
+
+    public function setModel(?string $model): self
+    {
+        $this->model = $model;
+
+        return $this;
+    }
+    
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+    
+    public function setComment($comment): self
+    {
+        $this->comment = $comment;
 
         return $this;
     }

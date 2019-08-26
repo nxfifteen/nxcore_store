@@ -38,6 +38,16 @@ class PartOfDayRepository extends ServiceEntityRepository
         parent::__construct($registry, PartOfDay::class);
     }
 
+    public function findOneByName($value): ?PartOfDay
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.name = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
+    }
+
 //    /**
 //     * @return PartOfDay[] Returns an array of PartOfDay objects
 //     */

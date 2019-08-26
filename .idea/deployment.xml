@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="Odin" uploadOnCheckin="3ab79b87-b134-4c0b-a7b6-d098139dd8db">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Odin" uploadOnCheckin="3ab79b87-b134-4c0b-a7b6-d098139dd8db">
     <serverData>
       <paths name="Odin">
         <serverdata>
@@ -16,5 +16,6 @@
       </paths>
     </serverData>
     <option name="myUploadOnCheckinName" value="Odin" />
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>
