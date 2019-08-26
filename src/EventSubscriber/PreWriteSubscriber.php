@@ -22,31 +22,41 @@
 namespace App\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use App\Entity\ApiAccessLog;
 use App\Entity\BodyBmi;
 use App\Entity\BodyFat;
 use App\Entity\BodyWeight;
 use App\Entity\CaffeineIntake;
-use App\Entity\CountDailyCalories;
-use App\Entity\CountDailyDistance;
 use App\Entity\CountDailyFloor;
-use App\Entity\CountDailyStep;
 use App\Entity\Exercise;
-use App\Entity\IntradayStep;
-use App\Entity\PartOfDay;
 use App\Entity\Patient;
+use /** @noinspection PhpUnusedAliasInspection */
+    App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Entity\WaterIntake;
 use App\Logger\SiteLogManager;
+use /** @noinspection PhpUnusedAliasInspection */
+    App\Service\MessageGenerator;
+use App\Entity\ApiAccessLog;
+use App\Entity\CountDailyStep;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use /** @noinspection PhpUnusedAliasInspection */
+    phpDocumentor\Reflection\Types\Mixed_;
+use /** @noinspection PhpUnusedAliasInspection */
+    PhpParser\Node\Expr\Cast\Object_;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use /** @noinspection PhpUnusedAliasInspection */
+    Symfony\Component\ExpressionLanguage\Tests\Node\Obj;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use App\Entity\CountDailyCalories;
+use App\Entity\CountDailyDistance;
+use App\Entity\IntradayStep;
+use App\Entity\PartOfDay;
 
 class PreWriteSubscriber implements EventSubscriberInterface
 {

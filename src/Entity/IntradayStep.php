@@ -20,6 +20,15 @@
 */
 
 namespace App\Entity;
+use /** @noinspection PhpUnusedAliasInspection */
+    Doctrine\ORM\Mapping as ORM;
+use /** @noinspection PhpUnusedAliasInspection */
+    ApiPlatform\Core\Annotation\ApiResource;
+use /** @noinspection PhpUnusedAliasInspection */
+    ApiPlatform\Core\Annotation\ApiFilter;
+use /** @noinspection PhpUnusedAliasInspection */
+    ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\IntradayStepRepository")
