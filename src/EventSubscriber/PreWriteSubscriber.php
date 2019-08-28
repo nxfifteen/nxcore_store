@@ -866,6 +866,87 @@ class PreWriteSubscriber implements EventSubscriberInterface
             $previousData->setSpeedMean($trackedEntity->getSpeedMean());
         }
 
+
+        if ($previousData->getCadenceMax() != $trackedEntity->getCadenceMax()) {
+            $dataChanged = true;
+            $previousData->setCadenceMax($trackedEntity->getCadenceMax());
+        }
+
+        if ($previousData->getCadenceMean() != $trackedEntity->getCadenceMean()) {
+            $dataChanged = true;
+            $previousData->setCadenceMean($trackedEntity->getCadenceMean());
+        }
+
+        if ($previousData->getCaloricburnRateMax() != $trackedEntity->getCaloricburnRateMax()) {
+            $dataChanged = true;
+            $previousData->setCaloricburnRateMax($trackedEntity->getCaloricburnRateMax());
+        }
+
+        if ($previousData->getCaloricburnRateMean() != $trackedEntity->getCaloricburnRateMean()) {
+            $dataChanged = true;
+            $previousData->setCaloricburnRateMean($trackedEntity->getCaloricburnRateMean());
+        }
+
+        if ($previousData->getCountType() != $trackedEntity->getCountType()) {
+            $dataChanged = true;
+            $previousData->setCountType($trackedEntity->getCountType());
+        }
+
+        if ($previousData->getDeclineDistance() != $trackedEntity->getDeclineDistance()) {
+            $dataChanged = true;
+            $previousData->setDeclineDistance($trackedEntity->getDeclineDistance());
+        }
+
+        if ($previousData->getExerciseCustomType() != $trackedEntity->getExerciseCustomType()) {
+            $dataChanged = true;
+            $previousData->setExerciseCustomType($trackedEntity->getExerciseCustomType());
+        }
+
+        if ($previousData->getExerciseType() != $trackedEntity->getExerciseType()) {
+            $dataChanged = true;
+            $previousData->setExerciseType($trackedEntity->getExerciseType());
+        }
+
+        if ($previousData->getHeartRateMax() != $trackedEntity->getHeartRateMax()) {
+            $dataChanged = true;
+            $previousData->setHeartRateMax($trackedEntity->getHeartRateMax());
+        }
+
+        if ($previousData->getHeartRateMean() != $trackedEntity->getHeartRateMean()) {
+            $dataChanged = true;
+            $previousData->setHeartRateMean($trackedEntity->getHeartRateMean());
+        }
+
+        if ($previousData->getHeartRateMin() != $trackedEntity->getHeartRateMin()) {
+            $dataChanged = true;
+            $previousData->setHeartRateMin($trackedEntity->getHeartRateMin());
+        }
+
+        if ($previousData->getInclineDistance() != $trackedEntity->getInclineDistance()) {
+            $dataChanged = true;
+            $previousData->setInclineDistance($trackedEntity->getInclineDistance());
+        }
+
+        if ($previousData->getPowerMax() != $trackedEntity->getPowerMax()) {
+            $dataChanged = true;
+            $previousData->setPowerMax($trackedEntity->getPowerMax());
+        }
+
+        if ($previousData->getPowerMean() != $trackedEntity->getPowerMean()) {
+            $dataChanged = true;
+            $previousData->setPowerMean($trackedEntity->getPowerMean());
+        }
+
+        if ($previousData->getRpmMax() != $trackedEntity->getRpmMax()) {
+            $dataChanged = true;
+            $previousData->setRpmMax($trackedEntity->getRpmMax());
+        }
+
+        if ($previousData->getRpmMean() != $trackedEntity->getRpmMean()) {
+            $dataChanged = true;
+            $previousData->setRpmMean($trackedEntity->getRpmMean());
+        }
+
         if ($dataChanged) {
             $this->em->flush();
         }

@@ -108,6 +108,87 @@ class Exercise
      */
     private $speed_max;
 
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $cadence_max;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $cadence_mean;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $caloricburn_rate_max;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $caloricburn_rate_mean;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $count_type;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $decline_distance;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $exercise_custom_type;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $exercise_type;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $heart_rate_max;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $heart_rate_mean;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $heart_rate_min;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $incline_distance;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $power_max;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $power_mean;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $rpm_max;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $rpm_mean;
+
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\TrackingDevice")
      * @ORM\JoinColumn(nullable=false, referencedColumnName="id")
@@ -277,6 +358,198 @@ class Exercise
     public function setSpeedMax(?float $speed_max): self
     {
         $this->speed_max = $speed_max;
+
+        return $this;
+    }
+
+    public function getCadenceMax(): ?float
+    {
+        return $this->cadence_max;
+    }
+
+    public function setCadenceMax($cadence_max): self
+    {
+        $this->cadence_max = $cadence_max;
+
+        return $this;
+    }
+
+    public function getCadenceMean(): ?float
+    {
+        return $this->cadence_mean;
+    }
+
+    public function setCadenceMean($cadence_mean): self
+    {
+        $this->cadence_mean = $cadence_mean;
+
+        return $this;
+    }
+
+    public function getCaloricburnRateMax(): ?float
+    {
+        return $this->caloricburn_rate_max;
+    }
+
+    public function setCaloricburnRateMax(?float $caloricburn_rate_max): self
+    {
+        $this->caloricburn_rate_max = $caloricburn_rate_max;
+
+        return $this;
+    }
+
+    public function getCaloricburnRateMean(): ?float
+    {
+        return $this->caloricburn_rate_mean;
+    }
+
+    public function setCaloricburnRateMean(?float $caloricburn_rate_mean): self
+    {
+        $this->caloricburn_rate_mean = $caloricburn_rate_mean;
+
+        return $this;
+    }
+
+    public function getCountType(): ?float
+    {
+        return $this->count_type;
+    }
+
+    public function setCountType(?float $count_type): self
+    {
+        $this->count_type = $count_type;
+
+        return $this;
+    }
+
+    public function getDeclineDistance(): ?float
+    {
+        return $this->decline_distance;
+    }
+
+    public function setDeclineDistance(?float $decline_distance): self
+    {
+        $this->decline_distance = $decline_distance;
+
+        return $this;
+    }
+
+    public function getExerciseCustomType(): ?string
+    {
+        return $this->exercise_custom_type;
+    }
+
+    public function setExerciseCustomType(?string $exercise_custom_type): self
+    {
+        $this->exercise_custom_type = $exercise_custom_type;
+
+        return $this;
+    }
+
+    public function getExerciseType(): ?float
+    {
+        return $this->exercise_type;
+    }
+
+    public function setExerciseType(?float $exercise_type): self
+    {
+        $this->exercise_type = $exercise_type;
+
+        return $this;
+    }
+
+    public function getHeartRateMax(): ?float
+    {
+        return $this->heart_rate_max;
+    }
+
+    public function setHeartRateMax(?float $heart_rate_max): self
+    {
+        $this->heart_rate_max = $heart_rate_max;
+
+        return $this;
+    }
+
+    public function getHeartRateMean(): ?float
+    {
+        return $this->heart_rate_mean;
+    }
+
+    public function setHeartRateMean(?float $heart_rate_mean): self
+    {
+        $this->heart_rate_mean = $heart_rate_mean;
+
+        return $this;
+    }
+
+    public function getHeartRateMin(): ?float
+    {
+        return $this->heart_rate_min;
+    }
+
+    public function setHeartRateMin(?float $heart_rate_min): self
+    {
+        $this->heart_rate_min = $heart_rate_min;
+
+        return $this;
+    }
+
+    public function getInclineDistance(): ?float
+    {
+        return $this->incline_distance;
+    }
+
+    public function setInclineDistance(?float $incline_distance): self
+    {
+        $this->incline_distance = $incline_distance;
+
+        return $this;
+    }
+
+    public function getPowerMax(): ?float
+    {
+        return $this->power_max;
+    }
+
+    public function setPowerMax(?float $power_max): self
+    {
+        $this->power_max = $power_max;
+
+        return $this;
+    }
+
+    public function getPowerMean(): ?float
+    {
+        return $this->power_mean;
+    }
+
+    public function setPowerMean(?float $power_mean): self
+    {
+        $this->power_mean = $power_mean;
+
+        return $this;
+    }
+
+    public function getRpmMax(): ?float
+    {
+        return $this->rpm_max;
+    }
+
+    public function setRpmMax(?float $rpm_max): self
+    {
+        $this->rpm_max = $rpm_max;
+
+        return $this;
+    }
+
+    public function getRpmMean(): ?float
+    {
+        return $this->rpm_mean;
+    }
+
+    public function setRpmMean(?float $rpm_mean): self
+    {
+        $this->rpm_mean = $rpm_mean;
 
         return $this;
     }
