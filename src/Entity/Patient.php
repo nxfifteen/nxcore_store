@@ -21,7 +21,7 @@ class Patient implements UserInterface
 {
     /**
      * @ORM\Id()
-     * @ORM\GeneratedValue()
+     * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
      */
     private $id;
@@ -52,9 +52,15 @@ class Patient implements UserInterface
      */
     private $fitStepsDailySummaries;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\TrackingDevice", mappedBy="patient", orphanRemoval=true)
+     */
+    private $trackingDevices;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
+        $this->trackingDevices = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -172,6 +178,37 @@ class Patient implements UserInterface
             // set the owning side to null (unless already changed)
             if ($fitStepsDailySummary->getPatient() === $this) {
                 $fitStepsDailySummary->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|TrackingDevice[]
+     */
+    public function getTrackingDevices(): Collection
+    {
+        return $this->trackingDevices;
+    }
+
+    public function addTrackingDevice(TrackingDevice $trackingDevice): self
+    {
+        if (!$this->trackingDevices->contains($trackingDevice)) {
+            $this->trackingDevices[] = $trackingDevice;
+            $trackingDevice->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrackingDevice(TrackingDevice $trackingDevice): self
+    {
+        if ($this->trackingDevices->contains($trackingDevice)) {
+            $this->trackingDevices->removeElement($trackingDevice);
+            // set the owning side to null (unless already changed)
+            if ($trackingDevice->getPatient() === $this) {
+                $trackingDevice->setPatient(null);
             }
         }
 

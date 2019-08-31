@@ -13,7 +13,7 @@ class FitStepsDailySummary
 {
     /**
      * @ORM\Id()
-     * @ORM\GeneratedValue()
+     * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
      */
     private $id;
@@ -43,6 +43,12 @@ class FitStepsDailySummary
      * @ORM\JoinColumn(nullable=false)
      */
     private $patient;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\TrackingDevice")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $trackingDevice;
 
     public function getId(): ?int
     {
@@ -105,6 +111,18 @@ class FitStepsDailySummary
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getTrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
 
         return $this;
     }
