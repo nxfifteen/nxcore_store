@@ -40,6 +40,23 @@ class Patient implements UserInterface
      */
     private $password;
 
+    /**
+     * @ORM\Column(type="string", unique=true)
+     */
+    private $apiToken;
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(string $apiToken): self
+    {
+        $this->apiToken = $apiToken;
+
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -58,13 +75,27 @@ class Patient implements UserInterface
     }
 
     /**
-     * A visual identifier that represents this user.
-     *
      * @see UserInterface
      */
-    public function getUsername(): string
+    public function eraseCredentials()
     {
-        return (string) $this->uuid;
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getPassword(): string
+    {
+        return (string)$this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
     }
 
     /**
@@ -89,32 +120,18 @@ class Patient implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getPassword(): string
-    {
-        return (string) $this->password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    /**
-     * @see UserInterface
-     */
     public function getSalt()
     {
         // not needed when using the "bcrypt" algorithm in security.yaml
     }
 
     /**
+     * A visual identifier that represents this user.
+     *
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function getUsername(): string
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        return (string)$this->uuid;
     }
 }
