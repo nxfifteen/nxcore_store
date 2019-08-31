@@ -94,4 +94,41 @@ class Transform
         }
     }
 
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param DateTimeInterface $trackedDate
+     *
+     * @return PartOfDay|null
+     */
+    protected static function getPartOfDay(ManagerRegistry $doctrine, DateTimeInterface $trackedDate)
+    {
+        /** @var DateTime $trackedDate */
+        $trackedDate = $trackedDate->format("U");
+        $trackedDate = date("H", $trackedDate);
+
+        if ($trackedDate >= 12 && $trackedDate <= 16) {
+            $partOfDayString = "afternoon";
+        } else if ($trackedDate >= 17 && $trackedDate <= 20) {
+            $partOfDayString = "evening";
+        } else if ($trackedDate >= 5 && $trackedDate <= 11) {
+            $partOfDayString = "morning";
+        } else {
+            $partOfDayString = "night";
+        }
+
+        /** @var PartOfDay $partOfDay */
+        $partOfDay = $doctrine->getRepository(PartOfDay::class)->findOneBy(['name' => $partOfDayString]);
+        if ($partOfDay) {
+            return $partOfDay;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $partOfDay = new PartOfDay();
+            $partOfDay->setName($partOfDayString);
+            $entityManager->persist($partOfDay);
+            $entityManager->flush();
+
+            return $partOfDay;
+        }
+    }
+
 }
