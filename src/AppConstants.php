@@ -8,7 +8,6 @@ use Symfony\Component\Filesystem\Filesystem;
 class AppConstants
 {
     const SAMSUNGHEALTH = "samasung";
-    const SAMSUNGHEALTHSERVICE = "Samsung Health";
 
     static function writeToLog(String $fileName, String $body) {
         try {

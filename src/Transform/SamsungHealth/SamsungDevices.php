@@ -2,14 +2,12 @@
 namespace App\Transform\SamsungHealth;
 
 
-use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
-use App\Transform\Transform;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-class SamsungDevices extends Transform
+class SamsungDevices extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
@@ -28,7 +26,7 @@ class SamsungDevices extends Transform
             }
 
             /** @var ThirdPartyService $thirdPartyService */
-            $thirdPartyService = self::getThirdPartyService($doctrine, AppConstants::SAMSUNGHEALTHSERVICE);
+            $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
                 return NULL;
             }
