@@ -38,21 +38,42 @@ class SyncUploadController extends AbstractController
 
         AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
 
+        $savedId = -2;
+
         switch ($service) {
             case AppConstants::SAMSUNGHEALTH:
-                $this->transformSamsung($data_set, $request->getContent());
+                $savedId = $this->transformSamsung($data_set, $request->getContent());
                 break;
         }
 
-        return $this->json([
-            'data_set' => $data_set,
-            'body' => $request->getContent(),
-        ]);
+        if ($savedId > 0) {
+            return $this->json([
+                'success' => TRUE,
+                'status' => 200,
+                'message' => "Saved '$service/$data_set' as " . $savedId,
+                'entity_id' => $savedId,
+            ]);
+        } else if ($savedId == -1) {
+            return $this->json([
+                'success' => FALSE,
+                'status' => 500,
+                'message' => "Unable to save entity",
+            ]);
+        } else if ($savedId == -2) {
+            return $this->json([
+                'success' => FALSE,
+                'status' => 500,
+                'message' => "Unknown service '$service'",
+            ]);
+        }
+
     }
 
     /**
      * @param String $data_set
      * @param String $getContent
+     *
+     * @return int
      */
     private function transformSamsung(String $data_set, String $getContent)
     {
@@ -73,6 +94,10 @@ class SyncUploadController extends AbstractController
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($translateEntity);
             $entityManager->flush();
+
+            return $translateEntity->getId();
+        } else {
+            return -1;
         }
 
     }
