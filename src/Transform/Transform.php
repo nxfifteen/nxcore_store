@@ -22,8 +22,12 @@ class Transform
     {
         $jsonObject = json_decode($getContent, FALSE);
         // @TODO: Remove hard coding
-        $jsonObject->uuid = "269VLG";
-        $jsonObject->device = $jsonObject->{'x-trackingDevice'};
+        if (!property_exists($jsonObject, "uuid")) {
+            $jsonObject->uuid = "269VLG";
+        }
+        if (property_exists($jsonObject, "x-trackingDevice")) {
+            $jsonObject->device = $jsonObject->{'x-trackingDevice'};
+        }
         return $jsonObject;
     }
 
