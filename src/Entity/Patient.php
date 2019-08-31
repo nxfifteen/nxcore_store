@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Security\Core\User\UserInterface;
 use /** @noinspection PhpUnusedAliasInspection */ Doctrine\ORM\Mapping as ORM;
 use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Annotation\ApiResource;
@@ -44,6 +46,16 @@ class Patient implements UserInterface
      * @ORM\Column(type="string", unique=true)
      */
     private $apiToken;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\FitStepsDailySummary", mappedBy="patient", orphanRemoval=true)
+     */
+    private $fitStepsDailySummaries;
+
+    public function __construct()
+    {
+        $this->fitStepsDailySummaries = new ArrayCollection();
+    }
 
     public function getApiToken(): ?string
     {
@@ -133,5 +145,36 @@ class Patient implements UserInterface
     public function getUsername(): string
     {
         return (string)$this->uuid;
+    }
+
+    /**
+     * @return Collection|FitStepsDailySummary[]
+     */
+    public function getFitStepsDailySummaries(): Collection
+    {
+        return $this->fitStepsDailySummaries;
+    }
+
+    public function addFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
+    {
+        if (!$this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
+            $this->fitStepsDailySummaries[] = $fitStepsDailySummary;
+            $fitStepsDailySummary->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
+    {
+        if ($this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
+            $this->fitStepsDailySummaries->removeElement($fitStepsDailySummary);
+            // set the owning side to null (unless already changed)
+            if ($fitStepsDailySummary->getPatient() === $this) {
+                $fitStepsDailySummary->setPatient(null);
+            }
+        }
+
+        return $this;
     }
 }
