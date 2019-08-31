@@ -6,7 +6,7 @@ use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Annotation\Ap
 use /** @noinspection PhpUnusedAliasInspection */ Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceService", columns={"remoteId","service","patient"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceService", columns={"remote_id","service_id","patient_id"})})
  *
  * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\TrackingDeviceRepository")
