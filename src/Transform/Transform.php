@@ -2,9 +2,12 @@
 
 namespace App\Transform;
 
+use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 class Transform
@@ -20,6 +23,7 @@ class Transform
         $jsonObject = json_decode($getContent, FALSE);
         // @TODO: Remove hard coding
         $jsonObject->uuid = "269VLG";
+        $jsonObject->device = $jsonObject->{'x-trackingDevice'};
         return $jsonObject;
     }
 
