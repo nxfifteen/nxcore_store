@@ -17,7 +17,10 @@ class Transform
      */
     protected static function decodeJson(String $getContent)
     {
-        return json_decode($getContent, FALSE);
+        $jsonObject = json_decode($getContent, FALSE);
+        // @TODO: Remove hard coding
+        $jsonObject->uuid = "269VLG";
+        return $jsonObject;
     }
 
     /**
