@@ -52,6 +52,8 @@ class SyncUploadController extends AbstractController
             } catch (IOExceptionInterface $exception) {
                 echo "An error occurred while creating your directory at " . $exception->getPath();
             }
+        } else {
+            $path = "";
         }
 
         return $this->json([
