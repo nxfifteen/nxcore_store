@@ -2,12 +2,16 @@
 
 namespace App\Controller;
 
+use App\AppConstants;
+use App\Entity\FitStepsDailySummary;
+use App\Entity\TrackingDevice;
+use App\Transform\SamsungHealth\Constants AS SamsungHealthConstants;
+use App\Transform\SamsungHealth\SamsungCountDailySteps;
+use App\Transform\SamsungHealth\SamsungDevices;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
-use /** @noinspection PhpUnusedAliasInspection */
-    Symfony\Component\Routing\Annotation\Route;
+use /** @noinspection PhpUnusedAliasInspection */ Symfony\Component\Routing\Annotation\Route;
+
 
 class SyncUploadController extends AbstractController
 {
@@ -25,42 +29,51 @@ class SyncUploadController extends AbstractController
      * @Route("/sync/upload/{service}/{data_set}", name="sync_upload_post", methods={"POST"})
      * @param String $service
      * @param String $data_set
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function index_post(String $service, String $data_set)
     {
         $request = Request::createFromGlobals();
 
-        try {
-            $path = sys_get_temp_dir() . '/sync_upload_post';
-        } catch (\Exception $exception) {
-            echo $exception->getMessage();
-        }
+        AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
 
-        if (!empty($path)) {
-            $file = $path . '/' . $service . '_' . $data_set . '.txt';
-
-            $fileSystem = new Filesystem();
-            try {
-                $fileSystem->mkdir($path);
-                if ($fileSystem->exists($file)) {
-                    $fileSystem->appendToFile($file, $request->getContent() . "\n");
-                } else {
-                    $fileSystem->dumpFile($file, $request->getContent() . "\n");
-                }
-
-            } catch (IOExceptionInterface $exception) {
-                echo "An error occurred while creating your directory at " . $exception->getPath();
-            }
-        } else {
-            $path = "";
+        switch ($service) {
+            case AppConstants::SAMSUNGHEALTH:
+                $this->transformSamsung($data_set, $request->getContent());
+                break;
         }
 
         return $this->json([
             'data_set' => $data_set,
-            'path' => $path,
             'body' => $request->getContent(),
         ]);
     }
 
+    /**
+     * @param String $data_set
+     * @param String $getContent
+     */
+    private function transformSamsung(String $data_set, String $getContent)
+    {
+        $translateEntity = NULL;
+
+        switch ($data_set) {
+            case SamsungHealthConstants::SAMSUNGHEALTHEPDEVICES:
+                /** @var TrackingDevice $translateEntity */
+                $translateEntity = SamsungDevices::translate($this->getDoctrine(), $getContent);
+                break;
+            case SamsungHealthConstants::SAMSUNGHEALTHEPDAILYSTEPS:
+                /** @var FitStepsDailySummary $translateEntity */
+                $translateEntity = SamsungCountDailySteps::translate($this->getDoctrine(), $getContent);
+                break;
+        }
+
+        if (!is_null($translateEntity)) {
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($translateEntity);
+            $entityManager->flush();
+        }
+
+    }
 }
