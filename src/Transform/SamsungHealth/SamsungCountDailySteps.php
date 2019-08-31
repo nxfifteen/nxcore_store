@@ -59,7 +59,9 @@ class SamsungCountDailySteps extends Constants
             $dataEntry->setRemoteId($jsonContent->remoteId);
             $dataEntry->setValue($jsonContent->value);
             $dataEntry->setGoal($jsonContent->goal);
-            $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            }
             $dataEntry->setPartOfDay($partOfDay);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
