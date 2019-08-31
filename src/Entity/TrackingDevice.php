@@ -2,10 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use Doctrine\ORM\Mapping as ORM;
+use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Annotation\ApiResource;
+use /** @noinspection PhpUnusedAliasInspection */ Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceService", columns={"remoteId","service","patient"})})
+ *
  * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\TrackingDeviceRepository")
  */

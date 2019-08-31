@@ -2,10 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use Doctrine\ORM\Mapping as ORM;
+use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Annotation\ApiResource;
+use /** @noinspection PhpUnusedAliasInspection */ Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceRemote", columns={"remoteId","trackingDevice"})})
+ *
  * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\FitStepsDailySummaryRepository")
  */
@@ -49,6 +51,12 @@ class FitStepsDailySummary
      * @ORM\JoinColumn(nullable=false)
      */
     private $trackingDevice;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\PartOfDay")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $partOfDay;
 
     public function getId(): ?int
     {
@@ -123,6 +131,18 @@ class FitStepsDailySummary
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    public function getPartOfDay(): ?PartOfDay
+    {
+        return $this->partOfDay;
+    }
+
+    public function setPartOfDay(?PartOfDay $partOfDay): self
+    {
+        $this->partOfDay = $partOfDay;
 
         return $this;
     }
