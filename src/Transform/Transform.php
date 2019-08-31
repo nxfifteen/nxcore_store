@@ -48,7 +48,7 @@ class Transform
     protected static function getTrackingDevice(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $thirdPartyService, String $remote_id)
     {
         /** @var TrackingDevice $deviceTracking */
-        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy(['remoteId' => $remote_id]);
+        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy(['remoteId' => $remote_id, 'patient' => $patient, 'service' => $thirdPartyService]);
         if ($deviceTracking) {
             return $deviceTracking;
         } else {
