@@ -2,8 +2,8 @@
 
 namespace App\Entity;
 
-use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Annotation\ApiResource;
-use /** @noinspection PhpUnusedAliasInspection */ Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource()
