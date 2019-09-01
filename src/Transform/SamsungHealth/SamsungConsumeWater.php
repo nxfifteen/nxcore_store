@@ -1,21 +1,23 @@
 <?php
+
 namespace App\Transform\SamsungHealth;
 
-
 use App\AppConstants;
-use App\Entity\FitStepsIntraDay;
+use App\Entity\ConsumeWater;
+use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
+use App\Entity\UnitOfMeasurement;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-class SamsungIntraDaySteps extends Constants
+class SamsungConsumeWater extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
-     * @return FitStepsIntraDay|null
+     * @return ConsumeWater|null
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent)
     {
@@ -41,21 +43,35 @@ class SamsungIntraDaySteps extends Constants
                 return NULL;
             }
 
-            /** @var FitStepsIntraDay $dataEntry */
-            $dataEntry = $doctrine->getRepository(FitStepsIntraDay::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            /** @var PartOfDay $dataEntry */
+            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
+            if (is_null($partOfDay)) {
+                return NULL;
+            }
+
+            /** @var UnitOfMeasurement $unitOfMeasurement */
+            $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->units);
+            if (is_null($unitOfMeasurement)) {
+                return NULL;
+            }
+
+            /** @var ConsumeWater $dataEntry */
+            $dataEntry = $doctrine->getRepository(ConsumeWater::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
-                $dataEntry = new FitStepsIntraDay();
+                $dataEntry = new ConsumeWater();
             }
 
             $dataEntry->setPatient($patient);
-            $dataEntry->setTrackingDevice($deviceTracking);
+            $dataEntry->setPartOfDay($partOfDay);
             $dataEntry->setRemoteId($jsonContent->remoteId);
-            $dataEntry->setValue($jsonContent->value);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->date))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->date));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
             }
-            $dataEntry->setHour($dataEntry->getDateTime()->format("H"));
-            if (property_exists($jsonContent, "duration")) $dataEntry->setDuration($jsonContent->duration);
+            if (property_exists($jsonContent, "comment")) $dataEntry->setComment($jsonContent->comment);
+            $dataEntry->setMeasurement($jsonContent->measurement);
+            $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
+            $dataEntry->setService($thirdPartyService);
+            $dataEntry->setTrackingDevice($deviceTracking);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }

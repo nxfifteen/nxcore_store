@@ -6,6 +6,7 @@ use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
+use App\Entity\UnitOfMeasurement;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -27,6 +28,9 @@ class Transform
         }
         if (property_exists($jsonObject, "x-trackingDevice")) {
             $jsonObject->device = $jsonObject->{'x-trackingDevice'};
+        }
+        if (property_exists($jsonObject, "x-unitOfMeasurement")) {
+            $jsonObject->units = $jsonObject->{'x-unitOfMeasurement'};
         }
         return $jsonObject;
     }
@@ -68,6 +72,8 @@ class Transform
             $deviceTracking->setPatient($patient);
             $deviceTracking->setService($thirdPartyService);
             $deviceTracking->setRemoteId($remote_id);
+            $deviceTracking->setName($remote_id);
+            $deviceTracking->setType("Unknown");
             $entityManager->persist($deviceTracking);
             $entityManager->flush();
 
@@ -90,6 +96,29 @@ class Transform
         } else {
             $entityManager = $doctrine->getManager();
             $thirdPartyService = new ThirdPartyService();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @return UnitOfMeasurement|null
+     */
+    protected static function getUnitOfMeasurement(ManagerRegistry $doctrine, String $serviceName)
+    {
+        /** @var UnitOfMeasurement $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(UnitOfMeasurement::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new UnitOfMeasurement();
             $thirdPartyService->setName($serviceName);
             $entityManager->persist($thirdPartyService);
             $entityManager->flush();
