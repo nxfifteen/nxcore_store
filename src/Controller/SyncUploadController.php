@@ -34,12 +34,6 @@ class SyncUploadController extends AbstractController
     {
         $request = Request::createFromGlobals();
 
-        /*return $this->json([
-            'success' => TRUE,
-            'status' => 201,
-            'message' => "Disabled",
-        ]);*/
-
         if ($service == "samasung") {
             $service = "SamsungHealth";
         }

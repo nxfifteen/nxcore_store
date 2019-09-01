@@ -96,7 +96,7 @@ class Transform
      *
      * @return PatientGoals|null
      */
-    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, UnitOfMeasurement $unitOfMeasurement, Patient $patient)
+    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, $unitOfMeasurement, Patient $patient)
     {
         /** @var PatientGoals $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(PatientGoals::class)->findOneBy(['entity' => $serviceName]);

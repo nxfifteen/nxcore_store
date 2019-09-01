@@ -22,7 +22,7 @@ class SamsungCountDailySteps extends Constants
     public static function translate(ManagerRegistry $doctrine, String $getContent)
     {
         $jsonContent = self::decodeJson($getContent);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
             /** @var Patient $patient */
@@ -70,6 +70,7 @@ class SamsungCountDailySteps extends Constants
                 $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
             }
             $dataEntry->setPartOfDay($partOfDay);
+
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }

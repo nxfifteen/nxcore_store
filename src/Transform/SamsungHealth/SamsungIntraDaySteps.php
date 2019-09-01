@@ -20,7 +20,7 @@ class SamsungIntraDaySteps extends Constants
     public static function translate(ManagerRegistry $doctrine, String $getContent)
     {
         $jsonContent = self::decodeJson($getContent);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
             /** @var Patient $patient */

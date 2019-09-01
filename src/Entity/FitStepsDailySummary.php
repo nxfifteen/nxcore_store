@@ -48,12 +48,6 @@ class FitStepsDailySummary
     private $trackingDevice;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\PartOfDay")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $partOfDay;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\PatientGoals")
      * @ORM\JoinColumn(nullable=false)
      */
@@ -120,18 +114,6 @@ class FitStepsDailySummary
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
-
-        return $this;
-    }
-
-    public function getPartOfDay(): ?PartOfDay
-    {
-        return $this->partOfDay;
-    }
-
-    public function setPartOfDay(?PartOfDay $partOfDay): self
-    {
-        $this->partOfDay = $partOfDay;
 
         return $this;
     }

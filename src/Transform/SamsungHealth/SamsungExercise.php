@@ -109,7 +109,7 @@ class SamsungExercise extends Constants
             if (property_exists($jsonContent, "locationData")) {
                 /** @var array $jsonLocationData */
                 $jsonLocationData = self::decodeJson($jsonContent->locationData);
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonLocationData, TRUE));
+                //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonLocationData, TRUE));
 
                 /** @var object $jsonLocationDatum */
                 foreach ($jsonLocationData as $jsonLocationDatum) {
