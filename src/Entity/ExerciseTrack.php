@@ -19,23 +19,82 @@ class ExerciseTrack
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Exercise", inversedBy="exerciseTrack")
-     */
-    private $exercise;
-
-    /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="bigint")
      */
     private $timeStamp;
 
     /**
-     * @ORM\Column(type="json_array")
+     * @ORM\Column(type="float", nullable=true)
      */
-    private $track = [];
+    private $latitude;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $longitude;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $altitude;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Exercise", inversedBy="exerciseTrack",cascade={"persist"})
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $exercise;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getTimeStamp(): ?string
+    {
+        return $this->timeStamp;
+    }
+
+    public function setTimeStamp(string $timeStamp): self
+    {
+        $this->timeStamp = $timeStamp;
+
+        return $this;
+    }
+
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): self
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?float $longitude): self
+    {
+        $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    public function getAltitude(): ?float
+    {
+        return $this->altitude;
+    }
+
+    public function setAltitude(?float $altitude): self
+    {
+        $this->altitude = $altitude;
+
+        return $this;
     }
 
     public function getExercise(): ?Exercise
@@ -46,30 +105,6 @@ class ExerciseTrack
     public function setExercise(?Exercise $exercise): self
     {
         $this->exercise = $exercise;
-
-        return $this;
-    }
-
-    public function getTimeStamp(): ?int
-    {
-        return $this->timeStamp;
-    }
-
-    public function setTimeStamp(int $timeStamp): self
-    {
-        $this->timeStamp = $timeStamp;
-
-        return $this;
-    }
-
-    public function getTrack(): ?array
-    {
-        return $this->track;
-    }
-
-    public function setTrack(array $track): self
-    {
-        $this->track = $track;
 
         return $this;
     }

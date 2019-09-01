@@ -70,7 +70,7 @@ class Exercise
     private $exerciseType;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ExerciseTrack", mappedBy="exercise")
+     * @ORM\OneToMany(targetEntity="App\Entity\ExerciseTrack", mappedBy="exercise", orphanRemoval=true,cascade={"persist"})
      */
     private $exerciseTrack;
 

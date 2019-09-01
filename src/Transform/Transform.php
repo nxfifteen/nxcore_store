@@ -2,6 +2,7 @@
 
 namespace App\Transform;
 
+use App\Entity\ExerciseType;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
@@ -23,15 +24,17 @@ class Transform
     protected static function decodeJson(String $getContent)
     {
         $jsonObject = json_decode($getContent, FALSE);
-        // @TODO: Remove hard coding
-        if (!property_exists($jsonObject, "uuid")) {
-            $jsonObject->uuid = "269VLG";
-        }
-        if (property_exists($jsonObject, "x-trackingDevice")) {
-            $jsonObject->device = $jsonObject->{'x-trackingDevice'};
-        }
-        if (property_exists($jsonObject, "x-unitOfMeasurement")) {
-            $jsonObject->units = $jsonObject->{'x-unitOfMeasurement'};
+        if (is_object($jsonObject)) {
+            // @TODO: Remove hard coding
+            if (!property_exists($jsonObject, "uuid")) {
+                $jsonObject->uuid = "269VLG";
+            }
+            if (property_exists($jsonObject, "x-trackingDevice")) {
+                $jsonObject->device = $jsonObject->{'x-trackingDevice'};
+            }
+            if (property_exists($jsonObject, "x-unitOfMeasurement")) {
+                $jsonObject->units = $jsonObject->{'x-unitOfMeasurement'};
+            }
         }
         return $jsonObject;
     }
@@ -155,6 +158,29 @@ class Transform
         } else {
             $entityManager = $doctrine->getManager();
             $thirdPartyService = new UnitOfMeasurement();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @return ExerciseType|null
+     */
+    protected static function getExerciseType(ManagerRegistry $doctrine, String $serviceName)
+    {
+        /** @var ExerciseType $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(ExerciseType::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new ExerciseType();
             $thirdPartyService->setName($serviceName);
             $entityManager->persist($thirdPartyService);
             $entityManager->flush();

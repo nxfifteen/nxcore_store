@@ -43,9 +43,9 @@ class Entry
             case Constants::SAMSUNGHEALTHEPCONSUMCAFFINE:
                 $translateEntity = SamsungConsumeCaffeine::translate($doctrine, $getContent);
                 break;
-//            case Constants::SAMSUNGHEALTHEPEXERCISE:
-//                $translateEntity = SamsungExercise::translate($doctrine, $getContent);
-//                break;
+            case Constants::SAMSUNGHEALTHEPEXERCISE:
+                $translateEntity = SamsungExercise::translate($doctrine, $getContent);
+                break;
             case Constants::SAMSUNGHEALTHEPBODYWEIGHT:
                 $translateEntity = array();
                 array_push($translateEntity, SamsungBodyWeight::translate($doctrine, $getContent));
