@@ -5,6 +5,7 @@ namespace App\Transform\SamsungHealth;
 use App\AppConstants;
 use App\Entity\FitFloorsIntraDay;
 use App\Entity\Patient;
+use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -45,6 +46,11 @@ class SamsungIntraDayFloors extends Constants
             $dataEntry = $doctrine->getRepository(FitFloorsIntraDay::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
                 $dataEntry = new FitFloorsIntraDay();
+            }
+
+            if (property_exists($jsonContent, "goal")) {
+                /** @var PatientGoals $patientGoal */
+                self::getPatientGoal($doctrine, "FloorsDaily", $jsonContent->goal, $patient);
             }
 
             $dataEntry->setPatient($patient);

@@ -36,11 +36,6 @@ class FitStepsDailySummary
     private $value;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $goal;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(nullable=false)
      */
@@ -57,6 +52,12 @@ class FitStepsDailySummary
      * @ORM\JoinColumn(nullable=false)
      */
     private $partOfDay;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\PatientGoals")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $patientGoal;
 
     public function getId(): ?int
     {
@@ -99,18 +100,6 @@ class FitStepsDailySummary
         return $this;
     }
 
-    public function getGoal(): ?int
-    {
-        return $this->goal;
-    }
-
-    public function setGoal(?int $goal): self
-    {
-        $this->goal = $goal;
-
-        return $this;
-    }
-
     public function getPatient(): ?Patient
     {
         return $this->patient;
@@ -143,6 +132,30 @@ class FitStepsDailySummary
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
+
+        return $this;
+    }
+
+    public function getGoal(): ?PatientGoals
+    {
+        return $this->patientGoal;
+    }
+
+    public function setGoal(?PatientGoals $patientGoal): self
+    {
+        $this->patientGoal = $patientGoal;
+
+        return $this;
+    }
+
+    public function getPatientGoal(): ?PatientGoals
+    {
+        return $this->patientGoal;
+    }
+
+    public function setPatientGoal(?PatientGoals $patientGoal): self
+    {
+        $this->patientGoal = $patientGoal;
 
         return $this;
     }

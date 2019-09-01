@@ -4,6 +4,7 @@ namespace App\Transform;
 
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
+use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
@@ -78,6 +79,37 @@ class Transform
             $entityManager->flush();
 
             return $deviceTracking;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @param float           $serviceGoal
+     *
+     * @param Patient         $patient
+     *
+     * @return PatientGoals|null
+     */
+    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, Patient $patient)
+    {
+        /** @var PatientGoals $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(PatientGoals::class)->findOneBy(['entity' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new PatientGoals();
+            $thirdPartyService->setPatient($patient);
+            $thirdPartyService->setGoal($serviceGoal);
+            $thirdPartyService->setEntity($serviceName);
+            $thirdPartyService->setDateSet(new DateTime());
+
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
         }
     }
 

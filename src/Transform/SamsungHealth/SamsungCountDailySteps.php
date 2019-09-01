@@ -6,6 +6,7 @@ use App\AppConstants;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
+use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -42,9 +43,15 @@ class SamsungCountDailySteps extends Constants
                 return NULL;
             }
 
-            /** @var PartOfDay $dataEntry */
+            /** @var PartOfDay $partOfDay */
             $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
             if (is_null($partOfDay)) {
+                return NULL;
+            }
+
+            /** @var PatientGoals $patientGoal */
+            $patientGoal = self::getPatientGoal($doctrine, "StepsDaily", $jsonContent->goal, $patient);
+            if (is_null($patientGoal)) {
                 return NULL;
             }
 
@@ -58,7 +65,7 @@ class SamsungCountDailySteps extends Constants
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setRemoteId($jsonContent->remoteId);
             $dataEntry->setValue($jsonContent->value);
-            $dataEntry->setGoal($jsonContent->goal);
+            $dataEntry->setGoal($patientGoal);
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
                 $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
             }
