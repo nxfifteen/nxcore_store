@@ -154,37 +154,6 @@ class Patient implements UserInterface
     }
 
     /**
-     * @return Collection|FitStepsDailySummary[]
-     */
-    public function getFitStepsDailySummaries(): Collection
-    {
-        return $this->fitStepsDailySummaries;
-    }
-
-    public function addFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
-    {
-        if (!$this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
-            $this->fitStepsDailySummaries[] = $fitStepsDailySummary;
-            $fitStepsDailySummary->setPatient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
-    {
-        if ($this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
-            $this->fitStepsDailySummaries->removeElement($fitStepsDailySummary);
-            // set the owning side to null (unless already changed)
-            if ($fitStepsDailySummary->getPatient() === $this) {
-                $fitStepsDailySummary->setPatient(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection|TrackingDevice[]
      */
     public function getTrackingDevices(): Collection

@@ -41,7 +41,7 @@ class FitStepsDailySummary
     private $goal;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="fitStepsDailySummaries")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(nullable=false)
      */
     private $patient;
