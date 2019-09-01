@@ -3,7 +3,9 @@
 namespace App\Transform\SamsungHealth;
 
 
+use App\Entity\FitFloorsIntraDay;
 use App\Entity\FitStepsDailySummary;
+use App\Entity\FitStepsIntraDay;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
@@ -35,6 +37,17 @@ class Entry
             case Constants::SAMSUNGHEALTHEPDAILYSTEPS:
                 /** @var FitStepsDailySummary $translateEntity */
                 $translateEntity = SamsungCountDailySteps::translate($doctrine, $getContent);
+                break;
+            case Constants::SAMSUNGHEALTHEPINTRADAYFLOORS:
+                /** @var FitFloorsIntraDay $translateEntity */
+                $translateEntity = SamsungIntraDayFloors::translate($doctrine, $getContent);
+                break;
+            case Constants::SAMSUNGHEALTHEPINTRADAYSTEPS:
+                /** @var FitStepsIntraDay $translateEntity */
+                $translateEntity = SamsungIntraDaySteps::translate($doctrine, $getContent);
+                break;
+            default:
+                return -3;
                 break;
         }
 

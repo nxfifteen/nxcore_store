@@ -40,7 +40,12 @@ class SyncUploadController extends AbstractController
             $service = "SamsungHealth";
         }
 
-        AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
+        if ($data_set != "count_daily_steps" &&
+            $data_set != "tracking_devices" &&
+            $data_set != "intraday_steps" &&
+            $data_set != "count_daily_floors") {
+            AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
+        }
 
         $transformerClassName = 'App\\Transform\\' . $service . '\\Entry';
         if (!class_exists($transformerClassName)) {
@@ -70,6 +75,12 @@ class SyncUploadController extends AbstractController
                 'success' => FALSE,
                 'status' => 500,
                 'message' => "Unknown service '$service'",
+            ]);
+        } else if ($savedId == -3) {
+            return $this->json([
+                'success' => FALSE,
+                'status' => 500,
+                'message' => "Unknown data set '$data_set' in '$service'",
             ]);
         } else {
             return $this->json([
