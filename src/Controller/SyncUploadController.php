@@ -3,8 +3,6 @@
 namespace App\Controller;
 
 use App\AppConstants;
-use App\Entity\FitStepsDailySummary;
-use App\Entity\TrackingDevice;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,6 +33,12 @@ class SyncUploadController extends AbstractController
     public function index_post(String $service, String $data_set, LoggerInterface $logger)
     {
         $request = Request::createFromGlobals();
+
+        /*return $this->json([
+            'success' => TRUE,
+            'status' => 201,
+            'message' => "Disabled",
+        ]);*/
 
         if ($service == "samasung") {
             $service = "SamsungHealth";
