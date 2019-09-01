@@ -19,32 +19,21 @@ class ConsumeWaterRepository extends ServiceEntityRepository
         parent::__construct($registry, ConsumeWater::class);
     }
 
-    // /**
-    //  * @return ConsumeWater[] Returns an array of ConsumeWater objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+    public function findByDateRange( String $patientId, String $date ) {
+        $today = $date . " 00:00:00";
+        $todayEnd = $date . " 23:59:00";
 
-    /*
-    public function findOneBySomeField($value): ?ConsumeWater
-    {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('c.DateTime >= :val')
+            ->setParameter('val', $today)
+            ->andWhere('c.DateTime <= :valEnd')
+            ->setParameter('valEnd', $todayEnd)
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.DateTime', 'ASC')
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
     }
-    */
+
 }
