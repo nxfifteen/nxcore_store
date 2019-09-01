@@ -7,8 +7,6 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class AppConstants
 {
-    const SAMSUNGHEALTH = "samasung";
-
     static function writeToLog(String $fileName, String $body) {
         try {
             $path = sys_get_temp_dir() . '/sync_upload_post';

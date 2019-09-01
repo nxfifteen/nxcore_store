@@ -5,12 +5,10 @@ namespace App\Controller;
 use App\AppConstants;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\TrackingDevice;
-use App\Transform\SamsungHealth\Constants AS SamsungHealthConstants;
-use App\Transform\SamsungHealth\SamsungCountDailySteps;
-use App\Transform\SamsungHealth\SamsungDevices;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use /** @noinspection PhpUnusedAliasInspection */ Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Annotation\Route;
 
 
 class SyncUploadController extends AbstractController
@@ -27,23 +25,31 @@ class SyncUploadController extends AbstractController
 
     /**
      * @Route("/sync/upload/{service}/{data_set}", name="sync_upload_post", methods={"POST"})
-     * @param String $service
-     * @param String $data_set
+     * @param String          $service
+     * @param String          $data_set
+     *
+     * @param LoggerInterface $logger
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function index_post(String $service, String $data_set)
+    public function index_post(String $service, String $data_set, LoggerInterface $logger)
     {
         $request = Request::createFromGlobals();
 
+        if ($service == "samasung") {
+            $service = "SamsungHealth";
+        }
+
         AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
 
-        $savedId = -2;
-
-        switch ($service) {
-            case AppConstants::SAMSUNGHEALTH:
-                $savedId = $this->transformSamsung($data_set, $request->getContent());
-                break;
+        $transformerClassName = 'App\\Transform\\' . $service . '\\Entry';
+        if (!class_exists($transformerClassName)) {
+            $logger->error('I could not find a Entry class for ' . $service);
+            $savedId = -2;
+        } else {
+            $transformerClass = new $transformerClassName($logger);
+            /** @noinspection PhpUndefinedMethodInspection */
+            $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine());
         }
 
         if ($savedId > 0) {
@@ -65,39 +71,12 @@ class SyncUploadController extends AbstractController
                 'status' => 500,
                 'message' => "Unknown service '$service'",
             ]);
-        }
-
-    }
-
-    /**
-     * @param String $data_set
-     * @param String $getContent
-     *
-     * @return int
-     */
-    private function transformSamsung(String $data_set, String $getContent)
-    {
-        $translateEntity = NULL;
-
-        switch ($data_set) {
-            case SamsungHealthConstants::SAMSUNGHEALTHEPDEVICES:
-                /** @var TrackingDevice $translateEntity */
-                $translateEntity = SamsungDevices::translate($this->getDoctrine(), $getContent);
-                break;
-            case SamsungHealthConstants::SAMSUNGHEALTHEPDAILYSTEPS:
-                /** @var FitStepsDailySummary $translateEntity */
-                $translateEntity = SamsungCountDailySteps::translate($this->getDoctrine(), $getContent);
-                break;
-        }
-
-        if (!is_null($translateEntity)) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($translateEntity);
-            $entityManager->flush();
-
-            return $translateEntity->getId();
         } else {
-            return -1;
+            return $this->json([
+                'success' => FALSE,
+                'status' => 500,
+                'message' => "Unknown error",
+            ]);
         }
 
     }
