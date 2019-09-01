@@ -46,7 +46,9 @@ class SyncUploadController extends AbstractController
             $data_set != "caffeine_intakes" &&
             $data_set != "body_weights" &&
             $data_set != "body_fats" &&
-            $data_set != "exercises") {
+            $data_set != "exercises" &&
+            $data_set != "count_daily_calories" &&
+            $data_set != "count_daily_distances") {
             AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
         }
 
