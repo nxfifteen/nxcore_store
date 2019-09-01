@@ -13,4 +13,5 @@ class Constants extends Transform
     const SAMSUNGHEALTHEPINTRADAYSTEPS = "intraday_steps";
     const SAMSUNGHEALTHEPINTRADAYFLOORS = "count_daily_floors";
     const SAMSUNGHEALTHEPCONSUMWATER = "water_intakes";
+    const SAMSUNGHEALTHEPCONSUMCAFFINE = "caffeine_intakes";
 }

@@ -40,6 +40,9 @@ class Entry
             case Constants::SAMSUNGHEALTHEPCONSUMWATER:
                 $translateEntity = SamsungConsumeWater::translate($doctrine, $getContent);
                 break;
+            case Constants::SAMSUNGHEALTHEPCONSUMCAFFINE:
+                $translateEntity = SamsungConsumeCaffeine::translate($doctrine, $getContent);
+                break;
             default:
                 return -3;
                 break;
