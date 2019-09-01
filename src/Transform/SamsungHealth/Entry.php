@@ -47,6 +47,7 @@ class Entry
                 $translateEntity = array();
                 array_push($translateEntity, SamsungBodyWeight::translate($doctrine, $getContent));
                 array_push($translateEntity, SamsungBodyFat::translate($doctrine, $getContent));
+                array_push($translateEntity, SamsungBodyComposition::translate($doctrine, $getContent));
                 break;
             default:
                 return -3;
@@ -61,8 +62,10 @@ class Entry
             } else {
                 $returnId = array();
                 foreach ($translateEntity as $item) {
-                    $entityManager->persist($item);
-                    array_push($returnId, $item->getId());
+                    if (!is_null($item)) {
+                        $entityManager->persist($item);
+                        array_push($returnId, $item->getId());
+                    }
                 }
             }
             $entityManager->flush();

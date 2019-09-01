@@ -64,6 +64,21 @@ class BodyFat
      */
     private $RemoteId;
 
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $fatFreeMass;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $fatFree;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $bodyFatMass;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -161,6 +176,42 @@ class BodyFat
     public function setRemoteId(string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
+
+        return $this;
+    }
+
+    public function getFatFreeMass(): ?float
+    {
+        return $this->fatFreeMass;
+    }
+
+    public function setFatFreeMass(?float $fatFreeMass): self
+    {
+        $this->fatFreeMass = $fatFreeMass;
+
+        return $this;
+    }
+
+    public function getFatFree(): ?float
+    {
+        return $this->fatFree;
+    }
+
+    public function setFatFree(?float $fatFree): self
+    {
+        $this->fatFree = $fatFree;
+
+        return $this;
+    }
+
+    public function getBodyFatMass(): ?float
+    {
+        return $this->bodyFatMass;
+    }
+
+    public function setBodyFatMass(?float $bodyFatMass): self
+    {
+        $this->bodyFatMass = $bodyFatMass;
 
         return $this;
     }

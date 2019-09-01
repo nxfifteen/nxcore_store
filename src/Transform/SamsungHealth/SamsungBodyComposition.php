@@ -3,7 +3,7 @@
 namespace App\Transform\SamsungHealth;
 
 use App\AppConstants;
-use App\Entity\BodyFat;
+use App\Entity\BodyComposition;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
@@ -12,20 +12,25 @@ use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-class SamsungBodyFat extends Constants
+class SamsungBodyComposition extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
-     * @return BodyFat|null
+     * @return BodyComposition|null
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent)
     {
         $jsonContent = self::decodeJson($getContent);
         AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
-        if (property_exists($jsonContent, "uuid")) {
+        if (property_exists($jsonContent, "uuid") &&
+            ($jsonContent->skeletal_muscle > 0 ||
+            $jsonContent->muscle_mass > 0 ||
+            $jsonContent->basal_metabolic_rate > 0 ||
+            $jsonContent->skeletal_muscle_mass > 0 ||
+            $jsonContent->total_body_water > 0)) {
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
@@ -60,34 +65,17 @@ class SamsungBodyFat extends Constants
                 return NULL;
             }
 
-            /** @var UnitOfMeasurement $unitOfMeasurement */
-            $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->fatUnitOfMeasurement);
-            if (is_null($unitOfMeasurement)) {
-                return NULL;
-            }
-
-            /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "BodyFat", $jsonContent->fatGoal, $unitOfMeasurement, $patient);
-            if (is_null($patientGoal)) {
-                return NULL;
-            }
-
-            /** @var BodyFat $dataEntry */
-            $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            /** @var BodyComposition $dataEntry */
+            $dataEntry = $doctrine->getRepository(BodyComposition::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
-                $dataEntry = new BodyFat();
+                $dataEntry = new BodyComposition();
             }
 
             $dataEntry->setPatient($patient);
 
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setRemoteId($jsonContent->remoteId);
-            $dataEntry->setMeasurement($jsonContent->fatMeasurement);
-            $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
-            if ($jsonContent->fat_free > 0) $dataEntry->setFatFree($jsonContent->fat_free);
-            if ($jsonContent->fat_free_mass > 0) $dataEntry->setFatFreeMass($jsonContent->fat_free_mass);
-            if ($jsonContent->body_fat_mass > 0) $dataEntry->setBodyFatMass($jsonContent->body_fat_mass);
-            $dataEntry->setPatientGoal($patientGoal);
+
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
                 $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
             }
@@ -95,6 +83,12 @@ class SamsungBodyFat extends Constants
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
+
+            $dataEntry->setBasalMetabolicRate($jsonContent->basal_metabolic_rate);
+            $dataEntry->setMuscleMass($jsonContent->muscle_mass);
+            $dataEntry->setSkeletalMuscle($jsonContent->skeletal_muscle);
+            $dataEntry->setSkeletalMuscleMass($jsonContent->skeletal_muscle_mass);
+            $dataEntry->setTotalBodyWater($jsonContent->total_body_water);
 
             return $dataEntry;
 
