@@ -50,7 +50,7 @@ class SamsungIntraDayFloors extends Constants
 
             if (property_exists($jsonContent, "goal")) {
                 /** @var PatientGoals $patientGoal */
-                self::getPatientGoal($doctrine, "FloorsDaily", $jsonContent->goal, $patient);
+                self::getPatientGoal($doctrine, "FloorsDaily", $jsonContent->goal, null, $patient);
             }
 
             $dataEntry->setPatient($patient);

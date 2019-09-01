@@ -60,15 +60,15 @@ class SamsungBodyWeight extends Constants
                 return NULL;
             }
 
-            /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "BodyWeight", $jsonContent->weightGoal, $patient);
-            if (is_null($patientGoal)) {
-                return NULL;
-            }
-
             /** @var UnitOfMeasurement $unitOfMeasurement */
             $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->weightUnitOfMeasurement);
             if (is_null($unitOfMeasurement)) {
+                return NULL;
+            }
+
+            /** @var PatientGoals $patientGoal */
+            $patientGoal = self::getPatientGoal($doctrine, "BodyWeight", $jsonContent->weightGoal, $unitOfMeasurement, $patient);
+            if (is_null($patientGoal)) {
                 return NULL;
             }
 

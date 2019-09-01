@@ -70,6 +70,12 @@ class ConsumeWater
      */
     private $partOfDay;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\PatientGoals")
+     * @ORM\JoinColumn(nullable=true)
+     */
+    private $patientGoal;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -179,6 +185,18 @@ class ConsumeWater
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
+
+        return $this;
+    }
+
+    public function getPatientGoal(): ?PatientGoals
+    {
+        return $this->patientGoal;
+    }
+
+    public function setPatientGoal(?PatientGoals $patientGoal): self
+    {
+        $this->patientGoal = $patientGoal;
 
         return $this;
     }

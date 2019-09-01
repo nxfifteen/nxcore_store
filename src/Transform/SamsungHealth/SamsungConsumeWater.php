@@ -6,6 +6,7 @@ use App\AppConstants;
 use App\Entity\ConsumeWater;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
+use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
@@ -55,6 +56,12 @@ class SamsungConsumeWater extends Constants
                 return NULL;
             }
 
+            /** @var PatientGoals $patientGoal */
+            $patientGoal = self::getPatientGoal($doctrine, "Water", '2000', $unitOfMeasurement, $patient);
+            if (is_null($patientGoal)) {
+                return NULL;
+            }
+
             /** @var ConsumeWater $dataEntry */
             $dataEntry = $doctrine->getRepository(ConsumeWater::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
@@ -72,6 +79,7 @@ class SamsungConsumeWater extends Constants
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
             $dataEntry->setService($thirdPartyService);
             $dataEntry->setTrackingDevice($deviceTracking);
+            $dataEntry->setPatientGoal($patientGoal);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }

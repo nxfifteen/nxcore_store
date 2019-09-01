@@ -83,16 +83,17 @@ class Transform
     }
 
     /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
+     * @param ManagerRegistry   $doctrine
+     * @param String            $serviceName
      *
-     * @param float           $serviceGoal
+     * @param float             $serviceGoal
      *
-     * @param Patient         $patient
+     * @param UnitOfMeasurement $unitOfMeasurement
+     * @param Patient           $patient
      *
      * @return PatientGoals|null
      */
-    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, Patient $patient)
+    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, UnitOfMeasurement $unitOfMeasurement, Patient $patient)
     {
         /** @var PatientGoals $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(PatientGoals::class)->findOneBy(['entity' => $serviceName]);
@@ -105,6 +106,9 @@ class Transform
             $thirdPartyService->setGoal($serviceGoal);
             $thirdPartyService->setEntity($serviceName);
             $thirdPartyService->setDateSet(new DateTime());
+            if (!is_null($unitOfMeasurement)) {
+                $thirdPartyService->setUnitOfMeasurement($unitOfMeasurement);
+            }
 
             $entityManager->persist($thirdPartyService);
             $entityManager->flush();

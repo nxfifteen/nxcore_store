@@ -43,15 +43,15 @@ class SamsungCountDailySteps extends Constants
                 return NULL;
             }
 
-            /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
-            if (is_null($partOfDay)) {
+            /** @var PatientGoals $patientGoal */
+            $patientGoal = self::getPatientGoal($doctrine, "StepsDaily", $jsonContent->goal, null, $patient);
+            if (is_null($patientGoal)) {
                 return NULL;
             }
 
-            /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "StepsDaily", $jsonContent->goal, $patient);
-            if (is_null($patientGoal)) {
+            /** @var PartOfDay $partOfDay */
+            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
+            if (is_null($partOfDay)) {
                 return NULL;
             }
 
