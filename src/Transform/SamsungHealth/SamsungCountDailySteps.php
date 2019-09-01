@@ -49,12 +49,6 @@ class SamsungCountDailySteps extends Constants
                 return NULL;
             }
 
-            /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
-            if (is_null($partOfDay)) {
-                return NULL;
-            }
-
             /** @var FitStepsDailySummary $dataEntry */
             $dataEntry = $doctrine->getRepository(FitStepsDailySummary::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
@@ -69,7 +63,6 @@ class SamsungCountDailySteps extends Constants
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
                 $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
             }
-            $dataEntry->setPartOfDay($partOfDay);
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
