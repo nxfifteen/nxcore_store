@@ -2,6 +2,7 @@
 namespace App\Transform\SamsungHealth;
 
 
+use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
@@ -19,6 +20,8 @@ class SamsungDevices extends Constants
     {
         $jsonContent = self::decodeJson($getContent);
         if (property_exists($jsonContent, "remoteId")) {
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too TrackingDevice for " . $jsonContent->remoteId);
+
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {

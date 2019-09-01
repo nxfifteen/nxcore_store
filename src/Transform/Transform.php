@@ -246,7 +246,7 @@ class Transform
      * @throws \Exception
      */
     protected static function updateApi(ManagerRegistry $doctrine, String $fullClassName, Patient $patient, ThirdPartyService $service, DateTimeInterface $dateTime) {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateEntity class type is : " . $fullClassName);
+        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateEntity class type is : " . $fullClassName);
         /** @var ApiAccessLog $dataEntry */
         $dataEntry = $doctrine->getRepository(ApiAccessLog::class)->findOneBy(['entity' => $fullClassName, 'patient' => $patient, 'thirdPartyService' => $service]);
         if (!$dataEntry) {
