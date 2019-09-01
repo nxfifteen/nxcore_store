@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -50,6 +52,32 @@ class Exercise
      * @ORM\JoinColumn(nullable=false)
      */
     private $partOfDay;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\ExerciseSummary", mappedBy="exercise", cascade={"persist", "remove"})
+     */
+    private $exerciseSummary;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $duration;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ExerciseType")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $exerciseType;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ExerciseTrack", mappedBy="exercise")
+     */
+    private $exerciseTrack;
+
+    public function __construct()
+    {
+        $this->exerciseTrack = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -124,6 +152,78 @@ class Exercise
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
+
+        return $this;
+    }
+
+    public function getExerciseSummary(): ?ExerciseSummary
+    {
+        return $this->exerciseSummary;
+    }
+
+    public function setExerciseSummary(ExerciseSummary $exerciseSummary): self
+    {
+        $this->exerciseSummary = $exerciseSummary;
+
+        // set the owning side of the relation if necessary
+        if ($this !== $exerciseSummary->getExercise()) {
+            $exerciseSummary->setExercise($this);
+        }
+
+        return $this;
+    }
+
+    public function getDuration(): ?int
+    {
+        return $this->duration;
+    }
+
+    public function setDuration(int $duration): self
+    {
+        $this->duration = $duration;
+
+        return $this;
+    }
+
+    public function getExerciseType(): ?ExerciseType
+    {
+        return $this->exerciseType;
+    }
+
+    public function setExerciseType(?ExerciseType $exerciseType): self
+    {
+        $this->exerciseType = $exerciseType;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ExerciseTrack[]
+     */
+    public function getExerciseTrack(): Collection
+    {
+        return $this->exerciseTrack;
+    }
+
+    public function addExerciseTrack(ExerciseTrack $exerciseTrack): self
+    {
+        if (!$this->exerciseTrack->contains($exerciseTrack)) {
+            $this->exerciseTrack[] = $exerciseTrack;
+            $exerciseTrack->setExercise($this);
+        }
+
+        return $this;
+    }
+
+    public function removeExerciseTrack(ExerciseTrack $exerciseTrack): self
+    {
+        if ($this->exerciseTrack->contains($exerciseTrack)) {
+            $this->exerciseTrack->removeElement($exerciseTrack);
+            // set the owning side to null (unless already changed)
+            if ($exerciseTrack->getExercise() === $this) {
+                $exerciseTrack->setExercise(null);
+            }
+        }
 
         return $this;
     }
