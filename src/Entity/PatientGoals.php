@@ -39,6 +39,11 @@ class PatientGoals
      */
     private $dateSet;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\UnitOfMeasurement")
+     */
+    private $unitOfMeasurement;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -88,6 +93,18 @@ class PatientGoals
     public function setDateSet(\DateTimeInterface $dateSet): self
     {
         $this->dateSet = $dateSet;
+
+        return $this;
+    }
+
+    public function getUnitOfMeasurement(): ?UnitOfMeasurement
+    {
+        return $this->unitOfMeasurement;
+    }
+
+    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
+    {
+        $this->unitOfMeasurement = $unitOfMeasurement;
 
         return $this;
     }

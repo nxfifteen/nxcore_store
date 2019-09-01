@@ -44,7 +44,9 @@ class Entry
                 $translateEntity = SamsungConsumeCaffeine::translate($doctrine, $getContent);
                 break;
             case Constants::SAMSUNGHEALTHEPBODYWEIGHT:
-                $translateEntity = SamsungBodyWeight::translate($doctrine, $getContent);
+                $translateEntity = array();
+                array_push($translateEntity, SamsungBodyWeight::translate($doctrine, $getContent));
+                array_push($translateEntity, SamsungBodyFat::translate($doctrine, $getContent));
                 break;
             default:
                 return -3;
@@ -53,10 +55,19 @@ class Entry
 
         if (!is_null($translateEntity)) {
             $entityManager = $doctrine->getManager();
-            $entityManager->persist($translateEntity);
+            if (!is_array($translateEntity)) {
+                $entityManager->persist($translateEntity);
+                $returnId = $translateEntity->getId();
+            } else {
+                $returnId = array();
+                foreach ($translateEntity as $item) {
+                    $entityManager->persist($item);
+                    array_push($returnId, $item->getId());
+                }
+            }
             $entityManager->flush();
 
-            return $translateEntity->getId();
+            return $returnId;
         } else {
             return -1;
         }

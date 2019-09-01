@@ -50,7 +50,8 @@ class SyncUploadController extends AbstractController
             $data_set != "count_daily_floors" &&
             $data_set != "water_intakes" &&
             $data_set != "caffeine_intakes" &&
-            $data_set != "body_weights") {
+            $data_set != "body_weights" &&
+            $data_set != "body_fats") {
             AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
         }
 
@@ -64,7 +65,14 @@ class SyncUploadController extends AbstractController
             $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine());
         }
 
-        if ($savedId > 0) {
+        if (is_array($savedId)) {
+            return $this->json([
+                'success' => TRUE,
+                'status' => 200,
+                'message' => "Saved multiple '$service/$data_set' entitles",
+                'entity_id' => $savedId,
+            ]);
+        } else if ($savedId > 0) {
             return $this->json([
                 'success' => TRUE,
                 'status' => 200,
@@ -89,7 +97,7 @@ class SyncUploadController extends AbstractController
                 'status' => 500,
                 'message' => "Unknown data set '$data_set' in '$service'",
             ]);
-        } else {
+        } else  {
             return $this->json([
                 'success' => FALSE,
                 'status' => 500,
