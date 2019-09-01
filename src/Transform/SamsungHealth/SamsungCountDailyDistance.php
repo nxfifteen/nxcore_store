@@ -3,20 +3,21 @@
 namespace App\Transform\SamsungHealth;
 
 use App\AppConstants;
-use App\Entity\FitStepsDailySummary;
+use App\Entity\FitDistanceDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
+use App\Entity\UnitOfMeasurement;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-class SamsungCountDailySteps extends Constants
+class SamsungCountDailyDistance extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
-     * @return FitStepsDailySummary|null
+     * @return FitDistanceDailySummary|null
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent)
     {
@@ -24,7 +25,7 @@ class SamsungCountDailySteps extends Constants
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitStepsDailySummary for " . $jsonContent->remoteId);
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitDistanceDailySummary for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -45,15 +46,21 @@ class SamsungCountDailySteps extends Constants
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent->goal, NULL, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "FitDistanceDailySummary", $jsonContent->goal, NULL, $patient);
             if (is_null($patientGoal)) {
                 return NULL;
             }
 
-            /** @var FitStepsDailySummary $dataEntry */
-            $dataEntry = $doctrine->getRepository(FitStepsDailySummary::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            /** @var UnitOfMeasurement $unitOfMeasurement */
+            $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->units);
+            if (is_null($unitOfMeasurement)) {
+                return NULL;
+            }
+
+            /** @var FitDistanceDailySummary $dataEntry */
+            $dataEntry = $doctrine->getRepository(FitDistanceDailySummary::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
-                $dataEntry = new FitStepsDailySummary();
+                $dataEntry = new FitDistanceDailySummary();
             }
 
             $dataEntry->setPatient($patient);
@@ -61,6 +68,7 @@ class SamsungCountDailySteps extends Constants
             $dataEntry->setRemoteId($jsonContent->remoteId);
             $dataEntry->setValue($jsonContent->value);
             $dataEntry->setGoal($patientGoal);
+            $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
                 $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
             }

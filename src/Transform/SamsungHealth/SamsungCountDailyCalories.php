@@ -3,20 +3,20 @@
 namespace App\Transform\SamsungHealth;
 
 use App\AppConstants;
-use App\Entity\FitStepsDailySummary;
+use App\Entity\FitCaloriesDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-class SamsungCountDailySteps extends Constants
+class SamsungCountDailyCalories extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
-     * @return FitStepsDailySummary|null
+     * @return FitCaloriesDailySummary|null
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent)
     {
@@ -24,7 +24,7 @@ class SamsungCountDailySteps extends Constants
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitStepsDailySummary for " . $jsonContent->remoteId);
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitCaloriesDailySummary for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -45,15 +45,15 @@ class SamsungCountDailySteps extends Constants
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent->goal, NULL, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "FitCaloriesDailySummary", $jsonContent->goal, NULL, $patient);
             if (is_null($patientGoal)) {
                 return NULL;
             }
 
-            /** @var FitStepsDailySummary $dataEntry */
-            $dataEntry = $doctrine->getRepository(FitStepsDailySummary::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            /** @var FitCaloriesDailySummary $dataEntry */
+            $dataEntry = $doctrine->getRepository(FitCaloriesDailySummary::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
-                $dataEntry = new FitStepsDailySummary();
+                $dataEntry = new FitCaloriesDailySummary();
             }
 
             $dataEntry->setPatient($patient);

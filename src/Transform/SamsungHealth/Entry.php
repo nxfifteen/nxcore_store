@@ -50,6 +50,12 @@ class Entry
             case Constants::SAMSUNGHEALTHEPEXERCISE:
                 $translateEntity = SamsungExercise::translate($doctrine, $getContent);
                 break;
+            case Constants::SAMSUNGHEALTHCALORIES:
+                $translateEntity = SamsungCountDailyCalories::translate($doctrine, $getContent);
+                break;
+            case Constants::SAMSUNGHEALTHDISTNACE:
+                $translateEntity = SamsungCountDailyDistance::translate($doctrine, $getContent);
+                break;
             case Constants::SAMSUNGHEALTHEPBODYWEIGHT:
                 $translateEntity = array();
                 array_push($translateEntity, SamsungBodyWeight::translate($doctrine, $getContent));

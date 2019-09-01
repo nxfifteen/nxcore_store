@@ -17,6 +17,8 @@ class Constants extends Transform
     const SAMSUNGHEALTHEPCONSUMCAFFINE = "caffeine_intakes";
     const SAMSUNGHEALTHEPBODYWEIGHT = "body_weights";
     const SAMSUNGHEALTHEPEXERCISE = "exercises";
+    const SAMSUNGHEALTHCALORIES = "count_daily_calories";
+    const SAMSUNGHEALTHDISTNACE = "count_daily_distances";
 
     protected static function convertExerciseType(int $serviceId)
     {
