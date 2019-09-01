@@ -2,6 +2,8 @@
 
 namespace App\Transform;
 
+use App\AppConstants;
+use App\Entity\ApiAccessLog;
 use App\Entity\ExerciseType;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
@@ -9,6 +11,7 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
+use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -232,4 +235,32 @@ class Transform
         return (substr($string, 0, $len) === $startString);
     }
 
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param String            $fullClassName
+     * @param Patient           $patient
+     * @param ThirdPartyService $service
+     * @param DateTimeInterface $dateTime
+     *
+     * @return ApiAccessLog
+     * @throws \Exception
+     */
+    protected static function updateApi(ManagerRegistry $doctrine, String $fullClassName, Patient $patient, ThirdPartyService $service, DateTimeInterface $dateTime) {
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateEntity class type is : " . $fullClassName);
+        /** @var ApiAccessLog $dataEntry */
+        $dataEntry = $doctrine->getRepository(ApiAccessLog::class)->findOneBy(['entity' => $fullClassName, 'patient' => $patient, 'thirdPartyService' => $service]);
+        if (!$dataEntry) {
+            $dataEntry = new ApiAccessLog();
+        }
+
+        $dataEntry->setPatient($patient);
+        $dataEntry->setThirdPartyService($service);
+        $dataEntry->setEntity($fullClassName);
+        $dataEntry->setLastRetrieved($dateTime);
+        $dataEntry->setLastPulled(new DateTime());
+        $interval = new DateInterval('PT12M');
+        $dataEntry->setCooldown((new DateTime())->add($interval));
+
+        return $dataEntry;
+    }
 }

@@ -4,7 +4,6 @@ namespace App\Transform\SamsungHealth;
 
 use App\AppConstants;
 use App\Entity\FitStepsDailySummary;
-use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
@@ -44,7 +43,7 @@ class SamsungCountDailySteps extends Constants
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "StepsDaily", $jsonContent->goal, null, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "StepsDaily", $jsonContent->goal, NULL, $patient);
             if (is_null($patientGoal)) {
                 return NULL;
             }
@@ -66,6 +65,18 @@ class SamsungCountDailySteps extends Constants
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
+            }
+
+            try {
+                $savedClassType = get_class($dataEntry);
+                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
+                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($updatedApi);
+                $entityManager->flush();
+            } catch (\Exception $e) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
             }
 
             return $dataEntry;

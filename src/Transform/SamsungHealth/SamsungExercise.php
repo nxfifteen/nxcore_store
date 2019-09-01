@@ -124,6 +124,18 @@ class SamsungExercise extends Constants
 
             }
 
+            try {
+                $savedClassType = get_class($dataEntryExercise);
+                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
+                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($updatedApi);
+                $entityManager->flush();
+            } catch (\Exception $e) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+            }
+
             return $dataEntryExercise;
 
         }

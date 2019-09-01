@@ -2,6 +2,10 @@
 
 namespace App\Transform\SamsungHealth;
 
+use App\AppConstants;
+use App\Entity\ApiAccessLog;
+use App\Entity\Patient;
+use App\Transform\Transform;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 

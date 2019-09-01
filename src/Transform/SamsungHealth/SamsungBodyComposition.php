@@ -90,6 +90,18 @@ class SamsungBodyComposition extends Constants
             $dataEntry->setSkeletalMuscleMass($jsonContent->skeletal_muscle_mass);
             $dataEntry->setTotalBodyWater($jsonContent->total_body_water);
 
+            try {
+                $savedClassType = get_class($dataEntry);
+                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
+                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($updatedApi);
+                $entityManager->flush();
+            } catch (\Exception $e) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+            }
+
             return $dataEntry;
 
         }

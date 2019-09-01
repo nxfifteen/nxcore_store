@@ -60,6 +60,18 @@ class SamsungIntraDaySteps extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
+            try {
+                $savedClassType = get_class($dataEntry);
+                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
+                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($updatedApi);
+                $entityManager->flush();
+            } catch (\Exception $e) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+            }
+
             return $dataEntry;
 
         }
