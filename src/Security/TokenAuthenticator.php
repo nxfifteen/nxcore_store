@@ -41,9 +41,16 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        return [
-            'token' => $request->headers->get('X-AUTH-TOKEN'),
-        ];
+        if ($request->query->has('key')) {
+            return [
+                'token' => $request->query->get('key'),
+            ];
+        } else {
+            return [
+                'token' => $request->headers->get('X-AUTH-TOKEN'),
+            ];
+        }
+
     }
 
     /**
@@ -112,7 +119,11 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $request->headers->has('X-AUTH-TOKEN');
+        if ($request->query->has('key') || $request->headers->has('X-AUTH-TOKEN')) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function supportsRememberMe()
