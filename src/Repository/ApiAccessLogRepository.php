@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\ApiAccessLog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * @method ApiAccessLog|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,22 +20,23 @@ class ApiAccessLogRepository extends ServiceEntityRepository
         parent::__construct($registry, ApiAccessLog::class);
     }
 
-    // /**
-    //  * @return ApiAccessLog[] Returns an array of ApiAccessLog objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findLastAccess($patient, $service, $entity): ?ApiAccessLog
     {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('a.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        try {
+            return $this->createQueryBuilder('a')
+                ->andWhere('a.patient = :patientId')
+                ->setParameter('patientId', $patient)
+                ->andWhere('a.thirdPartyService = :serviceId')
+                ->setParameter('serviceId', $service)
+                ->andWhere('a.entity = :val')
+                ->setParameter('val', $entity)
+                ->getQuery()
+                ->getOneOrNullResult();
+        } catch (NonUniqueResultException $e) {
+            return null;
+        }
     }
-    */
+
 
     /*
     public function findOneBySomeField($value): ?ApiAccessLog
