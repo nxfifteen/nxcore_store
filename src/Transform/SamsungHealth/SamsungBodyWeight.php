@@ -26,7 +26,7 @@ class SamsungBodyWeight extends Constants
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too BodyWeight for " . $jsonContent->remoteId);
+            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too BodyWeight for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -104,7 +104,7 @@ class SamsungBodyWeight extends Constants
                 $entityManager->persist($updatedApi);
                 $entityManager->flush();
             } catch (\Exception $e) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
             }
 
             return $dataEntry;

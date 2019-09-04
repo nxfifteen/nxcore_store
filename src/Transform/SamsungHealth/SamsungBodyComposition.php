@@ -31,7 +31,7 @@ class SamsungBodyComposition extends Constants
             $jsonContent->basal_metabolic_rate > 0 ||
             $jsonContent->skeletal_muscle_mass > 0 ||
             $jsonContent->total_body_water > 0)) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too BodyComposition for " . $jsonContent->remoteId);
+            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too BodyComposition for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -101,7 +101,7 @@ class SamsungBodyComposition extends Constants
                 $entityManager->persist($updatedApi);
                 $entityManager->flush();
             } catch (\Exception $e) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
             }
 
             return $dataEntry;
