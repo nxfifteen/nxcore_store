@@ -12,9 +12,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class SyncUploadController extends AbstractController
 {
     /**
-     * @Route("/sync/upload", name="sync_upload", methods={"GET","HEAD"})
+     * @Route("/help/upload", name="sync_upload_help")
      */
-    public function index()
+    public function index_help()
     {
         return $this->render('sync_upload/index.html.twig', [
             'controller_name' => 'SyncUploadController',
@@ -48,7 +48,10 @@ class SyncUploadController extends AbstractController
             $data_set != "body_fats" &&
             $data_set != "exercises" &&
             $data_set != "count_daily_calories" &&
-            $data_set != "count_daily_distances") {
+            $data_set != "count_daily_distances" &&
+            $data_set != "food" &&
+            $data_set != "food_intake" &&
+            $data_set != "food_info") {
             AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
         }
 

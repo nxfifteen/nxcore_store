@@ -2,10 +2,6 @@
 
 namespace App\Transform\SamsungHealth;
 
-use App\AppConstants;
-use App\Entity\ApiAccessLog;
-use App\Entity\Patient;
-use App\Transform\Transform;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 
@@ -56,8 +52,17 @@ class Entry
             case Constants::SAMSUNGHEALTHDISTNACE:
                 $translateEntity = SamsungCountDailyDistance::translate($doctrine, $getContent);
                 break;
+            case Constants::SAMSUNGHEALTHFOOD:
+                $translateEntity = SamsungFood::translateFood($doctrine, $getContent);
+                break;
+            case Constants::SAMSUNGHEALTHFOODLOG:
+                $translateEntity = SamsungFood::translateFoodIntake($doctrine, $getContent);
+                break;
+            case Constants::SAMSUNGHEALTHFOODDATABASE:
+                $translateEntity = SamsungFood::translateFoodInfo($doctrine, $getContent);
+                break;
             case Constants::SAMSUNGHEALTHEPBODYWEIGHT:
-                $translateEntity = array();
+                $translateEntity = [];
                 array_push($translateEntity, SamsungBodyWeight::translate($doctrine, $getContent));
                 array_push($translateEntity, SamsungBodyFat::translate($doctrine, $getContent));
                 array_push($translateEntity, SamsungBodyComposition::translate($doctrine, $getContent));
@@ -73,7 +78,7 @@ class Entry
                 $entityManager->persist($translateEntity);
                 $returnId = $translateEntity->getId();
             } else {
-                $returnId = array();
+                $returnId = [];
                 foreach ($translateEntity as $item) {
                     if (!is_null($item)) {
                         $entityManager->persist($item);

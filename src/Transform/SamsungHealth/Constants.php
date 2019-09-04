@@ -19,6 +19,61 @@ class Constants extends Transform
     const SAMSUNGHEALTHEPEXERCISE = "exercises";
     const SAMSUNGHEALTHCALORIES = "count_daily_calories";
     const SAMSUNGHEALTHDISTNACE = "count_daily_distances";
+    const SAMSUNGHEALTHFOOD = "food";
+    const SAMSUNGHEALTHFOODLOG = "food_intake";
+    const SAMSUNGHEALTHFOODDATABASE = "food_info";
+
+    protected static function convertMeal(int $serviceInt)
+    {
+        switch ($serviceInt) {
+            case 100001:
+                return "Breakfast";
+                break;
+            case 100002:
+                return "Lunch";
+                break;
+            case 100003:
+                return "Dinner";
+                break;
+            case 100004:
+                return "Morning Snack";
+                break;
+            case 100005:
+                return "Afternoon Snack";
+                break;
+            case 100006:
+                return "Evening Snack";
+                break;
+            case 900001:
+                return "Snack";
+                break;
+            default:
+                return $serviceInt;
+                break;
+        }
+    }
+    protected static function convertMealUnit($serviceInt) {
+        switch ($serviceInt) {
+            case 120001:
+                return "Default";
+                break;
+            case 120002:
+                return "Gram";
+                break;
+            case 120003:
+                return "Ounce";
+                break;
+            case 120004:
+                return "Kilocalorie";
+                break;
+            case "meal":
+                return "Meal";
+                break;
+            default:
+                return "Not Defined";
+                break;
+        }
+    }
 
     protected static function convertExerciseType(int $serviceId)
     {

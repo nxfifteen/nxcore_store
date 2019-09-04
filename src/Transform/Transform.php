@@ -5,6 +5,8 @@ namespace App\Transform;
 use App\AppConstants;
 use App\Entity\ApiAccessLog;
 use App\Entity\ExerciseType;
+use App\Entity\FoodDatabase;
+use App\Entity\FoodMeals;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
@@ -18,6 +20,17 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 
 class Transform
 {
+
+    /**
+     * @param Object $getContent
+     *
+     * @return mixed
+     */
+    protected static function encodeJson(Object $getContent)
+    {
+        $jsonObject = json_encode($getContent);
+        return $jsonObject;
+    }
 
     /**
      * @param String $getContent
@@ -161,6 +174,46 @@ class Transform
         } else {
             $entityManager = $doctrine->getManager();
             $thirdPartyService = new UnitOfMeasurement();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $food_info_id
+     *
+     * @return FoodDatabase|null
+     */
+    protected static function getMealFoodItem(ManagerRegistry $doctrine, String $food_info_id)
+    {
+        /** @var FoodDatabase $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(FoodDatabase::class)->findByFoodInfoId($food_info_id);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @return FoodMeals|null
+     */
+    protected static function getMealType(ManagerRegistry $doctrine, String $serviceName)
+    {
+        /** @var FoodMeals $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(FoodMeals::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new FoodMeals();
             $thirdPartyService->setName($serviceName);
             $entityManager->persist($thirdPartyService);
             $entityManager->flush();
