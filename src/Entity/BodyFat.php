@@ -1,112 +1,87 @@
 <?php
 
-/*
-* This file is part of the Storage module in NxFIFTEEN Core.
-*
-* Copyright (c) 2019. Stuart McCulloch Anderson
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*
-* @package     Store
-* @version     0.0.0.x
-* @since       0.0.0.1
-* @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
-* @link        https://nxfifteen.me.uk NxFIFTEEN
-* @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
-* @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
-* @copyright   2019 Stuart McCulloch Anderson
-* @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
-*/
-
 namespace App\Entity;
-use Doctrine\ORM\Mapping as ORM;
+
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\BodyFatRepository")
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DateReading", columns={"date_time","patient_id","service"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceRemote", columns={"remote_id","tracking_device_id"})})
  *
- * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "date_time": "exact", "patient": "exact"})
+ * @ApiResource()
+ * @ORM\Entity(repositoryClass="App\Repository\BodyFatRepository")
  */
 class BodyFat
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
+     * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(type="integer")
      */
     private $id;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $measurement;
-
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $goal;
-
-    /**
-     * @ORM\Column(type="date", nullable=true)
-     */
-    private $date_time;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="bodyFats")
-     * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $patient;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\TrackingDevice")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $trackingDevice;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $measurement;
+
+    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\UnitOfMeasurement")
-     * @ORM\JoinColumn(name="unit", referencedColumnName="id")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $unitOfMeasurement;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\PartOfDay")
-     * @ORM\JoinColumn(name="part_of_day", referencedColumnName="id")
      */
     private $partOfDay;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
-     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="App\Entity\PatientGoals")
+     * @ORM\JoinColumn(nullable=false)
      */
-    private $thirdPartyService;
+    private $patientGoal;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $DateTime;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $RemoteId;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $fatFreeMass;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $fatFree;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $bodyFatMass;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getMeasurement(): ?float
-    {
-        return $this->measurement;
-    }
-
-    public function setMeasurement(?float $measurement): self
-    {
-        $this->measurement = $measurement;
-
-        return $this;
-    }
-
-    public function getDateTime(): ?\DateTimeInterface
-    {
-        return $this->date_time;
-    }
-
-    public function setDateTime(?\DateTimeInterface $date_time): self
-    {
-        $this->date_time = $date_time;
-
-        return $this;
     }
 
     public function getPatient(): ?Patient
@@ -117,6 +92,30 @@ class BodyFat
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getTrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    public function getMeasurement(): ?float
+    {
+        return $this->measurement;
+    }
+
+    public function setMeasurement(float $measurement): self
+    {
+        $this->measurement = $measurement;
 
         return $this;
     }
@@ -145,26 +144,74 @@ class BodyFat
         return $this;
     }
 
-    public function getGoal(): ?float
+    public function getPatientGoal(): ?PatientGoals
     {
-        return $this->goal;
+        return $this->patientGoal;
     }
 
-    public function setGoal(?float $goal): self
+    public function setPatientGoal(?PatientGoals $patientGoal): self
     {
-        $this->goal = $goal;
+        $this->patientGoal = $patientGoal;
 
         return $this;
     }
 
-    public function getThirdPartyService(): ?ThirdPartyService
+    public function getDateTime(): ?\DateTimeInterface
     {
-        return $this->thirdPartyService;
+        return $this->DateTime;
     }
 
-    public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
+    public function setDateTime(\DateTimeInterface $DateTime): self
     {
-        $this->thirdPartyService = $thirdPartyService;
+        $this->DateTime = $DateTime;
+
+        return $this;
+    }
+
+    public function getRemoteId(): ?string
+    {
+        return $this->RemoteId;
+    }
+
+    public function setRemoteId(string $RemoteId): self
+    {
+        $this->RemoteId = $RemoteId;
+
+        return $this;
+    }
+
+    public function getFatFreeMass(): ?float
+    {
+        return $this->fatFreeMass;
+    }
+
+    public function setFatFreeMass(?float $fatFreeMass): self
+    {
+        $this->fatFreeMass = $fatFreeMass;
+
+        return $this;
+    }
+
+    public function getFatFree(): ?float
+    {
+        return $this->fatFree;
+    }
+
+    public function setFatFree(?float $fatFree): self
+    {
+        $this->fatFree = $fatFree;
+
+        return $this;
+    }
+
+    public function getBodyFatMass(): ?float
+    {
+        return $this->bodyFatMass;
+    }
+
+    public function setBodyFatMass(?float $bodyFatMass): self
+    {
+        $this->bodyFatMass = $bodyFatMass;
 
         return $this;
     }

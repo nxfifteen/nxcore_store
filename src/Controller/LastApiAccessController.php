@@ -1,24 +1,5 @@
 <?php
 
-/*
-* This file is part of the Storage module in NxFIFTEEN Core.
-*
-* Copyright (c) 2019. Stuart McCulloch Anderson
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*
-* @package     Store
-* @version     0.0.0.x
-* @since       0.0.0.1
-* @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
-* @link        https://nxfifteen.me.uk NxFIFTEEN
-* @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
-* @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
-* @copyright   2019 Stuart McCulloch Anderson
-* @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
-*/
-
 namespace App\Controller;
 
 use App\Entity\ApiAccessLog;
@@ -30,20 +11,48 @@ class LastApiAccessController extends AbstractController
 {
 
     /**
-     * @Route("/json/{id}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
-     * @param String $id A users UUID
-     * @param String $service The Service ID requested
-     * @param String $endpoint The endpoint name
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @param String $uuid
+     *
+     * @throws \LogicException If the Security component is not available
      */
-    public function index(String $id, String $service, String $endpoint)
+    private function hasAccess(String $uuid) {
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
+
+        /** @var \App\Entity\Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
+
+    /**
+     * @Route("/help/last_upload", name="get_endpoint_last_help")
+     */
+    public function index_help()
     {
+        return $this->render('last_api_access/index.html.twig', [
+            'controller_name' => 'LastApiAccessController',
+        ]);
+    }
+
+    /**
+ * @Route("/json/{uuid}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
+ * @param String $uuid A users UUID
+ * @param String $service The Service ID requested
+ * @param String $endpoint The endpoint name
+ * @return \Symfony\Component\HttpFoundation\JsonResponse
+ */
+    public function index(String $uuid, String $service, String $endpoint)
+    {
+        $this->hasAccess($uuid);
+
         $return = [];
 
         /** @var Patient $patient */
         $patient = $this->getDoctrine()
             ->getRepository(Patient::class)
-            ->findByUuid($id);
+            ->findOneBy(['uuid' => $uuid]);
 
         if (!$patient) {
             $return['status'] = "error";
@@ -75,4 +84,5 @@ class LastApiAccessController extends AbstractController
 
         return $this->json($return);
     }
+
 }

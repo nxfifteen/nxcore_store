@@ -1,29 +1,10 @@
 <?php
 
-/*
-* This file is part of the Storage module in NxFIFTEEN Core.
-*
-* Copyright (c) 2019. Stuart McCulloch Anderson
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*
-* @package     Store
-* @version     0.0.0.x
-* @since       0.0.0.1
-* @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
-* @link        https://nxfifteen.me.uk NxFIFTEEN
-* @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
-* @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
-* @copyright   2019 Stuart McCulloch Anderson
-* @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
-*/
-
 namespace App\Repository;
 
 use App\Entity\BodyWeight;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
  * @method BodyWeight|null find($id, $lockMode = null, $lockVersion = null)
@@ -33,38 +14,14 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class BodyWeightRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BodyWeight::class);
     }
 
-    public function getLastReading( String $patientId ) {
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->orderBy('c.date_time', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    public function findByDate( String $patientId, String $date ) {
-        $today = $date . " 00:00:00";
-
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('c.date_time >= :val')
-            ->setParameter('val', $today)
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->orderBy('c.date_time', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-//    /**
-//     * @return BodyWeight[] Returns an array of BodyWeight objects
-//     */
+    // /**
+    //  * @return BodyWeight[] Returns an array of BodyWeight objects
+    //  */
     /*
     public function findByExampleField($value)
     {
