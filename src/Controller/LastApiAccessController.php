@@ -11,22 +11,6 @@ class LastApiAccessController extends AbstractController
 {
 
     /**
-     * @param String $uuid
-     *
-     * @throws \LogicException If the Security component is not available
-     */
-    private function hasAccess(String $uuid) {
-        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
-
-        /** @var \App\Entity\Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
-    }
-
-    /**
      * @Route("/help/last_upload", name="get_endpoint_last_help")
      */
     public function index_help()
@@ -37,12 +21,13 @@ class LastApiAccessController extends AbstractController
     }
 
     /**
- * @Route("/json/{uuid}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
- * @param String $uuid A users UUID
- * @param String $service The Service ID requested
- * @param String $endpoint The endpoint name
- * @return \Symfony\Component\HttpFoundation\JsonResponse
- */
+     * @Route("/json/{uuid}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
+     * @param String $uuid     A users UUID
+     * @param String $service  The Service ID requested
+     * @param String $endpoint The endpoint name
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
     public function index(String $uuid, String $service, String $endpoint)
     {
         $this->hasAccess($uuid);
@@ -83,6 +68,23 @@ class LastApiAccessController extends AbstractController
         $return['payload'] = $apiAccessLog->getLastRetrieved()->format("Y-m-d H:i:s.v");
 
         return $this->json($return);
+    }
+
+    /**
+     * @param String $uuid
+     *
+     * @throws \LogicException If the Security component is not available
+     */
+    private function hasAccess(String $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+
+        /** @var \App\Entity\Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
     }
 
 }

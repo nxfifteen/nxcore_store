@@ -57,6 +57,26 @@ class Patient implements UserInterface
      */
     private $trackingDevices;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $firstName;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $surName;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $avatar;
+
+    /**
+     * @ORM\Column(type="json_array", nullable=true)
+     */
+    private $uiSettings = [];
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -211,6 +231,54 @@ class Patient implements UserInterface
                 $fitStepsDailySummary->setPatient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(?string $firstName): self
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getSurName(): ?string
+    {
+        return $this->surName;
+    }
+
+    public function setSurName(?string $surName): self
+    {
+        $this->surName = $surName;
+
+        return $this;
+    }
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?string $avatar): self
+    {
+        $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    public function getUiSettings(): ?array
+    {
+        return $this->uiSettings;
+    }
+
+    public function setUiSettings(?array $uiSettings): self
+    {
+        $this->uiSettings = $uiSettings;
 
         return $this;
     }

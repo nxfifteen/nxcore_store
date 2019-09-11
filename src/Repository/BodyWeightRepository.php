@@ -3,14 +3,16 @@
 namespace App\Repository;
 
 use App\Entity\BodyWeight;
+use DateInterval;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
- * @method BodyWeight|null find($id, $lockMode = null, $lockVersion = null)
- * @method BodyWeight|null findOneBy(array $criteria, array $orderBy = null)
+ * @method BodyWeight|null find($id, $lockMode = NULL, $lockVersion = NULL)
+ * @method BodyWeight|null findOneBy(array $criteria, array $orderBy = NULL)
  * @method BodyWeight[]    findAll()
- * @method BodyWeight[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method BodyWeight[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
  */
 class BodyWeightRepository extends ServiceEntityRepository
 {
@@ -19,32 +21,64 @@ class BodyWeightRepository extends ServiceEntityRepository
         parent::__construct($registry, BodyWeight::class);
     }
 
-    // /**
-    //  * @return BodyWeight[] Returns an array of BodyWeight objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param String $patientId
+     * @param String $date
+     * @param int    $lastDays
+     *
+     * @return mixed
+     */
+    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('b.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $dateObject = new DateTime($date);
 
-    /*
-    public function findOneBySomeField($value): ?BodyWeight
-    {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
+        try {
+            $interval = new DateInterval('P' . $lastDays . 'D');
+            $dateObject->sub($interval);
+            $today = $dateObject->format("Y-m-d") . " 00:00:00";
+        } catch (\Exception $e) {
+            $today = $date . " 00:00:00";
+        }
+        $todayEnd = $date . " 23:59:00";
+
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('c.DateTime >= :val')
+            ->setParameter('val', $today)
+            ->andWhere('c.DateTime <= :valEnd')
+            ->setParameter('valEnd', $todayEnd)
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.DateTime', 'ASC')
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
     }
-    */
+
+    /**
+     * @param String $patientId
+     * @param String $date
+     *
+     * @return mixed
+     */
+    public function findByDateRange(String $patientId, String $date)
+    {
+        return $this->findByDateRangeHistorical($patientId, $date, 0);
+    }
+
+    /**
+     * @param String $patientId
+     *
+     * @return mixed
+     */
+    public function findFirst(String $patientId)
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.DateTime', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
+    }
 }
