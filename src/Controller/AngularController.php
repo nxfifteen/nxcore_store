@@ -166,6 +166,40 @@ class AngularController extends AbstractController
         return $this->json($return);
     }
 
+    /**
+     * @Route("/{uuid}/ux/feed/body/weight/{readings}", name="angular_body_weight")
+     * @param String $uuid A users UUID
+     * @param int $readings A users UUID
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function index_body_weight(String $uuid, int $readings)
+    {
+        $this->hasAccess($uuid);
+
+        $return = [];
+
+        /** @var Patient $patient */
+        $patient = $this->getDoctrine()
+            ->getRepository(Patient::class)
+            ->findOneBy(['uuid' => $uuid]);
+
+        if (!$patient) {
+            $return['status'] = "error";
+            $return['code'] = "404";
+            $return['message'] = "Patient not found with UUID specified";
+            $return['payload'] = "2000-01-01 00:00:00.000";
+
+            return $this->json($return);
+        }
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+        $return['weight'] = $this->angularGetBodyWeight($uuid, date("Y-m-d"), $readings);
+
+        return $this->json($return);
+    }
+
     private function angularGetExerciseForMonth(String $uuid, String $date)
     {
         $this->hasAccess($uuid);
@@ -563,7 +597,7 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
-    private function angularGetBodyWeight(String $uuid, String $date)
+    private function angularGetBodyWeight(String $uuid, String $date, int $dateRange = 31)
     {
         $this->hasAccess($uuid);
 
@@ -571,7 +605,7 @@ class AngularController extends AbstractController
         /** @var BodyWeight[] $product */
         $product = $this->getDoctrine()
             ->getRepository(BodyWeight::class)
-            ->findByDateRangeHistorical($uuid, $date, 31);
+            ->findByDateRangeHistorical($uuid, $date, $dateRange);
 
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var BodyWeight[] $productFirst */
@@ -588,10 +622,8 @@ class AngularController extends AbstractController
         $timeStampsInTrack['widget'] = [];
         $timeStampsInTrack['widget']['labels'] = [];
         $timeStampsInTrack['widget']['data'] = [];
-        $timeStampsInTrack['widget']['data']['label'] = "Kg";
-        $timeStampsInTrack['widget']['data']['data'] = [];
-        $timeStampsInTrack['widget']['axis']['min'] = 40;
-        $timeStampsInTrack['widget']['axis']['max'] = 110;
+        $timeStampsInTrack['widget']['axis']['min'] = 0;
+        $timeStampsInTrack['widget']['axis']['max'] = 0;
 
         if (count($product) > 0) {
             /** @var BodyWeight[] $product */
@@ -599,12 +631,32 @@ class AngularController extends AbstractController
                 if (is_numeric($item->getMeasurement())) {
                     $timeStampsInTrack['value'] = round($item->getMeasurement(), 2);
                     $timeStampsInTrack['unit'] = $item->getUnitOfMeasurement()->getName();
-                    $timeStampsInTrack['widget']['data'][0]['label'] = "Recorded " . $item->getUnitOfMeasurement()->getName();
-                    $timeStampsInTrack['widget']['data'][0]['data'][] = round($item->getMeasurement(), 2);
-                    $timeStampsInTrack['widget']['labels'][] = $item->getDateTime()->format("D, jS M");
+
                     if (is_numeric($item->getPatientGoal()->getGoal())) {
-                        $timeStampsInTrack['widget']['data'][1]['label'] = "Goal " . $item->getPatientGoal()->getUnitOfMeasurement()->getName();
-                        $timeStampsInTrack['widget']['data'][1]['data'][] = round($item->getPatientGoal()->getGoal(), 2);
+                        $timeStampsInTrack['widget']['data'][0]['label'] = "Goal " . $item->getPatientGoal()->getUnitOfMeasurement()->getName();
+                        $timeStampsInTrack['widget']['data'][0]['data'][] = round($item->getPatientGoal()->getGoal(), 2);
+                    }
+
+                    $timeStampsInTrack['widget']['data'][1]['label'] = "Recorded " . $item->getUnitOfMeasurement()->getName();
+                    $timeStampsInTrack['widget']['data'][1]['data'][] = round($item->getMeasurement(), 2);
+                    if (count($timeStampsInTrack['widget']['data'][1]['data']) == 1) {
+                        $timeStampsInTrack['widget']['data'][2]['label'] = "Average " . $item->getUnitOfMeasurement()->getName();
+                        $timeStampsInTrack['widget']['data'][2]['data'][] = round($item->getMeasurement(), 2);
+                    } else {
+                        $timeStampsInTrack['widget']['data'][2]['label'] = "Average " . $item->getUnitOfMeasurement()->getName();
+                        $countWeight = $timeStampsInTrack['widget']['data'][1]['data'];
+                        $sumWeight = array_sum($timeStampsInTrack['widget']['data'][1]['data']);
+                        $timeStampsInTrack['widget']['data'][2]['data'][] = round($sumWeight / count($countWeight), 2);
+                    }
+
+                    $timeStampsInTrack['widget']['labels'][] = $item->getDateTime()->format("D, jS M");
+
+                    if ($timeStampsInTrack['widget']['axis']['min'] == 0 || $timeStampsInTrack['widget']['axis']['min'] > $timeStampsInTrack['value']) {
+                        $timeStampsInTrack['widget']['axis']['min'] = $timeStampsInTrack['value'];
+                    }
+
+                    if ($timeStampsInTrack['widget']['axis']['max'] == 0 || $timeStampsInTrack['widget']['axis']['max'] < $timeStampsInTrack['value']) {
+                        $timeStampsInTrack['widget']['axis']['max'] = $timeStampsInTrack['value'];
                     }
                 }
             }
@@ -619,6 +671,8 @@ class AngularController extends AbstractController
 
         $timeStampsInTrack['goal'] = $targetMeasurement;
         $timeStampsInTrack['progress'] = $progressPercentage;
+        $timeStampsInTrack['widget']['axis']['min'] = $timeStampsInTrack['widget']['axis']['min'] - 1;
+        $timeStampsInTrack['widget']['axis']['max'] = $timeStampsInTrack['widget']['axis']['max'] + 1;
 
         return $timeStampsInTrack;
     }

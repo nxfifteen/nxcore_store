@@ -7,6 +7,7 @@ use DateInterval;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * @method BodyWeight|null find($id, $lockMode = NULL, $lockVersion = NULL)
@@ -80,5 +81,28 @@ class BodyWeightRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function getSumOfValues(String $patientId, int $trackingDevice)
+    {
+        try {
+            return $this->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('p.uuid = :patientId')
+                ->setParameter('patientId', $patientId)
+                ->andWhere('c.trackingDevice = :trackingDevice')
+                ->setParameter('trackingDevice', $trackingDevice)
+                ->select('sum(c.value) as sum')
+                ->getQuery()
+                ->getOneOrNullResult()['sum'];
+        } catch (NonUniqueResultException $e) {
+            return null;
+        }
     }
 }
