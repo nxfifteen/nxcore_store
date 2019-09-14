@@ -77,10 +77,22 @@ class Patient implements UserInterface
      */
     private $uiSettings = [];
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgXP", mappedBy="patient", orphanRemoval=true)
+     */
+    private $xp;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgRewardsAwarded", mappedBy="patient", orphanRemoval=true)
+     */
+    private $rewards;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
         $this->trackingDevices = new ArrayCollection();
+        $this->xp = new ArrayCollection();
+        $this->rewards = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -279,6 +291,68 @@ class Patient implements UserInterface
     public function setUiSettings(?array $uiSettings): self
     {
         $this->uiSettings = $uiSettings;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgXP[]
+     */
+    public function getXp(): Collection
+    {
+        return $this->xp;
+    }
+
+    public function addXp(RpgXP $xp): self
+    {
+        if (!$this->xp->contains($xp)) {
+            $this->xp[] = $xp;
+            $xp->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeXp(RpgXP $xp): self
+    {
+        if ($this->xp->contains($xp)) {
+            $this->xp->removeElement($xp);
+            // set the owning side to null (unless already changed)
+            if ($xp->getPatient() === $this) {
+                $xp->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgRewardsAwarded[]
+     */
+    public function getRewards(): Collection
+    {
+        return $this->rewards;
+    }
+
+    public function addReward(RpgRewardsAwarded $reward): self
+    {
+        if (!$this->rewards->contains($reward)) {
+            $this->rewards[] = $reward;
+            $reward->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReward(RpgRewardsAwarded $reward): self
+    {
+        if ($this->rewards->contains($reward)) {
+            $this->rewards->removeElement($reward);
+            // set the owning side to null (unless already changed)
+            if ($reward->getPatient() === $this) {
+                $reward->setPatient(null);
+            }
+        }
 
         return $this;
     }

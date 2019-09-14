@@ -10,6 +10,9 @@ use App\Entity\FoodMeals;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
+use App\Entity\RpgRewards;
+use App\Entity\RpgRewardsAwarded;
+use App\Entity\RpgXP;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
@@ -316,4 +319,46 @@ class Transform
 
         return $dataEntry;
     }
+
+    protected static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning) {
+        if ($xpAwarded > 0) {
+            $entityManager = $doctrine->getManager();
+
+            $xpAward = new RpgXP();
+            $xpAward->setDatetime(new \DateTime());
+            $xpAward->setReason($reasoning);
+            $xpAward->setValue($xpAwarded);
+            $xpAward->setPatient($patient);
+
+            $entityManager->persist($xpAward);
+        }
+    }
+
+    protected static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, string $name, float $xp, string $image, string $text, string $longtext) {
+        $entityManager = $doctrine->getManager();
+
+        /** @var RpgRewards $thirdPartyService */
+        $reward = $doctrine->getRepository(RpgRewards::class)->findOneBy(['name' => $name, 'text' => $text]);
+        if (!$reward) {
+            $reward = new RpgRewards();
+            $reward->setName($name);
+            $reward->setImage($image);
+            $reward->setText($text);
+            $reward->setTextLong($longtext);
+            $reward->setXp($xp);
+            $entityManager->persist($reward);
+        }
+
+        $rewarded = new RpgRewardsAwarded();
+        $rewarded->setPatient($patient);
+        $rewarded->setDatetime(new \DateTime());
+        $rewarded->setReward($reward);
+        $entityManager->persist($rewarded);
+
+        if ($xp > 0) {
+            self::awardPatientXP($doctrine, $patient, $xp, "Awarded the " . $name . " badge");
+        }
+    }
+
+    // badge_weight_finish
 }

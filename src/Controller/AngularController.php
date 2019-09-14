@@ -70,6 +70,32 @@ class AngularController extends AbstractController
         $return['name'] = $patient->getFirstName();
         $return['nameFull'] = $patient->getFirstName() . " " . $patient->getSurName();
         $return['avatar'] = $patient->getAvatar();
+        $return['xp'] = 0;
+        foreach ($patient->getXp() as $rpgXP) {
+            $return['xp'] = $return['xp'] + $rpgXP->getValue();
+        }
+        $return['xp_raw'] = $return['xp'];
+        $return['xp'] = round($return['xp'], 2);
+        if ($return['xp'] > 100) {
+            $return['xp'] = 100;
+        }
+        $return['rewards'] = [];
+        foreach ($patient->getRewards() as $reward) {
+            if (array_key_exists($reward->getReward()->getId(), $return['rewards'])) {
+                $return['rewards'][$reward->getReward()->getId()]['count']++;
+                if (strtotime($return['rewards'][$reward->getReward()->getId()]['awarded']) < $reward->getDatetime()->format("U")) {
+                    $return['rewards'][$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d H:i:s");
+                }
+            } else {
+                $return['rewards'][$reward->getReward()->getId()] = [
+                    "name" => $reward->getReward()->getName(),
+                    "awarded" => $reward->getDatetime()->format("Y-m-d H:i:s"),
+                    "image" => $reward->getReward()->getImage(),
+                    "count" => 1
+                ];
+            }
+        }
+
 
         return $this->json($return);
     }
