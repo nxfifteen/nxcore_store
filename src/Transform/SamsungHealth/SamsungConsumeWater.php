@@ -86,6 +86,19 @@ class SamsungConsumeWater extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
+//                if ($dataEntry->getMeasurement() >= $dataEntry->getPatientGoal()->getGoal()) {
+//                    $patient = self::awardPatientReward(
+//                        $doctrine,
+//                        $patient,
+//                        $dataEntry->getDateTime(),
+//                        "Water Target Achieved",
+//                        0.07,
+//                        "trg_water_achieved",
+//                        "You drank it all",
+//                        "Today you did it! You drank everything you wanted too"
+//                    );
+//                }
+
             try {
                 $savedClassType = get_class($dataEntry);
                 $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);

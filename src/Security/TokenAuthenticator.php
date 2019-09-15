@@ -5,10 +5,12 @@ namespace App\Security;
 use App\Entity\Patient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
@@ -76,12 +78,11 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-
-            // or to translate this message
-            // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
         ];
 
         return new JsonResponse($data, Response::HTTP_FORBIDDEN);
+//        $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
+//        return new RedirectResponse('/login');
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)

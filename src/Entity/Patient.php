@@ -87,6 +87,21 @@ class Patient implements UserInterface
      */
     private $rewards;
 
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $rpgFactor;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $firstRun;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $email;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -353,6 +368,66 @@ class Patient implements UserInterface
                 $reward->setPatient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getRpgFactor(): ?float
+    {
+        if (is_null($this->rpgFactor)) {
+            return 1;
+        } else {
+            return $this->rpgFactor;
+        }
+    }
+
+    public function setRpgFactor(?float $rpgFactor): self
+    {
+        $this->rpgFactor = $rpgFactor;
+
+        return $this;
+    }
+
+    public function getXpTotal()
+    {
+        $totalXp = 0;
+        /** @var RpgXP $value */
+        foreach ($this->xp as $value) {
+            $totalXp = $totalXp + $value->getValue();
+        }
+        return $totalXp;
+    }
+
+    public function getRpgLevel()
+    {
+        $totalXp = $this->getXpTotal();
+        return intval(explode(".", ( $totalXp / 50 ))[0]);
+    }
+
+    public function getFirstRun(): ?bool
+    {
+        if (is_null($this->firstRun) || $this->firstRun) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function setFirstRun(?bool $firstRun): self
+    {
+        $this->firstRun = $firstRun;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
 
         return $this;
     }

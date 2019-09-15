@@ -6,6 +6,7 @@ use App\AppConstants;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
+use App\Entity\RpgXP;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -69,17 +70,47 @@ class SamsungCountDailySteps extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
+            if ($dataEntry->getTrackingDevice()->getId() == 3) {
+                if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+                    $patient = self::awardPatientReward(
+                        $doctrine,
+                        $patient,
+                        $dataEntry->getDateTime(),
+                        "Step Target Achieved",
+                        0.143,
+                        "trg_steps_achieved",
+                        "Reached your step goal today",
+                        "Today you did it! You reached your step goal"
+                    );
+                    $percentageOver = ($dataEntry->getValue() / $dataEntry->getGoal()->getGoal()) * 100;
+                    $percentageOver = $percentageOver - 100;
+                    if ($percentageOver > 100) {
+                        $patient = self::awardPatientReward(
+                            $doctrine,
+                            $patient,
+                            $dataEntry->getDateTime(),
+                            "Step Target Smashed",
+                            0.143,
+                            "trg_steps_smashed",
+                            "You walked twice your step goal",
+                            "Wow! I mean, WOW! You walked twice your step goal today"
+                        );
+                    }
+                }
+            }
+
+            $entityManager = $doctrine->getManager();
             try {
                 $savedClassType = get_class($dataEntry);
                 $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
                 $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
 
-                $entityManager = $doctrine->getManager();
                 $entityManager->persist($updatedApi);
-                $entityManager->flush();
             } catch (\Exception $e) {
                 ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
             }
+
+            $entityManager->flush();
 
             return $dataEntry;
 

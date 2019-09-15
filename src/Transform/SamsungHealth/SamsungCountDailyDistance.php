@@ -77,6 +77,21 @@ class SamsungCountDailyDistance extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
+            if ($dataEntry->getTrackingDevice()->getId() == 3) {
+                if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+                    $patient = self::awardPatientReward(
+                        $doctrine,
+                        $patient,
+                        $dataEntry->getDateTime(),
+                        "Distance Target Achieved",
+                        0.143,
+                        "trg_distance_achieved",
+                        "Reached your distance goal today",
+                        "Today you did it! Walked the full way"
+                    );
+                }
+            }
+
             try {
                 $savedClassType = get_class($dataEntry);
                 $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);

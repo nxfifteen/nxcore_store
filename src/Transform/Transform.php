@@ -198,7 +198,7 @@ class Transform
         if ($thirdPartyService) {
             return $thirdPartyService;
         } else {
-            return null;
+            return NULL;
         }
     }
 
@@ -285,7 +285,7 @@ class Transform
         }
     }
 
-    protected static function startsWith ($string, $startString)
+    protected static function startsWith($string, $startString)
     {
         $len = strlen($startString);
         return (substr($string, 0, $len) === $startString);
@@ -301,7 +301,8 @@ class Transform
      * @return ApiAccessLog
      * @throws \Exception
      */
-    protected static function updateApi(ManagerRegistry $doctrine, String $fullClassName, Patient $patient, ThirdPartyService $service, DateTimeInterface $dateTime) {
+    protected static function updateApi(ManagerRegistry $doctrine, String $fullClassName, Patient $patient, ThirdPartyService $service, DateTimeInterface $dateTime)
+    {
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateEntity class type is : " . $fullClassName);
         /** @var ApiAccessLog $dataEntry */
         $dataEntry = $doctrine->getRepository(ApiAccessLog::class)->findOneBy(['entity' => $fullClassName, 'patient' => $patient, 'thirdPartyService' => $service]);
@@ -320,24 +321,12 @@ class Transform
         return $dataEntry;
     }
 
-    protected static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning) {
-        if ($xpAwarded > 0) {
-            $entityManager = $doctrine->getManager();
+    protected static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, DateTimeInterface $dateTime, string $name, float $xp, string $image, string $text, string $longtext)
+    {
 
-            $xpAward = new RpgXP();
-            $xpAward->setDatetime(new \DateTime());
-            $xpAward->setReason($reasoning);
-            $xpAward->setValue($xpAwarded);
-            $xpAward->setPatient($patient);
-
-            $entityManager->persist($xpAward);
-        }
-    }
-
-    protected static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, string $name, float $xp, string $image, string $text, string $longtext) {
         $entityManager = $doctrine->getManager();
 
-        /** @var RpgRewards $thirdPartyService */
+        /** @var RpgRewards $reward */
         $reward = $doctrine->getRepository(RpgRewards::class)->findOneBy(['name' => $name, 'text' => $text]);
         if (!$reward) {
             $reward = new RpgRewards();
@@ -349,15 +338,86 @@ class Transform
             $entityManager->persist($reward);
         }
 
-        $rewarded = new RpgRewardsAwarded();
-        $rewarded->setPatient($patient);
-        $rewarded->setDatetime(new \DateTime());
-        $rewarded->setReward($reward);
-        $entityManager->persist($rewarded);
+        /** @var RpgRewardsAwarded $rewards */
+        $rewards = $doctrine->getRepository(RpgRewardsAwarded::class)->findOneBy(['patient' => $patient, 'reward' => $reward, 'datetime' => new DateTime($dateTime->format("Y-m-d 00:00:00"))]);
+        if (!$rewards) {
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Awarding ' . $patient->getFirstName() . ' the ' . $name . ' badge');
 
-        if ($xp > 0) {
-            self::awardPatientXP($doctrine, $patient, $xp, "Awarded the " . $name . " badge");
+            $rewarded = new RpgRewardsAwarded();
+            $rewarded->setPatient($patient);
+            $rewarded->setDatetime(new DateTime($dateTime->format("Y-m-d 00:00:00")));
+            $rewarded->setReward($reward);
+            $entityManager->persist($rewarded);
+
+            $patient->addReward($rewarded);
+
+            if ($xp > 0) {
+                $patient = self::awardPatientXP($doctrine, $patient, $xp, "Awarded the " . $name . " badge on " . $dateTime->format("l jS F, Y"), new DateTime($dateTime->format("Y-m-d 00:00:00")));
+            }
         }
+
+        return $patient;
+    }
+
+    protected static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
+    {
+        if ($xpAwarded > 0) {
+
+            /** @var RpgXP $xpAlreadyAwarded */
+            $xpAlreadyAwarded = $doctrine->getRepository(RpgXP::class)->findOneBy(['patient' => $patient, 'reason' => $reasoning, 'datetime' => $dateTime]);
+            if (!$xpAlreadyAwarded) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Awarding ' . $patient->getFirstName() . ' ' . $xpAwarded . 'XP for ' . $reasoning);
+
+                $currentXp = $patient->getXpTotal();
+                $xpToAward = 0;
+                for ($i = 1; $i <= ($xpAwarded * 1000); $i++) {
+//                    $patient = self::awardPatientXPUpdateFactor($patient, ($currentXp + $xpToAward));
+                    $patient = self::awardPatientXPUpdateFactor($patient, $patient->getRpgLevel());
+                    $xpToAward = $xpToAward + ((1 / 1000) * $patient->getRpgFactor());
+                }
+
+                $entityManager = $doctrine->getManager();
+
+                $xpAward = new RpgXP();
+                $xpAward->setDatetime($dateTime);
+                $xpAward->setReason($reasoning);
+                $xpAward->setValue($xpToAward);
+                $xpAward->setPatient($patient);
+                $patient->addXp($xpAward);
+
+                $entityManager->persist($xpAward);
+                $entityManager->persist($patient);
+            }
+
+            return $patient;
+        }
+    }
+
+    protected static function awardPatientXPUpdateFactor(Patient $patient, int $i)
+    {
+        $x = $patient->getRpgFactor();
+        if ($i == 10) {
+            $patient->setRpgFactor($x - 0.01);
+        } else if ($i == 20) {
+            $patient->setRpgFactor($x - 0.02);
+        } else if ($i == 30) {
+            $patient->setRpgFactor($x - 0.03);
+        } else if ($i == 40) {
+            $patient->setRpgFactor($x - 0.05);
+        } else if ($i == 50) {
+            $patient->setRpgFactor($x - 0.08);
+        } else if ($i == 60) {
+            $patient->setRpgFactor($x - 0.10);
+        } else if ($i == 70) {
+            $patient->setRpgFactor($x - 0.15);
+        } else if ($i == 80) {
+            $patient->setRpgFactor($x - 0.20);
+        } else if ($i == 90) {
+            $patient->setRpgFactor($x - 0.30);
+        }/* else if ($i == 100) {
+            $patient->setRpgFactor($x - 0.60);
+        }*/
+        return $patient;
     }
 
     // badge_weight_finish

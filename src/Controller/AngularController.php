@@ -70,15 +70,29 @@ class AngularController extends AbstractController
         $return['name'] = $patient->getFirstName();
         $return['nameFull'] = $patient->getFirstName() . " " . $patient->getSurName();
         $return['avatar'] = $patient->getAvatar();
-        $return['xp'] = 0;
-        foreach ($patient->getXp() as $rpgXP) {
-            $return['xp'] = $return['xp'] + $rpgXP->getValue();
-        }
+        $return['firstrun'] = $patient->getFirstRun();
+        $return['factor'] = $patient->getRpgFactor();
+
+        $return['xp'] = $patient->getXpTotal();
         $return['xp_raw'] = $return['xp'];
-        $return['xp'] = round($return['xp'], 2);
-        if ($return['xp'] > 100) {
-            $return['xp'] = 100;
+        $return['xp'] = intval(explode(".", $return['xp'])[0]);
+
+        $return['level'] = $patient->getRpgLevel();
+        if ($return['level'] > 100) {
+            $return['level'] = 100;
+            $return['level_next_in'] = 0;
+        } else {
+            $return['level_next_in'] = round(50 - ((($return['level'] + 1) * 50) - $return['xp_raw']), 2);
         }
+
+        $return['xp_log'] = [];
+        foreach ($patient->getXp() as $rpgXP) {
+            $return['xp_log'][] = [
+                "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
+                "log" => $rpgXP->getReason()
+            ];
+        }
+
         $return['rewards'] = [];
         foreach ($patient->getRewards() as $reward) {
             if (array_key_exists($reward->getReward()->getId(), $return['rewards'])) {
@@ -89,8 +103,10 @@ class AngularController extends AbstractController
             } else {
                 $return['rewards'][$reward->getReward()->getId()] = [
                     "name" => $reward->getReward()->getName(),
-                    "awarded" => $reward->getDatetime()->format("Y-m-d H:i:s"),
+                    "awarded" => str_replace(" 00:00:00", "", $reward->getDatetime()->format("Y-m-d H:i:s")),
                     "image" => $reward->getReward()->getImage(),
+                    "text" => $reward->getReward()->getText(),
+                    "longtext" => $reward->getReward()->getTextLong(),
                     "count" => 1
                 ];
             }
@@ -140,6 +156,7 @@ class AngularController extends AbstractController
             return $this->json($return);
         }
 
+        $return['firstrun'] = $patient->getFirstRun();
         $return['uiSettings'] = [];
         foreach ($patient->getUiSettings() as $uiSetting) {
             $uiSetting = explode("::", $uiSetting);
