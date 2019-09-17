@@ -74,22 +74,24 @@ class AngularController extends AbstractController
         $return['factor'] = $patient->getRpgFactor();
 
         $return['xp'] = $patient->getXpTotal();
-        $return['xp_raw'] = $return['xp'];
-        $return['xp'] = intval(explode(".", $return['xp'])[0]);
+        if ($patient->getFirstRun()) {
+            $return['level'] = 0;
+        } else {
+            $return['level'] = $patient->getRpgLevel();
+        }
 
-        $return['level'] = $patient->getRpgLevel();
         if ($return['level'] > 100) {
             $return['level'] = 100;
             $return['level_next_in'] = 0;
         } else {
-            $return['level_next_in'] = round(50 - ((($return['level'] + 1) * 50) - $return['xp_raw']), 2);
+            $return['level_next_in'] = 0;
         }
 
         $return['xp_log'] = [];
         foreach ($patient->getXp() as $rpgXP) {
             $return['xp_log'][] = [
                 "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
-                "log" => $rpgXP->getReason()
+                "log" => $rpgXP->getReason(),
             ];
         }
 
@@ -107,7 +109,7 @@ class AngularController extends AbstractController
                     "image" => $reward->getReward()->getImage(),
                     "text" => $reward->getReward()->getText(),
                     "longtext" => $reward->getReward()->getTextLong(),
-                    "count" => 1
+                    "count" => 1,
                 ];
             }
         }
@@ -205,40 +207,6 @@ class AngularController extends AbstractController
         $return['calories'] = $this->angularGetDailySummaryCalories($uuid, date("Y-m-d"), 3);
         $return['weight'] = $this->angularGetBodyWeight($uuid, date("Y-m-d"));
         $return['fat'] = $this->angularGetBodyFat($uuid, date("Y-m-d"));
-
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/{uuid}/ux/feed/body/weight/{readings}", name="angular_body_weight")
-     * @param String $uuid A users UUID
-     * @param int $readings A users UUID
-     *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function index_body_weight(String $uuid, int $readings)
-    {
-        $this->hasAccess($uuid);
-
-        $return = [];
-
-        /** @var Patient $patient */
-        $patient = $this->getDoctrine()
-            ->getRepository(Patient::class)
-            ->findOneBy(['uuid' => $uuid]);
-
-        if (!$patient) {
-            $return['status'] = "error";
-            $return['code'] = "404";
-            $return['message'] = "Patient not found with UUID specified";
-            $return['payload'] = "2000-01-01 00:00:00.000";
-
-            return $this->json($return);
-        }
-
-        $return['status'] = "okay";
-        $return['code'] = "200";
-        $return['weight'] = $this->angularGetBodyWeight($uuid, date("Y-m-d"), $readings);
 
         return $this->json($return);
     }
@@ -776,5 +744,39 @@ class AngularController extends AbstractController
         $timeStampsInTrack['progress'] = $progressPercentage;
 
         return $timeStampsInTrack;
+    }
+
+    /**
+     * @Route("/{uuid}/ux/feed/body/weight/{readings}", name="angular_body_weight")
+     * @param String $uuid     A users UUID
+     * @param int    $readings A users UUID
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function index_body_weight(String $uuid, int $readings)
+    {
+        $this->hasAccess($uuid);
+
+        $return = [];
+
+        /** @var Patient $patient */
+        $patient = $this->getDoctrine()
+            ->getRepository(Patient::class)
+            ->findOneBy(['uuid' => $uuid]);
+
+        if (!$patient) {
+            $return['status'] = "error";
+            $return['code'] = "404";
+            $return['message'] = "Patient not found with UUID specified";
+            $return['payload'] = "2000-01-01 00:00:00.000";
+
+            return $this->json($return);
+        }
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+        $return['weight'] = $this->angularGetBodyWeight($uuid, date("Y-m-d"), $readings);
+
+        return $this->json($return);
     }
 }
