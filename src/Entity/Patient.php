@@ -102,12 +102,18 @@ class Patient implements UserInterface
      */
     private $email;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientCredentials", mappedBy="patient", orphanRemoval=true)
+     */
+    private $patientCredentials;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
         $this->trackingDevices = new ArrayCollection();
         $this->xp = new ArrayCollection();
         $this->rewards = new ArrayCollection();
+        $this->patientCredentials = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -428,6 +434,37 @@ class Patient implements UserInterface
     public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PatientCredentials[]
+     */
+    public function getPatientCredentials(): Collection
+    {
+        return $this->patientCredentials;
+    }
+
+    public function addPatientCredential(PatientCredentials $patientCredential): self
+    {
+        if (!$this->patientCredentials->contains($patientCredential)) {
+            $this->patientCredentials[] = $patientCredential;
+            $patientCredential->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removePatientCredential(PatientCredentials $patientCredential): self
+    {
+        if ($this->patientCredentials->contains($patientCredential)) {
+            $this->patientCredentials->removeElement($patientCredential);
+            // set the owning side to null (unless already changed)
+            if ($patientCredential->getPatient() === $this) {
+                $patientCredential->setPatient(null);
+            }
+        }
 
         return $this;
     }
