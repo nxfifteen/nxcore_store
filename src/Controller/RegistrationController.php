@@ -102,7 +102,6 @@ class RegistrationController extends AbstractController
         $entityManager = $doctrine->getManager();
         $patient = new Patient();
         $patient->setUuid($requestJson->username);
-        $patient->setFirstName($requestJson->name);
         $patient->setEmail($requestJson->email);
         $patient->setAvatar('https://connect.core.nxfifteen.me.uk/new.jpg');
         $patient->setUiSettings(["showNavBar::lg","showAsideBar::false"]);
