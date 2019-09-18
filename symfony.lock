@@ -134,6 +134,12 @@
     "monolog/monolog": {
         "version": "1.24.0"
     },
+    "mybuilder/cronos": {
+        "version": "2.0.2"
+    },
+    "mybuilder/cronos-bundle": {
+        "version": "2.1.1"
+    },
     "nelmio/cors-bundle": {
         "version": "1.5",
         "recipe": {
@@ -323,6 +329,9 @@
     },
     "symfony/polyfill-php73": {
         "version": "v1.12.0"
+    },
+    "symfony/process": {
+        "version": "v4.3.4"
     },
     "symfony/profiler-pack": {
         "version": "v1.0.4"

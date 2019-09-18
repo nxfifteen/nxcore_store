@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9953eb5d511a84c6e2ca46f83bc9019b",
+    "content-hash": "5644f360f8fe921fed7c1a7576269ae3",
     "packages": [
         {
             "name": "api-platform/api-pack",
@@ -1874,6 +1874,119 @@
                 "psr-3"
             ],
             "time": "2018-11-05T09:00:11+00:00"
+        },
+        {
+            "name": "mybuilder/cronos",
+            "version": "2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mybuilder/cronos.git",
+                "reference": "6a145bc651643a41744bf85af1f7f23d5a78d699"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mybuilder/cronos/zipball/6a145bc651643a41744bf85af1f7f23d5a78d699",
+                "reference": "6a145bc651643a41744bf85af1f7f23d5a78d699",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6.0 || ^7.0",
+                "symfony/process": "~2.2|~3.0|^4.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "~0.9",
+                "phpunit/phpunit": "~5.0"
+            },
+            "suggest": {
+                "symfony/filesystem": "Allows using Symfony Filesystem"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MyBuilder\\Cronos\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gavin Love",
+                    "homepage": "https://www.mybuilder.com"
+                },
+                {
+                    "name": "Keyvan Akbary",
+                    "homepage": "https://www.mybuilder.com"
+                }
+            ],
+            "description": "Configure Cron task through PHP",
+            "keywords": [
+                "cron",
+                "php"
+            ],
+            "time": "2018-10-19T10:15:08+00:00"
+        },
+        {
+            "name": "mybuilder/cronos-bundle",
+            "version": "2.1.1",
+            "target-dir": "MyBuilder/Bundle/CronosBundle",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mybuilder/cronos-bundle.git",
+                "reference": "6ad70bf5abfadec9cfe417c39570da927b081d8a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mybuilder/cronos-bundle/zipball/6ad70bf5abfadec9cfe417c39570da927b081d8a",
+                "reference": "6ad70bf5abfadec9cfe417c39570da927b081d8a",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/annotations": "1.*",
+                "mybuilder/cronos": "~2.0",
+                "php": ">=7.1",
+                "symfony/console": "~2.7|~3.0||^4.0",
+                "symfony/framework-bundle": "~2.7|~3.0||^4.0",
+                "symfony/property-access": "~2.7|~3.0||^4.0",
+                "symfony/yaml": "~2.7|~3.0||^4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "MyBuilder\\Bundle\\CronosBundle": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gavin Love",
+                    "email": "gavin@mybuilder.com",
+                    "homepage": "http://www.mybuilder.com"
+                },
+                {
+                    "name": "Keyvan Akbary",
+                    "email": "keyvan@mybuilder.com",
+                    "homepage": "http://www.mybuilder.com"
+                }
+            ],
+            "description": "Symfony bundle which allows you to use @Cron annotations to configure cron to run your console commands.",
+            "keywords": [
+                "cron",
+                "cronos"
+            ],
+            "time": "2018-11-27T09:36:50+00:00"
         },
         {
             "name": "nelmio/cors-bundle",
@@ -4192,6 +4305,55 @@
                 "shim"
             ],
             "time": "2019-08-06T08:03:45+00:00"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v4.3.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "e89969c00d762349f078db1128506f7f3dcc0d4a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/e89969c00d762349f078db1128506f7f3dcc0d4a",
+                "reference": "e89969c00d762349f078db1128506f7f3dcc0d4a",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.3-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Process Component",
+            "homepage": "https://symfony.com",
+            "time": "2019-08-26T08:26:39+00:00"
         },
         {
             "name": "symfony/property-access",
