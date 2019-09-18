@@ -115,6 +115,34 @@ class RegistrationController extends AbstractController
     }
 
     /**
+     * @Route("/users/update", name="update_profile")
+     * @param ManagerRegistry              $doctrine
+     * @param Request                      $request
+     *
+     * @param UserPasswordEncoderInterface $passwordEncoder
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
+     */
+    public function update_profile(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder)
+    {
+        /** @var Patient $patient */
+        $patient = $this->getUser();
+        $userProfile = [
+            "username" => $patient->getUsername(),
+            "firstName" => $patient->getFirstName(),
+            "lastName" => $patient->getSurName(),
+            "avatar" => $patient->getAvatar(),
+            "email" => $patient->getEmail(),
+            "dateOfBirth" => "1985-05-21",
+            "height" => 0,
+        ];
+
+
+        return $this->json($userProfile);
+    }
+
+    /**
      * @Route("/invite/{inviteCode}", name="login_register_invite")
      *
      * @param string                $inviteCode
@@ -164,4 +192,21 @@ class RegistrationController extends AbstractController
 
         return $this->json(["status" => true]);
     }*/
+
+    /**
+     * @param String $uuid
+     *
+     * @throws \LogicException If the Security component is not available
+     */
+    private function hasAccess(String $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+
+        /** @var \App\Entity\Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
 }
