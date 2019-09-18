@@ -24,7 +24,7 @@ class AuthWithFitbitController extends AbstractController
      *
      * @return void
      */
-    public function index(ManagerRegistry $doctrine, RequestStack $request, String $uuid)
+    public function auth_with_fitbit(ManagerRegistry $doctrine, RequestStack $request, String $uuid)
     {
         $this->hasAccess($uuid);
 
@@ -56,13 +56,81 @@ class AuthWithFitbitController extends AbstractController
     }
 
     /**
+     * @Route("/auth/refresh/fitbit", name="auth_refresh_fitbit")
+     * @param ManagerRegistry $doctrine
+     * @param RequestStack    $request
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function auth_refresh_fitbit(ManagerRegistry $doctrine, RequestStack $request)
+    {
+        $queryCallback = explode('/auth', $request->getMasterRequest()->getUri())[0];
+        $queryCallback = $queryCallback . '/auth/refresh/fitbit';
+        $queryCallback = str_replace("http://", "https://", $queryCallback);
+
+        /** @var ThirdPartyService $service */
+        $service = $this->getThirdPartyService($doctrine, "Fitbit");
+
+        /** @var PatientCredentials[] $patientCredentials */
+        $patientCredentials = $this->getDoctrine()
+            ->getRepository(PatientCredentials::class)
+            ->findExpired($service->getId());
+
+        if (count($patientCredentials) > 0) {
+            $provider = new Fitbit([
+                'clientId' => $_ENV['FITBIT_ID'],
+                'clientSecret' => $_ENV['FITBIT_SECRET'],
+                'redirectUri' => $queryCallback,
+            ]);
+
+            $entityManager = $doctrine->getManager();
+
+            foreach ($patientCredentials as $patientCredential) {
+                try {
+                    $existingAccessToken = new AccessToken([
+                        'access_token' => $patientCredential->getToken(),
+                        'refresh_token' => $patientCredential->getRefreshToken(),
+                        'expires' => $patientCredential->getExpires()->format("U")
+                    ]);
+
+                    if ($existingAccessToken->hasExpired()) {
+                        $newAccessToken = $provider->getAccessToken('refresh_token', [
+                            'refresh_token' => $existingAccessToken->getRefreshToken()
+                        ]);
+
+                        $patientCredential->setToken($newAccessToken->getToken());
+                        $patientCredential->setRefreshToken($newAccessToken->getRefreshToken());
+                        $date = new \DateTime();
+                        $date->setTimestamp($newAccessToken->getExpires());
+                        $patientCredential->setExpires($date);
+
+                        $entityManager->persist($patientCredential);
+
+                        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $patientCredential->getPatient()->getUuid() . '\'s Fitbit authentication token has been refreshed');
+                    }
+
+                } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+                    // Failed to get the access token or user details.
+                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+                }
+            }
+
+            $entityManager->flush();
+        } else {
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . 'No Fitbit authentication token need refreshed');
+        }
+
+        return $this->json([]);
+    }
+
+    /**
      * @Route("/auth/callback/fitbit", name="auth_with_fitbit_callback")
      * @param ManagerRegistry $doctrine
      * @param RequestStack    $request
      *
      * @return void
      */
-    public function callback(ManagerRegistry $doctrine, RequestStack $request)
+    public function auth_with_fitbit_callback(ManagerRegistry $doctrine, RequestStack $request)
     {
         $queryString = $request->getCurrentRequest();
         $queryCallback = explode('?', $request->getMasterRequest()->getUri())[0];
