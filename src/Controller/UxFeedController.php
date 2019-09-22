@@ -792,4 +792,35 @@ class UxFeedController extends AbstractController
 
         return $this->json($return);
     }
+
+    /**
+     * @Route("/feed/pvp/leaderboard", name="ux_aggregator_index_pvp_leaderboard")
+     */
+    public function index_pvp_leaderboard()
+    {
+        $return = [];
+
+        if (is_null($this->patient)) $this->patient = $this->getUser();
+
+        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+            $scope->setUser([
+                'id' => $this->patient->getId(),
+                'username' => $this->patient->getUsername(),
+                'email' => $this->patient->getEmail(),
+            ]);
+        });
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+
+        $return['maxSteps'] = 0;
+        $return['friends'] = $this->getPatientFriends();
+        foreach ($return['friends'] as $friend) {
+            if ($friend['steps'] > $return['maxSteps']) {
+                $return['maxSteps'] = $friend['steps'];
+            }
+        }
+
+        return $this->json($return);
+    }
 }
