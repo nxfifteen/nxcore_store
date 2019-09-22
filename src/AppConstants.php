@@ -137,4 +137,10 @@ class AppConstants
         }*/
         return $patient;
     }
+
+    static function startsWith($haystack, $needle)
+    {
+        $len = strlen($needle);
+        return (substr($haystack, 0, $len) === $needle);
+    }
 }

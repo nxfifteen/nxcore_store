@@ -10,9 +10,6 @@ use App\Entity\FoodMeals;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
-use App\Entity\RpgRewards;
-use App\Entity\RpgRewardsAwarded;
-use App\Entity\RpgXP;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
@@ -20,7 +17,6 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use phpDocumentor\Reflection\Types\Boolean;
 
 class Transform
 {
@@ -114,11 +110,11 @@ class Transform
      * @param UnitOfMeasurement $unitOfMeasurement
      * @param Patient           $patient
      *
-     * @param bool           $matchGoal
+     * @param bool              $matchGoal
      *
      * @return PatientGoals|null
      */
-    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, $unitOfMeasurement, Patient $patient, bool $matchGoal = null)
+    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, $unitOfMeasurement, Patient $patient, bool $matchGoal = NULL)
     {
         if (!is_null($matchGoal) && $matchGoal) {
             $findBy = ['entity' => $serviceName, 'patient' => $patient, 'goal' => $serviceGoal];
@@ -294,10 +290,17 @@ class Transform
         }
     }
 
+    /**
+     * @param $string
+     * @param $startString
+     *
+     * @deprecated User AppConstants::startsWith instead
+     *
+     * @return bool
+     */
     protected static function startsWith($string, $startString)
     {
-        $len = strlen($startString);
-        return (substr($string, 0, $len) === $startString);
+        return AppConstants::startsWith($string, $startString);
     }
 
     /**
