@@ -33,7 +33,7 @@ class UxFeedController extends AbstractController
     private $challengeDraws = 0;
 
     /**
-     * @Route("/ux/aggregator/dashboard", name="ux_aggregator")
+     * @Route("/feed/dashboard", name="ux_aggregator")
      */
     public function index()
     {
@@ -769,7 +769,7 @@ class UxFeedController extends AbstractController
     }
 
     /**
-     * @Route("/ux/aggregator/pvp/challenges", name="ux_aggregator_index_pvp_challenges")
+     * @Route("/feed/pvp/challenges", name="ux_aggregator_index_pvp_challenges")
      */
     public function index_pvp_challenges()
     {
