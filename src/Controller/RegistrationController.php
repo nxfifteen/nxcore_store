@@ -42,6 +42,8 @@ class RegistrationController extends AbstractController
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
         $requestJson = json_decode($requestBody, FALSE);
+        $requestJson->username = strtolower($requestJson->username);
+
         AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, TRUE));
         AppConstants::writeToLog('debug_transform.txt',
             __LINE__ . ' New user registration ' . $requestJson->username . ' ' . $requestJson->email);
@@ -103,7 +105,7 @@ class RegistrationController extends AbstractController
         $patient = new Patient();
         $patient->setUuid($requestJson->username);
         $patient->setEmail($requestJson->email);
-        $patient->setAvatar('https://connect.core.nxfifteen.me.uk/new.jpg');
+        //$patient->setAvatar('https://connect.core.nxfifteen.me.uk/new.jpg');
         $patient->setUiSettings(["showNavBar::lg","showAsideBar::false"]);
         $patient->setPassword($passwordEncoder->encodePassword($patient, $requestJson->password));
         $patient->setRoles(['ROLE_USER', 'ROLE_BETA']);
@@ -115,7 +117,7 @@ class RegistrationController extends AbstractController
     }
 
     /**
-     * @Route("/users/update", name="update_profile")
+     * @Route("/users/profile", name="get_profile")
      * @param ManagerRegistry              $doctrine
      * @param Request                      $request
      *
@@ -124,20 +126,70 @@ class RegistrationController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      * @throws \Exception
      */
-    public function update_profile(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder)
+    public function get_profile(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder)
     {
         /** @var Patient $patient */
         $patient = $this->getUser();
+        $this->hasAccess($patient->getUuid());
+
         $userProfile = [
             "username" => $patient->getUsername(),
             "firstName" => $patient->getFirstName(),
             "lastName" => $patient->getSurName(),
             "avatar" => $patient->getAvatar(),
             "email" => $patient->getEmail(),
-            "dateOfBirth" => "1985-05-21",
             "height" => 0,
         ];
 
+        $dob = $patient->getDateOfBirth();
+        if (is_null($dob)) {
+            $userProfile['dateOfBirth'] = "1900-12-01";
+        } else {
+            $userProfile['dateOfBirth'] = $dob->format("Y-m-d");
+        }
+
+        return $this->json($userProfile);
+    }
+
+    /**
+     * @Route("/users/profile/save", name="save_profile")
+     * @param ManagerRegistry              $doctrine
+     * @param Request                      $request
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
+     */
+    public function save_profile(ManagerRegistry $doctrine, Request $request)
+    {
+        /** @var Patient $patient */
+        $patient = $this->getUser();
+        $this->hasAccess($patient->getUuid());
+
+        $requestBody = $request->getContent();
+        $requestBody = str_replace("'", "\"", $requestBody);
+        $requestJson = json_decode($requestBody, FALSE);
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, TRUE));
+
+        $patient->setFirstName($requestJson->firstName);
+        $patient->setSurName($requestJson->lastName);
+        $patient->setEmail($requestJson->email);
+        $patient->setAvatar($requestJson->avatar);
+        $patient->setDateOfBirth(new \DateTime($requestJson->dateOfBirth));
+        $patient->setFirstRun(false);
+
+        $userProfile = [
+            "username" => $patient->getUsername(),
+            "firstName" => $patient->getFirstName(),
+            "lastName" => $patient->getSurName(),
+            "avatar" => $patient->getAvatar(),
+            "email" => $patient->getEmail(),
+            "dateOfBirth" => $patient->getDateOfBirth()->format("Y-m-d"),
+            "height" => 0,
+        ];
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->persist($patient);
+        $entityManager->flush();
 
         return $this->json($userProfile);
     }

@@ -28,6 +28,10 @@ class AuthWithFitbitController extends AbstractController
     {
         $this->hasAccess($uuid);
 
+        if(!isset($_SESSION)) {
+            session_start();
+        }
+
         $queryCallback = explode('/auth/with/fitbit', $request->getMasterRequest()->getUri())[0];
         $queryCallback = $queryCallback . '/auth/callback/fitbit';
         $queryCallback = str_replace("http://", "https://", $queryCallback);
@@ -64,7 +68,10 @@ class AuthWithFitbitController extends AbstractController
      */
     public function auth_with_fitbit_callback(ManagerRegistry $doctrine, RequestStack $request)
     {
-        $queryString = $request->getCurrentRequest();
+        if(!isset($_SESSION)) {
+            session_start();
+        }
+
         $queryCallback = explode('?', $request->getMasterRequest()->getUri())[0];
         $queryCallback = str_replace("http://", "https://", $queryCallback);
         AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $_SESSION['uuid'] . '\'s Fitbit authentication succeeded');
@@ -112,8 +119,11 @@ class AuthWithFitbitController extends AbstractController
             $date->setTimestamp($accessToken->getExpires());
             $patientCredentials->setExpires($date);
 
+            $patient->setFirstRun(FALSE);
+
             $entityManager = $doctrine->getManager();
             $entityManager->persist($patientCredentials);
+            $entityManager->persist($patient);
             $entityManager->flush();
         } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
             // Failed to get the access token or user details.

@@ -14,4 +14,6 @@ return [
     Symfony\Bundle\WebProfilerBundle\WebProfilerBundle::class => ['dev' => true, 'test' => true],
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
     MyBuilder\Bundle\CronosBundle\MyBuilderCronosBundle::class => ['all' => true],
+    Sentry\SentryBundle\SentryBundle::class => ['all' => true],
+    Ornicar\GravatarBundle\OrnicarGravatarBundle::class => ['all' => true],
 ];

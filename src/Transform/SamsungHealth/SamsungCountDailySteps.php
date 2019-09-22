@@ -22,10 +22,9 @@ class SamsungCountDailySteps extends Constants
     public static function translate(ManagerRegistry $doctrine, String $getContent)
     {
         $jsonContent = self::decodeJson($getContent);
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
-        if (property_exists($jsonContent, "uuid")) {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitStepsDailySummary for " . $jsonContent->remoteId);
+        if (property_exists($jsonContent, "uuid") && $jsonContent->device == 'VfS0qUERdZ') {
+            //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -46,7 +45,7 @@ class SamsungCountDailySteps extends Constants
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent->goal, NULL, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent->goal, NULL, $patient, false);
             if (is_null($patientGoal)) {
                 return NULL;
             }
@@ -62,7 +61,8 @@ class SamsungCountDailySteps extends Constants
             $dataEntry->setRemoteId($jsonContent->remoteId);
             $dataEntry->setValue($jsonContent->value);
             $dataEntry->setGoal($patientGoal);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
+
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < strtotime($jsonContent->dateTime)) {
                 $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
             }
 

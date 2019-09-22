@@ -26,6 +26,7 @@ class RpgMilestonesRepository extends ServiceEntityRepository
             ->setParameter('category', $category)
             ->andWhere('r.value > :value')
             ->setParameter('value', $value)
+            ->setMaxResults(5)
             ->getQuery()
             ->getResult();
     }
@@ -37,6 +38,7 @@ class RpgMilestonesRepository extends ServiceEntityRepository
             ->setParameter('category', $category)
             ->andWhere('r.value <= :value')
             ->setParameter('value', $value)
+            ->setMaxResults(5)
             ->getQuery()
             ->getResult();
     }

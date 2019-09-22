@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Ornicar\GravatarBundle\GravatarApi;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -107,6 +108,16 @@ class Patient implements UserInterface
      */
     private $patientCredentials;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgChallengeFriends", mappedBy="challenger", orphanRemoval=true)
+     */
+    private $rpgChallenges;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgChallengeFriends", mappedBy="challenged", orphanRemoval=true)
+     */
+    private $rpgChallenger;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -114,6 +125,8 @@ class Patient implements UserInterface
         $this->xp = new ArrayCollection();
         $this->rewards = new ArrayCollection();
         $this->patientCredentials = new ArrayCollection();
+        $this->rpgChallenges = new ArrayCollection();
+        $this->rpgChallenger = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -294,7 +307,12 @@ class Patient implements UserInterface
 
     public function getAvatar(): ?string
     {
-        return $this->avatar;
+        if (is_null($this->avatar)) {
+            $gravatarApi = new GravatarApi();
+            return $return['avatar'] = $gravatarApi->getUrl($this->email, 128, 'g', 'identicon');
+        } else {
+            return $this->avatar;
+        }
     }
 
     public function setAvatar(?string $avatar): self
@@ -463,6 +481,68 @@ class Patient implements UserInterface
             // set the owning side to null (unless already changed)
             if ($patientCredential->getPatient() === $this) {
                 $patientCredential->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgChallengeFriends[]
+     */
+    public function getRpgChallenges(): Collection
+    {
+        return $this->rpgChallenges;
+    }
+
+    public function addRpgChallenge(RpgChallengeFriends $rpgChallenge): self
+    {
+        if (!$this->rpgChallenges->contains($rpgChallenge)) {
+            $this->rpgChallenges[] = $rpgChallenge;
+            $rpgChallenge->setChallenger($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpgChallenge(RpgChallengeFriends $rpgChallenge): self
+    {
+        if ($this->rpgChallenges->contains($rpgChallenge)) {
+            $this->rpgChallenges->removeElement($rpgChallenge);
+            // set the owning side to null (unless already changed)
+            if ($rpgChallenge->getChallenger() === $this) {
+                $rpgChallenge->setChallenger(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgChallengeFriends[]
+     */
+    public function getRpgChallenger(): Collection
+    {
+        return $this->rpgChallenger;
+    }
+
+    public function addRpgChallenger(RpgChallengeFriends $rpgChallenger): self
+    {
+        if (!$this->rpgChallenger->contains($rpgChallenger)) {
+            $this->rpgChallenger[] = $rpgChallenger;
+            $rpgChallenger->setChallenged($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpgChallenger(RpgChallengeFriends $rpgChallenger): self
+    {
+        if ($this->rpgChallenger->contains($rpgChallenger)) {
+            $this->rpgChallenger->removeElement($rpgChallenger);
+            // set the owning side to null (unless already changed)
+            if ($rpgChallenger->getChallenged() === $this) {
+                $rpgChallenger->setChallenged(null);
             }
         }
 

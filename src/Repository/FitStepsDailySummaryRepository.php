@@ -3,10 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\FitStepsDailySummary;
-use DateInterval;
-use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * @method FitStepsDailySummary|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,6 +18,36 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FitStepsDailySummary::class);
+    }
+
+    public function findSince(String $patientId, $dateSince)
+    {
+        /** @var \DateTime $dateSince */
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime >= :startDate')
+            ->setParameter('startDate', $dateSince->format("Y-m-d 00:00:00"))
+            ->orderBy('c.value', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findBetween(String $patientId, $dateSince, $dateTill)
+    {
+        /** @var \DateTime $dateSince */
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime >= :startDate')
+            ->setParameter('startDate', $dateSince->format("Y-m-d 00:00:00"))
+            ->andWhere('c.DateTime <= :dateTill')
+            ->setParameter('dateTill', $dateTill->format("Y-m-d 23:59:59"))
+            ->orderBy('c.value', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     public function findHighest(String $patientId, int $trackingDevice)
@@ -43,15 +72,19 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice)
+    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays = 0, int $trackingDevice = 0)
     {
-        $dateObject = new DateTime($date);
+        $dateObject = new \DateTime($date);
 
-        try {
-            $interval = new DateInterval('P' . $lastDays . 'D');
-            $dateObject->sub($interval);
-            $today = $dateObject->format("Y-m-d") . " 00:00:00";
-        } catch (\Exception $e) {
+        if ($lastDays > 0) {
+            try {
+                $interval = new \DateInterval('P' . $lastDays . 'D');
+                $dateObject->sub($interval);
+                $today = $dateObject->format("Y-m-d") . " 00:00:00";
+            } catch (\Exception $e) {
+                $today = $date . " 00:00:00";
+            }
+        } else {
             $today = $date . " 00:00:00";
         }
         $todayEnd = $date . " 23:59:00";

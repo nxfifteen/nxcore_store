@@ -12,6 +12,7 @@ use App\Entity\FitStepsDailySummary;
 use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\RpgMilestones;
+use Ornicar\GravatarBundle\GravatarApi;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -73,46 +74,46 @@ class AngularController extends AbstractController
         $return['firstrun'] = $patient->getFirstRun();
         $return['factor'] = $patient->getRpgFactor();
 
-        $return['xp'] = $patient->getXpTotal();
-        if ($patient->getFirstRun()) {
-            $return['level'] = 0;
-        } else {
-            $return['level'] = $patient->getRpgLevel();
-        }
-
-        if ($return['level'] > 100) {
-            $return['level'] = 100;
-            $return['level_next_in'] = 0;
-        } else {
-            $return['level_next_in'] = 0;
-        }
-
-        $return['xp_log'] = [];
-        foreach ($patient->getXp() as $rpgXP) {
-            $return['xp_log'][] = [
-                "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
-                "log" => $rpgXP->getReason(),
-            ];
-        }
-
-        $return['rewards'] = [];
-        foreach ($patient->getRewards() as $reward) {
-            if (array_key_exists($reward->getReward()->getId(), $return['rewards'])) {
-                $return['rewards'][$reward->getReward()->getId()]['count']++;
-                if (strtotime($return['rewards'][$reward->getReward()->getId()]['awarded']) < $reward->getDatetime()->format("U")) {
-                    $return['rewards'][$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d H:i:s");
-                }
-            } else {
-                $return['rewards'][$reward->getReward()->getId()] = [
-                    "name" => $reward->getReward()->getName(),
-                    "awarded" => str_replace(" 00:00:00", "", $reward->getDatetime()->format("Y-m-d H:i:s")),
-                    "image" => $reward->getReward()->getImage(),
-                    "text" => $reward->getReward()->getText(),
-                    "longtext" => $reward->getReward()->getTextLong(),
-                    "count" => 1,
-                ];
-            }
-        }
+//        $return['xp'] = $patient->getXpTotal();
+//        if ($patient->getFirstRun()) {
+//            $return['level'] = 0;
+//        } else {
+//            $return['level'] = $patient->getRpgLevel();
+//        }
+//
+//        if ($return['level'] > 100) {
+//            $return['level'] = 100;
+//            $return['level_next_in'] = 0;
+//        } else {
+//            $return['level_next_in'] = 0;
+//        }
+//
+//        $return['xp_log'] = [];
+//        foreach ($patient->getXp() as $rpgXP) {
+//            $return['xp_log'][] = [
+//                "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
+//                "log" => $rpgXP->getReason(),
+//            ];
+//        }
+//
+//        $return['rewards'] = [];
+//        foreach ($patient->getRewards() as $reward) {
+//            if (array_key_exists($reward->getReward()->getId(), $return['rewards'])) {
+//                $return['rewards'][$reward->getReward()->getId()]['count']++;
+//                if (strtotime($return['rewards'][$reward->getReward()->getId()]['awarded']) < $reward->getDatetime()->format("U")) {
+//                    $return['rewards'][$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d H:i:s");
+//                }
+//            } else {
+//                $return['rewards'][$reward->getReward()->getId()] = [
+//                    "name" => $reward->getReward()->getName(),
+//                    "awarded" => str_replace(" 00:00:00", "", $reward->getDatetime()->format("Y-m-d H:i:s")),
+//                    "image" => $reward->getReward()->getImage(),
+//                    "text" => $reward->getReward()->getText(),
+//                    "longtext" => $reward->getReward()->getTextLong(),
+//                    "count" => 1,
+//                ];
+//            }
+//        }
 
 
         return $this->json($return);
@@ -194,17 +195,23 @@ class AngularController extends AbstractController
             return $this->json($return);
         }
 
+        if ($uuid != "269VLG") {
+            $trackingDevice = 0;
+        } else {
+            $trackingDevice = 3;
+        }
+
         $return['status'] = "okay";
         $return['code'] = "200";
         $return['exercise'] = $this->angularGetExerciseForMonth($uuid, date("Y-m-d"));
-        $return['milestones'] = $this->angularGetMilestones($uuid, 2, 3, 3);
+        $return['milestones'] = $this->angularGetMilestones($uuid, 2, $trackingDevice, 3);
         $return['best'] = $this->angularGetTheBest($uuid, 3);
         $return['floors'] = $this->angularGetDailySummaryFloors($uuid, date("Y-m-d"), 2);
         $return['floorsIntraDay'] = $this->angularGetIntraDayFloors($uuid, date("Y-m-d"), 2);
-        $return['steps'] = $this->angularGetDailySummarySteps($uuid, date("Y-m-d"), 3);
+        $return['steps'] = $this->angularGetDailySummarySteps($uuid, date("Y-m-d"), $trackingDevice);
         $return['stepsIntraDay'] = $this->angularGetIntraDaySteps($uuid, date("Y-m-d"), 2);
-        $return['distance'] = $this->angularGetDailySummaryDistance($uuid, date("Y-m-d"), 3);
-        $return['calories'] = $this->angularGetDailySummaryCalories($uuid, date("Y-m-d"), 3);
+        $return['distance'] = $this->angularGetDailySummaryDistance($uuid, date("Y-m-d"), $trackingDevice);
+        $return['calories'] = $this->angularGetDailySummaryCalories($uuid, date("Y-m-d"), $trackingDevice);
         $return['weight'] = $this->angularGetBodyWeight($uuid, date("Y-m-d"));
         $return['fat'] = $this->angularGetBodyFat($uuid, date("Y-m-d"));
 
@@ -355,13 +362,17 @@ class AngularController extends AbstractController
         $steps = $this->getDoctrine()
             ->getRepository(FitStepsDailySummary::class)
             ->findHighest($uuid, $trackingDevice);
-        $timeStampsInTrack[] = "Your highest step count, totalling " . number_format($steps[0]->getValue()) . ", for a day was on " . $steps[0]->getDateTime()->format("jS M, Y") . ".";
+        if (count($steps) > 0) {
+            $timeStampsInTrack[] = "Your highest step count, totalling " . number_format($steps[0]->getValue()) . ", for a day was on " . $steps[0]->getDateTime()->format("jS M, Y") . ".";
+        }
 
         /** @var FitDistanceDailySummary[] $distance */
         $distance = $this->getDoctrine()
             ->getRepository(FitDistanceDailySummary::class)
             ->findHighest($uuid, $trackingDevice);
-        $timeStampsInTrack[] = "You traveled the furthest, " . $this->convertDistance($distance[0]) . ", on " . $distance[0]->getDateTime()->format("jS M, Y") . ".";
+        if (count($distance) > 0) {
+            $timeStampsInTrack[] = "You traveled the furthest, " . $this->convertDistance($distance[0]) . ", on " . $distance[0]->getDateTime()->format("jS M, Y") . ".";
+        }
 
         return $timeStampsInTrack;
     }
@@ -618,6 +629,10 @@ class AngularController extends AbstractController
             ->getRepository(BodyWeight::class)
             ->findByDateRangeHistorical($uuid, $date, $dateRange);
 
+        if (count($product) == 0) {
+            return NULL;
+        }
+
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var BodyWeight[] $productFirst */
         $productFirst = $this->getDoctrine()
@@ -696,6 +711,10 @@ class AngularController extends AbstractController
         $product = $this->getDoctrine()
             ->getRepository(BodyFat::class)
             ->findByDateRangeHistorical($uuid, $date, 31);
+
+        if (count($product) == 0) {
+            return NULL;
+        }
 
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var BodyFat[] $productFirst */

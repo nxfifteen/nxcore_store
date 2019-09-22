@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Command for sending our email messages from the database.
  *
- * @Cron(minute="/5", noLogs=true, server="web")
+ * @Cron(minute="/15", noLogs=true, server="web")
  */
 class UpdateAuthCredentialsFitbit extends Command {
     /**
@@ -87,7 +87,7 @@ class UpdateAuthCredentialsFitbit extends Command {
             $provider = new Fitbit([
                 'clientId' => $_ENV['FITBIT_ID'],
                 'clientSecret' => $_ENV['FITBIT_SECRET'],
-                'redirectUri' => $queryCallback,
+                'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
             ]);
 
             $entityManager = $this->doctrine->getManager();
@@ -113,18 +113,18 @@ class UpdateAuthCredentialsFitbit extends Command {
 
                         $entityManager->persist($patientCredential);
 
-                        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $patientCredential->getPatient()->getUuid() . '\'s Fitbit authentication token has been refreshed');
+                        AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUuid() . '\'s Fitbit authentication token has been refreshed');
                     }
 
                 } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
                     // Failed to get the access token or user details.
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+                    AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
                 }
             }
 
             $entityManager->flush();
         } else {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . 'No Fitbit authentication token need refreshed');
+            AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . 'No Fitbit authentication token need refreshed');
         }
     }
 }

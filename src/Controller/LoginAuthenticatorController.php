@@ -26,6 +26,8 @@ class LoginAuthenticatorController extends AbstractController
         $requestBody = str_replace("'", "\"", $requestBody);
         $requestJson = json_decode($requestBody, FALSE);
 
+        $requestJson->username = strtolower($requestJson->username);
+
         $patient = $this->getDoctrine()
             ->getRepository(Patient::class)
             ->findOneBy(['uuid' => $requestJson->username]);

@@ -26,7 +26,7 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
+    public function findByDateRange(String $patientId, String $date, int $trackingDevice = 0)
     {
         $today = $date . " 00:00:00";
         $todayEnd = $date . " 23:59:00";

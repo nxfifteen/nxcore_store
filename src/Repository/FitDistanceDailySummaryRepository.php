@@ -10,10 +10,10 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 
 /**
- * @method FitDistanceDailySummary|null find($id, $lockMode = null, $lockVersion = null)
- * @method FitDistanceDailySummary|null findOneBy(array $criteria, array $orderBy = null)
+ * @method FitDistanceDailySummary|null find($id, $lockMode = NULL, $lockVersion = NULL)
+ * @method FitDistanceDailySummary|null findOneBy(array $criteria, array $orderBy = NULL)
  * @method FitDistanceDailySummary[]    findAll()
- * @method FitDistanceDailySummary[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method FitDistanceDailySummary[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
  */
 class FitDistanceDailySummaryRepository extends ServiceEntityRepository
 {
@@ -28,35 +28,72 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function getSumOfValues(String $patientId, int $trackingDevice)
+    public function getSumOfValues(String $patientId, int $trackingDevice = 0)
     {
-        try {
+        if ($trackingDevice > 0) {
+            try {
+                return $this->createQueryBuilder('c')
+                    ->leftJoin('c.patient', 'p')
+                    ->andWhere('p.uuid = :patientId')
+                    ->setParameter('patientId', $patientId)
+                    ->andWhere('c.trackingDevice = :trackingDevice')
+                    ->setParameter('trackingDevice', $trackingDevice)
+                    ->select('sum(c.value) as sum')
+                    ->getQuery()
+                    ->getOneOrNullResult()['sum'];
+            } catch (NonUniqueResultException $e) {
+                return NULL;
+            }
+        } else {
+            try {
+                return $this->createQueryBuilder('c')
+                    ->leftJoin('c.patient', 'p')
+                    ->andWhere('p.uuid = :patientId')
+                    ->setParameter('patientId', $patientId)
+                    ->select('sum(c.value) as sum')
+                    ->getQuery()
+                    ->getOneOrNullResult()['sum'];
+            } catch (NonUniqueResultException $e) {
+                return NULL;
+            }
+        }
+    }
+
+    public function findHighest(String $patientId, int $trackingDevice = 0)
+    {
+        if ($trackingDevice > 0) {
             return $this->createQueryBuilder('c')
                 ->leftJoin('c.patient', 'p')
                 ->andWhere('p.uuid = :patientId')
                 ->setParameter('patientId', $patientId)
                 ->andWhere('c.trackingDevice = :trackingDevice')
                 ->setParameter('trackingDevice', $trackingDevice)
-                ->select('sum(c.value) as sum')
+                ->orderBy('c.value', 'DESC')
+                ->setMaxResults(1)
                 ->getQuery()
-                ->getOneOrNullResult()['sum'];
-        } catch (NonUniqueResultException $e) {
-            return null;
+                ->getResult();
+        } else {
+            return $this->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('p.uuid = :patientId')
+                ->setParameter('patientId', $patientId)
+                ->orderBy('c.value', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getResult();
         }
     }
 
-    public function findHighest(String $patientId, int $trackingDevice)
+    /**
+     * @param String $patientId
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
     {
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->andWhere('c.trackingDevice = :trackingDevice')
-            ->setParameter('trackingDevice', $trackingDevice)
-            ->orderBy('c.value', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getResult();
+        return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
     }
 
     /**
@@ -67,7 +104,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice)
+    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice = 0)
     {
         $dateObject = new DateTime($date);
 
@@ -107,17 +144,5 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
         }
-    }
-
-    /**
-     * @param String $patientId
-     * @param String $date
-     * @param int    $trackingDevice
-     *
-     * @return mixed
-     */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
-    {
-        return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
     }
 }
