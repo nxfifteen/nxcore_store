@@ -612,7 +612,7 @@ class UxFeedController extends AbstractController
                     }
                 }
 
-            } else {
+            } else if (!is_null($challengeFriends->getEndDate())) {
                 /*
                  * Challenges that are currently running
                  */
