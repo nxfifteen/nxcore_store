@@ -173,7 +173,11 @@ class RegistrationController extends AbstractController
         $patient->setFirstName($requestJson->firstName);
         $patient->setSurName($requestJson->lastName);
         $patient->setEmail($requestJson->email);
-        $patient->setAvatar($requestJson->avatar);
+        if (!AppConstants::startsWith($requestJson->avatar, 'https://secure.gravatar.com')) {
+            $patient->setAvatar($requestJson->avatar);
+        } else {
+            $patient->setAvatar(null);
+        }
         $patient->setDateOfBirth(new \DateTime($requestJson->dateOfBirth));
         $patient->setFirstRun(false);
 
