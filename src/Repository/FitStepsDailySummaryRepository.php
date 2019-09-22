@@ -5,13 +5,12 @@ namespace App\Repository;
 use App\Entity\FitStepsDailySummary;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Symfony\Component\Validator\Constraints\Date;
 
 /**
- * @method FitStepsDailySummary|null find($id, $lockMode = null, $lockVersion = null)
- * @method FitStepsDailySummary|null findOneBy(array $criteria, array $orderBy = null)
+ * @method FitStepsDailySummary|null find($id, $lockMode = NULL, $lockVersion = NULL)
+ * @method FitStepsDailySummary|null findOneBy(array $criteria, array $orderBy = NULL)
  * @method FitStepsDailySummary[]    findAll()
- * @method FitStepsDailySummary[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method FitStepsDailySummary[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
  */
 class FitStepsDailySummaryRepository extends ServiceEntityRepository
 {
@@ -67,6 +66,19 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
     /**
      * @param String $patientId
      * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @deprecated use findByDateRangeHistorical() instead
+     * @return mixed
+     */
+    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
+    {
+        return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
+    }
+
+    /**
+     * @param String $patientId
+     * @param String $date
      * @param int    $lastDays
      * @param int    $trackingDevice
      *
@@ -116,18 +128,6 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
         }
-    }
-
-    /**
-     * @param String $patientId
-     * @param String $date
-     * @param int    $trackingDevice
-     *
-     * @return mixed
-     */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
-    {
-        return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
     }
 
 }
