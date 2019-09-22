@@ -63,6 +63,12 @@ class CronRpgChallengeFriends extends Command
         $entityManager = $this->doctrine->getManager();
         foreach ($challenges as $challenge) {
             if (!is_null($challenge->getStartDate())) {
+                $this->log("(" . $challenge->getId() . ") Updated progress Challenger (" . $challenge->getChallengerSum() . ") / Challenged (" . $challenge->getChallengedSum() . ")");
+
+                if (is_null($challenge->getEndDate())) {
+                    $challenge = $this->updateEndDate($challenge);
+                }
+
                 $challengedValue = $this->queryDbForPatientCriteria($challenge, $challenge->getChallenged());
                 $challenge->setChallengedSum(array_sum($challengedValue));
                 $challenge->setChallengedDetails($challengedValue);
@@ -70,12 +76,6 @@ class CronRpgChallengeFriends extends Command
                 $challengerValue = $this->queryDbForPatientCriteria($challenge, $challenge->getChallenger());
                 $challenge->setChallengerSum(array_sum($challengerValue));
                 $challenge->setChallengerDetails($challengerValue);
-
-                $this->log("(" . $challenge->getId() . ") Updated progress Challenger (" . $challenge->getChallengerSum() . ") / Challenged (" . $challenge->getChallengedSum() . ")");
-
-                if (is_null($challenge->getEndDate())) {
-                    $challenge = $this->updateEndDate($challenge);
-                }
 
                 if ($challenge->getChallengerSum() >= $challenge->getTarget() || $challenge->getChallengedSum() >= $challenge->getTarget()) {
                     $this->log("(" . $challenge->getId() . ") Challenge should finish early");
