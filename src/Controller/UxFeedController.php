@@ -351,6 +351,52 @@ class UxFeedController extends AbstractController
 
         if (is_null($this->patient)) $this->patient = $this->getUser();
 
+        /** @var Patient[] $otherPatients */
+        $otherPatients = $this->getDoctrine()
+            ->getRepository(Patient::class)
+            ->findAll();
+
+        foreach ($otherPatients as $otherPatient) {
+            $friendIndex = count($returnSummary);
+
+            $returnSummary[$friendIndex] = [
+                "uuid" => $otherPatient->getUuid(),
+                "name" => $otherPatient->getFirstName(),
+                "avatar" => $otherPatient->getAvatar(),
+            ];
+
+            if ($otherPatient->getUuid() == $this->patient->getUuid()) {
+                $returnSummary[$friendIndex]['you'] = "you";
+            } else {
+                $returnSummary[$friendIndex]['you'] = "friend";
+            }
+
+            if (!$summarise) {
+                $friendStepCount = 0;
+
+                /** @noinspection PhpUndefinedMethodInspection */
+                /** @var FitStepsDailySummary[] $dbStepsCounts */
+                $dbStepsCounts = $this->getDoctrine()
+                    ->getRepository(FitStepsDailySummary::class)
+                    ->findByDateRangeHistorical($otherPatient->getUuid(), date("Y-m-d"), 7);
+                if (count($dbStepsCounts) > 0) {
+                    foreach ($dbStepsCounts as $dbStepsCount) {
+                        $friendStepCount = $friendStepCount + $dbStepsCount->getValue();
+                    }
+                }
+                $returnSummary[$friendIndex]['steps'] = $friendStepCount;
+            }
+        }
+
+        if (!$summarise) {
+            usort($returnSummary, function ($a, $b) {
+                return ($a["steps"] < $b["steps"]);
+            });
+        } else {
+            usort($returnSummary, function ($a, $b) {
+                return strcmp($a["name"], $b["name"]);
+            });
+        }
 
         return $returnSummary;
     }
