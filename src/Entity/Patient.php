@@ -118,6 +118,11 @@ class Patient implements UserInterface
      */
     private $rpgChallenger;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $dateOfBirth;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -545,6 +550,18 @@ class Patient implements UserInterface
                 $rpgChallenger->setChallenged(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDateOfBirth(): ?\DateTimeInterface
+    {
+        return $this->dateOfBirth;
+    }
+
+    public function setDateOfBirth(?\DateTimeInterface $dateOfBirth): self
+    {
+        $this->dateOfBirth = $dateOfBirth;
 
         return $this;
     }
