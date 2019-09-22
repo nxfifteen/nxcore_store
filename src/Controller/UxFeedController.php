@@ -345,7 +345,7 @@ class UxFeedController extends AbstractController
      *
      * @return array
      */
-    private function getPatientFriends(bool $TRUE)
+    private function getPatientFriends(bool $summarise = false)
     {
         $returnSummary = [];
 
