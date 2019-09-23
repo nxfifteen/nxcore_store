@@ -741,12 +741,12 @@ class UxFeedController extends AbstractController
             if (array_key_exists($reward->getReward()->getId(), $returnSummary)) {
                 $returnSummary[$reward->getReward()->getId()]['count']++;
                 if (strtotime($returnSummary[$reward->getReward()->getId()]['awarded']) < $reward->getDatetime()->format("U")) {
-                    $returnSummary[$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d H:i:s");
+                    $returnSummary[$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d");
                 }
             } else {
                 $returnSummary[$reward->getReward()->getId()] = [
                     "name" => $reward->getReward()->getName(),
-                    "awarded" => str_replace(" 00:00:00", "", $reward->getDatetime()->format("Y-m-d H:i:s")),
+                    "awarded" => $reward->getDatetime()->format("Y-m-d"),
                     "image" => $reward->getReward()->getImage(),
                     "text" => $reward->getReward()->getText(),
                     "longtext" => $reward->getReward()->getTextLong(),
