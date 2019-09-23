@@ -2,15 +2,13 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceRemote", columns={"remote_id","tracking_device_id"})})
  *
- * @ApiResource()
  * @ApiFilter(SearchFilter::class, properties={"id": "exact", "DateTime": "exact", "patient": "exact", "trackingDevice": "exact"})
  * @ORM\Entity(repositoryClass="App\Repository\FitStepsDailySummaryRepository")
  */

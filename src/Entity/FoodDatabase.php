@@ -2,13 +2,11 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceRemote", columns={"provider_id","service_id"})})
  *
- * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\FoodDatabaseRepository")
  */
 class FoodDatabase
