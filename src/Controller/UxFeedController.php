@@ -653,28 +653,44 @@ class UxFeedController extends AbstractController
                     $runningFriendsChallenges['running'][$index]['userDetail']['sum'] = $challengeFriends->getChallengerSum();
                     $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100, 0);
                     if ($runningFriendsChallenges['running'][$index]['userDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = 100;
-                    $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                    if ($challengeFriends->getChallengerSum() > $challengeFriends->getChallengedSum()) {
+                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "success";
+                    } else {
+                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                    }
                     $runningFriendsChallenges['running'][$index]['userDetail']['detail'] = $challengeFriends->getChallengerDetails();
 
                     $runningFriendsChallenges['running'][$index]['opponentDetail'] = [];
                     $runningFriendsChallenges['running'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengedSum();
                     $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100, 0);
                     if ($runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = 100;
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "warning";
+                    if ($challengeFriends->getChallengerSum() < $challengeFriends->getChallengedSum()) {
+                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "success";
+                    } else {
+                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "info";
+                    }
                     $runningFriendsChallenges['running'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengedDetails();
                 } else {
                     $runningFriendsChallenges['running'][$index]['userDetail'] = [];
                     $runningFriendsChallenges['running'][$index]['userDetail']['sum'] = $challengeFriends->getChallengedSum();
                     $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100, 0);
                     if ($runningFriendsChallenges['running'][$index]['userDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = 100;
-                    $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                    if ($challengeFriends->getChallengedSum() > $challengeFriends->getChallengerSum()) {
+                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "success";
+                    } else {
+                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                    }
                     $runningFriendsChallenges['running'][$index]['userDetail']['detail'] = $challengeFriends->getChallengedDetails();
 
                     $runningFriendsChallenges['running'][$index]['opponentDetail'] = [];
                     $runningFriendsChallenges['running'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengerSum();
                     $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100, 0);
                     if ($runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = 100;
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "warning";
+                    if ($challengeFriends->getChallengedSum() < $challengeFriends->getChallengerSum()) {
+                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "success";
+                    } else {
+                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "info";
+                    }
                     $runningFriendsChallenges['running'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengerDetails();
                 }
 
