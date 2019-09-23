@@ -56,7 +56,7 @@ class UxFeedController extends AbstractController
         $return['floors'] = $this->getPatientFloors();
         $return['distance'] = $this->getPatientDistance();
         $return['milestones'] = $this->getPatientMilestones();
-        $return['rpg_friends'] = $this->getPatientFriends(TRUE);
+        $return['rpg_friends'] = $this->getPatientFriends();
         $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
         $return['awards'] = $this->getPatientAwards();
         $return['weight'] = $this->getPatientWeight();
@@ -341,7 +341,7 @@ class UxFeedController extends AbstractController
     }
 
     /**
-     * @param bool $TRUE
+     * @param bool $summarise
      *
      * @return array
      */
@@ -351,25 +351,40 @@ class UxFeedController extends AbstractController
 
         if (is_null($this->patient)) $this->patient = $this->getUser();
 
-        /** @var Patient[] $otherPatients */
-        $otherPatients = $this->getDoctrine()
-            ->getRepository(Patient::class)
-            ->findAll();
 
-        foreach ($otherPatients as $otherPatient) {
+        $returnSummary[0] = [
+            "uuid" => $this->patient->getUuid(),
+            "name" => $this->patient->getFirstName() . " " . $this->patient->getSurName(),
+            "avatar" => $this->patient->getAvatar(),
+            "you" => "you",
+        ];
+
+        if (!$summarise) {
+            $yourStepCount = 0;
+
+            /** @noinspection PhpUndefinedMethodInspection */
+            /** @var FitStepsDailySummary[] $dbStepsCounts */
+            $dbStepsCounts = $this->getDoctrine()
+                ->getRepository(FitStepsDailySummary::class)
+                ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 7);
+            if (count($dbStepsCounts) > 0) {
+                foreach ($dbStepsCounts as $dbStepsCount) {
+                    $yourStepCount = $yourStepCount + $dbStepsCount->getValue();
+                }
+            }
+            $returnSummary[0]['steps'] = $yourStepCount;
+        }
+
+        foreach ($this->patient->getFriendsWith() as $otherPatient) {
             $friendIndex = count($returnSummary);
 
             $returnSummary[$friendIndex] = [
-                "uuid" => $otherPatient->getUuid(),
-                "name" => $otherPatient->getFirstName(),
-                "avatar" => $otherPatient->getAvatar(),
+                "uuid" => $otherPatient['uuid'],
+                "name" => $otherPatient['name'],
+                "avatar" => $otherPatient['avatar'],
             ];
 
-            if ($otherPatient->getUuid() == $this->patient->getUuid()) {
-                $returnSummary[$friendIndex]['you'] = "you";
-            } else {
-                $returnSummary[$friendIndex]['you'] = "friend";
-            }
+            $returnSummary[$friendIndex]['you'] = "friend";
 
             if (!$summarise) {
                 $friendStepCount = 0;
@@ -378,7 +393,7 @@ class UxFeedController extends AbstractController
                 /** @var FitStepsDailySummary[] $dbStepsCounts */
                 $dbStepsCounts = $this->getDoctrine()
                     ->getRepository(FitStepsDailySummary::class)
-                    ->findByDateRangeHistorical($otherPatient->getUuid(), date("Y-m-d"), 7);
+                    ->findByDateRangeHistorical($otherPatient['uuid'], date("Y-m-d"), 7);
                 if (count($dbStepsCounts) > 0) {
                     foreach ($dbStepsCounts as $dbStepsCount) {
                         $friendStepCount = $friendStepCount + $dbStepsCount->getValue();

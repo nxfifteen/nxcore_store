@@ -123,6 +123,16 @@ class Patient implements UserInterface
      */
     private $dateOfBirth;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientFriends", mappedBy="friendA", orphanRemoval=true)
+     */
+    private $friendsOf;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientFriends", mappedBy="friendB", orphanRemoval=true)
+     */
+    private $friendsToo;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -132,6 +142,8 @@ class Patient implements UserInterface
         $this->patientCredentials = new ArrayCollection();
         $this->rpgChallenges = new ArrayCollection();
         $this->rpgChallenger = new ArrayCollection();
+        $this->friendsOf = new ArrayCollection();
+        $this->friendsToo = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -564,5 +576,114 @@ class Patient implements UserInterface
         $this->dateOfBirth = $dateOfBirth;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|PatientFriends[]
+     */
+    public function getFriendsOf(): Collection
+    {
+        return $this->friendsOf;
+    }
+
+    public function addFriendsOf(PatientFriends $friendsOf): self
+    {
+        if (!$this->friendsOf->contains($friendsOf)) {
+            $this->friendsOf[] = $friendsOf;
+            $friendsOf->setFriendA($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendsOf(PatientFriends $friendsOf): self
+    {
+        if ($this->friendsOf->contains($friendsOf)) {
+            $this->friendsOf->removeElement($friendsOf);
+            // set the owning side to null (unless already changed)
+            if ($friendsOf->getFriendA() === $this) {
+                $friendsOf->setFriendA(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PatientFriends[]
+     */
+    public function getFriendsToo(): Collection
+    {
+        return $this->friendsToo;
+    }
+
+    public function addFriendsToo(PatientFriends $friendsToo): self
+    {
+        if (!$this->friendsToo->contains($friendsToo)) {
+            $this->friendsToo[] = $friendsToo;
+            $friendsToo->setFriendB($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendsToo(PatientFriends $friendsToo): self
+    {
+        if ($this->friendsToo->contains($friendsToo)) {
+            $this->friendsToo->removeElement($friendsToo);
+            // set the owning side to null (unless already changed)
+            if ($friendsToo->getFriendB() === $this) {
+                $friendsToo->setFriendB(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Patient $friend
+     *
+     * @return bool
+     */
+    public function isFriendOf($friend): bool {
+
+        return true;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFriendsWith(): array
+    {
+        $allFriends = [];
+        /**
+         * @var PatientFriends $friendToo
+         */
+        foreach ($this->friendsToo as $friendToo) {
+            if (!is_null($friendToo->getAccepted()) && $friendToo->getAccepted()) {
+                $allFriends[] = [
+                    "id" => $friendToo->getFriendA()->getId(),
+                    "name" => $friendToo->getFriendA()->getFirstName() . " " . $friendToo->getFriendA()->getSurName(),
+                    "uuid" => $friendToo->getFriendA()->getUuid(),
+                    "avatar" => $friendToo->getFriendA()->getAvatar(),
+                ];
+            }
+        }
+
+        /**
+         * @var PatientFriends $friendToo
+         */
+        foreach ($this->friendsOf as $friendOf) {
+            if (!is_null($friendOf->getAccepted()) && $friendOf->getAccepted()) {
+                $allFriends[] = [
+                    "id" => $friendOf->getFriendB()->getId(),
+                    "name" => $friendOf->getFriendB()->getFirstName() . " " . $friendOf->getFriendB()->getSurName(),
+                    "uuid" => $friendOf->getFriendB()->getUuid(),
+                    "avatar" => $friendOf->getFriendB()->getAvatar(),
+                ];
+            }
+        }
+
+        return $allFriends;
     }
 }
