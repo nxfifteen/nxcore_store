@@ -934,4 +934,38 @@ class UxFeedController extends AbstractController
 
         return $this->json($return);
     }
+
+
+    /**
+     * @Route("/feed/achievements/awards", name="index_achievements_badges")
+     */
+    public function index_achievements_badges()
+    {
+        $return = [];
+
+        if (is_null($this->patient)) $this->patient = $this->getUser();
+
+        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+            $scope->setUser([
+                'id' => $this->patient->getId(),
+                'username' => $this->patient->getUsername(),
+                'email' => $this->patient->getEmail(),
+            ]);
+        });
+
+        $return['awards'] = $this->getPatientAwards();
+        $return['level'] = $this->patient->getRpgLevel();
+        $return['xp'] = round($this->patient->getXpTotal(), 0);
+        $return['xp_log'] = [];
+        foreach ($this->patient->getXp() as $rpgXP) {
+            $return['xp_log'][] = [
+                "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
+                "log" => $rpgXP->getReason(),
+            ];
+        }
+        $return['xp_log'] = array_reverse($return['xp_log']);
+        $return['factor'] = $this->patient->getRpgFactor();
+
+        return $this->json($return);
+    }
 }
