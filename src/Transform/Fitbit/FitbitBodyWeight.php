@@ -23,8 +23,6 @@ class FitbitBodyWeight extends Constants
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent)
     {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($jsonContent, TRUE));
-
         if (property_exists($jsonContent[0], "uuid")) {
 
             /** @var Patient $patient */
