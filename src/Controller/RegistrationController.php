@@ -10,6 +10,7 @@ namespace App\Controller;
 
 use App\AppConstants;
 use App\Entity\Patient;
+use App\Entity\PatientFriends;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
@@ -44,7 +45,11 @@ class RegistrationController extends AbstractController
         $requestJson = json_decode($requestBody, FALSE);
         $requestJson->username = strtolower($requestJson->username);
 
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, TRUE));
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r([
+                "username" => $requestJson->username,
+                "email" => $requestJson->email,
+                "invite" => $requestJson->invite,
+            ], TRUE));
         AppConstants::writeToLog('debug_transform.txt',
             __LINE__ . ' New user registration ' . $requestJson->username . ' ' . $requestJson->email);
 
@@ -170,6 +175,8 @@ class RegistrationController extends AbstractController
         $requestJson = json_decode($requestBody, FALSE);
         AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, TRUE));
 
+        $entityManager = $doctrine->getManager();
+
         $patient->setFirstName($requestJson->firstName);
         $patient->setSurName($requestJson->lastName);
         $patient->setEmail($requestJson->email);
@@ -191,8 +198,20 @@ class RegistrationController extends AbstractController
             "height" => 0,
         ];
 
-        $entityManager = $doctrine->getManager();
         $entityManager->persist($patient);
+
+        /** @var Patient $patientOwner */
+        $patientOwner = $doctrine
+            ->getRepository(Patient::class)
+            ->findOneBy(["id" => 1]);
+        if ($patientOwner) {
+            $friendsWithOwner = new PatientFriends();
+            $friendsWithOwner->setAccepted(true);
+            $friendsWithOwner->setFriendA($patient);
+            $friendsWithOwner->setFriendB($patientOwner);
+            $entityManager->persist($friendsWithOwner);
+        }
+
         $entityManager->flush();
 
         return $this->json($userProfile);
