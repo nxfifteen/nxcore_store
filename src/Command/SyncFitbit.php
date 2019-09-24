@@ -23,7 +23,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @Cron(minute="/3", noLogs=true, server="web")
  */
-class SyncFitbit extends Command {
+class SyncFitbit extends Command
+{
     /**
      * @var string
      */
@@ -38,7 +39,7 @@ class SyncFitbit extends Command {
      * @var LoggerInterface
      */
     private $logger;
-    
+
     private $syncDate;
     private $syncPeriod;
 
@@ -50,7 +51,8 @@ class SyncFitbit extends Command {
     public function dependencyInjection(
         ManagerRegistry $doctrine,
         LoggerInterface $logger
-    ): void {
+    ): void
+    {
         $this->doctrine = $doctrine;
         $this->logger = $logger;
     }
@@ -61,29 +63,6 @@ class SyncFitbit extends Command {
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->syncServiceFitbit();
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return ThirdPartyService|null
-     */
-    private static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
-    {
-        /** @var ThirdPartyService $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new ThirdPartyService();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
-        }
     }
 
     private function syncServiceFitbit()
@@ -124,19 +103,19 @@ class SyncFitbit extends Command {
                         $serviceDataArray[0] = json_decode(json_encode($serviceDataArray[0]), FALSE);
 
                         foreach ($endpoints as $endpoint) {
-                            $serviceDataArray[] = $this->pullBabel( $accessToken, $serviceSyncQueue, $endpoint );
+                            $serviceDataArray[] = $this->pullBabel($accessToken, $serviceSyncQueue, $endpoint);
                         }
 
-                        if ( !is_null($serviceDataArray) ) {
+                        if (!is_null($serviceDataArray)) {
                             $transformerClass = new $transformerClassName($this->logger);
                             /** @noinspection PhpUndefinedMethodInspection */
                             $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine);
 
                             if (is_array($savedId)) {
-                                $remove = true;
+                                $remove = TRUE;
                                 foreach ($savedId as $saved) {
                                     if ($saved < 0) {
-                                        $remove = false;
+                                        $remove = FALSE;
                                     }
                                 }
 
@@ -161,12 +140,35 @@ class SyncFitbit extends Command {
         }
     }
 
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @return ThirdPartyService|null
+     */
+    private static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
+    {
+        /** @var ThirdPartyService $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new ThirdPartyService();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
     private function getAccessToken(PatientCredentials $credentials)
     {
         return new AccessToken([
-            'access_token'  => $credentials->getToken(),
+            'access_token' => $credentials->getToken(),
             'refresh_token' => $credentials->getRefreshToken(),
-            'expires'       => $credentials->getExpires()->format("U")
+            'expires' => $credentials->getExpires()->format("U"),
         ]);
     }
 
@@ -200,49 +202,20 @@ class SyncFitbit extends Command {
         return [];
     }
 
-    private function getLibrary()
-    {
-        return new Fitbit([
-            'clientId' => $_ENV['FITBIT_ID'],
-            'clientSecret' => $_ENV['FITBIT_SECRET'],
-            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
-        ]);
-    }
-
-    private function getDaysSyncPeriod()
-    {
-        $daysSince = ( date("U") - strtotime($this->syncDate) ) / ( 60 * 60 * 24 );
-        if ( $daysSince < 8 ) {
-            $daysSince = "7d";
-        } else if ( $daysSince < 30 ) {
-            $daysSince = "30d";
-        } else if ( $daysSince < 90 ) {
-            $daysSince = "3m";
-        } else if ( $daysSince < 180 ) {
-            $daysSince = "6m";
-        } else if ( $daysSince < 364 ) {
-            $daysSince = "1y";
-        } else {
-            $daysSince = "1y";
-        }
-
-        return $daysSince;
-    }
-
     /**
      * @param                   $requestedEndpoint
      * @param ApiAccessLog|NULL $apiAccessLog
      *
      * @return bool|mixed|string
      */
-    private function getApiPath($requestedEndpoint, ApiAccessLog $apiAccessLog = null )
+    private function getApiPath($requestedEndpoint, ApiAccessLog $apiAccessLog = NULL)
     {
         $path = Constants::getPath($requestedEndpoint);
 
         if (is_null($path))
-            return null;
+            return NULL;
 
-        if(strpos($path, "{date}") !== false){
+        if (strpos($path, "{date}") !== FALSE) {
             if (!$apiAccessLog) {
                 $this->syncDate = date("Y-m-d");
             } else {
@@ -252,7 +225,7 @@ class SyncFitbit extends Command {
             $path = str_replace("{date}", $this->syncDate, $path);
         }
 
-        if(strpos($path, "{period}") !== false) {
+        if (strpos($path, "{period}") !== FALSE) {
             $syncPeriod = $this->getDaysSyncPeriod();
             $path = str_replace("{period}", $syncPeriod, $path);
         }
@@ -260,6 +233,35 @@ class SyncFitbit extends Command {
 //        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Path = ' . $path);
 
         return $path;
+    }
+
+    private function getDaysSyncPeriod()
+    {
+        $daysSince = (date("U") - strtotime($this->syncDate)) / (60 * 60 * 24);
+        if ($daysSince < 8) {
+            $daysSince = "7d";
+        } else if ($daysSince < 30) {
+            $daysSince = "30d";
+        } else if ($daysSince < 90) {
+            $daysSince = "3m";
+        } else if ($daysSince < 180) {
+            $daysSince = "6m";
+        } else if ($daysSince < 364) {
+            $daysSince = "1y";
+        } else {
+            $daysSince = "1y";
+        }
+
+        return $daysSince;
+    }
+
+    private function getLibrary()
+    {
+        return new Fitbit([
+            'clientId' => $_ENV['FITBIT_ID'],
+            'clientSecret' => $_ENV['FITBIT_SECRET'],
+            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
+        ]);
     }
 
 }

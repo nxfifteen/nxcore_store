@@ -10,6 +10,7 @@ namespace App\Command;
 
 use App\AppConstants;
 use App\Entity\PatientCredentials;
+use App\Entity\PatientSettings;
 use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -66,21 +67,32 @@ class QueueSyncFitbit extends Command
                 /** @var SyncQueue[] $patientCredentials */
                 $serviceSyncQueues = $this->doctrine
                     ->getRepository(SyncQueue::class)
-                    ->findBy(['service' => $service, 'credentials' => $patientCredential, 'endpoint' => 'TrackingDevice::FitStepsDailySummary']);
+                    ->findBy(['service' => $service, 'credentials' => $patientCredential]);
                 if ($serviceSyncQueues) {
-                    AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " .  ' ' . $patientCredential->getPatient()->getUsername() . ' already has steps in the queue');
+                    AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUsername() . ' already has steps in the queue');
                 } else {
-                    AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUsername() . '\' steps queuing');
+                    /** @var PatientSettings $patientSettings */
+                    $patientSettings = $this->doctrine
+                        ->getRepository(PatientSettings::class)
+                        ->findOneBy([
+                            'patient' => $patientCredential->getPatient(),
+                            'service' => $service,
+                            'name' => 'enabledEndpoints',
+                        ]);
 
-                    $serviceSyncQueue = new SyncQueue();
-                    $serviceSyncQueue->setService($service);
-                    $serviceSyncQueue->setDatetime(new \DateTime());
-                    $serviceSyncQueue->setCredentials($patientCredential);
-                    $serviceSyncQueue->setEndpoint('TrackingDevice::FitStepsDailySummary');
+                    if (!$patientSettings) {
+                        AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . 'No supported end points');
+                    } else {
+                        $serviceSyncQueue = new SyncQueue();
+                        $serviceSyncQueue->setService($service);
+                        $serviceSyncQueue->setDatetime(new \DateTime());
+                        $serviceSyncQueue->setCredentials($patientCredential);
+                        $serviceSyncQueue->setEndpoint(join("::", $patientSettings->getValue()));
 
-                    $entityManager = $this->doctrine->getManager();
-                    $entityManager->persist($serviceSyncQueue);
-                    $entityManager->flush();
+                        $entityManager = $this->doctrine->getManager();
+                        $entityManager->persist($serviceSyncQueue);
+                        $entityManager->flush();
+                    }
                 }
             }
         } else {
