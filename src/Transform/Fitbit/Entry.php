@@ -42,6 +42,14 @@ class Entry
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
                 }
                 break;
+            case Constants::FITBITEPBODYWEIGHT:
+                $translateEntity = [];
+                $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent);
+                $translateEntity[] = FitbitBodyFat::translate($doctrine, $getContent);
+                foreach ($getContent[1] as $index => $item) {
+                    $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
+                }
+                break;
             default:
                 AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' MISSING ' . $data_set . ' - ' . print_r($getContent, TRUE));
                 return -3;

@@ -10,7 +10,7 @@ class Constants extends Transform
 {
     const FITBITSERVICE = "Fitbit";
 
-    const FITBITEPBODYWEIGHT = "BodyWeight";
+    const FITBITEPBODYWEIGHT = "TrackingDevice::BodyWeight";
     const FITBITHEPDAILYSTEPS = "TrackingDevice::FitStepsDailySummary";
 
     public static function getPath(string $endpoint)
