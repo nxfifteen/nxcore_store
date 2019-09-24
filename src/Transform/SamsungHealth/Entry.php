@@ -71,10 +71,11 @@ class Entry
                 $translateEntity = SamsungFood::translateFoodInfo($doctrine, $getContent);
                 break;
             case Constants::SAMSUNGHEALTHEPBODYWEIGHT:
-                $translateEntity = [];
-                array_push($translateEntity, SamsungBodyWeight::translate($doctrine, $getContent));
-                array_push($translateEntity, SamsungBodyFat::translate($doctrine, $getContent));
-                array_push($translateEntity, SamsungBodyComposition::translate($doctrine, $getContent));
+//                $translateEntity = [];
+//                array_push($translateEntity, SamsungBodyWeight::translate($doctrine, $getContent));
+//                array_push($translateEntity, SamsungBodyFat::translate($doctrine, $getContent));
+//                array_push($translateEntity, SamsungBodyComposition::translate($doctrine, $getContent));
+                return -4;
                 break;
             default:
                 return -3;
