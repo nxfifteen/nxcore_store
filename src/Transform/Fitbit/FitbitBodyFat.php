@@ -58,13 +58,13 @@ class FitbitBodyFat extends Constants
                 return NULL;
             }
 
+            $jsonContent[0]->remoteId = $jsonContent[0]->remoteId . 'FitbitBodyFat' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
+
             /** @var BodyFat $dataEntry */
             $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $jsonContent[0]->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
                 $dataEntry = new BodyFat();
             }
-
-            $jsonContent[0]->remoteId = $jsonContent[0]->remoteId . 'FitbitBodyFat' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
 
             $dataEntry->setPatient($patient);
 
