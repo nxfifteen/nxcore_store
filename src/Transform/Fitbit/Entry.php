@@ -5,6 +5,7 @@ namespace App\Transform\Fitbit;
 use App\AppConstants;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use Sentry;
 
 class Entry
 {
@@ -24,6 +25,14 @@ class Entry
     public function transform(String $data_set, $getContent, ManagerRegistry $doctrine)
     {
         $translateEntity = NULL;
+
+        Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set, $getContent): void {
+            $scope->setUser([
+                'content' => $getContent,
+                'service' => 'Fitbit',
+                'data_set' => $data_set,
+            ]);
+        });
 
         switch ($data_set) {
             case Constants::FITBITHEPDAILYSTEPS:

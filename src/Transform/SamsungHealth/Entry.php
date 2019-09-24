@@ -4,6 +4,7 @@ namespace App\Transform\SamsungHealth;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use Sentry;
 
 class Entry
 {
@@ -23,6 +24,14 @@ class Entry
     public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine)
     {
         $translateEntity = NULL;
+
+        Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set): void {
+            $scope->setUser([
+                'id' => "269VLG",
+                'service' => 'Samsung Health',
+                'data_set' => $data_set,
+            ]);
+        });
 
         switch ($data_set) {
             case Constants::SAMSUNGHEALTHEPDEVICES:
