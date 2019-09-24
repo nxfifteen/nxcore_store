@@ -21,10 +21,9 @@ class FitbitBodyFat extends Constants
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent)
     {
-        if (property_exists($jsonContent, "uuid")) {
-
+        if (property_exists($jsonContent[0], "uuid")) {
             /** @var Patient $patient */
-            $patient = self::getPatient($doctrine, $jsonContent->uuid);
+            $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
             if (is_null($patient)) {
                 return NULL;
             }
@@ -42,41 +41,40 @@ class FitbitBodyFat extends Constants
             }
 
             /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
+            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent[0]->dateTime));
             if (is_null($partOfDay)) {
                 return NULL;
             }
 
             /** @var UnitOfMeasurement $unitOfMeasurement */
-            $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->fatUnitOfMeasurement);
+            $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, "%");
             if (is_null($unitOfMeasurement)) {
                 return NULL;
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "BodyFat", $jsonContent->goals->fat, $unitOfMeasurement, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "BodyFat", $jsonContent[2]->goals->fat, $unitOfMeasurement, $patient);
             if (is_null($patientGoal)) {
                 return NULL;
             }
 
             /** @var BodyFat $dataEntry */
-            $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $jsonContent[0]->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
                 $dataEntry = new BodyFat();
             }
 
+            $jsonContent[0]->remoteId = $jsonContent[0]->remoteId . 'FitbitBodyFat' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
+
             $dataEntry->setPatient($patient);
 
             $dataEntry->setTrackingDevice($deviceTracking);
-            $dataEntry->setRemoteId($jsonContent->remoteId);
-            $dataEntry->setMeasurement($jsonContent->body->fat);
+            $dataEntry->setRemoteId($jsonContent[0]->remoteId);
+            $dataEntry->setMeasurement($jsonContent[2]->body->fat);
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
-            if (property_exists($jsonContent, "fat_free") && $jsonContent->fat_free > 0) $dataEntry->setFatFree($jsonContent->fat_free);
-            if (property_exists($jsonContent, "fat_free_mass") && $jsonContent->fat_free_mass > 0) $dataEntry->setFatFreeMass($jsonContent->fat_free_mass);
-            if (property_exists($jsonContent, "body_fat_mass") && $jsonContent->body_fat_mass > 0) $dataEntry->setBodyFatMass($jsonContent->body_fat_mass);
             $dataEntry->setPatientGoal($patientGoal);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent[0]->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new \DateTime($jsonContent[0]->dateTime));
             }
             $dataEntry->setPartOfDay($partOfDay);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
