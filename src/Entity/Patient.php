@@ -131,6 +131,11 @@ class Patient implements UserInterface
      */
     private $friendsToo;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientSettings", mappedBy="patient", orphanRemoval=true)
+     */
+    private $settings;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -142,6 +147,7 @@ class Patient implements UserInterface
         $this->rpgChallenger = new ArrayCollection();
         $this->friendsOf = new ArrayCollection();
         $this->friendsToo = new ArrayCollection();
+        $this->settings = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -683,5 +689,36 @@ class Patient implements UserInterface
         }
 
         return $allFriends;
+    }
+
+    /**
+     * @return Collection|PatientSettings[]
+     */
+    public function getSettings(): Collection
+    {
+        return $this->settings;
+    }
+
+    public function addSetting(PatientSettings $setting): self
+    {
+        if (!$this->settings->contains($setting)) {
+            $this->settings[] = $setting;
+            $setting->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSetting(PatientSettings $setting): self
+    {
+        if ($this->settings->contains($setting)) {
+            $this->settings->removeElement($setting);
+            // set the owning side to null (unless already changed)
+            if ($setting->getPatient() === $this) {
+                $setting->setPatient(null);
+            }
+        }
+
+        return $this;
     }
 }
