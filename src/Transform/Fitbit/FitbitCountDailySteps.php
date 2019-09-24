@@ -47,9 +47,13 @@ class FitbitCountDailySteps extends Constants
                 return NULL;
             }
 
-            /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent[2]->goals->steps, NULL, $patient, false);
-            if (is_null($patientGoal)) {
+            if (count($jsonContent) >= 2 && is_object($jsonContent[2]) && property_exists($jsonContent[2], "goals") && property_exists($jsonContent[2]->goals, "steps")) {
+                /** @var PatientGoals $patientGoal */
+                $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent[2]->goals->steps, NULL, $patient, FALSE);
+                if (is_null($patientGoal)) {
+                    return NULL;
+                }
+            } else {
                 return NULL;
             }
 
