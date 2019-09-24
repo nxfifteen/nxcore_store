@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\PatientCredentials;
+use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -121,8 +122,18 @@ class AuthWithFitbitController extends AbstractController
 
             $patient->setFirstRun(FALSE);
 
+            $endPointSettings = new PatientSettings();
+            $endPointSettings->setPatient($patient);
+            $endPointSettings->setService($service);
+            $endPointSettings->setName("enabledEndpoints");
+            $endPointSettings->setValue([
+                "TrackingDevice",
+                "FitStepsDailySummary"
+            ]);
+
             $entityManager = $doctrine->getManager();
             $entityManager->persist($patientCredentials);
+            $entityManager->persist($endPointSettings);
             $entityManager->persist($patient);
             $entityManager->flush();
         } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
