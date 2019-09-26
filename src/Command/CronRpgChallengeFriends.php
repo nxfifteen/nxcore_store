@@ -59,7 +59,7 @@ class CronRpgChallengeFriends extends Command
             ->getRepository(RpgChallengeFriends::class)
             ->findBy(['outcome' => NULL]);
 
-        $this->log("There are " . count($challenges) . " challenges still running");
+        //$this->log("There are " . count($challenges) . " challenges still running");
 
         $entityManager = $this->doctrine->getManager();
         foreach ($challenges as $challenge) {
@@ -142,11 +142,13 @@ class CronRpgChallengeFriends extends Command
         $apiLogLastSyncChallenger = $this->doctrine
             ->getRepository(ApiAccessLog::class)
             ->findOneBy(["patient" => $challenge->getChallenger(), "entity" => $challenge->getCriteria()]);
+        $apiLogLastSyncChallenger = $apiLogLastSyncChallenger->getLastRetrieved()->format("U");
 
         /** @var ApiAccessLog $apiLogLastSync */
         $apiLogLastSyncChallenged = $this->doctrine
             ->getRepository(ApiAccessLog::class)
             ->findOneBy(["patient" => $challenge->getChallenged(), "entity" => $challenge->getCriteria()]);
+        $apiLogLastSyncChallenged = $apiLogLastSyncChallenged->getLastRetrieved()->format("U");
 
         $graceDate = new \DateTime($challenge->getEndDate()->format("Y-m-d 00:00:00"));
         try {
@@ -154,16 +156,13 @@ class CronRpgChallengeFriends extends Command
         } catch (\Exception $e) {
         }
 
-        if (date("U") < $graceDate->format("U")) {
-            return $challenge;
-        }
-
-        if ($apiLogLastSyncChallenger->getLastRetrieved()->format("U") < $challenge->getEndDate()->format("U")) {
-            return $challenge;
-        }
-
-        if ($apiLogLastSyncChallenged->getLastRetrieved()->format("U") < $challenge->getEndDate()->format("U")) {
-            return $challenge;
+        if (date("U") >= $graceDate->format("U") || (
+                $apiLogLastSyncChallenger >= $challenge->getEndDate()->format("U") &&
+                $apiLogLastSyncChallenged >= $challenge->getEndDate()->format("U")
+            )) {
+            $bothUpdated = true;
+        } else {
+            $bothUpdated = false;
         }
 
         if (
@@ -176,19 +175,21 @@ class CronRpgChallengeFriends extends Command
             $this->awardWinnerCreditTo($challenge->getChallenged());
         } else if (
             ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
-            ($challenge->getChallengedSum() < $challenge->getTarget())
+            ($challenge->getChallengedSum() < $challenge->getTarget()) &&
+            $bothUpdated
         ) {
             $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
             $challenge->setOutcome(5);
             $this->awardWinnerCreditTo($challenge->getChallenger());
         } else if (
             ($challenge->getChallengerSum() < $challenge->getTarget()) &&
-            ($challenge->getChallengedSum() >= $challenge->getTarget())
+            ($challenge->getChallengedSum() >= $challenge->getTarget()) &&
+            $bothUpdated
         ) {
             $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());
             $challenge->setOutcome(4);
             $this->awardWinnerCreditTo($challenge->getChallenged());
-        } else if ($challenge->getChallengerSum() > $challenge->getChallengedSum()) {
+        } else if ($challenge->getChallengerSum() > $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
             $challenge->setOutcome(3);
             AppConstants::awardPatientXP(
@@ -198,7 +199,7 @@ class CronRpgChallengeFriends extends Command
                 "A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
-        } else if ($challenge->getChallengerSum() < $challenge->getChallengedSum()) {
+        } else if ($challenge->getChallengerSum() < $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
             $challenge->setOutcome(2);
             AppConstants::awardPatientXP(
@@ -208,7 +209,7 @@ class CronRpgChallengeFriends extends Command
                 "A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
-        } else if ($challenge->getChallengerSum() == $challenge->getChallengedSum()) {
+        } else if ($challenge->getChallengerSum() == $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget());
             $challenge->setOutcome(1);
             AppConstants::awardPatientXP(
