@@ -48,29 +48,6 @@ class UpdateAuthCredentialsFitbit extends Command {
         $this->refreshFitbitTokens();
     }
 
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return ThirdPartyService|null
-     */
-    private static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
-    {
-        /** @var ThirdPartyService $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new ThirdPartyService();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
-        }
-    }
-
     private function refreshFitbitTokens()
     {
         $queryCallback = $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit';
