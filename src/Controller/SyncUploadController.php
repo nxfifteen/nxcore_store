@@ -51,10 +51,10 @@ class SyncUploadController extends AbstractController
     {
         if (is_array($_GET) && array_key_exists("verify", $_GET)) {
             if ($_GET['verify'] != "c9dc17fc026d90cf8ddb6d7e1960828962265bac03605449054fb2e9033c927c") {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $service . ' - Verification ' . $_GET['verify'] . ' code invalid');
+                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
                 throw $this->createNotFoundException('404');
             } else {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $service . ' - Verification ' . $_GET['verify'] . ' code valid');
+                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code valid');
             }
 
             $response = new JsonResponse();
@@ -72,7 +72,7 @@ class SyncUploadController extends AbstractController
                 ->findOneBy(['id' => $item->subscriptionId]);
 
             if (!$patient) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - No patient with this ID ' . $item->subscriptionId);
+                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - No patient with this ID ' . $item->subscriptionId);
             } else {
                 $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
 
@@ -90,7 +90,7 @@ class SyncUploadController extends AbstractController
                 $entityManager->persist($serviceSyncQueue);
                 $entityManager->flush();
 
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
+                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
             }
 
         }
