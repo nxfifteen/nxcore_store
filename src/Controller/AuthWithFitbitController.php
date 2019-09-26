@@ -9,7 +9,7 @@ use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,7 +29,7 @@ class AuthWithFitbitController extends AbstractController
     {
         $this->hasAccess($uuid);
 
-        if(!isset($_SESSION)) {
+        if (!isset($_SESSION)) {
             session_start();
         }
 
@@ -61,6 +61,23 @@ class AuthWithFitbitController extends AbstractController
     }
 
     /**
+     * @param String $uuid
+     *
+     * @throws \LogicException If the Security component is not available
+     */
+    private function hasAccess(String $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+
+        /** @var \App\Entity\Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
+
+    /**
      * @Route("/auth/callback/fitbit", name="auth_with_fitbit_callback")
      * @param ManagerRegistry $doctrine
      * @param RequestStack    $request
@@ -69,7 +86,7 @@ class AuthWithFitbitController extends AbstractController
      */
     public function auth_with_fitbit_callback(ManagerRegistry $doctrine, RequestStack $request)
     {
-        if(!isset($_SESSION)) {
+        if (!isset($_SESSION)) {
             session_start();
         }
 
@@ -101,7 +118,7 @@ class AuthWithFitbitController extends AbstractController
             ]);
 
             /** @var ThirdPartyService $service */
-            $service = $this->getThirdPartyService($doctrine, "Fitbit");
+            $service = AppConstants::getThirdPartyService($doctrine, "Fitbit");
 
             /** @var PatientCredentials $patientCredentials */
             $patientCredentials = $this->getDoctrine()
@@ -128,7 +145,7 @@ class AuthWithFitbitController extends AbstractController
             $endPointSettings->setName("enabledEndpoints");
             $endPointSettings->setValue([
                 "TrackingDevice",
-                "FitStepsDailySummary"
+                "FitStepsDailySummary",
             ]);
 
             $entityManager = $doctrine->getManager();
@@ -136,6 +153,17 @@ class AuthWithFitbitController extends AbstractController
             $entityManager->persist($endPointSettings);
             $entityManager->persist($patient);
             $entityManager->flush();
+
+            $path = "https://api.fitbit.com/1/user/-/activities/apiSubscriptions/" . $patient->getId() . ".json";
+
+            try {
+                $request = $this->getLibrary()->getAuthenticatedRequest('POST', $path, $accessToken);
+
+                $response = $this->getLibrary()->getResponse($request);
+            } catch (IdentityProviderException $e) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . ' ' . $e->getMessage());
+            }
+
         } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
             // Failed to get the access token or user details.
             AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
@@ -146,43 +174,12 @@ class AuthWithFitbitController extends AbstractController
         exit;
     }
 
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return ThirdPartyService|null
-     */
-    private static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
+    private function getLibrary()
     {
-        /** @var ThirdPartyService $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new ThirdPartyService();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
-        }
-    }
-
-    /**
-     * @param String $uuid
-     *
-     * @throws \LogicException If the Security component is not available
-     */
-    private function hasAccess(String $uuid)
-    {
-        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
-
-        /** @var \App\Entity\Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
+        return new Fitbit([
+            'clientId' => $_ENV['FITBIT_ID'],
+            'clientSecret' => $_ENV['FITBIT_SECRET'],
+            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
+        ]);
     }
 }
