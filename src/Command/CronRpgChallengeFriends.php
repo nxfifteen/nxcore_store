@@ -85,7 +85,7 @@ class CronRpgChallengeFriends extends Command
                     $challenge = $this->updateOutcome($challenge);
                 }
 
-                $this->log("(" . $challenge->getId() . ") Updated progress Challenger (" . $challenge->getChallengerSum() . ") / Challenged (" . $challenge->getChallengedSum() . ")");
+                //$this->log("(" . $challenge->getId() . ") Updated progress Challenger (" . $challenge->getChallengerSum() . ") / Challenged (" . $challenge->getChallengedSum() . ")");
 
                 $entityManager->persist($challenge);
             }/* else {
