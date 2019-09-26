@@ -9,6 +9,7 @@
 namespace App\Command;
 
 use App\AppConstants;
+use App\Entity\ApiAccessLog;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
@@ -58,12 +59,11 @@ class CronRpgChallengeFriends extends Command
             ->getRepository(RpgChallengeFriends::class)
             ->findBy(['outcome' => NULL]);
 
-//        $this->log("There are " . count($challenges) . " challenges still running");
+        $this->log("There are " . count($challenges) . " challenges still running");
 
         $entityManager = $this->doctrine->getManager();
         foreach ($challenges as $challenge) {
             if (!is_null($challenge->getStartDate())) {
-                $this->log("(" . $challenge->getId() . ") Updated progress Challenger (" . $challenge->getChallengerSum() . ") / Challenged (" . $challenge->getChallengedSum() . ")");
 
                 if (is_null($challenge->getEndDate())) {
                     $challenge = $this->updateEndDate($challenge);
@@ -85,6 +85,8 @@ class CronRpgChallengeFriends extends Command
                     $challenge = $this->updateOutcome($challenge);
                 }
 
+                $this->log("(" . $challenge->getId() . ") Updated progress Challenger (" . $challenge->getChallengerSum() . ") / Challenged (" . $challenge->getChallengedSum() . ")");
+
                 $entityManager->persist($challenge);
             }/* else {
                 $this->log("(" . $challenge->getId() . ") Challenge hasn't been accepted yet");
@@ -96,6 +98,19 @@ class CronRpgChallengeFriends extends Command
     private function log(string $msg)
     {
         AppConstants::writeToLog('debug_transform.txt', "[" . CronRpgChallengeFriends::$defaultName . "] - " . $msg);
+    }
+
+    private function updateEndDate(RpgChallengeFriends $challenge)
+    {
+        $endDate = new \DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
+        try {
+            $endDate->add(new \DateInterval("P" . $challenge->getDuration() . "D"));
+        } catch (\Exception $e) {
+        }
+        $this->log("(" . $challenge->getId() . ") Challenge end date updated");
+        $challenge->setEndDate($endDate);
+
+        return $challenge;
     }
 
     private function queryDbForPatientCriteria(RpgChallengeFriends $challengeFriends, Patient $user)
@@ -121,18 +136,36 @@ class CronRpgChallengeFriends extends Command
         return $periodCriteria;
     }
 
-    private function updateEndDate(RpgChallengeFriends $challenge)
-    {
-        $endDate = new \DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
-        $endDate->add(new \DateInterval("P" . $challenge->getDuration() . "D"));
-        $this->log("(" . $challenge->getId() . ") Challenge end date updated");
-        $challenge->setEndDate($endDate);
-
-        return $challenge;
-    }
-
     private function updateOutcome(RpgChallengeFriends $challenge)
     {
+        /** @var ApiAccessLog $apiLogLastSync */
+        $apiLogLastSyncChallenger = $this->doctrine
+            ->getRepository(ApiAccessLog::class)
+            ->findOneBy(["patient" => $challenge->getChallenger(), "entity" => $challenge->getCriteria()]);
+
+        /** @var ApiAccessLog $apiLogLastSync */
+        $apiLogLastSyncChallenged = $this->doctrine
+            ->getRepository(ApiAccessLog::class)
+            ->findOneBy(["patient" => $challenge->getChallenged(), "entity" => $challenge->getCriteria()]);
+
+        $graceDate = new \DateTime($challenge->getEndDate()->format("Y-m-d 00:00:00"));
+        try {
+            $graceDate->add(new \DateInterval("P1D"));
+        } catch (\Exception $e) {
+        }
+
+        if (date("U") < $graceDate->format("U")) {
+            return $challenge;
+        }
+
+        if ($apiLogLastSyncChallenger->getLastRetrieved()->format("U") < $challenge->getEndDate()->format("U")) {
+            return $challenge;
+        }
+
+        if ($apiLogLastSyncChallenged->getLastRetrieved()->format("U") < $challenge->getEndDate()->format("U")) {
+            return $challenge;
+        }
+
         if (
             ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
             ($challenge->getChallengedSum() >= $challenge->getTarget())
