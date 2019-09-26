@@ -32,10 +32,28 @@ class Constants extends Transform
                 $path = '/devices';
                 break;
 
+            case 'apiSubscriptions':
+                $path = '/activities/apiSubscriptions';
+                break;
+
             default:
                 return null;
         }
 
         return FITBIT_COM . "/1/user/-$path";
+    }
+
+    public static function convertSubscriptionToClass($endpoint) {
+        switch ( $endpoint ) {
+            case 'activities':
+                return [
+                    "TrackingDevice",
+                    "FitStepsDailySummary"
+                ];
+                break;
+
+            default:
+                return null;
+        }
     }
 }

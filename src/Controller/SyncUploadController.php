@@ -3,8 +3,13 @@
 namespace App\Controller;
 
 use App\AppConstants;
+use App\Entity\Patient;
+use App\Entity\PatientCredentials;
+use App\Entity\SyncQueue;
+use App\Transform\Fitbit\Constants;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -19,6 +24,82 @@ class SyncUploadController extends AbstractController
         return $this->render('sync_upload/index.html.twig', [
             'controller_name' => 'SyncUploadController',
         ]);
+    }
+
+    /**
+     * @Route("/sync/webhook/{service}", name="sync_webhook_post", methods={"POST"})
+     * @param String          $service
+     *
+     * @param LoggerInterface $logger
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function sync_webhook_post(String $service, LoggerInterface $logger)
+    {
+        return $this->sync_webhook_get($service, $logger);
+    }
+
+    /**
+     * @Route("/sync/webhook/{service}", name="sync_webhook_get", methods={"GET"})
+     * @param String          $service
+     *
+     * @param LoggerInterface $logger
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function sync_webhook_get(String $service, LoggerInterface $logger)
+    {
+        if (is_array($_GET) && array_key_exists("verify", $_GET)) {
+            if ($_GET['verify'] != "c9dc17fc026d90cf8ddb6d7e1960828962265bac03605449054fb2e9033c927c") {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $service . ' - Verification ' . $_GET['verify'] . ' code invalid');
+                throw $this->createNotFoundException('404');
+            } else {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $service . ' - Verification ' . $_GET['verify'] . ' code valid');
+            }
+
+            $response = new JsonResponse();
+            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+            return $response;
+        }
+
+        $request = Request::createFromGlobals();
+        $jsonContent = json_decode($request->getContent(), FALSE);
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $service . ' - ' . print_r($jsonContent, TRUE));
+
+        $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
+        foreach ($jsonContent as $item) {
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - ' . print_r($item, TRUE));
+
+            $patient = $this->getDoctrine()
+                ->getRepository(Patient::class)
+                ->findOneBy(['id' => $item->subscriptionId]);
+
+            if (!$patient) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - No patient with this ID ' . $item->subscriptionId);
+            } else {
+                $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - ' . print_r($queueEndpoints, true));
+
+                $patientCredential = $this->getDoctrine()
+                    ->getRepository(PatientCredentials::class)
+                    ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
+
+                $serviceSyncQueue = new SyncQueue();
+                $serviceSyncQueue->setService($serviceObject);
+                $serviceSyncQueue->setDatetime(new \DateTime());
+                $serviceSyncQueue->setCredentials($patientCredential);
+                $serviceSyncQueue->setEndpoint(join("::", $queueEndpoints));
+
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($serviceSyncQueue);
+                $entityManager->flush();
+            }
+
+        }
+
+        $response = new JsonResponse();
+        $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+        return $response;
     }
 
     /**
@@ -97,7 +178,7 @@ class SyncUploadController extends AbstractController
                 'status' => 500,
                 'message' => "Unknown data set '$data_set' in '$service'",
             ]);
-        } else  {
+        } else {
             return $this->json([
                 'success' => FALSE,
                 'status' => 500,
