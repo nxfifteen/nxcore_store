@@ -68,7 +68,7 @@ class SyncFitbit extends Command
     private function syncServiceFitbit()
     {
         /** @var ThirdPartyService $service */
-        $service = $this->getThirdPartyService($this->doctrine, "Fitbit");
+        $service = AppConstants::getThirdPartyService($this->doctrine, "Fitbit");
 
         /** @var SyncQueue[] $patientCredentials */
         $serviceSyncQueues = $this->doctrine
@@ -137,29 +137,6 @@ class SyncFitbit extends Command
             }
         } else {
             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'No Fitbit jobs in the sync queue');
-        }
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return ThirdPartyService|null
-     */
-    private static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
-    {
-        /** @var ThirdPartyService $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new ThirdPartyService();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
         }
     }
 

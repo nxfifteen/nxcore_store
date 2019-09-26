@@ -54,7 +54,7 @@ class QueueSyncFitbit extends Command
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         /** @var ThirdPartyService $service */
-        $service = $this->getThirdPartyService($this->doctrine, "Fitbit");
+        $service = AppConstants::getThirdPartyService($this->doctrine, "Fitbit");
 
         /** @var PatientCredentials[] $patientCredentials */
         $patientCredentials = $this->doctrine
@@ -97,29 +97,6 @@ class QueueSyncFitbit extends Command
             }
         } else {
             AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . 'There are not Fitbit users');
-        }
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return ThirdPartyService|null
-     */
-    private static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
-    {
-        /** @var ThirdPartyService $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new ThirdPartyService();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
         }
     }
 

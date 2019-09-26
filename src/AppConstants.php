@@ -6,6 +6,7 @@ use App\Entity\Patient;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
 use App\Entity\RpgXP;
+use App\Entity\ThirdPartyService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -142,5 +143,28 @@ class AppConstants
     {
         $len = strlen($needle);
         return (substr($haystack, 0, $len) === $needle);
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @return ThirdPartyService|null
+     */
+    static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
+    {
+        /** @var ThirdPartyService $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new ThirdPartyService();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
     }
 }

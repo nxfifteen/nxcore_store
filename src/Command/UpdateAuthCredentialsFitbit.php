@@ -76,7 +76,7 @@ class UpdateAuthCredentialsFitbit extends Command {
         $queryCallback = $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit';
 
         /** @var ThirdPartyService $service */
-        $service = $this->getThirdPartyService($this->doctrine, "Fitbit");
+        $service = AppConstants::getThirdPartyService($this->doctrine, "Fitbit");
 
         /** @var PatientCredentials[] $patientCredentials */
         $patientCredentials = $this->doctrine
