@@ -705,8 +705,8 @@ class UxFeedController extends AbstractController
                     ->getRepository(ApiAccessLog::class)
                     ->findOneBy(["patient" => $opponent, "entity" => $challengeFriends->getCriteria()]);
 
-                $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = $apiLogLastSyncUser->getLastPulled()->format("Y-m-d H:i:s");
-                $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = $apiLogLastSyncOpponent->getLastPulled()->format("Y-m-d H:i:s");
+                $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = $apiLogLastSyncUser->getLastRetrieved()->format("Y-m-d H:i:s");
+                $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = $apiLogLastSyncOpponent->getLastRetrieved()->format("Y-m-d H:i:s");
             }
         }
 
