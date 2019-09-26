@@ -77,10 +77,6 @@ class SyncFitbit extends Command
 
         if (count($serviceSyncQueues) > 0) {
             foreach ($serviceSyncQueues as $serviceSyncQueue) {
-                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Job ' .
-                    $serviceSyncQueue->getId() . ' :: Updating ' .
-                    $serviceSyncQueue->getService()->getName() . ':' . $serviceSyncQueue->getEndpoint()
-                    . ' for ' . $serviceSyncQueue->getCredentials()->getPatient()->getUsername());
 
                 $accessToken = $this->getAccessToken($serviceSyncQueue->getCredentials());
                 if (!$accessToken->hasExpired()) {
@@ -103,6 +99,9 @@ class SyncFitbit extends Command
                         $serviceDataArray[0] = json_decode(json_encode($serviceDataArray[0]), FALSE);
 
                         foreach ($endpoints as $endpoint) {
+                            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " .
+                                'Updating ' . $endpoint .
+                                ' for ' . $serviceSyncQueue->getCredentials()->getPatient()->getUsername());
                             $serviceDataArray[] = $this->pullBabel($accessToken, $serviceSyncQueue, $endpoint);
                         }
 
