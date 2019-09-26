@@ -64,12 +64,9 @@ class SyncUploadController extends AbstractController
 
         $request = Request::createFromGlobals();
         $jsonContent = json_decode($request->getContent(), FALSE);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $service . ' - ' . print_r($jsonContent, TRUE));
 
         $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
         foreach ($jsonContent as $item) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - ' . print_r($item, TRUE));
-
             $patient = $this->getDoctrine()
                 ->getRepository(Patient::class)
                 ->findOneBy(['id' => $item->subscriptionId]);
@@ -78,7 +75,6 @@ class SyncUploadController extends AbstractController
                 AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - No patient with this ID ' . $item->subscriptionId);
             } else {
                 $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - ' . print_r($queueEndpoints, true));
 
                 $patientCredential = $this->getDoctrine()
                     ->getRepository(PatientCredentials::class)
@@ -93,6 +89,8 @@ class SyncUploadController extends AbstractController
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($serviceSyncQueue);
                 $entityManager->flush();
+
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' sync_webhook_get ' . $serviceObject->getName() . ' - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
             }
 
         }
