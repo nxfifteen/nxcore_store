@@ -160,7 +160,7 @@ class SyncFitbit extends Command
                         }
                     }
                 } else {
-                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'Credentials have expired. Will retry later');
+                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'Credentials have expired for ' . $serviceSyncQueue->getCredentials()->getPatient()->getFirstName(). '. Will retry later');
                 }
             }
         } /*else {
