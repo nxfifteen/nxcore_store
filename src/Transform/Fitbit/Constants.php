@@ -33,7 +33,7 @@ class Constants extends Transform
                 break;
 
             case 'apiSubscriptions':
-                $path = '/activities/apiSubscriptions';
+                $path = '/apiSubscriptions';
                 break;
 
             default:
