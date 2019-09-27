@@ -430,11 +430,19 @@ class UxFeedController extends AbstractController
         if (!$summaryOnly) $runningFriendsChallenges['pending'] = [];
         if (!$summaryOnly) $runningFriendsChallenges['completed'] = [];
 
-        foreach ($this->patient->getRpgChallenger() as $challengeFriends) {
+        /** @var RpgChallengeFriends[] $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findBy(["challenger" => $this->patient], ["startDate" => "DESC"]);
+        foreach ($dbChallenger as $challengeFriends) {
             $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges, $challengeFriends);
         }
 
-        foreach ($this->patient->getRpgChallenges() as $challengeFriends) {
+        /** @var RpgChallengeFriends[] $dbChallenger */
+        $dbChallenged = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findBy(["challenged" => $this->patient], ["startDate" => "DESC"]);
+        foreach ($dbChallenged as $challengeFriends) {
             $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges, $challengeFriends);
         }
 
@@ -699,14 +707,21 @@ class UxFeedController extends AbstractController
                 $apiLogLastSyncUser = $this->getDoctrine()
                     ->getRepository(ApiAccessLog::class)
                     ->findOneBy(["patient" => $this->patient, "entity" => $challengeFriends->getCriteria()]);
+                if (!is_null($apiLogLastSyncUser)) {
+                    $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = $apiLogLastSyncUser->getLastRetrieved()->format("Y-m-d H:i:s");
+                } else {
+                    $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = "0000-00-00 00:00:00";
+                }
 
                 /** @var ApiAccessLog $apiLogLastSync */
                 $apiLogLastSyncOpponent = $this->getDoctrine()
                     ->getRepository(ApiAccessLog::class)
                     ->findOneBy(["patient" => $opponent, "entity" => $challengeFriends->getCriteria()]);
-
-                $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = $apiLogLastSyncUser->getLastRetrieved()->format("Y-m-d H:i:s");
-                $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = $apiLogLastSyncOpponent->getLastRetrieved()->format("Y-m-d H:i:s");
+                if (!is_null($apiLogLastSyncOpponent)) {
+                    $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = $apiLogLastSyncOpponent->getLastRetrieved()->format("Y-m-d H:i:s");
+                } else {
+                    $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = "0000-00-00 00:00:00";
+                }
             }
         }
 
