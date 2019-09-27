@@ -92,14 +92,21 @@ class QueueSyncFitbit extends Command
                                 if ($apiAccessLog->getLastRetrieved()->format("U") < strtotime("-6 hour")) {
                                     AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' Refreshing ' . $patientSetting . ' for ' . $patientCredential->getPatient()->getUsername());
 
+                                    $entityManager = $this->doctrine->getManager();
                                     $serviceSyncQueue = new SyncQueue();
                                     $serviceSyncQueue->setService($service);
                                     $serviceSyncQueue->setDatetime(new \DateTime());
                                     $serviceSyncQueue->setCredentials($patientCredential);
                                     $serviceSyncQueue->setEndpoint("TrackingDevice::" . $patientSetting);
-
-                                    $entityManager = $this->doctrine->getManager();
                                     $entityManager->persist($serviceSyncQueue);
+
+                                    $subscriptionSyncQueue = new SyncQueue();
+                                    $subscriptionSyncQueue->setService($service);
+                                    $subscriptionSyncQueue->setDatetime(new \DateTime());
+                                    $subscriptionSyncQueue->setCredentials($patientCredential);
+                                    $subscriptionSyncQueue->setEndpoint("subscriptions");
+                                    $entityManager->persist($subscriptionSyncQueue);
+
                                     $entityManager->flush();
                                 }
                             }
