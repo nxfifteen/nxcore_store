@@ -12,6 +12,7 @@ class Constants extends Transform
 
     const FITBITEPBODYWEIGHT = "TrackingDevice::BodyWeight";
     const FITBITHEPDAILYSTEPS = "TrackingDevice::FitStepsDailySummary";
+    const FITBITHEPPERIODSTEPS = "TrackingDevice::FitStepsPeriodSummary";
 
     public static function getPath(string $endpoint)
     {
@@ -22,6 +23,10 @@ class Constants extends Transform
 
             case 'FitStepsDailySummary':
                 $path = '/activities/date/{date}';
+                break;
+
+            case 'FitStepsPeriodSummary':
+                $path = '/activities/steps/date/{date}/{period}';
                 break;
 
             case 'PatientGoals':

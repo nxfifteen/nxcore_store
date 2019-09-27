@@ -2,6 +2,7 @@
 
 namespace App\Transform\Fitbit;
 
+use App\AppConstants;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;

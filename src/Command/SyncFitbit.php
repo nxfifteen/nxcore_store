@@ -277,6 +277,7 @@ class SyncFitbit extends Command
 
         if ($requestedEndpoint != "BodyWeight" &&
             $requestedEndpoint != "FitStepsDailySummary" &&
+            $requestedEndpoint != "FitStepsPeriodSummary" &&
             $requestedEndpoint != "PatientGoals" &&
             $requestedEndpoint != "TrackingDevice") {
             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Unsupported EndPoint - ' . $path);
@@ -286,6 +287,7 @@ class SyncFitbit extends Command
                 $response = $this->getLibrary()->getParsedResponse($request);
 
                 $responseObject = json_decode(json_encode($response), FALSE);
+                //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseObject, true));
 
                 return $responseObject;
             } catch (IdentityProviderException $e) {
@@ -324,7 +326,7 @@ class SyncFitbit extends Command
             $path = str_replace("{period}", $syncPeriod, $path);
         }
 
-//        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Path = ' . $path);
+        // AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Path = ' . $path);
 
         return $path;
     }

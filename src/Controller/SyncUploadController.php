@@ -84,7 +84,11 @@ class SyncUploadController extends AbstractController
                 $serviceSyncQueue->setService($serviceObject);
                 $serviceSyncQueue->setDatetime(new \DateTime());
                 $serviceSyncQueue->setCredentials($patientCredential);
-                $serviceSyncQueue->setEndpoint(join("::", $queueEndpoints));
+                if (is_array($queueEndpoints)) {
+                    $serviceSyncQueue->setEndpoint(join("::", $queueEndpoints));
+                } else {
+                    $serviceSyncQueue->setEndpoint($queueEndpoints);
+                }
 
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($serviceSyncQueue);
