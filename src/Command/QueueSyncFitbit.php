@@ -9,6 +9,7 @@
 namespace App\Command;
 
 use App\AppConstants;
+use App\Entity\ApiAccessLog;
 use App\Entity\PatientCredentials;
 use App\Entity\PatientSettings;
 use App\Entity\SyncQueue;
@@ -69,7 +70,7 @@ class QueueSyncFitbit extends Command
                     ->getRepository(SyncQueue::class)
                     ->findBy(['service' => $service, 'credentials' => $patientCredential]);
                 if ($serviceSyncQueues) {
-                    AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUsername() . ' already has steps in the queue');
+                    AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . $patientCredential->getPatient()->getUsername() . ' already has steps in the queue');
                 } else {
                     /** @var PatientSettings $patientSettings */
                     $patientSettings = $this->doctrine
@@ -80,18 +81,29 @@ class QueueSyncFitbit extends Command
                             'name' => 'enabledEndpoints',
                         ]);
 
-                    if (!$patientSettings) {
-                        AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . 'No supported end points');
-                    } else {
-                        $serviceSyncQueue = new SyncQueue();
-                        $serviceSyncQueue->setService($service);
-                        $serviceSyncQueue->setDatetime(new \DateTime());
-                        $serviceSyncQueue->setCredentials($patientCredential);
-                        $serviceSyncQueue->setEndpoint(join("::", $patientSettings->getValue()));
+                    if ($patientSettings) {
+                        foreach ($patientSettings->getValue() as $patientSetting) {
+                            /** @var ApiAccessLog $patient */
+                            $apiAccessLog = $this->doctrine
+                                ->getRepository(ApiAccessLog::class)
+                                ->findLastAccess($patientCredential->getPatient(), $patientCredential->getService(), $patientSetting);
 
-                        $entityManager = $this->doctrine->getManager();
-                        $entityManager->persist($serviceSyncQueue);
-                        $entityManager->flush();
+                            if (!is_null($apiAccessLog)) {
+                                if ($apiAccessLog->getLastRetrieved()->format("U") < strtotime("-6 hour")) {
+                                    AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' Refreshing ' . $patientSetting . ' for ' . $patientCredential->getPatient()->getUsername());
+
+                                    $serviceSyncQueue = new SyncQueue();
+                                    $serviceSyncQueue->setService($service);
+                                    $serviceSyncQueue->setDatetime(new \DateTime());
+                                    $serviceSyncQueue->setCredentials($patientCredential);
+                                    $serviceSyncQueue->setEndpoint("TrackingDevice::" . $patientSetting);
+
+                                    $entityManager = $this->doctrine->getManager();
+                                    $entityManager->persist($serviceSyncQueue);
+                                    $entityManager->flush();
+                                }
+                            }
+                        }
                     }
                 }
             }
