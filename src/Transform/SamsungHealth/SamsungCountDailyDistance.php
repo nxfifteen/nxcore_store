@@ -84,7 +84,7 @@ class SamsungCountDailyDistance extends Constants
                         $patient,
                         $dataEntry->getDateTime(),
                         "Distance Target Achieved",
-                        0.143,
+                        5,
                         "trg_distance_achieved",
                         "Reached your distance goal today",
                         "Today you did it! Walked the full way"

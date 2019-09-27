@@ -976,6 +976,7 @@ class UxFeedController extends AbstractController
             $return['xp_log'][] = [
                 "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
                 "log" => $rpgXP->getReason(),
+                "value" => $rpgXP->getValue(),
             ];
         }
         $return['xp_log'] = array_reverse($return['xp_log']);

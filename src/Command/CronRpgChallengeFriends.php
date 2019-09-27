@@ -195,7 +195,7 @@ class CronRpgChallengeFriends extends Command
             AppConstants::awardPatientXP(
                 $this->doctrine,
                 $challenge->getChallenger(),
-                20,
+                10,
                 "A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
@@ -205,7 +205,7 @@ class CronRpgChallengeFriends extends Command
             AppConstants::awardPatientXP(
                 $this->doctrine,
                 $challenge->getChallenged(),
-                20,
+                10,
                 "A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
@@ -215,14 +215,14 @@ class CronRpgChallengeFriends extends Command
             AppConstants::awardPatientXP(
                 $this->doctrine,
                 $challenge->getChallenged(),
-                10,
+                5,
                 "It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
             AppConstants::awardPatientXP(
                 $this->doctrine,
                 $challenge->getChallenger(),
-                10,
+                5,
                 "It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
@@ -241,7 +241,7 @@ class CronRpgChallengeFriends extends Command
             $patient,
             new \DateTime(),
             "PVP 1:1 Challenge",
-            70,
+            30,
             "pve_1_1_winner",
             "You won the challenge",
             "They didn't stand a chance against you!"

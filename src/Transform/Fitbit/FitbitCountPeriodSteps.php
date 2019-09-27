@@ -107,7 +107,7 @@ class FitbitCountPeriodSteps extends Constants
                             $patient,
                             $dataEntry->getDateTime(),
                             "Step Target Achieved",
-                            0.143,
+                            5,
                             "trg_steps_achieved",
                             "Reached your step goal today",
                             "Today you did it! You reached your step goal"
@@ -120,7 +120,7 @@ class FitbitCountPeriodSteps extends Constants
                                 $patient,
                                 $dataEntry->getDateTime(),
                                 "Step Target Smashed",
-                                0.143,
+                                10,
                                 "trg_steps_smashed",
                                 "You walked twice your step goal",
                                 "Wow! I mean, WOW! You walked twice your step goal today"

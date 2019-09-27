@@ -446,7 +446,7 @@ class Patient implements UserInterface
     public function getRpgLevel()
     {
         $totalXp = $this->getXpTotal();
-        return intval(explode(".", ( $totalXp / 50 ))[0]);
+        return intval(explode(".", ( $totalXp / 100 ))[0]);
     }
 
     public function getFirstRun(): ?bool
