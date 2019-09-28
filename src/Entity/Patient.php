@@ -136,6 +136,11 @@ class Patient implements UserInterface
      */
     private $settings;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $gender;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -720,5 +725,41 @@ class Patient implements UserInterface
         }
 
         return $this;
+    }
+
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?string $gender): self
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function getPronoun()
+    {
+        switch ($this->gender) {
+            case "male":
+                return "he";
+            case "female":
+                return "she";
+            default:
+                return "they";
+        }
+    }
+
+    public function getPronounAlt()
+    {
+        switch ($this->gender) {
+            case "male":
+                return "him";
+            case "female":
+                return "her";
+            default:
+                return "them";
+        }
     }
 }
