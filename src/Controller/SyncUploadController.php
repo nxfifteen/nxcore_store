@@ -75,26 +75,34 @@ class SyncUploadController extends AbstractController
                 AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - No patient with this ID ' . $item->subscriptionId);
             } else {
                 $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
+                if (is_array($queueEndpoints)) {
+                    $queueEndpoints = join("::", $queueEndpoints);
+                }
 
                 $patientCredential = $this->getDoctrine()
                     ->getRepository(PatientCredentials::class)
                     ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
 
-                $serviceSyncQueue = new SyncQueue();
-                $serviceSyncQueue->setService($serviceObject);
-                $serviceSyncQueue->setDatetime(new \DateTime());
-                $serviceSyncQueue->setCredentials($patientCredential);
-                if (is_array($queueEndpoints)) {
-                    $serviceSyncQueue->setEndpoint(join("::", $queueEndpoints));
-                } else {
+                $serviceSyncQueue = $this->getDoctrine()
+                    ->getRepository(SyncQueue::class)
+                    ->findOneBy(['credentials' => $patientCredential, 'service' => $serviceObject, 'endpoint' => $queueEndpoints]);
+
+                if (!$serviceSyncQueue) {
+                    $serviceSyncQueue = new SyncQueue();
+                    $serviceSyncQueue->setService($serviceObject);
+                    $serviceSyncQueue->setDatetime(new \DateTime());
+                    $serviceSyncQueue->setCredentials($patientCredential);
                     $serviceSyncQueue->setEndpoint($queueEndpoints);
+
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $entityManager->persist($serviceSyncQueue);
+                    $entityManager->flush();
+
+                    AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
+                } else {
+                    AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName() . ' -- But already queued');
                 }
 
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($serviceSyncQueue);
-                $entityManager->flush();
-
-                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
             }
 
         }
