@@ -37,15 +37,31 @@ class CronRpgChallengeFriends extends Command
     private $doctrine;
 
     /**
+     * @var \Swift_Mailer
+     */
+    private $mailer;
+
+    /**
+     * @var \Twig\Environment
+     */
+    private $twig;
+
+    /**
      * @required
      *
-     * @param ManagerRegistry $doctrine
+     * @param ManagerRegistry   $doctrine
+     * @param \Swift_Mailer     $mailer
+     * @param \Twig\Environment $twig
      */
     public function dependencyInjection(
-        ManagerRegistry $doctrine
+        ManagerRegistry $doctrine,
+        \Swift_Mailer $mailer,
+        \Twig\Environment $twig
     ): void
     {
         $this->doctrine = $doctrine;
+        $this->mailer = $mailer;
+        $this->twig = $twig;
     }
 
     /**
@@ -173,6 +189,52 @@ class CronRpgChallengeFriends extends Command
             $challenge->setOutcome(6);
             $this->awardWinnerCreditTo($challenge->getChallenger());
             $this->awardWinnerCreditTo($challenge->getChallenged());
+
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [
+                    $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()
+                ],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'drawwin',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [
+                    $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()
+                ],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'drawwin',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+
         } else if (
             ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
             ($challenge->getChallengedSum() < $challenge->getTarget()) &&
@@ -181,6 +243,49 @@ class CronRpgChallengeFriends extends Command
             $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
             $challenge->setOutcome(5);
             $this->awardWinnerCreditTo($challenge->getChallenger());
+
+            // Email the winner
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'won',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+            // Email the loser
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header5.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'lost',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
         } else if (
             ($challenge->getChallengerSum() < $challenge->getTarget()) &&
             ($challenge->getChallengedSum() >= $challenge->getTarget()) &&
@@ -189,6 +294,49 @@ class CronRpgChallengeFriends extends Command
             $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());
             $challenge->setOutcome(4);
             $this->awardWinnerCreditTo($challenge->getChallenged());
+
+            // Email the winner
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'won',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+            // Email the loser
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header5.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'lost',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
         } else if ($challenge->getChallengerSum() > $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
             $challenge->setOutcome(3);
@@ -198,6 +346,50 @@ class CronRpgChallengeFriends extends Command
                 10,
                 "A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
                 new \DateTime()
+            );
+
+            // Email the winner
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header8.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'moral',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+
+            // Email the loser
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header5.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'lost',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
             );
         } else if ($challenge->getChallengerSum() < $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
@@ -209,6 +401,51 @@ class CronRpgChallengeFriends extends Command
                 "A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
+
+            // Email the winner
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header8.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'moral',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+
+            // Email the loser
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header5.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'lost',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+
         } else if ($challenge->getChallengerSum() == $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget());
             $challenge->setOutcome(1);
@@ -225,6 +462,50 @@ class CronRpgChallengeFriends extends Command
                 5,
                 "It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget(),
                 new \DateTime()
+            );
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [
+                    $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()
+                ],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header7.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'draw',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
+            );
+            AppConstants::sendUserEmail($this->twig, $this->mailer,
+                [
+                    $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()
+                ],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header7.png',
+                    'store_domain' => $_ENV['INSTALL_URL'],
+                    'ui_domain' => $_ENV['UI_URL'],
+                    'asset_domain' => $_ENV['ASSET_URL'],
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'draw',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges'
+                ]
             );
         } else {
             $this->log("(" . $challenge->getId() . ") We should never get here in a challenge? I really don't know what happened");
@@ -246,6 +527,18 @@ class CronRpgChallengeFriends extends Command
             "You won the challenge",
             "They didn't stand a chance against you!"
         );
+    }
+
+    private function convertCriteriaEnglish($criteria)
+    {
+        switch ($criteria) {
+            case "FitStepsDailySummary":
+                return "steps";
+                break;
+            default:
+                return $criteria;
+                break;
+        }
     }
 
 }
