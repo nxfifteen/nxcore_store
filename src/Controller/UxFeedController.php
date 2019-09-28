@@ -34,6 +34,8 @@ class UxFeedController extends AbstractController
 
     /**
      * @Route("/feed/dashboard", name="ux_aggregator")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function index()
     {
@@ -345,7 +347,7 @@ class UxFeedController extends AbstractController
      *
      * @return array
      */
-    private function getPatientFriends(bool $summarise = false)
+    private function getPatientFriends(bool $summarise = FALSE)
     {
         $returnSummary = [];
 
@@ -905,15 +907,15 @@ class UxFeedController extends AbstractController
         $return['status'] = "okay";
         $return['code'] = "200";
 
-        $return['friends'] = $this->getPatientFriends(true);
+        $return['friends'] = $this->getPatientFriends(TRUE);
         $return['criteria'] = [
-            "steps"
+            "steps",
         ];
         $return['targets'] = [
-            10000, 30000, 50000, 70000, 100000
+            10000, 30000, 50000, 70000, 100000,
         ];
         $return['durations'] = [
-            1, 2, 3, 5, 7, 10, 14, 31
+            1, 2, 3, 5, 7, 10, 14, 31,
         ];
 
         return $this->json($return);
