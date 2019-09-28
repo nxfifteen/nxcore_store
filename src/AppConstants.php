@@ -1,4 +1,5 @@
 <?php
+
 namespace App;
 
 
@@ -10,36 +11,14 @@ use App\Entity\ThirdPartyService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Swift_Mailer;
+use Swift_Message;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Twig_Environment;
 
 class AppConstants
 {
-    static function writeToLog(String $fileName, String $body) {
-        try {
-            $path = sys_get_temp_dir() . '/sync_upload_post';
-        } catch (\Exception $exception) {
-            echo $exception->getMessage();
-        }
-
-        if (!empty($path)) {
-            $file = $path . '/' . $fileName;
-
-            $fileSystem = new Filesystem();
-            try {
-                $fileSystem->mkdir($path);
-                if ($fileSystem->exists($file)) {
-                    $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
-                } else {
-                    $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
-                }
-
-            } catch (IOExceptionInterface $exception) {
-                echo "An error occurred while creating your directory at " . $exception->getPath();
-            }
-        }
-    }
-
     static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, DateTimeInterface $dateTime, string $name, float $xp, string $image, string $text, string $longtext)
     {
         $entityManager = $doctrine->getManager();
@@ -76,6 +55,32 @@ class AppConstants
         }
 
         return $patient;
+    }
+
+    static function writeToLog(String $fileName, String $body)
+    {
+        try {
+            $path = sys_get_temp_dir() . '/sync_upload_post';
+        } catch (\Exception $exception) {
+            echo $exception->getMessage();
+        }
+
+        if (!empty($path)) {
+            $file = $path . '/' . $fileName;
+
+            $fileSystem = new Filesystem();
+            try {
+                $fileSystem->mkdir($path);
+                if ($fileSystem->exists($file)) {
+                    $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                } else {
+                    $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                }
+
+            } catch (IOExceptionInterface $exception) {
+                echo "An error occurred while creating your directory at " . $exception->getPath();
+            }
+        }
     }
 
     static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
@@ -166,5 +171,35 @@ class AppConstants
 
             return $thirdPartyService;
         }
+    }
+
+    static function sendUserEmail(\Twig\Environment $twig, Swift_Mailer $mailer, array $setTo, string $setTemplateName, array $setTemplateVariables)
+    {
+        // Create the message
+        $message = (new Swift_Message())
+            // Add subject
+            ->setSubject($setTemplateVariables['html_title'])
+            //Put the From address
+            ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
+            // Include several To addresses
+            ->setTo($setTo)
+            ->setBody(
+                $twig->render(
+                    'emails/'.$setTemplateName.'.html.twig',
+                    $setTemplateVariables
+                ),
+                'text/html'
+            )
+            // you can remove the following code if you don't define a text version for your emails
+            ->addPart(
+                $twig->render(
+                    'emails/'.$setTemplateName.'.txt.twig',
+                    $setTemplateVariables
+                ),
+                'text/plain'
+            );
+
+
+        $mailer->send($message);
     }
 }

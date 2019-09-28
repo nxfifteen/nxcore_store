@@ -1,0 +1,1097 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--suppress ALL -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{% block title %}Welcome!{% endblock %}</title>
+
+    <style type="text/css">
+        /* /\/\/\/\/\/\/\/\/ CLIENT-SPECIFIC STYLES /\/\/\/\/\/\/\/\/ */
+        #outlook a {
+            padding: 0;
+        }
+
+        /* Force Outlook to provide a "view in browser" message */
+        .ReadMsgBody {
+            width: 100%;
+        }
+
+        .ExternalClass {
+            width: 100%;
+        }
+
+        /* Force Hotmail to display emails at full width */
+        .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {
+            line-height: 100%;
+        }
+
+        /* Force Hotmail to display normal line spacing */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        /* Prevent WebKit and Windows mobile changing default text sizes */
+        table, td {
+            mso-table-lspace: 0;
+            mso-table-rspace: 0;
+        }
+
+        /* Remove spacing between tables in Outlook 2007 and up */
+        img {
+            -ms-interpolation-mode: bicubic;
+        }
+
+        /* Allow smoother rendering of resized image in Internet Explorer */
+
+        /* /\/\/\/\/\/\/\/\/ RESET STYLES /\/\/\/\/\/\/\/\/ */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+
+        table {
+            border-collapse: collapse !important;
+        }
+
+        body, #bodyTable, #bodyCell {
+            height: 100% !important;
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+        }
+
+        /* /\/\/\/\/\/\/\/\/ TEMPLATE STYLES /\/\/\/\/\/\/\/\/ */
+
+        /* ========== Page Styles ========== */
+
+        #bodyCell {
+            padding: 20px;
+        }
+
+        #templateContainer {
+            width: 600px;
+        }
+
+        /**
+        * @tab Page
+        * @section background style
+        * @tip Set the background color and top border for your email. You may want to choose colors that match your company's branding.
+        * @theme page
+        */
+
+        #bodyTable {
+            background-color: #f1f1f1;
+            border-radius: 12px;
+        }
+
+        /**
+        * @tab Page
+        * @section background style
+        * @tip Set the background color and top border for your email. You may want to choose colors that match your company's branding.
+        * @theme page
+        */
+
+        /**
+        * @tab Page
+        * @section email border
+        * @tip Set the border for your email.
+        */
+        #templateContainer {
+
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /**
+        * @tab Page
+        * @section heading 1
+        * @tip Set the styling for all first-level headings in your emails. These should be the largest of your headings.
+        * @style heading 1
+        */
+        h1 {
+            color: #047ae2 !important;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 24px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 160%;
+            letter-spacing: normal;
+            margin-top: 0;
+            margin-right: 0;
+            margin-bottom: 10px;
+            margin-left: 0;
+            text-align: left;
+        }
+
+        .nomargin {
+            margin-bottom: 0;
+            margin-top: 0;
+        }
+
+        /**
+        * @tab Page
+        * @section heading 2
+        * @tip Set the styling for all second-level headings in your emails.
+        * @style heading 2
+        */
+        h2 {
+            color: #627484 !important;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 18px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 140%;
+            letter-spacing: normal;
+            margin-top: 0;
+            margin-right: 0;
+            margin-bottom: 10px;
+            margin-left: 0;
+            text-align: left;
+        }
+
+        h5 {
+            color: #c9498e !important;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 17px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 110%;
+            letter-spacing: normal;
+            margin-top: 0;
+            margin-right: 0;
+            margin-bottom: 8px;
+            margin-left: 0;
+            text-align: left;
+        }
+
+        .reportTitleText {
+            color: #0069c5 !important;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        /**
+        * @tab Page
+        * @section heading 3
+        * @tip Set the styling for all third-level headings in your emails.
+        * @style heading 3
+        */
+        h3 {
+            color: #627484 !important;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 160%;
+            letter-spacing: normal;
+            margin-top: 0;
+            margin-right: 0;
+            margin-bottom: 12px;
+            margin-left: 0;
+            text-align: left;
+        }
+
+        /**
+        * @tab Page
+        * @section heading 4
+        * @tip Set the styling for all fourth-level headings in your emails. These should be the smallest of your headings.
+        * @style heading 4
+        */
+        h4 {
+            color: #808080 !important;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 14px;
+            font-style: italic;
+            font-weight: normal;
+            line-height: 140%;
+            letter-spacing: normal;
+            margin-top: 0;
+            margin-right: 0;
+            margin-bottom: 10px;
+            margin-left: 0;
+            text-align: left;
+        }
+
+        p {
+            color: rgba(0, 0, 0, 0.7);
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 12px;
+            font-weight: normal;
+            line-height: 1.6;
+            letter-spacing: normal;
+            margin-top: 0;
+            margin-right: 0;
+            margin-bottom: 14px;
+            margin-left: 0;
+        }
+
+        p.small {
+            font-size: 10px;
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .extra-space {
+            margin-top: 12px !important;
+        }
+
+        #templateContainer p {
+            font-size: 14px;
+        }
+
+        /* ========== Header Styles ========== */
+
+        /**
+        * @tab Header
+        * @section preheader style
+        * @tip Set the background color and bottom border for your email's preheader area.
+        * @theme header
+        */
+        #templatePreheader {
+        }
+
+        /**
+        * @tab Header
+        * @section preheader text
+        * @tip Set the styling for your email's preheader text. Choose a size and color that is easy to read.
+        */
+        .preheaderContent {
+            color: #808080;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 10px;
+            line-height: 125%;
+            text-align: left;
+        }
+
+        /**
+        * @tab Header
+        * @section preheader link
+        * @tip Set the styling for your email's preheader links. Choose a color that helps them stand out from your text.
+        */
+        .preheaderContent a:link, .preheaderContent a:visited, /* Yahoo! Mail Override */
+        .preheaderContent a .yshortcuts /* Yahoo! Mail Override */
+        {
+            color: #606060;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+
+        /**
+        * @tab Header
+        * @section header style
+        * @tip Set the background color and borders for your email's header area.
+        * @theme header
+        */
+        #templateHeader {
+
+        }
+
+        /**
+        * @tab Header
+        * @section header text
+        * @tip Set the styling for your email's header text. Choose a size and color that is easy to read.
+        */
+        .headerContent {
+            color: #505050;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 100%;
+            padding-top: 0;
+            padding-right: 0;
+            padding-bottom: 0;
+            padding-left: 0;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        /**
+        * @tab Header
+        * @section header link
+        * @tip Set the styling for your email's header links. Choose a color that helps them stand out from your text.
+        */
+        .headerContent a:link, .headerContent a:visited, /* Yahoo! Mail Override */
+        .headerContent a .yshortcuts /* Yahoo! Mail Override */
+        {
+            color: #EB4102;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+
+        #headerImage {
+            height: auto;
+            border-radius: 8px 8px 0 0;
+            max-width: 600px;
+        }
+
+        /* ========== Body Styles ========== */
+
+        /**
+        * @tab Body
+        * @section body style
+        * @tip Set the background color and borders for your email's body area.
+        */
+
+        .bigButton {
+            background: #056bca;
+            border-radius: 6px;
+            display: inline-block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            color: #fff !important;
+            padding: 12px 16px;
+            font-size: 15px;
+            line-height: 18px;
+            margin-bottom: 12px;
+            margin-right: 8px;
+            text-decoration: none !important;
+        }
+
+        .bigButton.grey {
+            background: #8ea0b1;
+        }
+
+        .bigButton.full {
+            background: #0f7add;
+            border: 1px solid #0a6ac3;
+            display: block;
+            text-align: center;
+            padding: 16px 24px;
+        }
+
+        .button {
+            background: #8ea0b1;
+            border-radius: 6px;
+            color: #fff !important;
+            display: inline-block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 13px;
+            padding: 8px 12px;
+            line-height: 16px;
+            margin-right: 8px;
+            margin-bottom: 12px;
+            text-decoration: none !important;
+        }
+
+        .blue.button {
+            background: #056bca;
+        }
+
+        /**
+        * @tab Body
+        * @section body text
+        * @tip Set the styling for your email's main content text. Choose a size and color that is easy to read.
+        * @theme main
+        */
+        .bodyContent {
+            color: #505050;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 16px;
+            line-height: 150%;
+            padding-top: 16px;
+            padding-right: 16px;
+            padding-bottom: 16px;
+            padding-left: 24px;
+            text-align: left;
+        }
+
+        /**
+        * @tab Body
+        * @section body link
+        * @tip Set the styling for your email's main content links. Choose a color that helps them stand out from your text.
+        */
+        .bodyContent a:link, .bodyContent a:visited, /* Yahoo! Mail Override */
+        .bodyContent a .yshortcuts /* Yahoo! Mail Override */
+        {
+            color: #175eff;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+
+        .bodyContent img {
+            display: inline;
+            height: auto;
+            max-width: 560px;
+        }
+
+        /**
+        * @tab Columns
+        * @section column style
+        * @tip Set the background color and borders for your email's column area.
+        */
+        #templateColumns {
+        }
+
+        /**
+        * @tab Columns
+        * @section left column text
+        * @tip Set the styling for your email's left column content text. Choose a size and color that is easy to read.
+        */
+        .leftColumnContent {
+            color: #505050;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 14px;
+            line-height: 150%;
+            padding-top: 0;
+            padding-right: 20px;
+            padding-bottom: 10px;
+            padding-left: 20px;
+            text-align: left;
+        }
+
+        /**
+        * @tab Columns
+        * @section left column link
+        * @tip Set the styling for your email's left column content links. Choose a color that helps them stand out from your text.
+        */
+        .leftColumnContent a:link, .leftColumnContent a:visited, /* Yahoo! Mail Override */
+        .leftColumnContent a .yshortcuts /* Yahoo! Mail Override */
+        {
+            color: #175eff;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+
+        /**
+        * @tab Columns
+        * @section center column text
+        * @tip Set the styling for your email's center column content text. Choose a size and color that is easy to read.
+        */
+        .centerColumnContent {
+            color: #505050;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 14px;
+            line-height: 150%;
+            padding-top: 0;
+            padding-right: 20px;
+            padding-bottom: 10px;
+            padding-left: 20px;
+            text-align: left;
+        }
+
+        /**
+        * @tab Columns
+        * @section center column link
+        * @tip Set the styling for your email's center column content links. Choose a color that helps them stand out from your text.
+        */
+        .centerColumnContent a:link, .centerColumnContent a:visited, /* Yahoo! Mail Override */
+        .centerColumnContent a .yshortcuts /* Yahoo! Mail Override */
+        {
+            color: #175eff;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+
+        /**
+        * @tab Columns
+        * @section right column text
+        * @tip Set the styling for your email's right column content text. Choose a size and color that is easy to read.
+        */
+        .rightColumnContent {
+            color: #505050;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 14px;
+            line-height: 150%;
+            padding-top: 0;
+            padding-right: 20px;
+            padding-bottom: 10px;
+            padding-left: 20px;
+            text-align: left;
+        }
+
+        /**
+        * @tab Columns
+        * @section right column link
+        * @tip Set the styling for your email's right column content links. Choose a color that helps them stand out from your text.
+        */
+        .rightColumnContent a:link, .rightColumnContent a:visited, /* Yahoo! Mail Override */
+        .rightColumnContent a .yshortcuts /* Yahoo! Mail Override */
+        {
+            color: #175eff;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+
+        .leftColumnContent img, .rightColumnContent img {
+            display: inline;
+            height: auto;
+            max-width: 260px;
+        }
+
+        .columnImage {
+            border-radius: 8px !important;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .topBorder {
+            border-top: 1px solid #f1f1f1;
+        }
+
+        /*////// FRAMEWORK STYLES //////*/
+        .flexibleContainerCell {
+            border-top: 1px solid #f1f1f1;
+        }
+
+        .flexibleContainerCell {
+            padding-top: 24px;
+            padding-right: 12px;
+            padding-left: 12px;
+        }
+
+        .flexibleImage {
+            border-radius: 8px;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+            height: auto;
+        }
+
+        .bottomShim {
+            padding-bottom: 16px;
+        }
+
+        .imageContent, .imageContentLast {
+            padding-bottom: 12px;
+        }
+
+        .nestedContainerCell {
+            padding-top: 12px;
+            padding-right: 12px;
+            padding-left: 12px;
+        }
+
+        /** ========= WEEKLY REPORT ======= */
+
+        .reportTitleSubtitleArea {
+            background: #f2f7f8;
+            border-radius: 8px;
+            padding: 8px;
+            padding-left: 16px;
+        }
+
+        .reportTitleSubtitle {
+            color: #455;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 140%;
+            letter-spacing: normal;
+            margin: 0;
+            padding: 0;
+        }
+
+        .delta {
+            color: #aaa;
+            /*font-weight: 400;*/
+            font-size: 90%;
+            margin-left: 1px;
+            letter-spacing: 0;
+        }
+
+        .delta.green {
+            color: #63ba38;
+        }
+
+        .delta.red {
+            color: #ee467d;
+        }
+
+        /* GRAPH */
+
+        .weekReportWrap {
+            padding-left: 64px;
+            padding-right: 24px;
+            padding-right: 10%;
+
+            margin-bottom: 2px;
+            padding-top: 20px;
+            padding-bottom: 8px;
+        }
+
+        .weekReportWrapTight {
+            padding-left: 48px;
+            padding-right: 4%;
+            margin-bottom: 8px;
+        }
+
+        .weekReportTable {
+            table-layout: fixed;
+        }
+
+        .weekReportBar {
+            padding: 3px;
+            width: 14.2%;
+        }
+
+        .weekReportBarFill {
+            background: green;
+            border-radius: 8px;
+            color: #fff;
+            text-align: center;
+            margin-left: 4px;
+        }
+
+        .weekReportBarFill.below {
+            margin-top: -6px;
+        }
+
+        .weekReportBarFill.red {
+            background: #e13036;
+        }
+
+        .weekReportBarMissing {
+            background: #eee;
+            border-radius: 8px;
+            height: 24px;
+        }
+
+        .missing-text {
+            color: #555;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding-top: 6px;
+            text-align: center;
+        }
+
+        .stepcount {
+            color: #333;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 10.5px;
+            font-weight: 600;
+            line-height: 90%;
+            margin: 0;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .stepcount-negative {
+            color: #bb737e;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 90%;
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        .weekReportDayLabelText {
+            color: #888;
+            display: block;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+            margin-top: 2px;
+            text-align: center;
+            text-transform: uppercase;
+
+            width: auto;
+        }
+
+        .weekReportDayLabelText .delta {
+            display: block;
+            text-align: center;
+        }
+
+        /* ========== Footer Styles ========== */
+
+        /**
+        * @tab Footer
+        * @section footer style
+        * @tip Set the background color and borders for your email's footer area.
+        * @theme footer
+        */
+        #templateFooter {
+            max-width: 600px;
+            margin: 8px auto 16px auto;
+            padding-bottom: 32px;
+        }
+
+        #templateFooter p {
+            color: rgba(0, 0, 0, 0.5);
+            margin-right: 0;
+            margin-top: 4px !important;
+            margin-bottom: 4px !important;
+        }
+
+        #templateFooter p.bigfooter {
+            color: rgba(0, 0, 0, 0.75);
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 14px !important
+        }
+
+        #templateFooter .bigfooter a {
+            color: #2564aa;
+            font-weight: 500;
+        }
+
+        #templateFooter p a {
+            color: rgba(0, 0, 0, 0.66);
+        }
+
+        /**
+        * @tab Footer
+        * @section footer text
+        * @tip Set the styling for your email's footer text. Choose a size and color that is easy to read.
+        * @theme footer
+        */
+        .footerContent {
+            color: #999;
+            font-family: -apple-system-headline, -apple-system, "Helvetica Neue", Helvetica, Arial, verdana, sans-serif;
+            font-size: 11px;
+            font-weight: 400;
+            line-height: 120%;
+            padding-top: 16px;
+            padding-right: 20px;
+            /*padding-bottom:20px;*/
+            padding-left: 24px;
+            text-align: left;
+        }
+
+        /**
+        * @tab Footer
+        * @section footer link
+        * @tip Set the styling for your email's footer links. Choose a color that helps them stand out from your text.
+        */
+        .footerContent a:link, .footerContent a:visited, /* Yahoo! Mail Override */
+        .footerContent a .yshortcuts, .footerContent a span /* Yahoo! Mail Override */
+        {
+            color: #777;
+            font-weight: normal;
+            text-decoration: none;
+        }
+
+        /* /\/\/\/\/\/\/\/\/ MOBILE STYLES /\/\/\/\/\/\/\/\/ */
+
+        @media only screen and (max-width: 480px) {
+            /* /\/\/\/\/\/\/ CLIENT-SPECIFIC MOBILE STYLES /\/\/\/\/\/\/ */
+            body, table, td, p, a, li, blockquote {
+                -webkit-text-size-adjust: none !important;
+            }
+
+            /* Prevent Webkit platforms from changing default text sizes */
+            body {
+                width: 100% !important;
+                min-width: 100% !important;
+            }
+
+            /* Prevent iOS Mail from adding padding to the body */
+            /* /\/\/\/\/\/\/ MOBILE RESET STYLES /\/\/\/\/\/\/ */
+            #bodyCell {
+                padding: 10px !important;
+            }
+
+            /* /\/\/\/\/\/\/ MOBILE TEMPLATE STYLES /\/\/\/\/\/\/ */
+            /* ======== Page Styles ======== */
+            /**
+            * @tab Mobile Styles
+            * @section template width
+            * @tip Make the template fluid for portrait or landscape view adaptability. If a fluid layout doesn't work for you, set the width to 300px instead.
+            */
+            #templateContainer {
+                max-width: 600px !important;
+                width: 100% !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section heading 1
+            * @tip Make the first-level headings larger in size for better readability on small screens.
+            */
+            h1 {
+                font-size: 24px !important;
+                line-height: 100% !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section heading 2
+            * @tip Make the second-level headings larger in size for better readability on small screens.
+            */
+            h2 {
+                font-size: 20px !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section heading 3
+            * @tip Make the third-level headings larger in size for better readability on small screens.
+            */
+            h3 {
+                font-size: 18px !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section heading 4
+            * @tip Make the fourth-level headings larger in size for better readability on small screens.
+            */
+            h4 {
+                font-size: 15px !important;
+            }
+
+            h5 {
+                font-size: 14px !important;
+            }
+
+            .weekReportWrapTight {
+                padding-left: 8px;
+            }
+
+            /* ======== Header Styles ======== */
+            #templatePreheader {
+                display: none !important;
+            }
+
+            /* Hide the template preheader to save space */
+            /**
+            * @tab Mobile Styles
+            * @section header image
+            * @tip Make the main header image fluid for portrait or landscape view adaptability, and set the image's original width as the max-width. If a fluid setting doesn't work, set the image width to half its original size instead.
+            */
+            #headerImage {
+                height: auto !important;
+                max-width: 600px !important;
+                width: 100% !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section header text
+            * @tip Make the header content text larger in size for better readability on small screens. We recommend a font size of at least 16px.
+            */
+            .headerContent {
+                font-size: 20px !important;
+                line-height: 125% !important;
+            }
+
+            /* ======== Body Styles ======== */
+            /**
+            * @tab Mobile Styles
+            * @section body image
+            * @tip Make the main body image fluid for portrait or landscape view adaptability, and set the image's original width as the max-width. If a fluid setting doesn't work, set the image width to half its original size instead.
+            */
+            #bodyImage {
+                height: auto !important;
+                max-width: 560px !important;
+                width: 100% !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section body text
+            * @tip Make the body content text larger in size for better readability on small screens. We recommend a font size of at least 16px.
+            */
+            .bodyContent {
+                font-size: 18px !important;
+                line-height: 125% !important;
+            }
+
+            /* ======== Column Styles ======== */
+            .templateColumnContainer {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section column image
+            * @tip Make the column image fluid for portrait or landscape view adaptability, and set the image's original width as the max-width. If a fluid setting doesn't work, set the image width to half its original size instead.
+            */
+            .columnImage {
+                display: block;
+                height: auto !important;
+                max-width: 320px !important;
+                width: 100% !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section left column text
+            * @tip Make the left column content text larger in size for better readability on small screens. We recommend a font size of at least 16px.
+            */
+            .leftColumnContent {
+                font-size: 16px !important;
+                line-height: 125% !important;
+            }
+
+            /**
+            * @tab Mobile Styles
+            * @section right column text
+            * @tip Make the right column content text larger in size for better readability on small screens. We recommend a font size of at least 16px.
+            */
+            .rightColumnContent {
+                font-size: 16px !important;
+                line-height: 125% !important;
+            }
+
+            /* ======== Footer Styles ======== */
+            /**
+            * @tab Mobile Styles
+            * @section footer text
+            * @tip Make the body content text larger in size for better readability on small screens.
+            */
+            .footerContent {
+            }
+
+            /*////// FRAMEWORK STYLES //////*/
+            /*
+                CSS selectors are written in attribute
+                selector format to prevent Yahoo Mail
+                from rendering media query styles on
+                desktop.
+            */
+            table[id="emailBody"], table[class="flexibleContainer"] {
+                width: 100% !important;
+            }
+
+            /*
+                The following style rule makes any
+                image classed with 'flexibleImage'
+                fluid when the query activates.
+                Make sure you add an inline max-width
+                to those images to prevent them
+                from blowing out.
+            */
+            img[class="flexibleImage"] {
+                height: auto !important;
+                width: 100% !important;
+            }
+
+            /*
+                Make buttons in the email span the
+                full width of their container, allowing
+                for left- or right-handed ease of use.
+            */
+            table[class="emailButton"] {
+                width: 100% !important;
+            }
+
+            td[class="buttonContent"] {
+                padding: 0 !important;
+            }
+
+            td[class="buttonContent"] a {
+                padding: 15px !important;
+            }
+
+            td[class="textContentLast"], td[class="imageContentLast"] {
+                padding-top: 20px !important;
+            }
+
+            /*////// GENERAL STYLES //////*/
+            td[id="bodyCell"] {
+                padding-top: 10px !important;
+                padding-Right: 10px !important;
+                padding-Left: 10px !important;
+            }
+
+        }
+    </style>
+</head>
+<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"
+      style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;margin: 0;padding: 0;height: 100% !important;width: 100% !important;">
+<center>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" id="bodyTable"
+           style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;margin: 0;padding: 0;background-color: #f1f1f1;border-radius: 12px;border-collapse: collapse !important;height: 100% !important;width: 100% !important;">
+        <tr>
+            <td align="center" valign="top" id="bodyCell"
+                style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;margin: 0;padding: 20px;height: 100% !important;width: 100% !important;">
+
+                <table border="0" cellpadding="0" cellspacing="0" id="templateContainer"
+                       style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;width: 600px;background: #fff;border-radius: 12px;box-shadow: 1px 1px 8px rgba(0,0,0,0.15);border-collapse: collapse !important;">
+
+                    <tr>
+                        <td align="center" valign="top"
+                            style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;">
+                            <!-- BEGIN HEADER // -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateHeader"
+                                   style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;border-collapse: collapse !important;">
+                                <tr>
+                                    <td valign="top" class="headerContent"
+                                        style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;color: #505050;font-family: -apple-system-headline, -apple-system,'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 20px;font-weight: bold;line-height: 100%;padding: 0;text-align: left;vertical-align: middle;">
+                                        <a href="{{ ui_domain }}"
+                                           style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: #EB4102;font-weight: normal;text-decoration: underline;">
+                                            <img src="{{ asset_domain }}/images/email/{{ header_image }}"
+                                                 style="max-width: 600px;-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;border-radius: 8px 8px 0 0;"
+                                                 id="headerImage">
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- // END HEADER -->
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" valign="top">
+                            {% block body %}{% endblock %}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" valign="bottom">
+                            <p style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: rgba(0,0,0,0.5);display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 12px;
+		 font-weight:normal;line-height: 1.6;letter-spacing: normal;margin-top: 4px !important;margin-right: 0;margin-bottom: 4px !important;margin-left: 0;">
+                                You are receiving this email because you have agreed to be part of Cores' Private Alpha test.</p>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+
+        <tr>
+            <td align="center" valign="top" class="footer"
+                style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+
+                <!-- BEGIN FOOTER // -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateFooter"
+                       style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;max-width: 600px;margin: 8px auto 16px auto;padding-bottom: 32px;border-collapse: collapse !important;">
+
+                    <tr align="center">
+                        <td align="center" valign="top" class="footerContent"
+                            style="padding-top: 16px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;color: #999;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 11px;font-weight: 400;line-height: 120%;padding-right: 20px;padding-left: 24px;text-align: left;">
+
+                            <!-- Footer CONTENTS -->
+                            <p style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: rgba(0,0,0,0.5);display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 12px;
+		 font-weight:normal;line-height: 1.6;letter-spacing: normal;margin-top: 4px !important;margin-right: 0;margin-bottom: 4px !important;margin-left: 0;">
+                                By the time we get to the Private Beta test stage Core will have all the email preferences and notification controls you would expect.</p>
+                            <p style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: rgba(0,0,0,0.5);display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 12px;
+		 font-weight:normal;line-height: 1.6;letter-spacing: normal;margin-top: 4px !important;margin-right: 0;margin-bottom: 4px !important;margin-left: 0;">
+                                In the mean time, if you wish to stop getting these email, please let me know.</p>
+
+                        </td>
+                    </tr>
+
+                </table>
+                <!-- // END FOOTER -->
+            </td>
+        </tr>
+
+    </table>
+
+</center>
+</body>
+</html>
