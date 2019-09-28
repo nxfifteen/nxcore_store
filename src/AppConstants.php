@@ -181,8 +181,6 @@ class AppConstants
             ->setSubject($setTemplateVariables['html_title'])
             //Put the From address
             ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
-            // Include several To addresses
-            ->setTo($setTo)
             ->setBody(
                 $twig->render(
                     'emails/'.$setTemplateName.'.html.twig',
@@ -199,6 +197,15 @@ class AppConstants
                 'text/plain'
             );
 
+        if (count($setTo) > 1) {
+            // Include several To addresses
+            $message->setTo([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']]);
+            // Include several To addresses
+            $message->setBcc($setTo);
+        } else {
+            // Include several To addresses
+            $message->setTo($setTo);
+        }
 
         $mailer->send($message);
     }
