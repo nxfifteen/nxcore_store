@@ -11,6 +11,7 @@ use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
 use App\Entity\RpgMilestones;
+use App\Service\AwardManager;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -35,9 +36,11 @@ class UxFeedController extends AbstractController
     /**
      * @Route("/feed/dashboard", name="ux_aggregator")
      *
+     * @param AwardManager $awardManager
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function index()
+    public function index(AwardManager $awardManager)
     {
         $return = [];
 
@@ -62,6 +65,8 @@ class UxFeedController extends AbstractController
         $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
         $return['awards'] = $this->getPatientAwards();
         $return['weight'] = $this->getPatientWeight();
+
+        $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new \DateTime(date("Y-m-d 00:00:00")));
 
         return $this->json($return);
     }

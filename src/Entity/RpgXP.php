@@ -17,7 +17,7 @@ class RpgXP
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="xp")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="xp", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $patient;

@@ -11,6 +11,7 @@ use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use PhpParser\Node\Expr\Array_;
 
@@ -20,9 +21,11 @@ class SamsungExercise extends Constants
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return Exercise|null
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));

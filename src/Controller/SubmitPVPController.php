@@ -5,11 +5,15 @@ namespace App\Controller;
 use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sentry;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 class SubmitPVPController extends AbstractController
 {
@@ -18,15 +22,14 @@ class SubmitPVPController extends AbstractController
 
     /**
      * @Route("/submit/pvp/challenge", name="submit_pvp_challenge")
-     * @param ManagerRegistry   $doctrine
-     * @param Request           $request
+     * @param ManagerRegistry $doctrine
+     * @param Request         $request
      *
-     * @param \Twig\Environment $twig
-     * @param \Swift_Mailer     $mailer
+     * @param AwardManager    $awardManager
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, \Twig\Environment $twig, \Swift_Mailer $mailer)
+    public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager)
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();
 
@@ -85,47 +88,51 @@ class SubmitPVPController extends AbstractController
         $entityManager->persist($newChallenge);
         $entityManager->flush();
 
-        AppConstants::sendUserEmail($twig, $mailer,
-            [$friend->getEmail() => $friend->getFirstName() . ' ' . $friend->getSurName()],
-            'challenge_new',
-            [
-                'html_title' => 'You\'ve just been Challenged',
-                'header_image' => 'header3.png',
-                'store_domain' => $_ENV['INSTALL_URL'],
-                'ui_domain' => $_ENV['UI_URL'],
-                'asset_domain' => $_ENV['ASSET_URL'],
-                'patients_name' => $friend->getFirstName(),
-                'relevant_date' => date("F jS, Y"),
-                'relevant_url' => '/#/rpg/challenges',
-                'challenger_name' => $this->patient->getFirstName(),
-                'challenger_pronoun' => $this->patient->getPronoun(),
-                'challenger_pronoun_two' => $this->patient->getPronounAlt(),
-                'challenger_criteria' => $this->convertCriteriaEnglish($requestJson->criteria),
-                'challenger_target' => number_format($requestJson->target),
-                'challenger_duration' => $requestJson->duration . " days",
-            ]
-        );
+        try {
+            $awardManager->sendUserEmail(
+                [$friend->getEmail() => $friend->getFirstName() . ' ' . $friend->getSurName()],
+                'challenge_new',
+                [
+                    'html_title' => 'You\'ve just been Challenged',
+                    'header_image' => 'header3.png',
+                    'patients_name' => $friend->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'relevant_url' => '/#/rpg/challenges',
+                    'challenger_name' => $this->patient->getFirstName(),
+                    'challenger_pronoun' => $this->patient->getPronoun(),
+                    'challenger_pronoun_two' => $this->patient->getPronounAlt(),
+                    'challenger_criteria' => $this->convertCriteriaEnglish($requestJson->criteria),
+                    'challenger_target' => number_format($requestJson->target),
+                    'challenger_duration' => $requestJson->duration . " days",
+                ]
+            );
+        } catch (LoaderError $e) {
+        } catch (RuntimeError $e) {
+        } catch (SyntaxError $e) {
+        }
 
-        AppConstants::sendUserEmail($twig, $mailer,
-            [$this->patient->getEmail() => $this->patient->getFirstName() . ' ' . $this->patient->getSurName()],
-            'challenge_accepted',
-            [
-                'html_title' => 'Your Challenge Was Accepted',
-                'header_image' => 'header4.png',
-                'store_domain' => $_ENV['INSTALL_URL'],
-                'ui_domain' => $_ENV['UI_URL'],
-                'asset_domain' => $_ENV['ASSET_URL'],
-                'patients_name' => $this->patient->getFirstName(),
-                'relevant_date' => date("F jS, Y"),
-                'relevant_url' => '/#/rpg/challenges',
-                'challenged_name' => $friend->getFirstName(),
-                'challenged_pronoun' => $friend->getPronoun(),
-                'challenged_pronoun_two' => $friend->getPronounAlt(),
-                'challenged_criteria' => $this->convertCriteriaEnglish($requestJson->criteria),
-                'challenged_target' => number_format($requestJson->target),
-                'challenged_duration' => $requestJson->duration . " days",
-            ]
-        );
+        try {
+            $awardManager->sendUserEmail(
+                [$this->patient->getEmail() => $this->patient->getFirstName() . ' ' . $this->patient->getSurName()],
+                'challenge_accepted',
+                [
+                    'html_title' => 'Your Challenge Was Accepted',
+                    'header_image' => 'header4.png',
+                    'patients_name' => $this->patient->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'relevant_url' => '/#/rpg/challenges',
+                    'challenged_name' => $friend->getFirstName(),
+                    'challenged_pronoun' => $friend->getPronoun(),
+                    'challenged_pronoun_two' => $friend->getPronounAlt(),
+                    'challenged_criteria' => $this->convertCriteriaEnglish($requestJson->criteria),
+                    'challenged_target' => number_format($requestJson->target),
+                    'challenged_duration' => $requestJson->duration . " days",
+                ]
+            );
+        } catch (LoaderError $e) {
+        } catch (RuntimeError $e) {
+        } catch (SyntaxError $e) {
+        }
 
         return $this->json(["status" => 200]);
     }

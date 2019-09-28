@@ -13,11 +13,15 @@ use App\Entity\ApiAccessLog;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
  * Command for sending our email messages from the database.
@@ -37,31 +41,23 @@ class CronRpgChallengeFriends extends Command
     private $doctrine;
 
     /**
-     * @var \Swift_Mailer
+     * @var AwardManager
      */
-    private $mailer;
-
-    /**
-     * @var \Twig\Environment
-     */
-    private $twig;
+    private $awardManager;
 
     /**
      * @required
      *
-     * @param ManagerRegistry   $doctrine
-     * @param \Swift_Mailer     $mailer
-     * @param \Twig\Environment $twig
+     * @param ManagerRegistry $doctrine
+     * @param AwardManager    $awardManager
      */
     public function dependencyInjection(
         ManagerRegistry $doctrine,
-        \Swift_Mailer $mailer,
-        \Twig\Environment $twig
+        AwardManager $awardManager
     ): void
     {
         $this->doctrine = $doctrine;
-        $this->mailer = $mailer;
-        $this->twig = $twig;
+        $this->awardManager = $awardManager;
     }
 
     /**
@@ -190,50 +186,54 @@ class CronRpgChallengeFriends extends Command
             $this->awardWinnerCreditTo($challenge->getChallenger());
             $this->awardWinnerCreditTo($challenge->getChallenged());
 
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [
-                    $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()
-                ],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header6.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenger()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                    'challenge_outcome' => 'drawwin',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [
-                    $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()
-                ],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header6.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenged()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                    'challenge_outcome' => 'drawwin',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [
+                        $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
+                    ],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header6.png',
+                        'patients_name' => $challenge->getChallenger()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenged()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                        'challenge_outcome' => 'drawwin',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
+            try {
+                $this->awardManager->sendUserEmail(
+                    [
+                        $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
+                    ],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header6.png',
+                        'patients_name' => $challenge->getChallenged()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenger()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                        'challenge_outcome' => 'drawwin',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
 
         } else if (
             ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
@@ -245,47 +245,51 @@ class CronRpgChallengeFriends extends Command
             $this->awardWinnerCreditTo($challenge->getChallenger());
 
             // Email the winner
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header6.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenger()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                    'challenge_outcome' => 'won',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header6.png',
+                        'patients_name' => $challenge->getChallenger()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenged()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                        'challenge_outcome' => 'won',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
             // Email the loser
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header5.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenger()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                    'challenge_outcome' => 'lost',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header5.png',
+                        'patients_name' => $challenge->getChallenger()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenged()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                        'challenge_outcome' => 'lost',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
         } else if (
             ($challenge->getChallengerSum() < $challenge->getTarget()) &&
             ($challenge->getChallengedSum() >= $challenge->getTarget()) &&
@@ -296,47 +300,51 @@ class CronRpgChallengeFriends extends Command
             $this->awardWinnerCreditTo($challenge->getChallenged());
 
             // Email the winner
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header6.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenged()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                    'challenge_outcome' => 'won',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header6.png',
+                        'patients_name' => $challenge->getChallenged()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenger()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                        'challenge_outcome' => 'won',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
             // Email the loser
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header5.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenged()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                    'challenge_outcome' => 'lost',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header5.png',
+                        'patients_name' => $challenge->getChallenged()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenger()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                        'challenge_outcome' => 'lost',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
         } else if ($challenge->getChallengerSum() > $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
             $challenge->setOutcome(3);
@@ -349,48 +357,52 @@ class CronRpgChallengeFriends extends Command
             );
 
             // Email the winner
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header8.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenger()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                    'challenge_outcome' => 'moral',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header8.png',
+                        'patients_name' => $challenge->getChallenger()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenged()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                        'challenge_outcome' => 'moral',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
 
             // Email the loser
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header5.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenged()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                    'challenge_outcome' => 'lost',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header5.png',
+                        'patients_name' => $challenge->getChallenged()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenger()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                        'challenge_outcome' => 'lost',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
         } else if ($challenge->getChallengerSum() < $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
             $challenge->setOutcome(2);
@@ -403,48 +415,52 @@ class CronRpgChallengeFriends extends Command
             );
 
             // Email the winner
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header8.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenged()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                    'challenge_outcome' => 'moral',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header8.png',
+                        'patients_name' => $challenge->getChallenged()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenger()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                        'challenge_outcome' => 'moral',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
 
             // Email the loser
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header5.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenger()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                    'challenge_outcome' => 'lost',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header5.png',
+                        'patients_name' => $challenge->getChallenger()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenged()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                        'challenge_outcome' => 'lost',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
 
         } else if ($challenge->getChallengerSum() == $challenge->getChallengedSum() && $bothUpdated) {
             $this->log("(" . $challenge->getId() . ") It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget());
@@ -463,50 +479,54 @@ class CronRpgChallengeFriends extends Command
                 "It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget(),
                 new \DateTime()
             );
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [
-                    $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()
-                ],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header7.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenger()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                    'challenge_outcome' => 'draw',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
-            AppConstants::sendUserEmail($this->twig, $this->mailer,
-                [
-                    $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()
-                ],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header7.png',
-                    'store_domain' => $_ENV['INSTALL_URL'],
-                    'ui_domain' => $_ENV['UI_URL'],
-                    'asset_domain' => $_ENV['ASSET_URL'],
-                    'patients_name' => $challenge->getChallenged()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                    'challenge_outcome' => 'draw',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges'
-                ]
-            );
+            try {
+                $this->awardManager->sendUserEmail(
+                    [
+                        $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
+                    ],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header7.png',
+                        'patients_name' => $challenge->getChallenger()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenged()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                        'challenge_outcome' => 'draw',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
+            try {
+                $this->awardManager->sendUserEmail(
+                    [
+                        $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
+                    ],
+                    'challenge_results',
+                    [
+                        'html_title' => 'They think it\'s all over',
+                        'header_image' => 'header7.png',
+                        'patients_name' => $challenge->getChallenged()->getFirstName(),
+                        'relevant_date' => date("F jS, Y"),
+                        'challenged' => $challenge->getChallenger()->getFirstName(),
+                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                        'challenge_outcome' => 'draw',
+                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                        'challenge_duration' => $challenge->getDuration(),
+                        'challenge_target' => number_format($challenge->getTarget()),
+                        'relevant_url' => 'rpg/challenges',
+                    ]
+                );
+            } catch (LoaderError $e) {
+            } catch (RuntimeError $e) {
+            } catch (SyntaxError $e) {
+            }
         } else {
             $this->log("(" . $challenge->getId() . ") We should never get here in a challenge? I really don't know what happened");
             $challenge->setOutcome(0);

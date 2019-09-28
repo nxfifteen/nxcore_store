@@ -10,6 +10,7 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 class SamsungConsumeWater extends Constants
@@ -18,9 +19,11 @@ class SamsungConsumeWater extends Constants
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return ConsumeWater|null
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));

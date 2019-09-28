@@ -9,6 +9,7 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 class SamsungCountDailyDistance extends Constants
@@ -17,9 +18,11 @@ class SamsungCountDailyDistance extends Constants
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return FitDistanceDailySummary|null
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
 //        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
@@ -79,15 +82,23 @@ class SamsungCountDailyDistance extends Constants
 
             if ($dataEntry->getTrackingDevice()->getId() == 3) {
                 if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-                    $patient = self::awardPatientReward(
-                        $doctrine,
+                    $patient = $awardManager->giveBadge(
                         $patient,
-                        $dataEntry->getDateTime(),
-                        "Distance Target Achieved",
-                        5,
-                        "trg_distance_achieved",
-                        "Reached your distance goal today",
-                        "Today you did it! Walked the full way"
+                        [
+                            'patients_name' => $patient->getFirstName(),
+                            'html_title' => "Awarded the Distance Target badge",
+                            'header_image' => '../badges/trg_distance_achieved_header.png',
+                            "dateTime" => $dataEntry->getDateTime(),
+                            'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
+                            "name" => "Distance Target Achieved",
+                            "repeat" => FALSE,
+                            'badge_name' => 'Distance Target Achieved',
+                            'badge_xp' => 5,
+                            'badge_image' => 'trg_distance_achieved',
+                            'badge_text' => "Reached your distance goal today",
+                            'badge_longtext' => "Today you did it! Walked the full way",
+                            'badge_citation' => "Today you did it! Walked the full way",
+                        ]
                     );
                 }
             }

@@ -11,6 +11,7 @@ namespace App\Controller;
 use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\PatientFriends;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
@@ -27,13 +28,12 @@ class RegistrationController extends AbstractController
      *
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
-     * @param \Twig\Environment            $twig
-     * @param \Swift_Mailer                $mailer
+     * @param AwardManager                 $awardManager
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      * @throws \Exception
      */
-    public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, \Twig\Environment $twig, \Swift_Mailer $mailer)
+    public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, AwardManager $awardManager)
     {
         $blockedUserNames = [
             "root",
@@ -122,30 +122,24 @@ class RegistrationController extends AbstractController
         $entityManager->persist($patient);
         $entityManager->flush();
 
-        AppConstants::sendUserEmail($twig, $mailer,
+        $awardManager->sendUserEmail(
             [$patient->getEmail() => $patient->getFirstName() . ' ' . $patient->getSurName()],
             'user_new',
             [
                 'html_title' => 'Welcome',
                 'header_image' => 'header1.png',
-                'store_domain' => $_ENV['INSTALL_URL'],
-                'ui_domain' => $_ENV['UI_URL'],
-                'asset_domain' => $_ENV['ASSET_URL'],
                 'patients_name' => $patient->getUuid(),
                 'relevant_date' => date("F jS, Y"),
                 'relevant_url' => '/#/setup/profile',
             ]
         );
 
-        AppConstants::sendUserEmail($twig, $mailer,
+        $awardManager->sendUserEmail(
             [$_ENV['SITE_EMAIL_ADDRESS'] => $_ENV['SITE_EMAIL_NAME']],
             'admin_user_new',
             [
                 'html_title' => 'Another Sign-up!',
                 'header_image' => 'header1.png',
-                'store_domain' => $_ENV['INSTALL_URL'],
-                'ui_domain' => $_ENV['UI_URL'],
-                'asset_domain' => $_ENV['ASSET_URL'],
                 'patients_name' => $patient->getUuid(),
                 'patients_email' => $patient->getEmail(),
                 'relevant_date' => date("F jS, Y"),
@@ -157,15 +151,11 @@ class RegistrationController extends AbstractController
 
     /**
      * @Route("/users/profile", name="get_profile")
-     * @param ManagerRegistry              $doctrine
-     * @param Request                      $request
-     *
-     * @param UserPasswordEncoderInterface $passwordEncoder
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      * @throws \Exception
      */
-    public function get_profile(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder)
+    public function get_profile()
     {
         /** @var Patient $patient */
         $patient = $this->getUser();
@@ -257,11 +247,9 @@ class RegistrationController extends AbstractController
      *
      * @param string                $inviteCode
      *
-     * @param ContainerBagInterface $params
-     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function index_invite_code(string $inviteCode, ContainerBagInterface $params)
+    public function index_invite_code(string $inviteCode)
     {
         AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Invite Code ' . $inviteCode);
 

@@ -82,7 +82,7 @@ class Patient implements UserInterface
     private $xp;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\RpgRewardsAwarded", mappedBy="patient", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgRewardsAwarded", mappedBy="patient", orphanRemoval=true, cascade={"persist"})
      */
     private $rewards;
 

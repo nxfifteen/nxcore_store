@@ -2,6 +2,7 @@
 
 namespace App\Transform\SamsungHealth;
 
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Sentry;
@@ -21,7 +22,7 @@ class Entry
         $this->logger = $logger;
     }
 
-    public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine)
+    public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager)
     {
         $translateEntity = NULL;
 
@@ -38,37 +39,37 @@ class Entry
                 $translateEntity = SamsungDevices::translate($doctrine, $getContent);
                 break;
             case Constants::SAMSUNGHEALTHEPDAILYSTEPS:
-                $translateEntity = SamsungCountDailySteps::translate($doctrine, $getContent);
+                $translateEntity = SamsungCountDailySteps::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHEPINTRADAYFLOORS:
-                $translateEntity = SamsungIntraDayFloors::translate($doctrine, $getContent);
+                $translateEntity = SamsungIntraDayFloors::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHEPINTRADAYSTEPS:
-                $translateEntity = SamsungIntraDaySteps::translate($doctrine, $getContent);
+                $translateEntity = SamsungIntraDaySteps::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHEPCONSUMWATER:
-                $translateEntity = SamsungConsumeWater::translate($doctrine, $getContent);
+                $translateEntity = SamsungConsumeWater::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHEPCONSUMCAFFINE:
-                $translateEntity = SamsungConsumeCaffeine::translate($doctrine, $getContent);
+                $translateEntity = SamsungConsumeCaffeine::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHEPEXERCISE:
-                $translateEntity = SamsungExercise::translate($doctrine, $getContent);
+                $translateEntity = SamsungExercise::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHCALORIES:
-                $translateEntity = SamsungCountDailyCalories::translate($doctrine, $getContent);
+                $translateEntity = SamsungCountDailyCalories::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHDISTNACE:
-                $translateEntity = SamsungCountDailyDistance::translate($doctrine, $getContent);
+                $translateEntity = SamsungCountDailyDistance::translate($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHFOOD:
-                $translateEntity = SamsungFood::translateFood($doctrine, $getContent);
+                $translateEntity = SamsungFood::translateFood($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHFOODLOG:
-                $translateEntity = SamsungFood::translateFoodIntake($doctrine, $getContent);
+                $translateEntity = SamsungFood::translateFoodIntake($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHFOODDATABASE:
-                $translateEntity = SamsungFood::translateFoodInfo($doctrine, $getContent);
+                $translateEntity = SamsungFood::translateFoodInfo($doctrine, $getContent, $awardManager);
                 break;
             case Constants::SAMSUNGHEALTHEPBODYWEIGHT:
 //                $translateEntity = [];

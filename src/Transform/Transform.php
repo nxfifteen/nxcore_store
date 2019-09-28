@@ -332,21 +332,4 @@ class Transform
 
         return $dataEntry;
     }
-
-    protected static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, DateTimeInterface $dateTime, string $name, float $xp, string $image, string $text, string $longtext)
-    {
-        return AppConstants::awardPatientReward($doctrine, $patient, $dateTime, $name, $xp, $image, $text, $longtext);
-    }
-
-    protected static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
-    {
-        return AppConstants::awardPatientXP($doctrine, $patient, $xpAwarded, $reasoning, $dateTime);
-    }
-
-    protected static function awardPatientXPUpdateFactor(Patient $patient, int $i)
-    {
-        return AppConstants::awardPatientXPUpdateFactor($patient, $i);
-    }
-
-    // badge_weight_finish
 }

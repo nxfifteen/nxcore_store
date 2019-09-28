@@ -3,6 +3,7 @@
 namespace App\Transform\Fitbit;
 
 use App\AppConstants;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Sentry;
@@ -22,7 +23,7 @@ class Entry
         $this->logger = $logger;
     }
 
-    public function transform(String $data_set, $getContent, ManagerRegistry $doctrine)
+    public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager)
     {
         $translateEntity = NULL;
 
@@ -37,14 +38,14 @@ class Entry
         switch ($data_set) {
             case Constants::FITBITHEPDAILYSTEPS:
                 $translateEntity = [];
-                $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent);
+                $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent, $awardManager);
                 foreach ($getContent[1] as $index => $item) {
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
                 }
                 break;
             case Constants::FITBITHEPPERIODSTEPS:
                 $translateEntity = [];
-                foreach (FitbitCountPeriodSteps::translate($doctrine, $getContent) as $value) {
+                foreach (FitbitCountPeriodSteps::translate($doctrine, $getContent, $awardManager) as $value) {
                     $translateEntity[] = $value;
                 }
                 foreach ($getContent[1] as $index => $item) {
@@ -53,8 +54,8 @@ class Entry
                 break;
             case Constants::FITBITEPBODYWEIGHT:
                 $translateEntity = [];
-                $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent);
-                $translateEntity[] = FitbitBodyFat::translate($doctrine, $getContent);
+                $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent, $awardManager);
+                $translateEntity[] = FitbitBodyFat::translate($doctrine, $getContent, $awardManager);
                 foreach ($getContent[1] as $index => $item) {
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
                 }

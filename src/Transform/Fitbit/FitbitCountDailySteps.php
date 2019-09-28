@@ -8,6 +8,7 @@ use App\Entity\Patient;
 use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 class FitbitCountDailySteps extends Constants
@@ -16,9 +17,11 @@ class FitbitCountDailySteps extends Constants
      * @param ManagerRegistry $doctrine
      * @param                 $jsonContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
      */
-    public static function translate(ManagerRegistry $doctrine, $jsonContent)
+    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
     {
         if (property_exists($jsonContent[0], "uuid")) {
             /** @var Patient $patient */
@@ -84,28 +87,44 @@ class FitbitCountDailySteps extends Constants
             }
 
             if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-                $patient = self::awardPatientReward(
-                    $doctrine,
+                $patient = $awardManager->giveBadge(
                     $patient,
-                    $dataEntry->getDateTime(),
-                    "Step Target Achieved",
-                    5,
-                    "trg_steps_achieved",
-                    "Reached your step goal today",
-                    "Today you did it! You reached your step goal"
+                    [
+                        'patients_name' => $patient->getFirstName(),
+                        'html_title' => "Awarded the Step Target badge",
+                        'header_image' => '../badges/trg_steps_achieved_header.png',
+                        "dateTime" => $dataEntry->getDateTime(),
+                        'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
+                        "name" => "Step Target",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Step Target',
+                        'badge_xp' => 5,
+                        'badge_image' => 'trg_steps_achieved',
+                        'badge_text' => "Reached your step goal today",
+                        'badge_longtext' => "Today you did it! You reached your step goal",
+                        'badge_citation' => "Today you did it! You reached your step goal",
+                    ]
                 );
                 $percentageOver = ($dataEntry->getValue() / $dataEntry->getGoal()->getGoal()) * 100;
                 $percentageOver = $percentageOver - 100;
                 if ($percentageOver > 100) {
-                    $patient = self::awardPatientReward(
-                        $doctrine,
+                    $patient = $awardManager->giveBadge(
                         $patient,
-                        $dataEntry->getDateTime(),
-                        "Step Target Smashed",
-                        10,
-                        "trg_steps_smashed",
-                        "You walked twice your step goal",
-                        "Wow! I mean, WOW! You walked twice your step goal today"
+                        [
+                            'patients_name' => $patient->getFirstName(),
+                            'html_title' => "Awarded the Step Target Smashed badge",
+                            'header_image' => '../badges/trg_steps_smashed_header.png',
+                            "dateTime" => $dataEntry->getDateTime(),
+                            'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
+                            "name" => "Step Target Smashed",
+                            "repeat" => FALSE,
+                            'badge_name' => 'Step Target Smashed',
+                            'badge_xp' => 10,
+                            'badge_image' => 'trg_steps_smashed',
+                            'badge_text' => "You walked twice your step goal",
+                            'badge_longtext' => "Wow! I mean, WOW! You walked twice your step goal today",
+                            'badge_citation' => "Wow! I mean, WOW! You walked twice your step goal today",
+                        ]
                     );
                 }
             }

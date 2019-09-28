@@ -23,5 +23,9 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+    App\Service\AwardManager:
+        # redundant thanks to _defaults, but value is overridable on each service
+        autowire: true
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

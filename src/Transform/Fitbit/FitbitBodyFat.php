@@ -9,6 +9,7 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 class FitbitBodyFat extends Constants
@@ -17,9 +18,11 @@ class FitbitBodyFat extends Constants
      * @param ManagerRegistry $doctrine
      * @param                 $jsonContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return BodyFat|null
      */
-    public static function translate(ManagerRegistry $doctrine, $jsonContent)
+    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
     {
         if (property_exists($jsonContent[0], "uuid")) {
             /** @var Patient $patient */

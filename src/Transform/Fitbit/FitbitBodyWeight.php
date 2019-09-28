@@ -11,7 +11,11 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
+use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 class FitbitBodyWeight extends Constants
 {
@@ -19,9 +23,11 @@ class FitbitBodyWeight extends Constants
      * @param ManagerRegistry $doctrine
      * @param Object          $jsonContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return BodyWeight|null
      */
-    public static function translate(ManagerRegistry $doctrine, $jsonContent)
+    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
     {
         if (property_exists($jsonContent[0], "uuid")) {
 
@@ -79,6 +85,25 @@ class FitbitBodyWeight extends Constants
             $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy(['RemoteId' => $jsonContent[0]->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
                 $dataEntry = new BodyWeight();
+                try {
+                    $awardManager->sendUserEmail(
+                        [
+                            $patient->getEmail() => $patient->getFirstName() . ' ' . $patient->getSurName(),
+                        ],
+                        'generic',
+                        [
+                            'html_title' => 'New Weight Recorded',
+                            'header_image' => 'header9.png',
+                            'patients_name' => $patient->getFirstName(),
+                            'relevant_date' => (new \DateTime($jsonContent[0]->dateTime))->format("F jS, Y"),
+                            'relevant_url' => 'body/weight',
+                            'body_txt' => "Your latest weight reading has just been updated from Fitbit. You now weigh " . number_format($jsonContent[2]->body->weight, 2) . " " . $unitOfMeasurement->getName(),
+                        ]
+                    );
+                } catch (LoaderError $e) {
+                } catch (RuntimeError $e) {
+                } catch (SyntaxError $e) {
+                }
             }
 
             $dataEntry->setPatient($patient);

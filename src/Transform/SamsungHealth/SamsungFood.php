@@ -11,6 +11,7 @@ use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
+use App\Service\AwardManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -23,9 +24,11 @@ class SamsungFood extends Constants
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return FoodDiary|null
      */
-    public static function translateFoodIntake(ManagerRegistry $doctrine, String $getContent)
+    public static function translateFoodIntake(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateFoodIntake : " . print_r($jsonContent, TRUE));
@@ -124,7 +127,7 @@ class SamsungFood extends Constants
      *
      * @return FoodDatabase|FoodNutrition|null
      */
-    public static function translateFoodInfo(ManagerRegistry $doctrine, String $getContent)
+    public static function translateFoodInfo(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateFoodInfo : " . print_r($jsonContent, TRUE));
@@ -260,7 +263,7 @@ class SamsungFood extends Constants
      *
      * @return FoodNutrition|null
      */
-    public static function translateFood(ManagerRegistry $doctrine, String $getContent)
+    public static function translateFood(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " -  translateFood: " . print_r($jsonContent, TRUE));
