@@ -27,10 +27,13 @@ class RegistrationController extends AbstractController
      *
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
+     * @param \Twig\Environment            $twig
+     * @param \Swift_Mailer                $mailer
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      * @throws \Exception
      */
-    public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder)
+    public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, \Twig\Environment $twig, \Swift_Mailer $mailer)
     {
         $blockedUserNames = [
             "root",
@@ -49,6 +52,7 @@ class RegistrationController extends AbstractController
                 "username" => $requestJson->username,
                 "email" => $requestJson->email,
                 "invite" => $requestJson->invite,
+                "password" => $requestJson->password,
             ], TRUE));
         AppConstants::writeToLog('debug_transform.txt',
             __LINE__ . ' New user registration ' . $requestJson->username . ' ' . $requestJson->email);
@@ -111,12 +115,42 @@ class RegistrationController extends AbstractController
         $patient->setUuid($requestJson->username);
         $patient->setEmail($requestJson->email);
         //$patient->setAvatar('https://connect.core.nxfifteen.me.uk/new.jpg');
-        $patient->setUiSettings(["showNavBar::lg","showAsideBar::false"]);
+        $patient->setUiSettings(["showNavBar::false","showAsideBar::false"]);
         $patient->setPassword($passwordEncoder->encodePassword($patient, $requestJson->password));
         $patient->setRoles(['ROLE_USER', 'ROLE_BETA']);
         $patient->setApiToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
         $entityManager->persist($patient);
         $entityManager->flush();
+
+        AppConstants::sendUserEmail($twig, $mailer,
+            [$patient->getEmail() => $patient->getFirstName() . ' ' . $patient->getSurName()],
+            'user_new',
+            [
+                'html_title' => 'Welcome',
+                'header_image' => 'header1.png',
+                'store_domain' => $_ENV['INSTALL_URL'],
+                'ui_domain' => $_ENV['UI_URL'],
+                'asset_domain' => $_ENV['ASSET_URL'],
+                'patients_name' => $patient->getUuid(),
+                'relevant_date' => date("F jS, Y"),
+                'relevant_url' => '/#/setup/profile',
+            ]
+        );
+
+        AppConstants::sendUserEmail($twig, $mailer,
+            [$_ENV['SITE_EMAIL_ADDRESS'] => $_ENV['SITE_EMAIL_NAME']],
+            'admin_user_new',
+            [
+                'html_title' => 'Another Sign-up!',
+                'header_image' => 'header1.png',
+                'store_domain' => $_ENV['INSTALL_URL'],
+                'ui_domain' => $_ENV['UI_URL'],
+                'asset_domain' => $_ENV['ASSET_URL'],
+                'patients_name' => $patient->getUuid(),
+                'patients_email' => $patient->getEmail(),
+                'relevant_date' => date("F jS, Y"),
+            ]
+        );
 
         return $this->json(["username" => $patient->getUuid(), "token" => $patient->getApiToken(), "firstrun" => $patient->getFirstRun()]);
     }
@@ -187,6 +221,7 @@ class RegistrationController extends AbstractController
         }
         $patient->setDateOfBirth(new \DateTime($requestJson->dateOfBirth));
         $patient->setFirstRun(false);
+        $patient->setUiSettings(["showNavBar::lg","showAsideBar::false"]);
 
         $userProfile = [
             "username" => $patient->getUsername(),

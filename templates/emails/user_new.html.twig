@@ -1,0 +1,80 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block title %}{{ html_title }}{% endblock %}
+
+{% block body %}
+    <table>
+        <!-- Top intro -->
+        <tr>
+            <td align="center" valign="top"
+                style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;">
+                <!-- BEGIN BODY // -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                       style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;border-collapse: collapse !important;">
+                    <tr>
+                        <td valign="top" class="bodyContent"
+                            style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;color: #505050;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 16px;line-height: 150%;padding: 16px 16px 16px 24px;text-align: left;">
+
+                            <h1 class="nomargin"
+                                style="display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 24px;font-style: normal;font-weight: 500;line-height: 160%;letter-spacing: normal;margin: 0;text-align: left;color: #047ae2 !important;">
+                                Welcome to Core {{ patients_name }}!</h1>
+                            <h3 style="display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 14px;font-weight: 500;line-height: 160%;letter-spacing: normal;margin: 0 0 12px;text-align: left;color: #627484 !important;">{{ relevant_date }}</h3>
+
+                            <p class="summarytext"
+                               style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: rgba(0,0,0,0.7);display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 14px;line-height: 1.6;letter-spacing: normal;margin: 0 0 14px;">
+                                I created Core to allow friends to compete and play on their fitness journey now matter
+                                what hardware they use; Fitbit, Samsung Health and soon Google Fit.
+                            </p>
+
+                            <p class="summarytext"
+                               style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: rgba(0,0,0,0.7);display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 14px;line-height: 1.6;letter-spacing: normal;margin: 0 0 14px;">
+                                Core is currently in the Private Alpha stage. This means that things are changing and
+                                updating at a lightning pace, but it also means something might break or change. So I
+                                just want to take the opportunity to thank you for taking part and helping me make Core
+                                something to be proud of.
+                            </p>
+
+                            <p class="summarytext"
+                               style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: rgba(0,0,0,0.7);display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 14px;line-height: 1.6;letter-spacing: normal;margin: 0 0 14px;">
+                                During this stage you may get the occasional email asking you to test a new feature. This
+                                is, of course, fully optional but I really do appreciate any feedback you can provide.
+                            </p>
+
+                            <p class="summarytext"
+                               style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;color: rgba(0,0,0,0.7);display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 14px;line-height: 1.6;letter-spacing: normal;margin: 0 0 14px;">
+                                If you want to talk to me, or other Core users, join our
+                                <a href="https://www.reddit.com/r/NxFIFTEEN_Core/">reddit community</a> and get where I'll
+                                do my best to resolve any problems you might have - or add any features you would like to see.
+                            </p>
+                    </tr>
+
+                    {% if relevant_url is defined %}
+                        {% if relevant_url is not empty %}
+                            <!-- ENDING -->
+                            <tr>
+                                <td align="center" valign="top"
+                                    style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                           style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;border-collapse: collapse !important;">
+                                        <tr>
+                                            <td valign="top" class="bodyContent"
+                                                style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;color: #505050;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 16px;line-height: 150%;padding-top: 16px;padding-right: 16px;padding-bottom: 16px;padding-left: 24px;text-align: left;">
+
+                                                <a href="{{ ui_domain }}{{ relevant_url }}" class="bigButton full"
+                                                   style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;background: #0f7add;border-radius: 6px;display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;padding: 16px 24px;font-size: 15px;line-height: 18px;margin-bottom: 12px;margin-right: 8px;border: 1px solid #0a6ac3;text-align: center;color: #fff !important;font-weight: normal;text-decoration: none !important;">
+                                                    1st step, update you profile and link your account to Fitbit
+                                                </a>
+
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endif %}
+                </table>
+                <!-- // END BODY -->
+            </td>
+        </tr>
+    </table>
+{% endblock %}

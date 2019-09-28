@@ -11,3 +11,5 @@
 
 /.idea/
 /bin/test/
+
+/src/Controller/DummyController.php
