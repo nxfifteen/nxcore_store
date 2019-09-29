@@ -26,7 +26,7 @@ class SamsungCountDailyCalories extends Constants
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
-        if (property_exists($jsonContent, "uuid")) {
+        if (property_exists($jsonContent, "uuid") && $jsonContent->device == 'VfS0qUERdZ') {
             ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitCaloriesDailySummary for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
@@ -64,8 +64,16 @@ class SamsungCountDailyCalories extends Constants
             $dataEntry->setRemoteId($jsonContent->remoteId);
             $dataEntry->setValue($jsonContent->value);
             $dataEntry->setGoal($patientGoal);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+
+            $dayStartTime = strtotime($jsonContent->dateTimeDayTime);
+            $dayEndTime = strtotime(date("Y-m-d 23:59:59", $dayStartTime));
+            $updateTime = strtotime($jsonContent->dateTimeUpdated) + (60*60);
+            if ($updateTime > $dayEndTime) {
+                $updateTime = $dayEndTime;
+            }
+
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < $updateTime) {
+                $dataEntry->setDateTime(new \DateTime(date("Y-m-d H:i:s", $updateTime)));
             }
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

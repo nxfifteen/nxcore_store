@@ -25,10 +25,13 @@ class SamsungCountDailyDistance extends Constants
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
-//        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid") && $jsonContent->device == 'VfS0qUERdZ') {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitDistanceDailySummary for " . $jsonContent->remoteId);
+            //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+
+            if ($jsonContent->goal == 0) {
+                $jsonContent->goal = 3000;
+            }
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -48,15 +51,15 @@ class SamsungCountDailyDistance extends Constants
                 return NULL;
             }
 
-            /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitDistanceDailySummary", $jsonContent->goal, NULL, $patient);
-            if (is_null($patientGoal)) {
-                return NULL;
-            }
-
             /** @var UnitOfMeasurement $unitOfMeasurement */
             $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->units);
             if (is_null($unitOfMeasurement)) {
+                return NULL;
+            }
+
+            /** @var PatientGoals $patientGoal */
+            $patientGoal = self::getPatientGoal($doctrine, "FitDistanceDailySummary", $jsonContent->goal, $unitOfMeasurement, $patient);
+            if (is_null($patientGoal)) {
                 return NULL;
             }
 
@@ -72,8 +75,16 @@ class SamsungCountDailyDistance extends Constants
             $dataEntry->setValue($jsonContent->value);
             $dataEntry->setGoal($patientGoal);
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+
+            $dayStartTime = strtotime($jsonContent->dateTimeDayTime);
+            $dayEndTime = strtotime(date("Y-m-d 23:59:59", $dayStartTime));
+            $updateTime = strtotime($jsonContent->dateTimeUpdated) + (60*60);
+            if ($updateTime > $dayEndTime) {
+                $updateTime = $dayEndTime;
+            }
+
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < $updateTime) {
+                $dataEntry->setDateTime(new \DateTime(date("Y-m-d H:i:s", $updateTime)));
             }
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

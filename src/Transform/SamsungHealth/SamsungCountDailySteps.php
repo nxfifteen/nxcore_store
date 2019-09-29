@@ -6,7 +6,6 @@ use App\AppConstants;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
-use App\Entity\RpgXP;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
@@ -48,7 +47,7 @@ class SamsungCountDailySteps extends Constants
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent->goal, NULL, $patient, false);
+            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent->goal, NULL, $patient, FALSE);
             if (is_null($patientGoal)) {
                 return NULL;
             }
@@ -65,56 +64,61 @@ class SamsungCountDailySteps extends Constants
             $dataEntry->setValue($jsonContent->value);
             $dataEntry->setGoal($patientGoal);
 
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < strtotime($jsonContent->dateTime)) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            $dayStartTime = strtotime($jsonContent->dateTimeDayTime);
+            $dayEndTime = strtotime(date("Y-m-d 23:59:59", $dayStartTime));
+            $updateTime = strtotime($jsonContent->dateTimeUpdated) + (60*60);
+            if ($updateTime > $dayEndTime) {
+                $updateTime = $dayEndTime;
+            }
+
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < $updateTime) {
+                $dataEntry->setDateTime(new \DateTime(date("Y-m-d H:i:s", $updateTime)));
             }
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            if ($dataEntry->getTrackingDevice()->getId() == 3) {
-                if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+                $patient = $awardManager->giveBadge(
+                    $patient,
+                    [
+                        'patients_name' => $patient->getFirstName(),
+                        'html_title' => "Awarded the Step Target badge",
+                        'header_image' => '../badges/trg_steps_achieved_header.png',
+                        "dateTime" => $dataEntry->getDateTime(),
+                        'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
+                        "name" => "Step Target",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Step Target',
+                        'badge_xp' => 5,
+                        'badge_image' => 'trg_steps_achieved',
+                        'badge_text' => "Reached your step goal today",
+                        'badge_longtext' => "Today you did it! You reached your step goal",
+                        'badge_citation' => "Today you did it! You reached your step goal",
+                    ]
+                );
+                $percentageOver = ($dataEntry->getValue() / $dataEntry->getGoal()->getGoal()) * 100;
+                $percentageOver = $percentageOver - 100;
+                if ($percentageOver > 100) {
                     $patient = $awardManager->giveBadge(
                         $patient,
                         [
                             'patients_name' => $patient->getFirstName(),
-                            'html_title' => "Awarded the Step Target badge",
-                            'header_image' => '../badges/trg_steps_achieved_header.png',
+                            'html_title' => "Awarded the Step Target Smashed badge",
+                            'header_image' => '../badges/trg_steps_smashed_header.png',
                             "dateTime" => $dataEntry->getDateTime(),
                             'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
-                            "name" => "Step Target",
+                            "name" => "Step Target Smashed",
                             "repeat" => FALSE,
-                            'badge_name' => 'Step Target',
-                            'badge_xp' => 5,
-                            'badge_image' => 'trg_steps_achieved',
-                            'badge_text' => "Reached your step goal today",
-                            'badge_longtext' => "Today you did it! You reached your step goal",
-                            'badge_citation' => "Today you did it! You reached your step goal",
+                            'badge_name' => 'Step Target Smashed',
+                            'badge_xp' => 10,
+                            'badge_image' => 'trg_steps_smashed',
+                            'badge_text' => "You walked twice your step goal",
+                            'badge_longtext' => "Wow! I mean, WOW! You walked twice your step goal today",
+                            'badge_citation' => "Wow! I mean, WOW! You walked twice your step goal today",
                         ]
                     );
-                    $percentageOver = ($dataEntry->getValue() / $dataEntry->getGoal()->getGoal()) * 100;
-                    $percentageOver = $percentageOver - 100;
-                    if ($percentageOver > 100) {
-                        $patient = $awardManager->giveBadge(
-                            $patient,
-                            [
-                                'patients_name' => $patient->getFirstName(),
-                                'html_title' => "Awarded the Step Target Smashed badge",
-                                'header_image' => '../badges/trg_steps_smashed_header.png',
-                                "dateTime" => $dataEntry->getDateTime(),
-                                'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
-                                "name" => "Step Target Smashed",
-                                "repeat" => FALSE,
-                                'badge_name' => 'Step Target Smashed',
-                                'badge_xp' => 10,
-                                'badge_image' => 'trg_steps_smashed',
-                                'badge_text' => "You walked twice your step goal",
-                                'badge_longtext' => "Wow! I mean, WOW! You walked twice your step goal today",
-                                'badge_citation' => "Wow! I mean, WOW! You walked twice your step goal today",
-                            ]
-                        );
-                    }
                 }
             }
 
