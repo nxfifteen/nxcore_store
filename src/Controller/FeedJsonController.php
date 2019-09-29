@@ -5,26 +5,26 @@ namespace App\Controller;
 use App\Entity\ConsumeWater;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
+use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
 class CountDailyController extends AbstractController
 {
+    /** @var Patient $patient */
+    private $patient;
 
-    /**
-     * @param String $uuid
-     *
-     * @throws \LogicException If the Security component is not available
-     */
-    private function hasAccess(String $uuid) {
-        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
+    private function setupRoute()
+    {
+        if (is_null($this->patient)) $this->patient = $this->getUser();
 
-        /** @var \App\Entity\Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
+        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+            $scope->setUser([
+                'id' => $this->patient->getId(),
+                'username' => $this->patient->getUsername(),
+                'email' => $this->patient->getEmail(),
+            ]);
+        });
     }
 
     /**
@@ -34,7 +34,7 @@ class CountDailyController extends AbstractController
      */
     public function FitStepsDailySummary( String $uuid )
     {
-        $this->hasAccess($uuid);
+        $this->setupRoute();
 
         return $this->FitStepsDailySummaryDateTracker($uuid, date("Y-m-d"), -1);
     }
@@ -47,7 +47,7 @@ class CountDailyController extends AbstractController
      */
     public function FitStepsDailySummaryTracker(String $uuid, int $trackingDevice)
     {
-        $this->hasAccess($uuid);
+        $this->setupRoute();
 
         return $this->FitStepsDailySummaryDateTracker($uuid, date("Y-m-d"), $trackingDevice);
     }
@@ -61,7 +61,7 @@ class CountDailyController extends AbstractController
      */
     public function FitStepsDailySummaryDateTracker(String $uuid, String $date, int $trackingDevice)
     {
-        $this->hasAccess($uuid);
+        $this->setupRoute();
 
         /** @noinspection PhpUndefinedMethodInspection */
         $product = $this->getDoctrine()
@@ -118,7 +118,9 @@ class CountDailyController extends AbstractController
      */
     public function consumeWater( String $uuid )
     {
-        return $this->consumeWaterDate($uuid, date("Y-m-d"));
+        $this->setupRoute();
+
+        return $this->consumeWaterDate(date("Y-m-d"));
     }
 
     /**
@@ -129,6 +131,8 @@ class CountDailyController extends AbstractController
      */
     public function consumeWaterDate( String $uuid, String $date )
     {
+        $this->setupRoute();
+
         /** @noinspection PhpUndefinedMethodInspection */
         $product = $this->getDoctrine()
             ->getRepository(ConsumeWater::class)
