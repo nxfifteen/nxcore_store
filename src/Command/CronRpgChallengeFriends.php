@@ -537,16 +537,26 @@ class CronRpgChallengeFriends extends Command
 
     private function awardWinnerCreditTo(Patient $patient)
     {
-        AppConstants::awardPatientReward(
-            $this->doctrine,
+        $patient = $this->awardManager->giveBadge(
             $patient,
-            new \DateTime(),
-            "PVP 1:1 Challenge",
-            30,
-            "pve_1_1_winner",
-            "You won the challenge",
-            "They didn't stand a chance against you!"
+            [
+                'patients_name' => $patient->getFirstName(),
+                'html_title' => "Awarded the Step Target badge",
+                'header_image' => '../badges/trg_steps_achieved_header.png',
+                "dateTime" => new \DateTime(),
+                'relevant_date' => (new \DateTime())->format("F jS, Y"),
+                "name" => "PVP 1:1 Challenge",
+                "repeat" => FALSE,
+                'badge_name' => 'PVP 1:1 Challenge',
+                'badge_xp' => 30,
+                'badge_image' => 'pve_1_1_winner',
+                'badge_text' => "You won the challenge",
+                'badge_longtext' => "They didn't stand a chance against you!",
+                'badge_citation' => "They didn't stand a chance against you!",
+            ]
         );
+
+        return $patient;
     }
 
     private function convertCriteriaEnglish($criteria)
