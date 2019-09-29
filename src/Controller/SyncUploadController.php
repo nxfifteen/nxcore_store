@@ -80,28 +80,30 @@ class SyncUploadController extends AbstractController
                     $queueEndpoints = join("::", $queueEndpoints);
                 }
 
-                $patientCredential = $this->getDoctrine()
-                    ->getRepository(PatientCredentials::class)
-                    ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
+                if (!is_null($queueEndpoints)) {
+                    $patientCredential = $this->getDoctrine()
+                        ->getRepository(PatientCredentials::class)
+                        ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
 
-                $serviceSyncQueue = $this->getDoctrine()
-                    ->getRepository(SyncQueue::class)
-                    ->findOneBy(['credentials' => $patientCredential, 'service' => $serviceObject, 'endpoint' => $queueEndpoints]);
+                    $serviceSyncQueue = $this->getDoctrine()
+                        ->getRepository(SyncQueue::class)
+                        ->findOneBy(['credentials' => $patientCredential, 'service' => $serviceObject, 'endpoint' => $queueEndpoints]);
 
-                if (!$serviceSyncQueue) {
-                    $serviceSyncQueue = new SyncQueue();
-                    $serviceSyncQueue->setService($serviceObject);
-                    $serviceSyncQueue->setDatetime(new \DateTime());
-                    $serviceSyncQueue->setCredentials($patientCredential);
-                    $serviceSyncQueue->setEndpoint($queueEndpoints);
+                    if (!$serviceSyncQueue) {
+                        $serviceSyncQueue = new SyncQueue();
+                        $serviceSyncQueue->setService($serviceObject);
+                        $serviceSyncQueue->setDatetime(new \DateTime());
+                        $serviceSyncQueue->setCredentials($patientCredential);
+                        $serviceSyncQueue->setEndpoint($queueEndpoints);
 
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($serviceSyncQueue);
-                    $entityManager->flush();
+                        $entityManager = $this->getDoctrine()->getManager();
+                        $entityManager->persist($serviceSyncQueue);
+                        $entityManager->flush();
 
-                    AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
-                } else {
-                    AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName() . ' -- But already queued');
+                        AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
+                    } else {
+                        AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName() . ' -- But already queued');
+                    }
                 }
 
             }

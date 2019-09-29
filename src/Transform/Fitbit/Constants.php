@@ -56,6 +56,12 @@ class Constants extends Transform
                     "FitStepsDailySummary"
                 ];
                 break;
+            case 'body':
+                return [
+                    "TrackingDevice",
+                    "BodyWeight"
+                ];
+                break;
 
             default:
                 return null;
