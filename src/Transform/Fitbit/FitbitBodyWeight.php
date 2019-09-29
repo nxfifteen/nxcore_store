@@ -97,6 +97,7 @@ class FitbitBodyWeight extends Constants
                             'patients_name' => $patient->getFirstName(),
                             'relevant_date' => (new \DateTime($jsonContent[0]->dateTime))->format("F jS, Y"),
                             'relevant_url' => 'body/weight',
+                            'relevant_name' => 'Visit your weight chart',
                             'body_txt' => "Your latest weight reading has just been updated from Fitbit. You now weigh " . number_format($jsonContent[2]->body->weight, 2) . " " . $unitOfMeasurement->getName(),
                         ]
                     );
