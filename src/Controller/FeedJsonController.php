@@ -244,4 +244,21 @@ class FeedJsonController extends AbstractController
 
         return $this->json($returnArray);
     }
+
+    /**
+     * @Route("/json/profile", name="json_profile")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function profile()
+    {
+        $this->setupRoute();
+
+        $returnArray = [];
+        $returnArray['uuid'] = $this->patient->getUuid();
+        $returnArray['today'] = date("Y-m-d");
+        $returnArray['loginStreak'] = $this->patient->getLoginStreak();
+
+        return $this->json($returnArray);
+    }
 }
