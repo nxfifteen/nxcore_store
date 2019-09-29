@@ -1,2 +1,6 @@
 sentry:
     dsn: '%env(SENTRY_DSN)%'
+    #environment: 'dev'
+    options:
+      environment: '%kernel.environment%'
+      release: '%env(VERSION)%' #your app version

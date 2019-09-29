@@ -1,0 +1,6 @@
+#!/bin/bash
+export SENTRY_AUTH_TOKEN="39541b11c11c4b8e81a8ca1b4a03d2d0c23e2e08fef14085ab2143f2533cbd0c"
+export SENTRY_ORG=nxfifteen
+VERSION=$(sentry-cli releases propose-version)
+
+/c/Users/stuar/AppData/Roaming/npm/sentry-cli $@
