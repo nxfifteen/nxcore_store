@@ -141,6 +141,16 @@ class Patient implements UserInterface
      */
     private $gender;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $lastLoggedIn;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $loginStreak;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -761,5 +771,29 @@ class Patient implements UserInterface
             default:
                 return "them";
         }
+    }
+
+    public function getLastLoggedIn(): ?\DateTimeInterface
+    {
+        return $this->lastLoggedIn;
+    }
+
+    public function setLastLoggedIn(?\DateTimeInterface $lastLoggedIn): self
+    {
+        $this->lastLoggedIn = $lastLoggedIn;
+
+        return $this;
+    }
+
+    public function getLoginStreak(): ?int
+    {
+        return $this->loginStreak;
+    }
+
+    public function setLoginStreak(?int $loginStreak): self
+    {
+        $this->loginStreak = $loginStreak;
+
+        return $this;
     }
 }

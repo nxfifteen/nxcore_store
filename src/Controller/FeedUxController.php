@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\AppConstants;
 use App\Entity\ApiAccessLog;
 use App\Entity\BodyWeight;
 use App\Entity\FitDistanceDailySummary;
@@ -66,7 +67,64 @@ class FeedUxController extends AbstractController
         $return['awards'] = $this->getPatientAwards();
         $return['weight'] = $this->getPatientWeight();
 
-        $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new \DateTime(date("Y-m-d 00:00:00")));
+        if (
+            is_null($this->patient->getLastLoggedIn()) ||
+            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
+        ) {
+            $this->patient->setLastLoggedIn(new \DateTime());
+            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
+            $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new \DateTime(date("Y-m-d 00:00:00")));
+
+            if ($this->patient->getLoginStreak() % 5 == 0) {
+                $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new \DateTime(date("Y-m-d 00:00:00")));
+            }
+
+            if ($this->patient->getLoginStreak() % 31 == 0) {
+                $this->patient = $awardManager->giveBadge(
+                    $this->patient,
+                    [
+                        'patients_name' => $this->patient->getFirstName(),
+                        'html_title' => "Awarded the Full Month badge",
+                        'header_image' => '../badges/streak_month_header.png',
+                        "dateTime" => new \DateTime(),
+                        'relevant_date' => (new \DateTime())->format("F jS, Y"),
+                        "name" => "Full Month",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Full Month',
+                        'badge_xp' => 31,
+                        'badge_image' => 'streak_month',
+                        'badge_text' => "31 Day Streak",
+                        'badge_longtext' => "You've logged in every day for a full month",
+                        'badge_citation' => "You've logged in every day for a full month",
+                    ]
+                );
+            }
+
+            if ($this->patient->getLoginStreak() % 186 == 0) {
+                $this->patient = $awardManager->giveBadge(
+                    $this->patient,
+                    [
+                        'patients_name' => $this->patient->getFirstName(),
+                        'html_title' => "Awarded the Six Month badge",
+                        'header_image' => '../badges/streak_six_month_header.png',
+                        "dateTime" => new \DateTime(),
+                        'relevant_date' => (new \DateTime())->format("F jS, Y"),
+                        "name" => "Six Months",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Six Months',
+                        'badge_xp' => 186,
+                        'badge_image' => 'streak_six_month',
+                        'badge_text' => "6 Month Streak",
+                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
+                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
+                    ]
+                );
+            }
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($this->patient);
+            $entityManager->flush();
+        }
 
         return $this->json($return);
     }

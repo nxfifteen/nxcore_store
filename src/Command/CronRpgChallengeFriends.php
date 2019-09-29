@@ -542,7 +542,7 @@ class CronRpgChallengeFriends extends Command
             [
                 'patients_name' => $patient->getFirstName(),
                 'html_title' => "Awarded the Step Target badge",
-                'header_image' => '../badges/trg_steps_achieved_header.png',
+                'header_image' => '../badges/pve_1_1_winner_header.png',
                 "dateTime" => new \DateTime(),
                 'relevant_date' => (new \DateTime())->format("F jS, Y"),
                 "name" => "PVP 1:1 Challenge",
