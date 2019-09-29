@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\BodyFat;
+use App\Entity\BodyWeight;
 use App\Entity\ConsumeWater;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
@@ -166,6 +168,54 @@ class FeedJsonController extends AbstractController
                 $timeStampsInTrack[ 'lastReading' ] = $item->getDateTime()->format("H:i:s");
             }
         }
+
+        return $this->json($timeStampsInTrack);
+    }
+
+    /**
+     * @Route("/json/count/daily/body", name="json_daily_body")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function body( )
+    {
+        $this->setupRoute();
+
+        return $this->bodyDate(date("Y-m-d"));
+    }
+
+    /**
+     * @Route("/json/count/daily/body/{date}", name="json_daily_body_date")
+     *
+     * @param String $date
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function bodyDate(String $date )
+    {
+        $this->setupRoute();
+
+        /** @var BodyWeight[] $bodyWeights */
+        $bodyWeights = $this->getDoctrine()
+            ->getRepository(BodyWeight::class)
+            ->findByDateRange($this->patient->getUuid(), $date);
+        $bodyWeights = $bodyWeights[0];
+
+        /** @var BodyFat[] $bodyFats */
+        $bodyFats = $this->getDoctrine()
+            ->getRepository(BodyFat::class)
+            ->findByDateRange($this->patient->getUuid(), $date);
+        $bodyFats = $bodyFats[0];
+
+        $timeStampsInTrack = [];
+        $timeStampsInTrack[ 'uuid' ] = $this->patient->getUuid();
+        $timeStampsInTrack[ 'today' ] = $date;
+        $timeStampsInTrack[ 'lastReading' ] = $bodyWeights->getDateTime()->format("H:i:s");
+        $timeStampsInTrack[ 'value_kg' ] = $bodyWeights->getMeasurement();
+        $timeStampsInTrack[ 'goal_kg' ] = $bodyWeights->getPatientGoal()->getGoal();
+        $timeStampsInTrack[ 'value_lb' ] = round($bodyWeights->getMeasurement() * 2.205, 2);
+        $timeStampsInTrack[ 'goal_lb' ] = round($bodyWeights->getPatientGoal()->getGoal() * 2.205, 2);
+        $timeStampsInTrack[ 'fat' ] = round($bodyFats->getMeasurement(), 2);
+        $timeStampsInTrack[ 'goal_fat' ] = round($bodyFats->getPatientGoal()->getGoal(), 2);
 
         return $this->json($timeStampsInTrack);
     }
