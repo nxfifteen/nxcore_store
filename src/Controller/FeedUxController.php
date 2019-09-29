@@ -16,7 +16,7 @@ use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-class UxFeedController extends AbstractController
+class FeedUxController extends AbstractController
 {
     /** @var Patient $patient */
     private $patient;
