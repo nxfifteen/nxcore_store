@@ -9,7 +9,7 @@ use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-class CountDailyController extends AbstractController
+class FeedJsonController extends AbstractController
 {
     /** @var Patient $patient */
     private $patient;
