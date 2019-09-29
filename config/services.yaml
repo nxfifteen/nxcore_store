@@ -27,5 +27,10 @@ services:
         # redundant thanks to _defaults, but value is overridable on each service
         autowire: true
 
+    gitlab_exception.listener:
+        class: App\EventListener\GitlabExceptionListener
+        tags:
+        - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
