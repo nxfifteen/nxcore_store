@@ -28,48 +28,48 @@ class FeedJsonController extends AbstractController
     }
 
     /**
-     * @Route("/json/{uuid}/count/daily/steps", name="count_daily_step")
-     * @param String $uuid
+     * @Route("/json/count/daily/steps", name="json_daily_step")
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function FitStepsDailySummary( String $uuid )
+    public function FitStepsDailySummary( )
     {
         $this->setupRoute();
 
-        return $this->FitStepsDailySummaryDateTracker($uuid, date("Y-m-d"), -1);
+        return $this->FitStepsDailySummaryDateTracker(date("Y-m-d"), -1);
     }
 
     /**
-     * @Route("/json/{uuid}/count/daily/steps/{trackingDevice}", name="count_daily_step_trackingDevice")
-     * @param String $uuid
+     * @Route("/json/count/daily/steps/{trackingDevice}", name="json_daily_step_trackingDevice")
+     *
      * @param int $trackingDevice
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function FitStepsDailySummaryTracker(String $uuid, int $trackingDevice)
+    public function FitStepsDailySummaryTracker(int $trackingDevice)
     {
         $this->setupRoute();
 
-        return $this->FitStepsDailySummaryDateTracker($uuid, date("Y-m-d"), $trackingDevice);
+        return $this->FitStepsDailySummaryDateTracker(date("Y-m-d"), $trackingDevice);
     }
 
     /**
-     * @Route("/json/{uuid}/count/daily/steps/{trackingDevice}/{date}", name="count_daily_step_date_trackingDevice")
-     * @param String $uuid
+     * @Route("/json//count/daily/steps/{trackingDevice}/{date}", name="json_daily_step_date_trackingDevice")
+     *
      * @param String $date
      * @param int $trackingDevice
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function FitStepsDailySummaryDateTracker(String $uuid, String $date, int $trackingDevice)
+    public function FitStepsDailySummaryDateTracker(String $date, int $trackingDevice)
     {
         $this->setupRoute();
 
         /** @noinspection PhpUndefinedMethodInspection */
         $product = $this->getDoctrine()
             ->getRepository(FitStepsDailySummary::class)
-            ->findByDateRange($uuid, $date, $trackingDevice);
+            ->findByDateRange($this->patient->getUuid(), $date, $trackingDevice);
 
         $timeStampsInTrack = [];
-        $timeStampsInTrack[ 'uuid' ] = $uuid;
+        $timeStampsInTrack[ 'uuid' ] = $this->patient->getUuid();
         $timeStampsInTrack[ 'today' ] = $date;
         $timeStampsInTrack[ 'lastReading' ] = $date;
         $timeStampsInTrack[ 'sum' ] = 0;
@@ -112,11 +112,11 @@ class FeedJsonController extends AbstractController
     }
 
     /**
-     * @Route("/json/{uuid}/count/daily/water", name="count_daily_water")
-     * @param String $uuid
+     * @Route("/json/count/daily/water", name="json_daily_water")
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function consumeWater( String $uuid )
+    public function consumeWater( )
     {
         $this->setupRoute();
 
@@ -124,24 +124,24 @@ class FeedJsonController extends AbstractController
     }
 
     /**
-     * @Route("/json/{uuid}/count/daily/water/{date}", name="count_daily_water_date")
-     * @param String $uuid
+     * @Route("/json/count/daily/water/{date}", name="json_daily_water_date")
+     *
      * @param String $date
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function consumeWaterDate( String $uuid, String $date )
+    public function consumeWaterDate(String $date )
     {
         $this->setupRoute();
 
         /** @noinspection PhpUndefinedMethodInspection */
         $product = $this->getDoctrine()
             ->getRepository(ConsumeWater::class)
-            ->findByDateRange($uuid, $date);
+            ->findByDateRange($this->patient->getUuid(), $date);
 
         $timeStampsInTrack = [];
-        $timeStampsInTrack[ 'uuid' ] = $uuid;
+        $timeStampsInTrack[ 'uuid' ] = $this->patient->getUuid();
         $timeStampsInTrack[ 'today' ] = $date;
-        $timeStampsInTrack[ 'lastReading' ] = $date;
+        $timeStampsInTrack[ 'lastReading' ] = "00:00:00";
         $timeStampsInTrack[ 'sum' ] = 0;
         $timeStampsInTrack[ 'goal' ] = 0;
         $timeStampsInTrack[ 'values' ] = [];
