@@ -16,8 +16,7 @@
                             style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;color: #505050;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 16px;line-height: 150%;padding: 16px 16px 16px 24px;text-align: left;">
 
                             <h1 class="nomargin"
-                                style="display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 24px;font-style: normal;font-weight: 500;line-height: 160%;letter-spacing: normal;margin: 0;text-align: left;color: #047ae2 !important;">{{ patients_name }}
-                                , it's all over.</h1>
+                                style="display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 24px;font-style: normal;font-weight: 500;line-height: 160%;letter-spacing: normal;margin: 0;text-align: left;color: #047ae2 !important;">{{ patients_name }}, it's all over.</h1>
                             <h3 style="display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 14px;font-weight: 500;line-height: 160%;letter-spacing: normal;margin: 0 0 12px;text-align: left;color: #627484 !important;">{{ relevant_date }}</h3>
 
                             <p class="summarytext"
@@ -55,7 +54,7 @@
                                             <td valign="top" class="bodyContent"
                                                 style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0;mso-table-rspace: 0;color: #505050;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;font-size: 16px;line-height: 150%;padding-top: 16px;padding-right: 16px;padding-bottom: 16px;padding-left: 24px;text-align: left;">
 
-                                                <a href="{{ ui_domain }}{{ relevant_url }}" class="bigButton full"
+                                                <a href="{{ ui_domain }}/#/{{ relevant_url }}" class="bigButton full"
                                                    style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;background: #0f7add;border-radius: 6px;display: block;font-family: -apple-system-headline, -apple-system, 'Helvetica Neue', Helvetica, Arial, verdana, sans-serif;padding: 16px 24px;font-size: 15px;line-height: 18px;margin-bottom: 12px;margin-right: 8px;border: 1px solid #0a6ac3;text-align: center;color: #fff !important;font-weight: normal;text-decoration: none !important;">
                                                     {% if challenge_outcome == 'won' %}
                                                         Start a new Challenge

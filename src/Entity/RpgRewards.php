@@ -75,6 +75,11 @@ class RpgRewards
         return $this->image;
     }
 
+    public function getImageUrl(): ?string
+    {
+        return $_ENV['ASSET_URL'] . '/images/badges/' . $this->image . '.png';
+    }
+
     public function setImage(?string $image): self
     {
         $this->image = $image;

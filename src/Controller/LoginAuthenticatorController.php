@@ -56,6 +56,11 @@ class LoginAuthenticatorController extends AbstractController
         $returnPatient['username'] = $patient->getUuid();
         $returnPatient['token'] = $patient->getApiToken();
         $returnPatient['firstrun'] = $patient->getFirstRun();
+        $returnPatient['name'] = $patient->getFirstName();
+        $returnPatient['avatar'] = $patient->getAvatar();
+        $returnPatient['xp'] = $patient->getXpTotal();
+        $returnPatient['level'] = $patient->getRpgLevel();
+        $returnPatient['difficulty'] = $patient->getRpgFactor();
 
         return $this->json($returnPatient);
     }

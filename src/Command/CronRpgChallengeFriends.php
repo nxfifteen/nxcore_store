@@ -14,7 +14,10 @@ use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
 use App\Service\AwardManager;
+use DateInterval;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -62,7 +65,7 @@ class CronRpgChallengeFriends extends Command
 
     /**
      * {@inheritdoc}
-     * @throws \Exception
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -91,7 +94,7 @@ class CronRpgChallengeFriends extends Command
 
                 if ($challenge->getChallengerSum() >= $challenge->getTarget() || $challenge->getChallengedSum() >= $challenge->getTarget()) {
                     $this->log("(" . $challenge->getId() . ") Challenge should finish early");
-                    $challenge->setEndDate(new \DateTime());
+                    $challenge->setEndDate(new DateTime());
                     $challenge = $this->updateOutcome($challenge);
                 } else if (!is_null($challenge->getEndDate()) && $challenge->getEndDate()->format("U") < date("U")) {
                     $challenge = $this->updateOutcome($challenge);
@@ -107,22 +110,22 @@ class CronRpgChallengeFriends extends Command
         $entityManager->flush();
     }
 
+    private function updateEndDate(RpgChallengeFriends $challenge)
+    {
+        try {
+            $endDate = new DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
+            $endDate->add(new DateInterval("P" . $challenge->getDuration() . "D"));
+            $this->log("(" . $challenge->getId() . ") Challenge end date updated");
+            $challenge->setEndDate($endDate);
+        } catch (Exception $e) {
+        }
+
+        return $challenge;
+    }
+
     private function log(string $msg)
     {
         AppConstants::writeToLog('debug_transform.txt', "[" . CronRpgChallengeFriends::$defaultName . "] - " . $msg);
-    }
-
-    private function updateEndDate(RpgChallengeFriends $challenge)
-    {
-        $endDate = new \DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
-        try {
-            $endDate->add(new \DateInterval("P" . $challenge->getDuration() . "D"));
-        } catch (\Exception $e) {
-        }
-        $this->log("(" . $challenge->getId() . ") Challenge end date updated");
-        $challenge->setEndDate($endDate);
-
-        return $challenge;
     }
 
     private function queryDbForPatientCriteria(RpgChallengeFriends $challengeFriends, Patient $user)
@@ -137,6 +140,16 @@ class CronRpgChallengeFriends extends Command
                     ->getRepository(FitStepsDailySummary::class)
                     ->findBetween($user->getUuid(), $challengeFriends->getStartDate(), $challengeFriends->getEndDate());
                 break;
+        }
+
+        /** @var \DateTime[] $periods */
+        $periods = new \DatePeriod(
+            $challengeFriends->getStartDate(),
+            new \DateInterval('P1D'),
+            $challengeFriends->getEndDate()
+        );
+        foreach ($periods as $period) {
+            $periodCriteria[$period->format("Y-m-d")] = 0;
         }
 
         foreach ($product as $dailySummary) {
@@ -154,385 +167,147 @@ class CronRpgChallengeFriends extends Command
         $apiLogLastSyncChallenger = $this->doctrine
             ->getRepository(ApiAccessLog::class)
             ->findOneBy(["patient" => $challenge->getChallenger(), "entity" => $challenge->getCriteria()]);
-        $apiLogLastSyncChallenger = $apiLogLastSyncChallenger->getLastRetrieved()->format("U");
+        if (!is_null($apiLogLastSyncChallenger)) {
+            $apiLogLastSyncChallenger = $apiLogLastSyncChallenger->getLastRetrieved()->format("U");
+        }
 
         /** @var ApiAccessLog $apiLogLastSync */
         $apiLogLastSyncChallenged = $this->doctrine
             ->getRepository(ApiAccessLog::class)
             ->findOneBy(["patient" => $challenge->getChallenged(), "entity" => $challenge->getCriteria()]);
-        $apiLogLastSyncChallenged = $apiLogLastSyncChallenged->getLastRetrieved()->format("U");
-
-        $graceDate = new \DateTime($challenge->getEndDate()->format("Y-m-d 00:00:00"));
-        try {
-            $graceDate->add(new \DateInterval("P1D"));
-        } catch (\Exception $e) {
+        if (!is_null($apiLogLastSyncChallenged)) {
+            $apiLogLastSyncChallenged = $apiLogLastSyncChallenged->getLastRetrieved()->format("U");
         }
 
-        if (date("U") >= $graceDate->format("U") || (
+        $graceDate = $challenge->getEndDate();
+        try {
+            $graceDate->add(new DateInterval("P1D"));
+        } catch (Exception $e) {
+        }
+
+        if (
+            is_null($challenge->getCompletedAt()) &&
+            ($challenge->getChallengerSum() >= $challenge->getTarget() || $challenge->getChallengedSum() >= $challenge->getTarget())
+        ) {
+            $challenge->setCompletedAt(new DateTime());
+            $challenge->setEndDate(new DateTime());
+        }
+
+        if (date("U") >= $graceDate->format("U") ||
+            is_null($apiLogLastSyncChallenger) ||
+            is_null($apiLogLastSyncChallenged) ||
+            (
                 $apiLogLastSyncChallenger >= $challenge->getEndDate()->format("U") &&
                 $apiLogLastSyncChallenged >= $challenge->getEndDate()->format("U")
-            )) {
-            $bothUpdated = true;
+            ) ||
+            (
+                $apiLogLastSyncChallenger >= $challenge->getCompletedAt()->format("U") &&
+                $apiLogLastSyncChallenged >= $challenge->getCompletedAt()->format("U")
+            )
+        ) {
+            $bothUpdated = TRUE;
         } else {
-            $bothUpdated = false;
+            $bothUpdated = FALSE;
         }
 
         if (
             ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
             ($challenge->getChallengedSum() >= $challenge->getTarget())
         ) {
-            $this->log("(" . $challenge->getId() . ") It was a close thing that ended in a draw between " . $challenge->getChallenger()->getFirstName() . " and " . $challenge->getChallenged()->getFirstName());
-            $challenge->setOutcome(6);
-            $this->awardWinnerCreditTo($challenge->getChallenger());
-            $this->awardWinnerCreditTo($challenge->getChallenged());
-
-            try {
-                $this->awardManager->sendUserEmail(
-                    [
-                        $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
-                    ],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header6.png',
-                        'patients_name' => $challenge->getChallenger()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenged()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                        'challenge_outcome' => 'drawwin',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-            try {
-                $this->awardManager->sendUserEmail(
-                    [
-                        $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
-                    ],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header6.png',
-                        'patients_name' => $challenge->getChallenged()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenger()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                        'challenge_outcome' => 'drawwin',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-
+            $this->updateOutcomeDraw($challenge);
         } else if (
             ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
             ($challenge->getChallengedSum() < $challenge->getTarget()) &&
-            $bothUpdated
+            (
+                $bothUpdated ||
+                $apiLogLastSyncChallenged >= $apiLogLastSyncChallenger
+            )
         ) {
-            $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
-            $challenge->setOutcome(5);
-            $this->awardWinnerCreditTo($challenge->getChallenger());
-
-            // Email the winner
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header6.png',
-                        'patients_name' => $challenge->getChallenger()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenged()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                        'challenge_outcome' => 'won',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-            // Email the loser
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header5.png',
-                        'patients_name' => $challenge->getChallenger()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenged()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                        'challenge_outcome' => 'lost',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
+            $this->updateOutcomeChallengerWin($challenge);
         } else if (
             ($challenge->getChallengerSum() < $challenge->getTarget()) &&
             ($challenge->getChallengedSum() >= $challenge->getTarget()) &&
-            $bothUpdated
+            (
+                $bothUpdated ||
+                $apiLogLastSyncChallenger >= $apiLogLastSyncChallenged
+            )
         ) {
-            $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());
-            $challenge->setOutcome(4);
-            $this->awardWinnerCreditTo($challenge->getChallenged());
-
-            // Email the winner
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header6.png',
-                        'patients_name' => $challenge->getChallenged()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenger()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                        'challenge_outcome' => 'won',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-            // Email the loser
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header5.png',
-                        'patients_name' => $challenge->getChallenged()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenger()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                        'challenge_outcome' => 'lost',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-        } else if ($challenge->getChallengerSum() > $challenge->getChallengedSum() && $bothUpdated) {
-            $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
-            $challenge->setOutcome(3);
-            AppConstants::awardPatientXP(
-                $this->doctrine,
-                $challenge->getChallenger(),
-                10,
-                "A moral victory for " . $challenge->getChallenger()->getFirstName() . " who beat " . $challenge->getChallenged()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
-                new \DateTime()
-            );
-
-            // Email the winner
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header8.png',
-                        'patients_name' => $challenge->getChallenger()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenged()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                        'challenge_outcome' => 'moral',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-
-            // Email the loser
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header5.png',
-                        'patients_name' => $challenge->getChallenged()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenger()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                        'challenge_outcome' => 'lost',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-        } else if ($challenge->getChallengerSum() < $challenge->getChallengedSum() && $bothUpdated) {
-            $this->log("(" . $challenge->getId() . ") A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget());
-            $challenge->setOutcome(2);
-            AppConstants::awardPatientXP(
-                $this->doctrine,
-                $challenge->getChallenged(),
-                10,
-                "A moral victory for " . $challenge->getChallenged()->getFirstName() . " who beat " . $challenge->getChallenger()->getFirstName() . ", but couldn't reach the target of " . $challenge->getTarget(),
-                new \DateTime()
-            );
-
-            // Email the winner
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header8.png',
-                        'patients_name' => $challenge->getChallenged()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenger()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                        'challenge_outcome' => 'moral',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-
-            // Email the loser
-            try {
-                $this->awardManager->sendUserEmail(
-                    [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header5.png',
-                        'patients_name' => $challenge->getChallenger()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenged()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                        'challenge_outcome' => 'lost',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-
+            $this->updateOutcomeChallengerLose($challenge);
+        } else if ($challenge->getChallengerSum() > $challenge->getChallengedSum() &&
+            (
+                $bothUpdated ||
+                $apiLogLastSyncChallenged >= $apiLogLastSyncChallenger
+            )
+        ) {
+            $this->updateOutcomeChallengerWin($challenge);
+        } else if ($challenge->getChallengerSum() < $challenge->getChallengedSum() &&
+            (
+                $bothUpdated ||
+                $apiLogLastSyncChallenger >= $apiLogLastSyncChallenged
+            )
+        ) {
+            $this->updateOutcomeChallengerLose($challenge);
         } else if ($challenge->getChallengerSum() == $challenge->getChallengedSum() && $bothUpdated) {
-            $this->log("(" . $challenge->getId() . ") It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget());
-            $challenge->setOutcome(1);
-            AppConstants::awardPatientXP(
-                $this->doctrine,
-                $challenge->getChallenged(),
-                5,
-                "It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget(),
-                new \DateTime()
-            );
-            AppConstants::awardPatientXP(
-                $this->doctrine,
-                $challenge->getChallenger(),
-                5,
-                "It's a tie between " . $challenge->getChallenged()->getFirstName() . " and " . $challenge->getChallenger()->getFirstName() . ", but nether could reach the target of " . $challenge->getTarget(),
-                new \DateTime()
-            );
-            try {
-                $this->awardManager->sendUserEmail(
-                    [
-                        $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
-                    ],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header7.png',
-                        'patients_name' => $challenge->getChallenger()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenged()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
-                        'challenge_outcome' => 'draw',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
-            try {
-                $this->awardManager->sendUserEmail(
-                    [
-                        $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
-                    ],
-                    'challenge_results',
-                    [
-                        'html_title' => 'They think it\'s all over',
-                        'header_image' => 'header7.png',
-                        'patients_name' => $challenge->getChallenged()->getFirstName(),
-                        'relevant_date' => date("F jS, Y"),
-                        'challenged' => $challenge->getChallenger()->getFirstName(),
-                        'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
-                        'challenge_outcome' => 'draw',
-                        'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                        'challenge_duration' => $challenge->getDuration(),
-                        'challenge_target' => number_format($challenge->getTarget()),
-                        'relevant_url' => 'rpg/challenges',
-                    ]
-                );
-            } catch (LoaderError $e) {
-            } catch (RuntimeError $e) {
-            } catch (SyntaxError $e) {
-            }
+            $this->updateOutcomeDraw($challenge);
         } else {
-            $this->log("(" . $challenge->getId() . ") We should never get here in a challenge? I really don't know what happened");
-            $challenge->setOutcome(0);
+            $this->log("(" . $challenge->getId() . ") Waiting on everyone to sync up");
+            //$challenge->setOutcome(0);
         }
 
         return $challenge;
+    }
+
+    private function updateOutcomeDraw(RpgChallengeFriends $challenge)
+    {
+        $this->log("(" . $challenge->getId() . ") It was a close thing that ended in a draw between " . $challenge->getChallenger()->getFirstName() . " and " . $challenge->getChallenged()->getFirstName());
+        $challenge->setOutcome(6);
+        $this->awardWinnerCreditTo($challenge->getChallenger());
+        $this->awardWinnerCreditTo($challenge->getChallenged());
+
+        try {
+            $this->awardManager->sendUserEmail(
+                [
+                    $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
+                ],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'drawwin',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges',
+                ]
+            );
+
+            $this->awardManager->sendUserEmail(
+                [
+                    $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
+                ],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'drawwin',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges',
+                ]
+            );
+        } catch (LoaderError $e) {
+        } catch (RuntimeError $e) {
+        } catch (SyntaxError $e) {
+        }
     }
 
     private function awardWinnerCreditTo(Patient $patient)
@@ -543,8 +318,8 @@ class CronRpgChallengeFriends extends Command
                 'patients_name' => $patient->getFirstName(),
                 'html_title' => "Awarded the Step Target badge",
                 'header_image' => '../badges/pve_1_1_winner_header.png',
-                "dateTime" => new \DateTime(),
-                'relevant_date' => (new \DateTime())->format("F jS, Y"),
+                "dateTime" => new DateTime(),
+                'relevant_date' => (new DateTime())->format("F jS, Y"),
                 "name" => "PVP 1:1 Challenge",
                 "repeat" => FALSE,
                 'badge_name' => 'PVP 1:1 Challenge',
@@ -568,6 +343,104 @@ class CronRpgChallengeFriends extends Command
             default:
                 return $criteria;
                 break;
+        }
+    }
+
+    private function updateOutcomeChallengerWin(RpgChallengeFriends $challenge)
+    {
+        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
+        $challenge->setOutcome(5);
+        $this->awardWinnerCreditTo($challenge->getChallenger());
+
+        // Email the winner
+        try {
+            $this->awardManager->sendUserEmail(
+                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'won',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges',
+                ]
+            );
+
+            $this->awardManager->sendUserEmail(
+                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header5.png',
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'lost',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges',
+                ]
+            );
+        } catch (LoaderError $e) {
+        } catch (RuntimeError $e) {
+        } catch (SyntaxError $e) {
+        }
+    }
+
+    private function updateOutcomeChallengerLose(RpgChallengeFriends $challenge)
+    {
+        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());
+        $challenge->setOutcome(4);
+        $this->awardWinnerCreditTo($challenge->getChallenged());
+
+        // Email the winner
+        try {
+            $this->awardManager->sendUserEmail(
+                [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header6.png',
+                    'patients_name' => $challenge->getChallenged()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenger()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenge_outcome' => 'won',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges',
+                ]
+            );
+
+            $this->awardManager->sendUserEmail(
+                [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
+                'challenge_results',
+                [
+                    'html_title' => 'They think it\'s all over',
+                    'header_image' => 'header5.png',
+                    'patients_name' => $challenge->getChallenger()->getFirstName(),
+                    'relevant_date' => date("F jS, Y"),
+                    'challenged' => $challenge->getChallenged()->getFirstName(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenge_outcome' => 'lost',
+                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                    'challenge_duration' => $challenge->getDuration(),
+                    'challenge_target' => number_format($challenge->getTarget()),
+                    'relevant_url' => 'rpg/challenges',
+                ]
+            );
+        } catch (LoaderError $e) {
+        } catch (RuntimeError $e) {
+        } catch (SyntaxError $e) {
         }
     }
 

@@ -237,9 +237,14 @@ class FeedJsonController extends AbstractController
         $returnArray['uuid'] = $this->patient->getUuid();
         $returnArray['today'] = date("Y-m-d");
         $returnArray['lastReading'] = date("H:i:s");
-        $returnArray['current'] = round($this->patient->getXpTotal(), 2);
-        $returnArray['next'] = ceil($returnArray['current'] / 100) * 100;
-        $returnArray['level'] = round($this->patient->getRpgLevel(), 2);
+
+        $returnArray['level'] = $this->patient->getRpgLevel();
+        $returnArray['factor'] = $this->patient->getRpgFactor();
+        $returnArray['current'] = round($this->patient->getXpTotal(), 0);
+        $returnArray['next'] = ceil( $returnArray['current'] / 100 ) * 100;
+        $returnArray['level_next'] = $returnArray['next'] - $returnArray['current'];
+        $returnArray['level_percentage'] = 100 - ($returnArray['next'] - $returnArray['current']);
+
         $returnArray['log'] = $this->patient->getXp()->last()->getReason();
 
         return $this->json($returnArray);

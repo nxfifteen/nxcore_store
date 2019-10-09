@@ -83,6 +83,11 @@ class RpgChallengeFriends
      */
     private $challengedDetails = [];
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $completedAt;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -114,7 +119,7 @@ class RpgChallengeFriends
 
     public function getDuration(): ?int
     {
-        return $this->duration;
+        return $this->duration + 1;
     }
 
     public function setDuration(int $duration): self
@@ -240,6 +245,18 @@ class RpgChallengeFriends
     public function setChallengedDetails(?array $challengedDetails): self
     {
         $this->challengedDetails = $challengedDetails;
+
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeInterface $completedAt): self
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }

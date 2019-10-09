@@ -13,6 +13,7 @@ use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -26,10 +27,11 @@ class FitbitBodyWeight extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyWeight|null
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
     {
-        if (property_exists($jsonContent[0], "uuid")) {
+        if (property_exists($jsonContent[0], "uuid") && $jsonContent[2]->body->weight > 0) {
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
@@ -131,7 +133,7 @@ class FitbitBodyWeight extends Constants
                 $entityManager = $doctrine->getManager();
                 $entityManager->persist($updatedApi);
                 $entityManager->flush();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
             }
 

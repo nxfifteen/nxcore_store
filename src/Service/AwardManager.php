@@ -92,7 +92,7 @@ class AwardManager
             $patient->addReward($rewarded);
 
             if ($xp > 0) {
-                $patient = $this->giveXp($patient, $xp, "Awarded the " . $name . " badge on " . $dateTime->format("l jS F, Y"), new \DateTime($dateTime->format("Y-m-d 00:00:00")));
+                $patient = $this->giveXp($patient, $xp, "Awarded the " . $name . " badge", new \DateTime($dateTime->format("Y-m-d 00:00:00")));
             }
 
             try {
@@ -129,9 +129,9 @@ class AwardManager
 
                 $currentXp = $patient->getXpTotal();
                 $xpToAward = 0;
-                for ($i = 1; $i <= ($xpAwarded * 1000); $i++) {
+                for ($i = 1; $i <= $xpAwarded; $i++) {
                     $patient = $this->updateDifficultyFactor($patient, $patient->getRpgLevel());
-                    $xpToAward = $xpToAward + ((1 / 1000) * $patient->getRpgFactor());
+                    $xpToAward = $xpToAward + round((1 * $patient->getRpgFactor()), 0, PHP_ROUND_HALF_DOWN);
                 }
 
                 $entityManager = $this->doctrine->getManager();

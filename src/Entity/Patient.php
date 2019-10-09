@@ -682,7 +682,7 @@ class Patient implements UserInterface
             if (!is_null($friendToo->getAccepted()) && $friendToo->getAccepted()) {
                 $allFriends[] = [
                     "id" => $friendToo->getFriendA()->getId(),
-                    "name" => $friendToo->getFriendA()->getFirstName() . " " . $friendToo->getFriendA()->getSurName(),
+                    "name" => $friendToo->getFriendA()->getFirstName(),
                     "uuid" => $friendToo->getFriendA()->getUuid(),
                     "avatar" => $friendToo->getFriendA()->getAvatar(),
                 ];
@@ -696,7 +696,7 @@ class Patient implements UserInterface
             if (!is_null($friendOf->getAccepted()) && $friendOf->getAccepted()) {
                 $allFriends[] = [
                     "id" => $friendOf->getFriendB()->getId(),
-                    "name" => $friendOf->getFriendB()->getFirstName() . " " . $friendOf->getFriendB()->getSurName(),
+                    "name" => $friendOf->getFriendB()->getFirstName(),
                     "uuid" => $friendOf->getFriendB()->getUuid(),
                     "avatar" => $friendOf->getFriendB()->getAvatar(),
                 ];
