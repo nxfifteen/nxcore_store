@@ -72,6 +72,11 @@ class Exercise
      */
     private $exerciseTrack;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $steps;
+
     public function __construct()
     {
         $this->exerciseTrack = new ArrayCollection();
@@ -222,6 +227,18 @@ class Exercise
                 $exerciseTrack->setExercise(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSteps(): ?int
+    {
+        return $this->steps;
+    }
+
+    public function setSteps(?int $steps): self
+    {
+        $this->steps = $steps;
 
         return $this;
     }

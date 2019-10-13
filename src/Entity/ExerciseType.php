@@ -21,6 +21,11 @@ class ExerciseType
      */
     private $name;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $tag;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -34,6 +39,18 @@ class ExerciseType
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getTag(): ?string
+    {
+        return $this->tag;
+    }
+
+    public function setTag(?string $tag): self
+    {
+        $this->tag = $tag;
 
         return $this;
     }

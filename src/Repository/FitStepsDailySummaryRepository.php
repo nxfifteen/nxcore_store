@@ -19,6 +19,25 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
         parent::__construct($registry, FitStepsDailySummary::class);
     }
 
+    /**
+     * @param String $patientId
+     * @param        $date
+     *
+     * @return FitStepsDailySummary[]
+     */
+    public function findForDay(String $patientId, $date)
+    {
+        /** @var \DateTime $dateSince */
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime LIKE :startDate')
+            ->setParameter('startDate', $date . ' %')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findSince(String $patientId, $dateSince)
     {
         /** @var \DateTime $dateSince */

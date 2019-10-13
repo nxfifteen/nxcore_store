@@ -22,14 +22,16 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
     /**
      * @param String $patientId
      * @param String $date
+     * @param String $start
+     * @param String $end
      * @param int    $trackingDevice
      *
      * @return mixed
      */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice = 0)
+    public function findByDates(String $patientId, String $date, String $start, String $end, int $trackingDevice = 0)
     {
-        $today = $date . " 00:00:00";
-        $todayEnd = $date . " 23:59:00";
+        $today = $date . " " . $start;
+        $todayEnd = $date . " " . $end;
 
         if ($trackingDevice > 0) {
             return $this->createQueryBuilder('c')
@@ -58,5 +60,17 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
         }
+    }
+
+    /**
+     * @param String $patientId
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function findByDateRange(String $patientId, String $date, int $trackingDevice = 0)
+    {
+        return $this->findByDates($patientId, $date, "00:00:00", "23:59:00", $trackingDevice);
     }
 }

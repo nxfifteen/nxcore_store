@@ -1,9 +1,11 @@
 <?php
+/** @noinspection PhpUnused */
 
 namespace App\Controller;
 
 use App\Entity\ApiAccessLog;
 use App\Entity\BodyWeight;
+use App\Entity\Exercise;
 use App\Entity\FitDistanceDailySummary;
 use App\Entity\FitFloorsIntraDay;
 use App\Entity\FitStepsDailySummary;
@@ -14,6 +16,11 @@ use App\Entity\RpgMilestones;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
 use App\Service\AwardManager;
+use DateInterval;
+use DatePeriod;
+use DateTime;
+use Exception;
+use LogicException;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,104 +30,266 @@ class FeedUxController extends AbstractController
 {
     /** @var Patient $patient */
     private $patient;
-    /**
-     * @var int
-     */
-    private $challengeWins = 0;
-    /**
-     * @var int
-     */
-    private $challengeLoses = 0;
-    /**
-     * @var int
-     */
-    private $challengeDraws = 0;
 
     /**
-     * @Route("/feed/dashboard", name="ux_aggregator")
-     *
-     * @param AwardManager $awardManager
+     * @Route("/feed/activities/log", name="index_activity_log_no_param")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
-    public function index(AwardManager $awardManager)
+    public function index_activity_log_no_param()
+    {
+        return $this->index_activity_log(-1, date("Y-m-d"), '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}/within/{searchRange}/limited/{limit}", name="index_activity_log")
+     *
+     * @param int    $limit
+     * @param string $dateFrom
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log(int $limit, string $dateFrom, string $searchRange)
     {
         $return = [];
-
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
         $this->setupRoute();
 
-        $return['status'] = "okay";
-        $return['code'] = "200";
+        $return['limit'] = $limit;
+        $return['dateFrom'] = $dateFrom;
+        $return['dateBackTill'] = $dateFrom;
+        $return['searchRange'] = strtoupper($searchRange);
+        $return['nav'] = [
+            "nextMonth" => '',
+            "thisMonth" => '',
+            "prevMonth" => '',
+        ];
 
-        $return['milestones'] = $this->getPatientMilestones();
-        $return['steps'] = $this->getPatientSteps();
-        $return['floors'] = $this->getPatientFloors();
-        $return['distance'] = $this->getPatientDistance();
-        $return['rpg_friends'] = $this->getPatientFriends();
-        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
-        $return['awards'] = $this->getPatientAwards();
-        $return['weight'] = $this->getPatientWeight();
+        $return['durations'] = [];
+        $return['durationsTotal'] = 0;
+        $return['partOfDays'] = [
+            "morning" => 0,
+            "afternoon" => 0,
+            "evening" => 0,
+            "night" => 0,
+        ];
+        $return['partOfDaysTotal'] = 0;
 
-        if (
-            is_null($this->patient->getLastLoggedIn()) ||
-            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
-        ) {
-            $this->patient->setLastLoggedIn(new \DateTime());
-            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
-            $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new \DateTime(date("Y-m-d 00:00:00")));
+        $return['periodDurations'] = [];
+        $return['periodDurationsTotal'] = 0;
+        $return['periodPartOfDays'] = [
+            "morning" => 0,
+            "afternoon" => 0,
+            "evening" => 0,
+            "night" => 0,
+        ];
+        $return['periodPartOfDaysTotal'] = 0;
 
-            if ($this->patient->getLoginStreak() % 5 == 0) {
-                $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new \DateTime(date("Y-m-d 00:00:00")));
+        $return['results'] = [];
+
+        try {
+            $dateBackTill = new DateTime($dateFrom);
+            $nextMonth = new DateTime($dateFrom);
+            $prevMonth = new DateTime($dateFrom);
+            $dateFrom = new DateTime($dateFrom);
+
+            $interval = new \DateInterval('P' . strtoupper($searchRange));
+            $dateBackTill->sub($interval);
+            $return['dateBackTill'] = $dateBackTill->format("Y-m-d");
+
+            $nextMonth->add($interval);
+            $prevMonth->sub($interval);
+
+            $return['nav']['thisMonth'] = date("Y-m-d");
+            if ($nextMonth->format("U") <= date("U")) {
+                $return['nav']['nextMonth'] = $nextMonth->format("Y-m-d");
             }
+            $return['nav']['prevMonth'] = $prevMonth->format("Y-m-d");
 
-            if ($this->patient->getLoginStreak() % 31 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Full Month badge",
-                        'header_image' => '../badges/streak_month_header.png',
-                        "dateTime" => new \DateTime(),
-                        'relevant_date' => (new \DateTime())->format("F jS, Y"),
-                        "name" => "Full Month",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Full Month',
-                        'badge_xp' => 31,
-                        'badge_image' => 'streak_month',
-                        'badge_text' => "31 Day Streak",
-                        'badge_longtext' => "You've logged in every day for a full month",
-                        'badge_citation' => "You've logged in every day for a full month",
-                    ]
-                );
-            }
+        } catch (Exception $e) {
+            $return['error'] = $e->getMessage();
 
-            if ($this->patient->getLoginStreak() % 186 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Six Month badge",
-                        'header_image' => '../badges/streak_six_month_header.png',
-                        "dateTime" => new \DateTime(),
-                        'relevant_date' => (new \DateTime())->format("F jS, Y"),
-                        "name" => "Six Months",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Six Months',
-                        'badge_xp' => 186,
-                        'badge_image' => 'streak_six_month',
-                        'badge_text' => "6 Month Streak",
-                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
-                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
-                    ]
-                );
-            }
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($this->patient);
-            $entityManager->flush();
+            $b = microtime(TRUE);
+            $c = $b - $a;
+            $return['genTime'] = round($c, 4);
+            return $this->json($return);
         }
 
+        $dbAllTimeDurations = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->leftJoin('e.patient', 'p')
+            ->leftJoin('e.exerciseType', 't')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $this->patient->getId())
+            ->groupBy('e.exerciseType')
+            ->select('SUM(e.duration) as duration, t.tag as name')
+            ->getQuery()->getResult();
+        if ($dbAllTimeDurations && count($dbAllTimeDurations) > 0) {
+            $newArray = ["labels" => [], "values" => []];
+            foreach ($dbAllTimeDurations as $dbAllTimeDuration) {
+                $newArray["labels"][] = ucwords($dbAllTimeDuration['name']);
+                $newArray["values"][] = intval(round(($dbAllTimeDuration['duration'] / 60), 0));
+                $return['durationsTotal'] = $return['durationsTotal'] + intval(round(($dbAllTimeDuration['duration'] / 60), 0));
+            }
+            $return['durations'] = $newArray;
+        }
+
+        $dbAllTimePartOfDays = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->leftJoin('e.patient', 'p')
+            ->leftJoin('e.partOfDay', 't')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $this->patient->getId())
+            ->groupBy('e.partOfDay')
+            ->select('SUM(e.duration) as duration, t.name as name')
+            ->getQuery()->getResult();
+        if ($dbAllTimePartOfDays && count($dbAllTimePartOfDays) > 0) {
+            $newArray = ["labels" => [], "values" => []];
+            foreach ($dbAllTimePartOfDays as $dbAllTimePartOfDay) {
+                $newArray["labels"][] = ucwords($dbAllTimePartOfDay['name']);
+                $newArray["values"][] = intval(round(($dbAllTimePartOfDay['duration'] / 60), 0));
+                $return['partOfDaysTotal'] = $return['partOfDaysTotal'] + intval(round(($dbAllTimePartOfDay['duration'] / 60), 0));
+            }
+            $return['partOfDays'] = $newArray;
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var Exercise[] $dbExercises */
+        if ($limit < 0) {
+            $dbExercises = $this->getDoctrine()
+                ->getRepository(Exercise::class)->createQueryBuilder('e')
+                ->where('e.dateTimeStart <= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
+                ->andWhere('e.dateTimeStart >= :dateBackTill')
+                ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
+                ->orderBy('e.dateTimeStart', 'DESC')
+                ->getQuery()->getResult();
+        } else {
+            $dbExercises = $this->getDoctrine()
+                ->getRepository(Exercise::class)->createQueryBuilder('e')
+                ->where('e.dateTimeStart <= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
+                ->andWhere('e.dateTimeStart >= :dateBackTill')
+                ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
+                ->orderBy('e.dateTimeStart', 'DESC')
+                ->setMaxResults($limit)
+                ->getQuery()->getResult();
+        }
+        if (!$dbExercises) {
+            $b = microtime(TRUE);
+            $c = $b - $a;
+            $return['genTime'] = round($c, 4);
+            return $this->json($return);
+        }
+
+        foreach ($dbExercises as $dbExercise) {
+            $exerciseDate = $dbExercise->getDateTimeStart()->format("Y-m-d");
+            $exerciseDateStarted = $dbExercise->getDateTimeStart()->format("H:i:s");
+            $exerciseDateFinished = $dbExercise->getDateTimeEnd()->format("H:i:s");
+            $exerciseType = $dbExercise->getExerciseType()->getName();
+            $exerciseTag = $dbExercise->getExerciseType()->getTag();
+            $partOfDay = $dbExercise->getPartOfDay()->getName();
+
+            $dayStepTotal = 0;
+            $exerciseStepCountSum = 0;
+            if ($exerciseType == "Walking") {
+                if (is_null($dbExercise->getSteps())) {
+                    $exerciseStepCount = [];
+                    /** @var FitStepsIntraDay[] $dbIntraDaySteps */
+                    $dbIntraDaySteps = $this->getDoctrine()
+                        ->getRepository(FitStepsIntraDay::class)
+                        ->findByDates(
+                            $this->patient->getUuid(),
+                            $exerciseDate,
+                            $exerciseDateStarted,
+                            $exerciseDateFinished,
+                            $dbExercise->getTrackingDevice()->getId()
+                        );
+                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) > 0) {
+                        foreach ($dbIntraDaySteps as $dbIntraDayStep) {
+                            $exerciseStepCount[] = $dbIntraDayStep->getValue();
+                        }
+
+                        $exerciseStepCountSum = array_sum($exerciseStepCount);
+                    }
+
+                    $dbExercise->setSteps($exerciseStepCountSum);
+
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $entityManager->persist($dbExercise);
+                    $entityManager->flush();
+                } else {
+                    $exerciseStepCountSum = $dbExercise->getSteps();
+                }
+
+                /** @var FitStepsDailySummary[] $dbStepsForDay */
+                $dbStepsForDay = $this->getDoctrine()
+                    ->getRepository(FitStepsDailySummary::class)
+                    ->findForDay($this->patient->getUuid(), $exerciseDate);
+                if (is_array($dbStepsForDay) && count($dbStepsForDay) > 0) {
+                    $dayStepTotal = $dbStepsForDay[0]->getValue();
+                }
+            }
+
+            $return['results'][] = [
+                "id" => $dbExercise->getId(),
+                "tracker" => $dbExercise->getTrackingDevice()->getName(),
+                "partOfDay" => $partOfDay,
+                "exerciseType" => $exerciseType,
+                "exerciseTag" => $exerciseTag,
+                "date" => $exerciseDate,
+                "dateFormatted" => $dbExercise->getDateTimeStart()->format("l ") . $partOfDay . $dbExercise->getDateTimeStart()->format(", F jS"),
+                "started" => $exerciseDateStarted,
+                "finished" => $exerciseDateFinished,
+                "duration" => round(($dbExercise->getDuration() / 60), 0),
+                "steps" => $exerciseStepCountSum,
+                "stepsTotal" => $dayStepTotal,
+                "altitudeMax" => round($dbExercise->getExerciseSummary()->getAltitudeMax(), 3),
+                "altitudeMin" => round($dbExercise->getExerciseSummary()->getAltitudeMin(), 3),
+                "calorie" => round($dbExercise->getExerciseSummary()->getCalorie(), 3),
+                "distance" => round($dbExercise->getExerciseSummary()->getDistance() / 1000, 3),
+                "speedMax" => round($dbExercise->getExerciseSummary()->getSpeedMax(), 3),
+                "speedMean" => round($dbExercise->getExerciseSummary()->getSpeedMean(), 3),
+                "heartRateMax" => round($dbExercise->getExerciseSummary()->getHeartRateMax(), 3),
+                "heartRateMin" => round($dbExercise->getExerciseSummary()->getHeartRateMin(), 3),
+                "heartRateMean" => round($dbExercise->getExerciseSummary()->getHeartRateMean(), 3),
+            ];
+
+            if (array_key_exists($exerciseTag, $return['periodDurations'])) {
+                $return['periodDurations'][$exerciseTag] = $return['periodDurations'][$exerciseTag] + round(($dbExercise->getDuration() / 60), 0);
+            } else {
+                $return['periodDurations'][$exerciseTag] = round(($dbExercise->getDuration() / 60), 0);
+            }
+
+            if (array_key_exists($partOfDay, $return['periodPartOfDays'])) {
+                $return['periodPartOfDays'][$partOfDay] = $return['periodPartOfDays'][$partOfDay] + round(($dbExercise->getDuration() / 60), 0);
+            } else {
+                $return['periodPartOfDays'][$partOfDay] = round(($dbExercise->getDuration() / 60), 0);
+            }
+        }
+
+        $newArray = ["labels" => [], "values" => []];
+        foreach ($return['periodPartOfDays'] as $key => $partOfDay) {
+            $newArray["labels"][] = ucwords($key);
+            $newArray["values"][] = $partOfDay;
+            $return['periodPartOfDaysTotal'] = $return['periodPartOfDaysTotal'] + $partOfDay;
+        }
+        $return['periodPartOfDays'] = $newArray;
+
+        $newArray = ["labels" => [], "values" => []];
+        foreach ($return['periodDurations'] as $key => $partOfDay) {
+            $newArray["labels"][] = ucwords($key);
+            $newArray["values"][] = $partOfDay;
+            $return['periodDurationsTotal'] = $return['periodDurationsTotal'] + $partOfDay;
+        }
+        $return['periodDurations'] = $newArray;
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
@@ -142,7 +311,7 @@ class FeedUxController extends AbstractController
     /**
      * @param String $userRole
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $userRole = 'ROLE_USER')
     {
@@ -150,11 +319,182 @@ class FeedUxController extends AbstractController
     }
 
     /**
+     * @Route("/feed/activities/log/limited/{limit}", name="index_activity_log_with_limit")
+     *
+     * @param int $limit
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_limit(int $limit)
+    {
+        return $this->index_activity_log($limit, date("Y-m-d"), '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/within/{searchRange}", name="index_activity_log_with_within")
+     *
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_within(string $searchRange)
+    {
+        return $this->index_activity_log(-1, date("Y-m-d"), $searchRange);
+    }
+
+    /**
+     * @Route("/feed/activities/log/within/{searchRange}/limited/{limit}", name="index_activity_log_with_limit_within")
+     *
+     * @param int    $limit
+     *
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_limit_within(int $limit, string $searchRange)
+    {
+        return $this->index_activity_log($limit, date("Y-m-d"), $searchRange);
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}/limited/{limit}", name="index_activity_log_with_limit_date")
+     *
+     * @param int    $limit
+     *
+     * @param string $dateFrom
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_limit_date(int $limit, string $dateFrom)
+    {
+        return $this->index_activity_log($limit, $dateFrom, '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}", name="index_activity_log_with_date")
+     *
+     * @param string $dateFrom
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_date(string $dateFrom)
+    {
+        return $this->index_activity_log(-1, $dateFrom, '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}/within/{searchRange}", name="index_activity_log_with_date_within")
+     *
+     * @param string $dateFrom
+     *
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_date_within(string $dateFrom, string $searchRange)
+    {
+        return $this->index_activity_log(-1, $dateFrom, $searchRange);
+    }
+
+    /**
+     * @Route("/feed/dashboard", name="ux_aggregator")
+     *
+     * @param AwardManager $awardManager
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index(AwardManager $awardManager)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+
+        $return['milestones'] = $this->getPatientMilestones();
+        $return['steps'] = $this->getPatientSteps();
+        $return['floors'] = $this->getPatientFloors();
+        $return['distance'] = $this->getPatientDistance();
+        $return['rpg_friends'] = $this->getPatientFriends();
+        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
+        $return['awards'] = $this->getPatientAwards();
+        $return['weight'] = $this->getPatientWeight();
+
+        if (
+            is_null($this->patient->getLastLoggedIn()) ||
+            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
+        ) {
+            $this->patient->setLastLoggedIn(new DateTime());
+            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
+            $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new DateTime(date("Y-m-d 00:00:00")));
+
+            if ($this->patient->getLoginStreak() % 5 == 0) {
+                $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new DateTime(date("Y-m-d 00:00:00")));
+            }
+
+            if ($this->patient->getLoginStreak() % 31 == 0) {
+                $this->patient = $awardManager->giveBadge(
+                    $this->patient,
+                    [
+                        'patients_name' => $this->patient->getFirstName(),
+                        'html_title' => "Awarded the Full Month badge",
+                        'header_image' => '../badges/streak_month_header.png',
+                        "dateTime" => new DateTime(),
+                        'relevant_date' => (new DateTime())->format("F jS, Y"),
+                        "name" => "Full Month",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Full Month',
+                        'badge_xp' => 31,
+                        'badge_image' => 'streak_month',
+                        'badge_text' => "31 Day Streak",
+                        'badge_longtext' => "You've logged in every day for a full month",
+                        'badge_citation' => "You've logged in every day for a full month",
+                    ]
+                );
+            }
+
+            if ($this->patient->getLoginStreak() % 186 == 0) {
+                $this->patient = $awardManager->giveBadge(
+                    $this->patient,
+                    [
+                        'patients_name' => $this->patient->getFirstName(),
+                        'html_title' => "Awarded the Six Month badge",
+                        'header_image' => '../badges/streak_six_month_header.png',
+                        "dateTime" => new DateTime(),
+                        'relevant_date' => (new DateTime())->format("F jS, Y"),
+                        "name" => "Six Months",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Six Months',
+                        'badge_xp' => 186,
+                        'badge_image' => 'streak_six_month',
+                        'badge_text' => "6 Month Streak",
+                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
+                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
+                    ]
+                );
+            }
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($this->patient);
+            $entityManager->flush();
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
      * @return null
      */
     private function getPatientMilestones()
     {
-        $returnSummary = [];
+        $return = [];
 
         if (is_null($this->patient)) $this->patient = $this->getUser();
 
@@ -422,7 +762,7 @@ class FeedUxController extends AbstractController
         } else {
             $returnSummary['units'] = $dbDistanceSummary->getUnitOfMeasurement()->getName();
         }
-        $returnSummary['intraDay'] = $this->getPatientDistanceIntraDay(date("Y-m-d"));
+        $returnSummary['intraDay'] = NULL;
 
         if ($returnSummary['progress'] > 100) {
             $returnSummary['progressBar'] = 100;
@@ -431,16 +771,6 @@ class FeedUxController extends AbstractController
         }
 
         return $returnSummary;
-    }
-
-    /**
-     * @param String $date
-     *
-     * @return null
-     */
-    private function getPatientDistanceIntraDay(String $date)
-    {
-        return NULL;
     }
 
     /**
@@ -552,9 +882,9 @@ class FeedUxController extends AbstractController
         }
 
         $runningFriendsChallenges['score'] = [
-            "win" => $this->challengeWins,
-            "lose" => $this->challengeLoses,
-            "draw" => $this->challengeDraws,
+            "win" => $this->calcChallengeWins(),
+            "lose" => $this->calcChallengeLoses(),
+            "draw" => $this->calcChallengeDraws(),
         ];
 
         return $runningFriendsChallenges;
@@ -617,37 +947,25 @@ class FeedUxController extends AbstractController
                 switch ($challengeFriends->getOutcome()) {
                     case 6:
                         $outcome = "draw";
-                        $this->challengeDraws++;
                         break;
                     case 5:
                         if ($wasChallenger) {
                             $outcome = "win";
-                            $this->challengeWins++;
                         } else {
                             $outcome = "lose";
-                            $this->challengeLoses++;
                         }
                         break;
                     case 4:
                         if ($wasChallenger) {
                             $outcome = "lose";
-                            $this->challengeLoses++;
                         } else {
                             $outcome = "win";
-                            $this->challengeWins++;
                         }
                         break;
-                    case 3:
-                        $outcome = "uncompleted";
-                        $this->challengeLoses++;
-                        break;
                     case 2:
-                        $outcome = "uncompleted";
-                        $this->challengeLoses++;
-                        break;
+                    case 3:
                     case 1:
                         $outcome = "uncompleted";
-                        $this->challengeLoses++;
                         break;
                     default:
                         $outcome = "unknown";
@@ -848,6 +1166,36 @@ class FeedUxController extends AbstractController
             default:
                 return $getCriteria;
         }
+    }
+
+    private function calcChallengeWins()
+    {
+        /** @var int $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findChallengeWins($this->patient);
+
+        return $dbChallenger;
+    }
+
+    private function calcChallengeLoses()
+    {
+        /** @var int $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findChallengeLoses($this->patient);
+
+        return $dbChallenger;
+    }
+
+    private function calcChallengeDraws()
+    {
+        /** @var int $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findChallengeDraws($this->patient);
+
+        return $dbChallenger;
     }
 
     /**
@@ -1054,115 +1402,38 @@ class FeedUxController extends AbstractController
     }
 
     /**
-     * @Route("/feed/dashboard/pro", name="ux_aggregator_pro")
-     *
-     * @param AwardManager $awardManager
-     *
-     * @return JsonResponse
-     */
-    public function index_pro(AwardManager $awardManager)
-    {
-        $return = [];
-
-        $this->setupRoute();
-
-        $return['status'] = "okay";
-        $return['code'] = "200";
-
-        $return['weight'] = $this->getPatientWeight();
-        $return['steps'] = $this->getPatientSteps(TRUE);
-        $return['floors'] = $this->getPatientFloors();
-        $return['distance'] = $this->getPatientDistance();
-        $return['milestones'] = $this->getPatientMilestones();
-        $return['rpg_friends'] = $this->getPatientFriends();
-        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
-        $return['awards'] = $this->getPatientAwards();
-
-        if (
-            is_null($this->patient->getLastLoggedIn()) ||
-            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
-        ) {
-            $this->patient->setLastLoggedIn(new \DateTime());
-            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
-            $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new \DateTime(date("Y-m-d 00:00:00")));
-
-            if ($this->patient->getLoginStreak() % 5 == 0) {
-                $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new \DateTime(date("Y-m-d 00:00:00")));
-            }
-
-            if ($this->patient->getLoginStreak() % 31 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Full Month badge",
-                        'header_image' => '../badges/streak_month_header.png',
-                        "dateTime" => new \DateTime(),
-                        'relevant_date' => (new \DateTime())->format("F jS, Y"),
-                        "name" => "Full Month",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Full Month',
-                        'badge_xp' => 31,
-                        'badge_image' => 'streak_month',
-                        'badge_text' => "31 Day Streak",
-                        'badge_longtext' => "You've logged in every day for a full month",
-                        'badge_citation' => "You've logged in every day for a full month",
-                    ]
-                );
-            }
-
-            if ($this->patient->getLoginStreak() % 186 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Six Month badge",
-                        'header_image' => '../badges/streak_six_month_header.png',
-                        "dateTime" => new \DateTime(),
-                        'relevant_date' => (new \DateTime())->format("F jS, Y"),
-                        "name" => "Six Months",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Six Months',
-                        'badge_xp' => 186,
-                        'badge_image' => 'streak_six_month',
-                        'badge_text' => "6 Month Streak",
-                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
-                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
-                    ]
-                );
-            }
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($this->patient);
-            $entityManager->flush();
-        }
-
-        return $this->json($return);
-    }
-
-    /**
      * @Route("/feed/pvp/challenges", name="ux_aggregator_index_pvp_challenges")
      */
     public function index_pvp_challenges()
     {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $this->setupRoute();
 
         $return['status'] = "okay";
-        $return['code'] = "200";
+        $return['code'] = 200;
 
         $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends();
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
     /**
      * @Route("/feed/pvp/challenges/{badgeId}", name="ux_aggregator_index_pvp_challenges_detail")
+     * @param int $badgeId
+     *
+     * @return JsonResponse
      */
     public function index_pvp_challenges_detail(int $badgeId)
     {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $this->setupRoute();
 
@@ -1457,6 +1728,9 @@ class FeedUxController extends AbstractController
         }
         $return['opponentDetail']['diff'] = number_format($return['opponentDetail']['diffRaw'], 0);
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
@@ -1466,6 +1740,8 @@ class FeedUxController extends AbstractController
     public function index_pvp_challenge_options()
     {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $this->setupRoute();
 
@@ -1483,6 +1759,9 @@ class FeedUxController extends AbstractController
             1, 2, 3, 5, 7, 10, 14, 31,
         ];
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
@@ -1492,6 +1771,8 @@ class FeedUxController extends AbstractController
     public function index_pvp_leaderboard()
     {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $this->setupRoute();
 
@@ -1506,15 +1787,23 @@ class FeedUxController extends AbstractController
             }
         }
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
     /**
      * @Route("/feed/achievements/awards/{badgeId}", name="index_achievements_badges_detail")
+     * @param int $badgeId
+     *
+     * @return JsonResponse
      */
     public function index_achievements_badges_detail(int $badgeId)
     {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $this->setupRoute();
 
@@ -1557,11 +1846,11 @@ class FeedUxController extends AbstractController
             try {
                 $awardWeekReport = [];
 
-                /** @var \DateTime[] $periods */
-                $periods = new \DatePeriod(
-                    new \DateTime($startDateRange),
-                    new \DateInterval('P1D'),
-                    new \DateTime($endDateRange)
+                /** @var DateTime[] $periods */
+                $periods = new DatePeriod(
+                    new DateTime($startDateRange),
+                    new DateInterval('P1D'),
+                    new DateTime($endDateRange)
                 );
                 foreach ($periods as $period) {
                     if (strtotime($period->format("Y-m-d")) > date("U")) {
@@ -1585,10 +1874,13 @@ class FeedUxController extends AbstractController
                         "awarded" => $value,
                     ];
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
         }
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
@@ -1598,6 +1890,8 @@ class FeedUxController extends AbstractController
     public function index_achievements_badges()
     {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $this->setupRoute();
 
@@ -1618,6 +1912,9 @@ class FeedUxController extends AbstractController
         $return['xp_log'] = array_slice(array_reverse($return['xp_log']), 0, 10);
         $return['awards'] = $this->getPatientAwards();
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
@@ -1630,6 +1927,8 @@ class FeedUxController extends AbstractController
     public function index_body_weight(int $readings)
     {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $this->setupRoute();
 
@@ -1637,6 +1936,9 @@ class FeedUxController extends AbstractController
         $return['code'] = "200";
         $return['weight'] = $this->getPatientWeight(FALSE, date("Y-m-d"), $readings);
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
@@ -1648,20 +1950,24 @@ class FeedUxController extends AbstractController
      */
     public function index_update_cordova(string $currentVersion)
     {
-        $latestVersion = "0.0.0.1";
+        $latestVersion = $_ENV['VERSION_CORDOVA'];
 
         $return = [];
-
-        $this->setupRoute();
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
         $return['latestVersion'] = $latestVersion;
         $return['yourVersion'] = $currentVersion;
-        if ($latestVersion != $latestVersion) {
+
+        if (ip2long($latestVersion) > ip2long($currentVersion)) {
             $return['updateAvailable'] = TRUE;
         } else {
             $return['updateAvailable'] = FALSE;
         }
 
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 }
