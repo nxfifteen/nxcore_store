@@ -1438,6 +1438,11 @@ class FeedUxController extends AbstractController
         $return['genTime'] = -1;
         $a = microtime(TRUE);
 
+        $return['nav'] = [
+            "nextMonth" => '',
+            "prevMonth" => '',
+        ];
+
         $this->setupRoute();
 
         /** @var RpgChallengeFriends $dbChallenger */
@@ -1487,6 +1492,76 @@ class FeedUxController extends AbstractController
             default:
                 $outcome = "unknown";
                 break;
+        }
+
+        if ($outcome == "unknown") {
+            $dbChallengedNav = $this->getDoctrine()
+                ->getRepository(RpgChallengeFriends::class)->createQueryBuilder('c')
+                ->leftJoin('c.challenger', 'per')
+                ->leftJoin('c.challenged', 'ped')
+                ->andWhere('per.id = :patientId OR ped.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->andWhere('c.id > :queriedId')
+                ->setParameter('queriedId', $badgeId)
+                ->andWhere('c.outcome IS NULL')
+                ->select('c.id as id')
+                ->orderBy('c.id', 'ASC')
+                ->setMaxResults(1)
+                ->getQuery()->getResult();
+            if (count($dbChallengedNav) > 0) {
+                $return['nav']['nextMonth'] = array_pop($dbChallengedNav)['id'];
+            }
+
+            $dbChallengedNav = $this->getDoctrine()
+                ->getRepository(RpgChallengeFriends::class)->createQueryBuilder('c')
+                ->leftJoin('c.challenger', 'per')
+                ->leftJoin('c.challenged', 'ped')
+                ->andWhere('per.id = :patientId OR ped.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->andWhere('c.id < :queriedId')
+                ->setParameter('queriedId', $badgeId)
+                ->andWhere('c.outcome IS NULL')
+                ->select('c.id as id')
+                ->orderBy('c.id', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()->getResult();
+            if (count($dbChallengedNav) > 0) {
+                $return['nav']['prevMonth'] = array_pop($dbChallengedNav)['id'];
+            }
+        } else {
+            $dbChallengedNav = $this->getDoctrine()
+                ->getRepository(RpgChallengeFriends::class)->createQueryBuilder('c')
+                ->leftJoin('c.challenger', 'per')
+                ->leftJoin('c.challenged', 'ped')
+                ->andWhere('per.id = :patientId OR ped.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->andWhere('c.id > :queriedId')
+                ->setParameter('queriedId', $badgeId)
+                ->andWhere('c.outcome IS NOT NULL')
+                ->select('c.id as id')
+                ->orderBy('c.id', 'ASC')
+                ->setMaxResults(1)
+                ->getQuery()->getResult();
+            if (count($dbChallengedNav) > 0) {
+                $return['nav']['nextMonth'] = array_pop($dbChallengedNav)['id'];
+            }
+
+            $dbChallengedNav = $this->getDoctrine()
+                ->getRepository(RpgChallengeFriends::class)->createQueryBuilder('c')
+                ->leftJoin('c.challenger', 'per')
+                ->leftJoin('c.challenged', 'ped')
+                ->andWhere('per.id = :patientId OR ped.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->andWhere('c.id < :queriedId')
+                ->setParameter('queriedId', $badgeId)
+                ->andWhere('c.outcome IS NOT NULL')
+                ->select('c.id as id')
+                ->orderBy('c.id', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()->getResult();
+            if (count($dbChallengedNav) > 0) {
+                $return['nav']['prevMonth'] = array_pop($dbChallengedNav)['id'];
+            }
         }
 
         $return['id'] = $dbChallenger->getId();
