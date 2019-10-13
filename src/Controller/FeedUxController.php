@@ -58,6 +58,7 @@ class FeedUxController extends AbstractController
         $a = microtime(TRUE);
         $this->setupRoute();
 
+        $return['title'] = $dateFrom;
         $return['limit'] = $limit;
         $return['dateFrom'] = $dateFrom;
         $return['dateBackTill'] = $dateFrom;
@@ -95,6 +96,8 @@ class FeedUxController extends AbstractController
             $nextMonth = new DateTime($dateFrom);
             $prevMonth = new DateTime($dateFrom);
             $dateFrom = new DateTime($dateFrom);
+
+            $return['title'] = $dateFrom->format("F, Y");
 
             $interval = new \DateInterval('P' . strtoupper($searchRange));
             $dateBackTill->sub($interval);
