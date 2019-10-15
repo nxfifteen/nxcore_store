@@ -151,6 +151,11 @@ class Patient implements UserInterface
      */
     private $loginStreak;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\PatientMembership", mappedBy="patient", cascade={"persist", "remove"})
+     */
+    private $membership;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -793,6 +798,24 @@ class Patient implements UserInterface
     public function setLoginStreak(?int $loginStreak): self
     {
         $this->loginStreak = $loginStreak;
+
+        return $this;
+    }
+
+    public function getMembership(): ?PatientMembership
+    {
+        return $this->membership;
+    }
+
+    public function setMembership(?PatientMembership $membership): self
+    {
+        $this->membership = $membership;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newPatient = $membership === null ? null : $this;
+        if ($newPatient !== $membership->getPatient()) {
+            $membership->setPatient($newPatient);
+        }
 
         return $this;
     }
