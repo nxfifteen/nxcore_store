@@ -120,6 +120,19 @@ class RegistrationController extends AbstractController
         $patient->setRoles(['ROLE_USER', 'ROLE_BETA']);
         $patient->setApiToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
         $entityManager->persist($patient);
+
+        /** @var Patient $patientOwner */
+        $patientOwner = $doctrine
+            ->getRepository(Patient::class)
+            ->findOneBy(["id" => 1]);
+        if ($patientOwner) {
+            $friendsWithOwner = new PatientFriends();
+            $friendsWithOwner->setAccepted(true);
+            $friendsWithOwner->setFriendA($patient);
+            $friendsWithOwner->setFriendB($patientOwner);
+            $entityManager->persist($friendsWithOwner);
+        }
+
         $entityManager->flush();
 
         $awardManager->sendUserEmail(
@@ -225,17 +238,7 @@ class RegistrationController extends AbstractController
 
         $entityManager->persist($patient);
 
-        /** @var Patient $patientOwner */
-        $patientOwner = $doctrine
-            ->getRepository(Patient::class)
-            ->findOneBy(["id" => 1]);
-        if ($patientOwner) {
-            $friendsWithOwner = new PatientFriends();
-            $friendsWithOwner->setAccepted(true);
-            $friendsWithOwner->setFriendA($patient);
-            $friendsWithOwner->setFriendB($patientOwner);
-            $entityManager->persist($friendsWithOwner);
-        }
+
 
         $entityManager->flush();
 
