@@ -322,6 +322,148 @@ class FeedUxController extends AbstractController
     }
 
     /**
+     * @Route("/feed/activities/detail/{activityId}", name="index_activity_log_detail")
+     *
+     * @param int $activityId
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_detail(int $activityId)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+        $this->setupRoute();
+        $return['nav'] = [
+            "nextMonth" => '',
+            "thisMonth" => '',
+            "prevMonth" => '',
+        ];
+
+        /** @var Exercise[] $dbExercises */
+        $dbExercises = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->where('e.id = :activityId')
+            ->setParameter('activityId', $activityId)
+            ->andWhere('e.patient = :patientId')
+            ->setParameter('patientId', $this->patient)
+            ->getQuery()->getResult();
+        if (!$dbExercises) {
+            $b = microtime(TRUE);
+            $c = $b - $a;
+            $return['genTime'] = round($c, 4);
+            return $this->json($return);
+        }
+
+        $dbChallengedNav = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->andwhere('e.patient = :patientId')
+            ->setParameter('patientId', $this->patient)
+            ->andwhere('e.id > :activityId')
+            ->setParameter('activityId', $activityId)
+            ->select('e.id as id')
+            ->orderBy('e.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()->getResult();
+        if (count($dbChallengedNav) > 0) {
+            $return['nav']['nextMonth'] = array_pop($dbChallengedNav)['id'];
+        }
+
+        $dbChallengedNav = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->andwhere('e.patient = :patientId')
+            ->setParameter('patientId', $this->patient)
+            ->andwhere('e.id < :activityId')
+            ->setParameter('activityId', $activityId)
+            ->select('e.id as id')
+            ->orderBy('e.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()->getResult();
+        if (count($dbChallengedNav) > 0) {
+            $return['nav']['prevMonth'] = array_pop($dbChallengedNav)['id'];
+        }
+
+        foreach ($dbExercises as $dbExercise) {
+            $exerciseDate = $dbExercise->getDateTimeStart()->format("Y-m-d");
+            $exerciseDateStarted = $dbExercise->getDateTimeStart()->format("H:i:s");
+            $exerciseDateFinished = $dbExercise->getDateTimeEnd()->format("H:i:s");
+            $exerciseType = $dbExercise->getExerciseType()->getName();
+            $exerciseTag = $dbExercise->getExerciseType()->getTag();
+            $partOfDay = $dbExercise->getPartOfDay()->getName();
+
+            $dayStepTotal = 0;
+            $exerciseStepCountSum = 0;
+            if ($exerciseType == "Walking") {
+                if (is_null($dbExercise->getSteps())) {
+                    $exerciseStepCount = [];
+                    /** @var FitStepsIntraDay[] $dbIntraDaySteps */
+                    $dbIntraDaySteps = $this->getDoctrine()
+                        ->getRepository(FitStepsIntraDay::class)
+                        ->findByDates(
+                            $this->patient->getUuid(),
+                            $exerciseDate,
+                            $exerciseDateStarted,
+                            $exerciseDateFinished,
+                            $dbExercise->getTrackingDevice()->getId()
+                        );
+                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) > 0) {
+                        foreach ($dbIntraDaySteps as $dbIntraDayStep) {
+                            $exerciseStepCount[] = $dbIntraDayStep->getValue();
+                        }
+
+                        $exerciseStepCountSum = array_sum($exerciseStepCount);
+                    }
+
+                    $dbExercise->setSteps($exerciseStepCountSum);
+
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $entityManager->persist($dbExercise);
+                    $entityManager->flush();
+                } else {
+                    $exerciseStepCountSum = $dbExercise->getSteps();
+                }
+
+                /** @var FitStepsDailySummary[] $dbStepsForDay */
+                $dbStepsForDay = $this->getDoctrine()
+                    ->getRepository(FitStepsDailySummary::class)
+                    ->findForDay($this->patient->getUuid(), $exerciseDate);
+                if (is_array($dbStepsForDay) && count($dbStepsForDay) > 0) {
+                    $dayStepTotal = $dbStepsForDay[0]->getValue();
+                }
+            }
+
+            $return['results'] = [
+                "id" => $dbExercise->getId(),
+                "tracker" => $dbExercise->getTrackingDevice()->getName(),
+                "partOfDay" => $partOfDay,
+                "exerciseType" => $exerciseType,
+                "exerciseTag" => $exerciseTag,
+                "date" => $exerciseDate,
+                "dateFormatted" => $dbExercise->getDateTimeStart()->format("l ") . $partOfDay . $dbExercise->getDateTimeStart()->format(", F jS"),
+                "started" => $exerciseDateStarted,
+                "finished" => $exerciseDateFinished,
+                "duration" => round(($dbExercise->getDuration() / 60), 0),
+                "steps" => $exerciseStepCountSum,
+                "stepsTotal" => $dayStepTotal,
+                "altitudeMax" => round($dbExercise->getExerciseSummary()->getAltitudeMax(), 3),
+                "altitudeMin" => round($dbExercise->getExerciseSummary()->getAltitudeMin(), 3),
+                "calorie" => round($dbExercise->getExerciseSummary()->getCalorie(), 3),
+                "distance" => round($dbExercise->getExerciseSummary()->getDistance() / 1000, 3),
+                "speedMax" => round($dbExercise->getExerciseSummary()->getSpeedMax(), 3),
+                "speedMean" => round($dbExercise->getExerciseSummary()->getSpeedMean(), 3),
+                "heartRateMax" => round($dbExercise->getExerciseSummary()->getHeartRateMax(), 3),
+                "heartRateMin" => round($dbExercise->getExerciseSummary()->getHeartRateMin(), 3),
+                "heartRateMean" => round($dbExercise->getExerciseSummary()->getHeartRateMean(), 3),
+            ];
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
      * @Route("/feed/activities/log/limited/{limit}", name="index_activity_log_with_limit")
      *
      * @param int $limit
