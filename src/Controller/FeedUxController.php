@@ -871,7 +871,7 @@ class FeedUxController extends AbstractController
         /** @var RpgChallengeFriends[] $dbChallenger */
         $dbChallenger = $this->getDoctrine()
             ->getRepository(RpgChallengeFriends::class)
-            ->findBy(["challenger" => $this->patient], ["startDate" => "DESC"]);
+            ->findBy(["challenger" => $this->patient], ["endDate" => "DESC"]);
         foreach ($dbChallenger as $challengeFriends) {
             $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges, $challengeFriends);
         }
@@ -879,7 +879,7 @@ class FeedUxController extends AbstractController
         /** @var RpgChallengeFriends[] $dbChallenger */
         $dbChallenged = $this->getDoctrine()
             ->getRepository(RpgChallengeFriends::class)
-            ->findBy(["challenged" => $this->patient], ["startDate" => "DESC"]);
+            ->findBy(["challenged" => $this->patient], ["endDate" => "DESC"]);
         foreach ($dbChallenged as $challengeFriends) {
             $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges, $challengeFriends);
         }

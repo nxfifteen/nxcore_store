@@ -291,7 +291,7 @@ class SyncPatreon extends Command
                 "name" => "patreon name",
                 "repeat" => FALSE,
                 'badge_name' => 'patreon badge_name',
-                'badge_xp' => 30,
+                'badge_xp' => 0,
                 'badge_image' => 'patreon',
                 'badge_text' => "patreon badge_text",
                 'badge_longtext' => "patreon badge_longtext",
