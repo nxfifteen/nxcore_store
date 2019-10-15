@@ -52,7 +52,7 @@ class AuthWithFitbitController extends AbstractController
         // Get the state generated for you and store it to the session.
         $_SESSION['uuid'] = $uuid;
         $_SESSION['key'] = $request->getMasterRequest()->get("key");
-        $_SESSION['returnUrl'] = $request->getMasterRequest()->get("return");
+        $_SESSION['returnUrl'] = $request->getMasterRequest()->get("return") . '/#/' . $request->getMasterRequest()->get("returnPath");
         $_SESSION['oauth2state'] = $provider->getState();
 
         // Redirect the user to the authorization URL.
@@ -69,7 +69,7 @@ class AuthWithFitbitController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
 
-        /** @var \App\Entity\Patient $user */
+        /** @var Patient $user */
         $user = $this->getUser();
         if ($user->getUuid() != $uuid) {
             $exception = $this->createAccessDeniedException("User tried to access another users information");
@@ -83,6 +83,7 @@ class AuthWithFitbitController extends AbstractController
      * @param RequestStack    $request
      *
      * @return void
+     * @throws \Exception
      */
     public function auth_with_fitbit_callback(ManagerRegistry $doctrine, RequestStack $request)
     {
@@ -161,16 +162,20 @@ class AuthWithFitbitController extends AbstractController
 
                 $response = $this->getLibrary()->getResponse($request);
             } catch (IdentityProviderException $e) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . ' ' . $e->getMessage());
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
+                header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
+                exit;
             }
 
         } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
             // Failed to get the access token or user details.
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
+            header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
+            exit;
         }
 
         // Redirect the user to the authorization URL.
-        header('Location: ' . $_SESSION['returnUrl'] . '/#/setup/fitbit?complete=true');
+        header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
         exit;
     }
 
