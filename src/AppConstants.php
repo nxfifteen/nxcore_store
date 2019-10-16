@@ -132,4 +132,34 @@ class AppConstants
                 break;
         }
     }
+
+    static function compressString($stringToCompress)
+    {
+        $compressedString = "\x1f\x8b\x08\x00" . gzcompress($stringToCompress);
+
+        return $compressedString;
+    }
+
+    static function uncompressString($stringToUncompress)
+    {
+        $uncompressedString = gzuncompress(substr($stringToUncompress, 4));
+
+        return $uncompressedString;
+    }
+
+    static function formatSeconds($seconds)
+    {
+        $hours = 0;
+        $milliseconds = str_replace("0.", '', $seconds - floor($seconds));
+
+        if ($seconds > 3600) {
+            $hours = floor($seconds / 3600);
+        }
+        $seconds = $seconds % 3600;
+
+
+        return str_pad($hours, 2, '0', STR_PAD_LEFT)
+            . gmdate(':i:s', $seconds)
+            . ($milliseconds ? ".$milliseconds" : '');
+    }
 }
