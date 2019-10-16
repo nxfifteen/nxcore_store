@@ -1794,7 +1794,12 @@ class FeedUxController extends AbstractController
 
         $runForInSeconds = date("U") - $dbChallenger->getStartDate()->format("U");
         $return['timeElapsed'] = round(($runForInSeconds / 60 / 60 / 24), 0) - 1;
-        $return['timeLeft'] = $dbChallenger->getDuration() - $return['timeElapsed'];
+
+        if ($outcome == "incomplete") {
+            $return['timeLeft'] = $dbChallenger->getDuration() - $return['timeElapsed'];
+        } else {
+            $return['timeLeft'] = 0;
+        }
 
         foreach ($dbChallenger->getChallengerDetails() as $key => $value) {
             $return['widget']['labels'][] = date("D", strtotime($key));
