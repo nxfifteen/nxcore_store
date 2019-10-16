@@ -5,7 +5,6 @@ namespace App\Transform\SamsungHealth;
 use App\AppConstants;
 use App\Entity\Exercise;
 use App\Entity\ExerciseSummary;
-use App\Entity\ExerciseTrack;
 use App\Entity\ExerciseType;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
@@ -28,10 +27,10 @@ class SamsungExercise extends Constants
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+//        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too Exercise for " . $jsonContent->remoteId);
+//            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too Exercise for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -87,6 +86,13 @@ class SamsungExercise extends Constants
                 $deviceTracking->setLastSynced($dataEntryExercise->getDateTimeEnd());
             }
 
+            if (property_exists($jsonContent, "liveData")) {
+                $dataEntryExercise->setLiveDataBlob(AppConstants::compressString($jsonContent->liveData));
+            }
+            if (property_exists($jsonContent, "locationData")) {
+                $dataEntryExercise->setLocationDataBlob(AppConstants::compressString($jsonContent->locationData));
+            }
+
             $dataEntryExerciseSummary = $dataEntryExercise->getExerciseSummary();
             if (is_null($dataEntryExerciseSummary)) {
                 $dataEntryExerciseSummary = new ExerciseSummary();
@@ -110,24 +116,6 @@ class SamsungExercise extends Constants
             if (property_exists($jsonContent, "speedMean") && $jsonContent->speedMean > 0) $dataEntryExerciseSummary->setSpeedMean($jsonContent->speedMean);
 
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
-
-            if (property_exists($jsonContent, "locationData")) {
-                /** @var array $jsonLocationData */
-                $jsonLocationData = self::decodeJson($jsonContent->locationData);
-                //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonLocationData, TRUE));
-
-                /** @var object $jsonLocationDatum */
-                foreach ($jsonLocationData as $jsonLocationDatum) {
-                    $dataEntryExerciseTrack = new ExerciseTrack();
-                    $dataEntryExerciseTrack->setTimeStamp($jsonLocationDatum->start_time);
-                    if (property_exists($jsonLocationDatum, "latitude")) $dataEntryExerciseTrack->setLatitude($jsonLocationDatum->latitude);
-                    if (property_exists($jsonLocationDatum, "longitude")) $dataEntryExerciseTrack->setLongitude($jsonLocationDatum->longitude);
-                    if (property_exists($jsonLocationDatum, "altitude")) $dataEntryExerciseTrack->setAltitude($jsonLocationDatum->altitude);
-
-                    $dataEntryExercise->addExerciseTrack($dataEntryExerciseTrack);
-                }
-
-            }
 
             try {
                 $savedClassType = get_class($dataEntryExercise);
