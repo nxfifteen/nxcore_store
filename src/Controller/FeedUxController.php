@@ -3,6 +3,7 @@
 
 namespace App\Controller;
 
+use App\AppConstants;
 use App\Entity\ApiAccessLog;
 use App\Entity\BodyWeight;
 use App\Entity\Exercise;
@@ -327,6 +328,7 @@ class FeedUxController extends AbstractController
         $return['genTime'] = -1;
         $a = microtime(TRUE);
         $this->setupRoute();
+
         $return['nav'] = [
             "nextMonth" => '',
             "thisMonth" => '',
@@ -425,6 +427,8 @@ class FeedUxController extends AbstractController
                 }
             }
 
+
+            $startedTimeStamp = intval($dbExercise->getDateTimeStart()->format("U")) * 1000;
             $return['results'] = [
                 "id" => $dbExercise->getId(),
                 "tracker" => $dbExercise->getTrackingDevice()->getName(),
@@ -451,7 +455,76 @@ class FeedUxController extends AbstractController
                 "heartRateMax" => round($dbExercise->getExerciseSummary()->getHeartRateMax(), 2),
                 "heartRateMin" => round($dbExercise->getExerciseSummary()->getHeartRateMin(), 2),
                 "heartRateMean" => round($dbExercise->getExerciseSummary()->getHeartRateMean(), 2),
+                "startedTimeStamp" => $startedTimeStamp,
+                "maxDistance" => 0,
+                "maxSpeed" => 0,
+                "maxHeart" => 0,
+                "maxAltitude" => 0,
+                "liveData" => [],
+                "locationData" => [],
             ];
+
+            $liveData = $dbExercise->getLiveDataBlob();
+            if (!is_null($liveData)) {
+                $liveData = json_decode(AppConstants::uncompressString($liveData), TRUE);
+                $return['results']['liveData'] = [];
+
+                foreach ($liveData as $liveDatum) {
+                    if (array_key_exists('distance', $liveDatum)) {
+                        $key = 'distance';
+                        if ($liveDatum[$key] > $return['results']['maxDistance']) {
+                            $return['results']['maxDistance'] = round($liveDatum[$key], 2);
+                        }
+                    } else if (array_key_exists('speed', $liveDatum)) {
+                        $key = 'speed';
+                        if ($liveDatum[$key] > $return['results']['maxSpeed']) {
+                            $return['results']['maxSpeed'] = round($liveDatum[$key], 2);
+                        }
+                    } else if (array_key_exists('heart_rate', $liveDatum)) {
+                        $key = 'heart_rate';
+                        if ($liveDatum[$key] > $return['results']['maxHeart']) {
+                            $return['results']['maxHeart'] = round($liveDatum[$key], 2);
+                        }
+                    } else {
+                        $key = NULL;
+                    }
+                    if (!is_null($key)) {
+                        if (!array_key_exists($key, $return['results']['liveData'])) {
+                            $return['results']['liveData'][$key] = [];
+                        }
+
+                        $return['results']['liveData'][$key][] = [
+                            "timestamp" => AppConstants::formatSeconds(round(($liveDatum['start_time'] - $startedTimeStamp) / 1000, 0)),
+                            "value" => round($liveDatum[$key], 2),
+                        ];
+                    }
+                }
+            }
+
+            $locationData = $dbExercise->getLocationDataBlob();
+            if (!is_null($locationData)) {
+                $locationData = json_decode(AppConstants::uncompressString($locationData), TRUE);
+                foreach ($locationData as $locationDatum) {
+                    if (array_key_exists("start_time", $locationDatum)) {
+                        $newLocationArray = [];
+                        $newLocationArray['start_time'] = AppConstants::formatSeconds(round(($locationDatum['start_time'] - $startedTimeStamp) / 1000, 0));
+                        if (array_key_exists("latitude", $locationDatum)) $newLocationArray['latitude'] = $locationDatum['latitude'];
+                        if (array_key_exists("longitude", $locationDatum)) $newLocationArray['longitude'] = $locationDatum['longitude'];
+                        $return['results']['locationData'][] = $newLocationArray;
+
+                        if (array_key_exists("altitude", $locationDatum)) {
+                            if ($locationDatum['altitude'] > $return['results']['maxAltitude']) {
+                                $return['results']['maxAltitude'] = round($locationDatum['altitude'], 2);
+                            }
+                            $return['results']['liveData']['altitude'][] = [
+                                "timestamp" => $newLocationArray['start_time'],
+                                "value" => round($locationDatum['altitude'], 2),
+                            ];
+                        }
+                    }
+                }
+            }
+
         }
 
         $b = microtime(TRUE);
