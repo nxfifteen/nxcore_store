@@ -68,18 +68,22 @@ class Exercise
     private $exerciseType;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ExerciseTrack", mappedBy="exercise", orphanRemoval=true,cascade={"persist"})
-     */
-    private $exerciseTrack;
-
-    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     private $steps;
 
+    /**
+     * @ORM\Column(type="blob", nullable=true)
+     */
+    private $liveDataBlob;
+
+    /**
+     * @ORM\Column(type="blob", nullable=true)
+     */
+    private $locationDataBlob;
+
     public function __construct()
     {
-        $this->exerciseTrack = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -200,37 +204,6 @@ class Exercise
         return $this;
     }
 
-    /**
-     * @return Collection|ExerciseTrack[]
-     */
-    public function getExerciseTrack(): Collection
-    {
-        return $this->exerciseTrack;
-    }
-
-    public function addExerciseTrack(ExerciseTrack $exerciseTrack): self
-    {
-        if (!$this->exerciseTrack->contains($exerciseTrack)) {
-            $this->exerciseTrack[] = $exerciseTrack;
-            $exerciseTrack->setExercise($this);
-        }
-
-        return $this;
-    }
-
-    public function removeExerciseTrack(ExerciseTrack $exerciseTrack): self
-    {
-        if ($this->exerciseTrack->contains($exerciseTrack)) {
-            $this->exerciseTrack->removeElement($exerciseTrack);
-            // set the owning side to null (unless already changed)
-            if ($exerciseTrack->getExercise() === $this) {
-                $exerciseTrack->setExercise(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getSteps(): ?int
     {
         return $this->steps;
@@ -239,6 +212,38 @@ class Exercise
     public function setSteps(?int $steps): self
     {
         $this->steps = $steps;
+
+        return $this;
+    }
+
+    public function getLiveDataBlob()
+    {
+        if (!is_null($this->liveDataBlob)) {
+            return stream_get_contents($this->liveDataBlob);
+        } else {
+            return NULL;
+        }
+    }
+
+    public function setLiveDataBlob($liveDataBlob): self
+    {
+        $this->liveDataBlob = $liveDataBlob;
+
+        return $this;
+    }
+
+    public function getLocationDataBlob()
+    {
+        if (!is_null($this->locationDataBlob)) {
+            return stream_get_contents($this->locationDataBlob);
+        } else {
+            return NULL;
+        }
+    }
+
+    public function setLocationDataBlob($locationDataBlob): self
+    {
+        $this->locationDataBlob = $locationDataBlob;
 
         return $this;
     }
