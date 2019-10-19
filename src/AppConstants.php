@@ -4,18 +4,13 @@ namespace App;
 
 
 use App\Entity\Patient;
-use App\Entity\RpgRewards;
-use App\Entity\RpgRewardsAwarded;
-use App\Entity\RpgXP;
 use App\Entity\ThirdPartyService;
-use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Swift_Mailer;
 use Swift_Message;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Twig_Environment;
 
 class AppConstants
 {
@@ -94,7 +89,7 @@ class AppConstants
             ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
             ->setBody(
                 $twig->render(
-                    'emails/'.$setTemplateName.'.html.twig',
+                    'emails/' . $setTemplateName . '.html.twig',
                     $setTemplateVariables
                 ),
                 'text/html'
@@ -102,7 +97,7 @@ class AppConstants
             // you can remove the following code if you don't define a text version for your emails
             ->addPart(
                 $twig->render(
-                    'emails/'.$setTemplateName.'.txt.twig',
+                    'emails/' . $setTemplateName . '.txt.twig',
                     $setTemplateVariables
                 ),
                 'text/plain'
@@ -147,7 +142,7 @@ class AppConstants
         return $uncompressedString;
     }
 
-    static function formatSeconds($seconds)
+    static function formatSeconds($seconds, bool $withHours = TRUE)
     {
         $hours = 0;
         $milliseconds = str_replace("0.", '', $seconds - floor($seconds));
@@ -157,9 +152,13 @@ class AppConstants
         }
         $seconds = $seconds % 3600;
 
-
-        return str_pad($hours, 2, '0', STR_PAD_LEFT)
-            . gmdate(':i:s', $seconds)
-            . ($milliseconds ? ".$milliseconds" : '');
+        if ($withHours) {
+            return str_pad($hours, 2, '0', STR_PAD_LEFT)
+                . gmdate(':i:s', $seconds)
+                . ($milliseconds ? ".$milliseconds" : '');
+        } else {
+            return gmdate('i:s', $seconds)
+                . ($milliseconds ? ".$milliseconds" : '');
+        }
     }
 }

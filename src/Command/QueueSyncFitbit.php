@@ -78,8 +78,19 @@ class QueueSyncFitbit extends Command
                         ->findOneBy([
                             'patient' => $patientCredential->getPatient(),
                             'service' => $service,
-                            'name' => 'enabledEndpoints',
+                            'name' => 'untilOR',
                         ]);
+
+                    if (!$patientSettings) {
+                        /** @var PatientSettings $patientSettings */
+                        $patientSettings = $this->doctrine
+                            ->getRepository(PatientSettings::class)
+                            ->findOneBy([
+                                'patient' => $patientCredential->getPatient(),
+                                'service' => $service,
+                                'name' => 'enabledEndpoints',
+                            ]);
+                    }
 
                     if ($patientSettings) {
                         foreach ($patientSettings->getValue() as $patientSetting) {
@@ -89,7 +100,7 @@ class QueueSyncFitbit extends Command
                                 ->findLastAccess($patientCredential->getPatient(), $patientCredential->getService(), $patientSetting);
 
                             if (!is_null($apiAccessLog)) {
-                                if ($apiAccessLog->getLastRetrieved()->format("U") < strtotime("-6 hour")) {
+                                if ($apiAccessLog->getCooldown()->format("U") < strtotime("now")) {
                                     AppConstants::writeToLog('debug_transform.txt', "[" . QueueSyncFitbit::$defaultName . "] - " . ' Refreshing ' . $patientSetting . ' for ' . $patientCredential->getPatient()->getUsername());
 
                                     $entityManager = $this->doctrine->getManager();

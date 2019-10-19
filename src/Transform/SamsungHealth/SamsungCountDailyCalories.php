@@ -20,6 +20,7 @@ class SamsungCountDailyCalories extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitCaloriesDailySummary|null
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -80,17 +81,7 @@ class SamsungCountDailyCalories extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            try {
-                $savedClassType = get_class($dataEntry);
-                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($updatedApi);
-                $entityManager->flush();
-            } catch (\Exception $e) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-            }
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 

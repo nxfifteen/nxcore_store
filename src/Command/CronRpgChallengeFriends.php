@@ -93,7 +93,7 @@ class CronRpgChallengeFriends extends Command
                 $challenge->setChallengerDetails($challengerValue);
 
                 if ($challenge->getChallengerSum() >= $challenge->getTarget() || $challenge->getChallengedSum() >= $challenge->getTarget()) {
-                    $this->log("(" . $challenge->getId() . ") Challenge should finish early");
+//                    $this->log("(" . $challenge->getId() . ") Challenge should finish early");
                     $challenge->setEndDate(new DateTime());
                     $challenge = $this->updateOutcome($challenge);
                 } else if (!is_null($challenge->getEndDate()) && $challenge->getEndDate()->format("U") < date("U")) {
@@ -115,7 +115,7 @@ class CronRpgChallengeFriends extends Command
         try {
             $endDate = new DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
             $endDate->add(new DateInterval("P" . $challenge->getDuration() . "D"));
-            $this->log("(" . $challenge->getId() . ") Challenge end date updated");
+//            $this->log("(" . $challenge->getId() . ") Challenge end date updated");
             $challenge->setEndDate($endDate);
         } catch (Exception $e) {
         }
@@ -250,7 +250,7 @@ class CronRpgChallengeFriends extends Command
         } else if ($challenge->getChallengerSum() == $challenge->getChallengedSum() && $bothUpdated) {
             $this->updateOutcomeDraw($challenge);
         } else {
-            $this->log("(" . $challenge->getId() . ") Waiting on everyone to sync up");
+//            $this->log("(" . $challenge->getId() . ") Waiting on everyone to sync up");
             //$challenge->setOutcome(0);
         }
 
@@ -259,7 +259,7 @@ class CronRpgChallengeFriends extends Command
 
     private function updateOutcomeDraw(RpgChallengeFriends $challenge)
     {
-        $this->log("(" . $challenge->getId() . ") It was a close thing that ended in a draw between " . $challenge->getChallenger()->getFirstName() . " and " . $challenge->getChallenged()->getFirstName());
+//        $this->log("(" . $challenge->getId() . ") It was a close thing that ended in a draw between " . $challenge->getChallenger()->getFirstName() . " and " . $challenge->getChallenged()->getFirstName());
         $challenge->setOutcome(6);
         $this->awardWinnerCreditTo($challenge->getChallenger());
         $this->awardWinnerCreditTo($challenge->getChallenged());
@@ -276,7 +276,7 @@ class CronRpgChallengeFriends extends Command
                     'patients_name' => $challenge->getChallenger()->getFirstName(),
                     'relevant_date' => date("F jS, Y"),
                     'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounThem(),
                     'challenge_outcome' => 'drawwin',
                     'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
                     'challenge_duration' => $challenge->getDuration(),
@@ -296,7 +296,7 @@ class CronRpgChallengeFriends extends Command
                     'patients_name' => $challenge->getChallenged()->getFirstName(),
                     'relevant_date' => date("F jS, Y"),
                     'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounThem(),
                     'challenge_outcome' => 'drawwin',
                     'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
                     'challenge_duration' => $challenge->getDuration(),
@@ -348,7 +348,7 @@ class CronRpgChallengeFriends extends Command
 
     private function updateOutcomeChallengerWin(RpgChallengeFriends $challenge)
     {
-        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
+//        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
         $challenge->setOutcome(5);
         $this->awardWinnerCreditTo($challenge->getChallenger());
 
@@ -363,7 +363,7 @@ class CronRpgChallengeFriends extends Command
                     'patients_name' => $challenge->getChallenger()->getFirstName(),
                     'relevant_date' => date("F jS, Y"),
                     'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounThem(),
                     'challenge_outcome' => 'won',
                     'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
                     'challenge_duration' => $challenge->getDuration(),
@@ -381,7 +381,7 @@ class CronRpgChallengeFriends extends Command
                     'patients_name' => $challenge->getChallenged()->getFirstName(),
                     'relevant_date' => date("F jS, Y"),
                     'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounThem(),
                     'challenge_outcome' => 'lost',
                     'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
                     'challenge_duration' => $challenge->getDuration(),
@@ -397,7 +397,7 @@ class CronRpgChallengeFriends extends Command
 
     private function updateOutcomeChallengerLose(RpgChallengeFriends $challenge)
     {
-        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());
+//        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());
         $challenge->setOutcome(4);
         $this->awardWinnerCreditTo($challenge->getChallenged());
 
@@ -412,7 +412,7 @@ class CronRpgChallengeFriends extends Command
                     'patients_name' => $challenge->getChallenged()->getFirstName(),
                     'relevant_date' => date("F jS, Y"),
                     'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounAlt(),
+                    'challenged_pronoun' => $challenge->getChallenger()->getPronounThem(),
                     'challenge_outcome' => 'won',
                     'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
                     'challenge_duration' => $challenge->getDuration(),
@@ -430,7 +430,7 @@ class CronRpgChallengeFriends extends Command
                     'patients_name' => $challenge->getChallenger()->getFirstName(),
                     'relevant_date' => date("F jS, Y"),
                     'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounAlt(),
+                    'challenged_pronoun' => $challenge->getChallenged()->getPronounThem(),
                     'challenge_outcome' => 'lost',
                     'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
                     'challenge_duration' => $challenge->getDuration(),

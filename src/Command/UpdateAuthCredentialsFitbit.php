@@ -100,8 +100,8 @@ class UpdateAuthCredentialsFitbit extends Command {
             }
 
             $entityManager->flush();
-        } else {
+        }/* else {
             AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . 'No Fitbit authentication token need refreshed');
-        }
+        }*/
     }
 }

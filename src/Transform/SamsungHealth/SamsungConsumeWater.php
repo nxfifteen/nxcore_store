@@ -22,6 +22,7 @@ class SamsungConsumeWater extends Constants
      * @param AwardManager    $awardManager
      *
      * @return ConsumeWater|null
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -30,6 +31,20 @@ class SamsungConsumeWater extends Constants
 
         if (property_exists($jsonContent, "uuid")) {
             ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too ConsumeWater for " . $jsonContent->remoteId);
+
+            try {
+                $jsonContent->dateTime = new \DateTime($jsonContent->dateTime);
+                $jsonContent->dateRaw = $jsonContent->dateTime;
+            } catch (\Exception $e) {
+                return NULL;
+            }
+
+            $timeDiff = 1;
+            if ($timeDiff > 0) {
+                $jsonContent->dateTime->modify('+ ' . $timeDiff . ' hour');
+            } else if ($timeDiff < 0) {
+                $jsonContent->dateTime->modify('- ' . $timeDiff . ' hour');
+            }
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -50,7 +65,7 @@ class SamsungConsumeWater extends Constants
             }
 
             /** @var PartOfDay $dataEntry */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
+            $partOfDay = self::getPartOfDay($doctrine, $jsonContent->dateTime);
             if (is_null($partOfDay)) {
                 return NULL;
             }
@@ -76,8 +91,8 @@ class SamsungConsumeWater extends Constants
             $dataEntry->setPatient($patient);
             $dataEntry->setPartOfDay($partOfDay);
             $dataEntry->setRemoteId($jsonContent->remoteId);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> $jsonContent->dateTime->format("U")) {
+                $dataEntry->setDateTime($jsonContent->dateTime);
             }
             if (property_exists($jsonContent, "comment")) $dataEntry->setComment($jsonContent->comment);
             $dataEntry->setMeasurement($jsonContent->measurement);
@@ -102,17 +117,7 @@ class SamsungConsumeWater extends Constants
 //                    );
 //                }
 
-            try {
-                $savedClassType = get_class($dataEntry);
-                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($updatedApi);
-                $entityManager->flush();
-            } catch (\Exception $e) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-            }
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 

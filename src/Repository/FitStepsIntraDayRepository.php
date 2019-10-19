@@ -65,6 +65,51 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
     /**
      * @param String $patientId
      * @param String $date
+     * @param String $start
+     * @param String $end
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function findSumDates(String $patientId, String $date, String $start, String $end, int $trackingDevice = 0)
+    {
+        $today = $date . " " . $start;
+        $todayEnd = $date . " " . $end;
+
+        if ($trackingDevice > 0) {
+            return $this->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('c.trackingDevice = :trackingDevice')
+                ->setParameter('trackingDevice', $trackingDevice)
+                ->andWhere('c.DateTime >= :val')
+                ->setParameter('val', $today)
+                ->andWhere('c.DateTime <= :valEnd')
+                ->setParameter('valEnd', $todayEnd)
+                ->andWhere('p.uuid = :patientId')
+                ->setParameter('patientId', $patientId)
+                ->orderBy('c.DateTime', 'ASC')
+                ->select('sum(c.value) as sum')
+                ->getQuery()
+                ->getResult();
+        } else {
+            return $this->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('c.DateTime >= :val')
+                ->setParameter('val', $today)
+                ->andWhere('c.DateTime <= :valEnd')
+                ->setParameter('valEnd', $todayEnd)
+                ->andWhere('p.uuid = :patientId')
+                ->setParameter('patientId', $patientId)
+                ->orderBy('c.DateTime', 'ASC')
+                ->select('sum(c.value) as sum')
+                ->getQuery()
+                ->getResult();
+        }
+    }
+
+    /**
+     * @param String $patientId
+     * @param String $date
      * @param int    $trackingDevice
      *
      * @return mixed

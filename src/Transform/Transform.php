@@ -78,9 +78,11 @@ class Transform
      * @param ThirdPartyService $thirdPartyService
      * @param String            $remote_id
      *
+     * @param array             $options
+     *
      * @return TrackingDevice|null
      */
-    protected static function getTrackingDevice(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $thirdPartyService, String $remote_id)
+    protected static function getTrackingDevice(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $thirdPartyService, String $remote_id, array $options = [])
     {
         /** @var TrackingDevice $deviceTracking */
         $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy(['remoteId' => $remote_id, 'patient' => $patient, 'service' => $thirdPartyService]);
@@ -94,6 +96,16 @@ class Transform
             $deviceTracking->setRemoteId($remote_id);
             $deviceTracking->setName($remote_id);
             $deviceTracking->setType("Unknown");
+
+            if (count($options) > 0) {
+                if (array_key_exists("name", $options)) $deviceTracking->setName($options['name']);
+                if (array_key_exists("comment", $options)) $deviceTracking->setComment($options['comment']);
+                if (array_key_exists("battery", $options)) $deviceTracking->setBattery($options['battery']);
+                if (array_key_exists("type", $options)) $deviceTracking->setType($options['type']);
+                if (array_key_exists("manufacturer", $options)) $deviceTracking->setManufacturer($options['manufacturer']);
+                if (array_key_exists("model", $options)) $deviceTracking->setModel($options['model']);
+            }
+
             $entityManager->persist($deviceTracking);
             $entityManager->flush();
 
@@ -327,8 +339,12 @@ class Transform
         $dataEntry->setEntity($fullClassName);
         $dataEntry->setLastRetrieved($dateTime);
         $dataEntry->setLastPulled(new DateTime());
-        $interval = new DateInterval('PT12M');
+        $interval = new DateInterval('PT40M');
         $dataEntry->setCooldown((new DateTime())->add($interval));
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->persist($dataEntry);
+        $entityManager->flush();
 
         return $dataEntry;
     }

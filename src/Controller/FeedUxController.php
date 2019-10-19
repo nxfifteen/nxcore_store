@@ -13,6 +13,7 @@ use App\Entity\FitStepsDailySummary;
 use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
+use App\Entity\RpgChallengeGlobal;
 use App\Entity\RpgMilestones;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
@@ -165,19 +166,25 @@ class FeedUxController extends AbstractController
         if ($limit < 0) {
             $dbExercises = $this->getDoctrine()
                 ->getRepository(Exercise::class)->createQueryBuilder('e')
+                ->leftJoin('e.patient', 'p')
                 ->where('e.dateTimeStart <= :dateFrom')
                 ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
                 ->andWhere('e.dateTimeStart >= :dateBackTill')
                 ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
+                ->andWhere('p.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
                 ->orderBy('e.dateTimeStart', 'DESC')
                 ->getQuery()->getResult();
         } else {
             $dbExercises = $this->getDoctrine()
                 ->getRepository(Exercise::class)->createQueryBuilder('e')
+                ->leftJoin('e.patient', 'p')
                 ->where('e.dateTimeStart <= :dateFrom')
                 ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
                 ->andWhere('e.dateTimeStart >= :dateBackTill')
                 ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
+                ->andWhere('p.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
                 ->orderBy('e.dateTimeStart', 'DESC')
                 ->setMaxResults($limit)
                 ->getQuery()->getResult();
@@ -202,32 +209,27 @@ class FeedUxController extends AbstractController
             if ($exerciseType == "Walking") {
                 if (is_null($dbExercise->getSteps())) {
                     $exerciseStepCount = [];
-                    /** @var FitStepsIntraDay[] $dbIntraDaySteps */
                     $dbIntraDaySteps = $this->getDoctrine()
                         ->getRepository(FitStepsIntraDay::class)
-                        ->findByDates(
+                        ->findSumDates(
                             $this->patient->getUuid(),
                             $exerciseDate,
                             $exerciseDateStarted,
                             $exerciseDateFinished,
                             $dbExercise->getTrackingDevice()->getId()
                         );
-                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) > 0) {
-                        foreach ($dbIntraDaySteps as $dbIntraDayStep) {
-                            $exerciseStepCount[] = $dbIntraDayStep->getValue();
+                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) == 1 && array_key_exists("sum", $dbIntraDaySteps[0])) {
+                        if ($dbIntraDaySteps[0]['sum'] > 0) {
+                            $dbExercise->setSteps($dbIntraDaySteps[0]['sum']);
+
+                            $entityManager = $this->getDoctrine()->getManager();
+                            $entityManager->persist($dbExercise);
+                            $entityManager->flush();
                         }
-
-                        $exerciseStepCountSum = array_sum($exerciseStepCount);
                     }
-
-                    $dbExercise->setSteps($exerciseStepCountSum);
-
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($dbExercise);
-                    $entityManager->flush();
-                } else {
-                    $exerciseStepCountSum = $dbExercise->getSteps();
                 }
+
+                $exerciseStepCountSum = $dbExercise->getSteps();
 
                 /** @var FitStepsDailySummary[] $dbStepsForDay */
                 $dbStepsForDay = $this->getDoctrine()
@@ -346,6 +348,7 @@ class FeedUxController extends AbstractController
         if (!$dbExercises) {
             $b = microtime(TRUE);
             $c = $b - $a;
+            $return['exit'] = __LINE__;
             $return['genTime'] = round($c, 4);
             return $this->json($return);
         }
@@ -464,6 +467,12 @@ class FeedUxController extends AbstractController
                 "locationData" => [],
             ];
 
+            if ($return['results']['duration'] > 59) {
+                $includeHours = TRUE;
+            } else {
+                $includeHours = FALSE;
+            }
+
             $liveData = $dbExercise->getLiveDataBlob();
             if (!is_null($liveData)) {
                 $liveData = json_decode(AppConstants::uncompressString($liveData), TRUE);
@@ -494,7 +503,7 @@ class FeedUxController extends AbstractController
                         }
 
                         $return['results']['liveData'][$key][] = [
-                            "timestamp" => AppConstants::formatSeconds(round(($liveDatum['start_time'] - $startedTimeStamp) / 1000, 0)),
+                            "timestamp" => AppConstants::formatSeconds(round(($liveDatum['start_time'] - $startedTimeStamp) / 1000, 0), $includeHours),
                             "value" => round($liveDatum[$key], 2),
                         ];
                     }
@@ -504,10 +513,11 @@ class FeedUxController extends AbstractController
             $locationData = $dbExercise->getLocationDataBlob();
             if (!is_null($locationData)) {
                 $locationData = json_decode(AppConstants::uncompressString($locationData), TRUE);
+
                 foreach ($locationData as $locationDatum) {
                     if (array_key_exists("start_time", $locationDatum)) {
                         $newLocationArray = [];
-                        $newLocationArray['start_time'] = AppConstants::formatSeconds(round(($locationDatum['start_time'] - $startedTimeStamp) / 1000, 0));
+                        $newLocationArray['start_time'] = AppConstants::formatSeconds(round(($locationDatum['start_time'] - $startedTimeStamp) / 1000, 0), $includeHours);
                         if (array_key_exists("latitude", $locationDatum)) $newLocationArray['latitude'] = $locationDatum['latitude'];
                         if (array_key_exists("longitude", $locationDatum)) $newLocationArray['longitude'] = $locationDatum['longitude'];
                         $return['results']['locationData'][] = $newLocationArray;
@@ -822,7 +832,7 @@ class FeedUxController extends AbstractController
         if (count($dbStepsIntraDay) > 0) {
             /** @var FitStepsIntraDay $item */
             foreach ($dbStepsIntraDay as $item) {
-                $hourIndex = intval($item->getDateTime()->format("G")) + 1;
+                $hourIndex = intval($item->getDateTime()->format("G"));
                 if (is_numeric($item->getValue())) {
                     $dbHours[$hourIndex] = $dbHours[$hourIndex] + $item->getValue();
                 }
@@ -2264,5 +2274,136 @@ class FeedUxController extends AbstractController
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
+    }
+
+
+    /**
+     * @Route("/feed/pve/challenges", name="index_global_challenge")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_global_challenge()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+
+        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
+        $dbRpgChallengeGlobals = $this->getDoctrine()
+            ->getRepository(RpgChallengeGlobal::class)
+            ->findBy(['childOf' => NULL, 'active' => TRUE], ['id' => 'asc']);
+
+        if ($dbRpgChallengeGlobals) {
+            $return['challenges'] = [];
+            foreach ($dbRpgChallengeGlobals as $dbRpgChallengeGlobal) {
+                $arrayIndex = count($return['challenges']);
+
+                $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal);
+                if (is_null($return['challenges'][$arrayIndex])) {
+                    unset($return['challenges'][$arrayIndex]);
+                }
+            }
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    private function buildChallengeArray(RpgChallengeGlobal $dbRpgChallengeGlobal)
+    {
+        if (!is_null($dbRpgChallengeGlobal->getProgression())) {
+            $return = $this->findChallengeChildren($dbRpgChallengeGlobal);
+            if (is_null($return)) {
+                return NULL;
+            }
+        } else {
+            $return = [
+                "id" => $dbRpgChallengeGlobal->getId(),
+                "name" => $dbRpgChallengeGlobal->getName(),
+                "description" => $dbRpgChallengeGlobal->getDescripton(),
+                "criteria" => $dbRpgChallengeGlobal->getCriteria(),
+                "target" => $dbRpgChallengeGlobal->getTarget(),
+                "reward" => NULL,
+            ];
+            if (!is_null($dbRpgChallengeGlobal->getReward())) {
+                $return['reward'] = [
+                    "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
+                    "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
+                ];
+            } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                $return['reward'] = [
+                    "xp" => $dbRpgChallengeGlobal->getXp(),
+                    "badge" => NULL,
+                ];
+            }
+        }
+
+        return $return;
+    }
+
+    private function findChallengeChildren(RpgChallengeGlobal $dbRpgChallengeGlobal)
+    {
+        $return = [
+            "id" => $dbRpgChallengeGlobal->getId(),
+            "name" => $dbRpgChallengeGlobal->getName(),
+            "description" => $dbRpgChallengeGlobal->getDescripton(),
+            "progression" => $dbRpgChallengeGlobal->getProgression(),
+            "to" => 0,
+            "reward" => NULL,
+        ];
+        if (!is_null($dbRpgChallengeGlobal->getReward())) {
+            $return['reward'] = [
+                "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
+                "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
+            ];
+        } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
+            $return['reward'] = [
+                "xp" => $dbRpgChallengeGlobal->getXp(),
+                "badge" => NULL,
+            ];
+        }
+
+        if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
+            $return['criteria'] = $dbRpgChallengeGlobal->getCriteria();
+        }
+
+        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
+        $dbRpgChallengeGlobalChildren = $this->getDoctrine()
+            ->getRepository(RpgChallengeGlobal::class)
+            ->findBy(['childOf' => $dbRpgChallengeGlobal, 'active' => TRUE], ['target' => 'asc', 'id' => 'asc']);
+
+        if ($dbRpgChallengeGlobalChildren) {
+            $return['children'] = [];
+            foreach ($dbRpgChallengeGlobalChildren as $dbRpgChallengeGlobalChild) {
+                $return['children'][] = $this->buildChallengeArray($dbRpgChallengeGlobalChild);
+            }
+
+            foreach ($return['children'] as $child) {
+                if (array_key_exists("target", $child)) {
+                    $return['to'] = $child["target"];
+                } else {
+                    foreach ($child['children'] as $subChild) {
+                        if (array_key_exists("target", $subChild)) {
+                            $return['to'] = $subChild["target"];
+                        } else {
+                            $return['to'] = 'whoknows';
+                        }
+                    }
+                }
+            }
+
+        } else {
+            return NULL;
+        }
+
+        return $return;
     }
 }

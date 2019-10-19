@@ -59,6 +59,20 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
         }
     }
 
+    public function findSince(String $patientId, $dateSince)
+    {
+        /** @var \DateTime $dateSince */
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime >= :startDate')
+            ->setParameter('startDate', $dateSince->format("Y-m-d 00:00:00"))
+            ->orderBy('c.value', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findHighest(String $patientId, int $trackingDevice = 0)
     {
         if ($trackingDevice > 0) {

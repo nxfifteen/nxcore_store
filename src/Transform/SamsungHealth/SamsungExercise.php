@@ -23,14 +23,31 @@ class SamsungExercise extends Constants
      * @param AwardManager    $awardManager
      *
      * @return Exercise|null
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
-//        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+        // AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-//            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too Exercise for " . $jsonContent->remoteId);
+            try {
+                $jsonContent->dateTime = new \DateTime($jsonContent->dateTime);
+                $jsonContent->dateTimeEnd = new \DateTime($jsonContent->dateTimeEnd);
+                $jsonContent->dateTimeOffset = new \DateTime($jsonContent->dateTimeOffset);
+                $jsonContent->dateRaw = $jsonContent->dateTime;
+            } catch (\Exception $e) {
+                return NULL;
+            }
+
+            $timeDiff = $jsonContent->dateTimeOffset->format("G");
+            if ($timeDiff > 0) {
+                $jsonContent->dateTime->modify('+ ' . $timeDiff . ' hour');
+                $jsonContent->dateTimeEnd->modify('+ ' . $timeDiff . ' hour');
+            } else if ($timeDiff < 0) {
+                $jsonContent->dateTime->modify('- ' . $timeDiff . ' hour');
+                $jsonContent->dateTimeEnd->modify('- ' . $timeDiff . ' hour');
+            }
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -49,9 +66,13 @@ class SamsungExercise extends Constants
             if (is_null($deviceTracking)) {
                 return NULL;
             }
+            if ($deviceTracking->getId() == 7) {
+                return NULL;
+            }
+//            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - device " . $deviceTracking->getName());
 
             /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
+            $partOfDay = self::getPartOfDay($doctrine, $jsonContent->dateTime);
             if (is_null($partOfDay)) {
                 return NULL;
             }
@@ -61,6 +82,7 @@ class SamsungExercise extends Constants
             if (is_null($exerciseType)) {
                 return NULL;
             }
+//            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - exerciseType " . $exerciseType->getName());
 
             /** @var Exercise $dataEntryExercise */
             $dataEntryExercise = $doctrine->getRepository(Exercise::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'trackingDevice' => $deviceTracking]);
@@ -73,11 +95,11 @@ class SamsungExercise extends Constants
             $dataEntryExercise->setPartOfDay($partOfDay);
             $dataEntryExercise->setRemoteId($jsonContent->remoteId);
 
-            if (is_null($dataEntryExercise->getDateTimeStart()) || $dataEntryExercise->getDateTimeStart()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntryExercise->setDateTimeStart(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntryExercise->getDateTimeStart()) || $dataEntryExercise->getDateTimeStart()->format("U") <> $jsonContent->dateTime->format("U")) {
+                $dataEntryExercise->setDateTimeStart($jsonContent->dateTime);
             }
-            if (is_null($dataEntryExercise->getDateTimeEnd()) || $dataEntryExercise->getDateTimeEnd()->format("U") <> (new \DateTime($jsonContent->dateTimeEnd))->format("U")) {
-                $dataEntryExercise->setDateTimeEnd(new \DateTime($jsonContent->dateTimeEnd));
+            if (is_null($dataEntryExercise->getDateTimeEnd()) || $dataEntryExercise->getDateTimeEnd()->format("U") <> $jsonContent->dateTimeEnd->format("U")) {
+                $dataEntryExercise->setDateTimeEnd($jsonContent->dateTimeEnd);
             }
             $dataEntryExercise->setDuration($dataEntryExercise->getDateTimeEnd()->format("U") - $dataEntryExercise->getDateTimeStart()->format("U"));
             $dataEntryExercise->setExerciseType($exerciseType);
@@ -117,17 +139,7 @@ class SamsungExercise extends Constants
 
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
 
-            try {
-                $savedClassType = get_class($dataEntryExercise);
-                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
-
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($updatedApi);
-                $entityManager->flush();
-            } catch (\Exception $e) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-            }
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntryExercise)), $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
 
             return $dataEntryExercise;
 

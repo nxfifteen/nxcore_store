@@ -10,6 +10,7 @@ use App\Entity\PatientSettings;
 use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
 use App\Service\AwardManager;
+use App\Service\ChallengePve;
 use App\Transform\Fitbit\Constants;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -48,6 +49,11 @@ class SyncFitbit extends Command
      */
     private $awardManager;
 
+    /**
+     * @var ChallengePve
+     */
+    private $challengePve;
+
     private $syncDate;
     private $syncPeriod;
     private $userSubscriptions;
@@ -62,12 +68,14 @@ class SyncFitbit extends Command
     public function dependencyInjection(
         ManagerRegistry $doctrine,
         LoggerInterface $logger,
-        AwardManager $awardManager
+        AwardManager $awardManager,
+        ChallengePve $challengePve
     ): void
     {
         $this->doctrine = $doctrine;
         $this->logger = $logger;
         $this->awardManager = $awardManager;
+        $this->challengePve = $challengePve;
     }
 
     /**
@@ -98,76 +106,151 @@ class SyncFitbit extends Command
                         /** @noinspection SpellCheckingInspection */
                         AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'Couldn\'t find a Transformer for Fitbit');
                     } else {
-                        $endpoints = explode("::", $serviceSyncQueue->getEndpoint());
-                        $serviceDataArray = [];
+                        $continueQueueItems = TRUE;
+                        $continueQueueActions = TRUE;
+                        $dbPatientSettingsUntilOR = NULL;
 
-                        // Setup the sync metadata in first array item
-                        $serviceDataArray[0] = [];
-                        $serviceDataArray[0]['uuid'] = $serviceSyncQueue->getCredentials()->getPatient()->getUuid();
-                        $serviceDataArray[0]['dateTime'] = $this->syncDate . " 00:00:00";
-                        $serviceDataArray[0]['remoteId'] = sha1($serviceSyncQueue->getCredentials()->getPatient()->getId() .
-                            $serviceSyncQueue->getCredentials()->getService()->getId() .
-                            $serviceSyncQueue->getCredentials()->getService()->getName());
+                        /** @var PatientSettings $dbPatientSettingsUntil */
+                        $dbPatientSettingsUntil = $this->doctrine
+                            ->getRepository(PatientSettings::class)
+                            ->findOneBy(['patient' => $serviceSyncQueue->getCredentials()->getPatient(), 'service' => $serviceSyncQueue->getCredentials()->getService(), 'name' => 'until']);
 
-                        $serviceDataArray[0] = json_decode(json_encode($serviceDataArray[0]), FALSE);
+                        if ($dbPatientSettingsUntil) {
+                            try {
+                                $serviceDeath = new \DateTime($dbPatientSettingsUntil->getValue()[0]);
+                            } catch (\Exception $e) {
+                                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . "User has an end date for this service");
+                                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . $dbPatientSettingsUntil->getValue()[0]);
 
-                        foreach ($endpoints as $endpoint) {
-
-                            if ($endpoint == "subscriptions") {
-                                $this->userSubscriptions = NULL;
-
-                                /** @var PatientSettings $patientSettings */
-                                $patientSettings = $this->doctrine
-                                    ->getRepository(PatientSettings::class)
-                                    ->findOneBy([
-                                        'patient' => $serviceSyncQueue->getCredentials()->getPatient(),
-                                        'service' => $service,
-                                        'name' => 'enabledEndpoints',
-                                    ]);
-
-                                if (!$patientSettings) {
-                                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'No supported end points');
-                                } else {
-                                    //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Permission over ' . print_r($patientSettings->getValue(), TRUE));
-                                    foreach ($patientSettings->getValue() as $settingsEndpoint) {
-                                        $this->checkSubscription($settingsEndpoint, $accessToken, $serviceSyncQueue->getCredentials()->getPatient());
-                                    }
-
-                                    $entityManager = $this->doctrine->getManager();
-                                    $entityManager->remove($serviceSyncQueue);
-                                    $entityManager->flush();
-                                }
-                            } else {
-                                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " .
-                                    'Updating ' . $endpoint .
-                                    ' for ' . $serviceSyncQueue->getCredentials()->getPatient()->getUsername());
-                                $serviceDataArray[] = $this->pullBabel($accessToken, $serviceSyncQueue, $endpoint);
-                            }
-                        }
-
-                        if (!is_null($serviceDataArray) && count($serviceDataArray) > 1 && !empty($serviceDataArray[1])) {
-                            $transformerClass = new $transformerClassName($this->logger);
-                            /** @noinspection PhpUndefinedMethodInspection */
-                            $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager);
-
-                            if (is_array($savedId)) {
-                                $remove = TRUE;
-                                foreach ($savedId as $saved) {
-                                    if ($saved < 0) {
-                                        $remove = FALSE;
-                                    }
-                                }
-
-                                if ($remove) {
-                                    $entityManager = $this->doctrine->getManager();
-                                    $entityManager->remove($serviceSyncQueue);
-                                    $entityManager->flush();
-                                }
-                            } else if ($savedId > 0) {
                                 $entityManager = $this->doctrine->getManager();
                                 $entityManager->remove($serviceSyncQueue);
                                 $entityManager->flush();
+
+                                $continueQueueItems = FALSE;
                             }
+
+                            /** @var PatientSettings $dbPatientSettingsUntil */
+                            $dbPatientSettingsUntilOR = $this->doctrine
+                                ->getRepository(PatientSettings::class)
+                                ->findOneBy(['patient' => $serviceSyncQueue->getCredentials()->getPatient(), 'service' => $serviceSyncQueue->getCredentials()->getService(), 'name' => 'untilOR']);
+                            if ($dbPatientSettingsUntilOR) {
+                                $dbPatientSettingsUntilOR = $dbPatientSettingsUntilOR->getValue();
+                            } else {
+//                                AppConstants::writeToLog('debug_transform.txt', $serviceSyncQueue->getCredentials()->getPatient()->getUuid() . " has no overrides");
+
+                                $entityManager = $this->doctrine->getManager();
+                                $entityManager->remove($serviceSyncQueue);
+                                $entityManager->flush();
+
+                                $continueQueueItems = FALSE;
+                            }
+
+                            if ($serviceSyncQueue->getEndpoint() != "subscriptions")
+                                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . $serviceSyncQueue->getCredentials()->getPatient()->getUuid() . " stopped using this service on " . $serviceDeath->format("Y-m-d") . ". Updating " . $serviceSyncQueue->getCredentials()->getPatient()->getPronounTheir() . " overrides");
+
+                            $continueQueueActions = FALSE;
+                        }
+
+                        if ($continueQueueItems) {
+
+                            $endpoints = explode("::", $serviceSyncQueue->getEndpoint());
+
+                            $serviceDataArray = [];
+
+                            // Setup the sync metadata in first array item
+                            $serviceDataArray[0] = [];
+                            $serviceDataArray[0]['uuid'] = $serviceSyncQueue->getCredentials()->getPatient()->getUuid();
+                            $serviceDataArray[0]['dateTime'] = $this->syncDate . " 00:00:00";
+                            $serviceDataArray[0]['remoteId'] = sha1($serviceSyncQueue->getCredentials()->getPatient()->getId() .
+                                $serviceSyncQueue->getCredentials()->getService()->getId() .
+                                $serviceSyncQueue->getCredentials()->getService()->getName());
+
+                            $serviceDataArray[0] = json_decode(json_encode($serviceDataArray[0]), FALSE);
+
+                            foreach ($endpoints as $endpoint) {
+
+                                if (!is_null($dbPatientSettingsUntilOR) && is_array($dbPatientSettingsUntilOR) && count($dbPatientSettingsUntilOR) > 0) {
+//                                    AppConstants::writeToLog('debug_transform.txt', "Starting endpoint: " . $endpoint);
+                                    if (in_array($endpoint, $dbPatientSettingsUntilOR)) {
+//                                        AppConstants::writeToLog('debug_transform.txt', " Which is in the override");
+                                        $continueQueueActions = TRUE;
+                                    } else {
+//                                        AppConstants::writeToLog('debug_transform.txt', " Which is NOT in the override");
+                                        $continueQueueActions = FALSE;
+                                        $entityManager = $this->doctrine->getManager();
+                                        $entityManager->remove($serviceSyncQueue);
+                                        $entityManager->flush();
+                                    }
+                                }
+
+                                if ($continueQueueActions) {
+                                    if ($endpoint == "subscriptions") {
+                                        $this->userSubscriptions = NULL;
+
+                                        /** @var PatientSettings $patientSettings */
+                                        $patientSettings = $this->doctrine
+                                            ->getRepository(PatientSettings::class)
+                                            ->findOneBy([
+                                                'patient' => $serviceSyncQueue->getCredentials()->getPatient(),
+                                                'service' => $service,
+                                                'name' => 'enabledEndpoints',
+                                            ]);
+
+                                        if (!$patientSettings) {
+                                            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'No supported end points');
+                                        } else {
+                                            //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Permission over ' . print_r($patientSettings->getValue(), TRUE));
+                                            foreach ($patientSettings->getValue() as $settingsEndpoint) {
+                                                if (
+                                                    is_null($dbPatientSettingsUntilOR) ||
+                                                    (
+                                                        is_array($dbPatientSettingsUntilOR) &&
+                                                        count($dbPatientSettingsUntilOR) > 0 &&
+                                                        in_array($settingsEndpoint, $dbPatientSettingsUntilOR)
+                                                    )
+                                                ) {
+                                                    $this->checkSubscription($settingsEndpoint, $accessToken, $serviceSyncQueue->getCredentials()->getPatient());
+                                                }
+                                            }
+
+                                            $entityManager = $this->doctrine->getManager();
+                                            $entityManager->remove($serviceSyncQueue);
+                                            $entityManager->flush();
+                                        }
+                                    } else {
+                                        AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " .
+                                            'Updating ' . $endpoint .
+                                            ' for ' . $serviceSyncQueue->getCredentials()->getPatient()->getUsername());
+                                        $serviceDataArray[] = $this->pullBabel($accessToken, $serviceSyncQueue, $endpoint);
+                                    }
+                                }
+                            }
+
+                            if (!is_null($serviceDataArray) && count($serviceDataArray) > 1 && !empty($serviceDataArray[1])) {
+                                $transformerClass = new $transformerClassName($this->logger);
+                                /** @noinspection PhpUndefinedMethodInspection */
+                                $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager, $this->challengePve);
+
+                                if (is_array($savedId)) {
+                                    $remove = TRUE;
+                                    foreach ($savedId as $saved) {
+                                        if ($saved < 0) {
+                                            $remove = FALSE;
+                                        }
+                                    }
+
+                                    if ($remove) {
+                                        $entityManager = $this->doctrine->getManager();
+                                        $entityManager->remove($serviceSyncQueue);
+                                        $entityManager->flush();
+                                    }
+                                } else if ($savedId > 0) {
+                                    $entityManager = $this->doctrine->getManager();
+                                    $entityManager->remove($serviceSyncQueue);
+                                    $entityManager->flush();
+                                }
+                            }
+
                         }
                     }
                 } else {
@@ -190,6 +273,7 @@ class SyncFitbit extends Command
 
     private function checkSubscription($settingsEndpoint, AccessToken $accessToken, Patient $patient)
     {
+//        AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
         $serviceEndpoint = $this->convertEndpointToSubscription($settingsEndpoint);
 
         $subscriptionFound = FALSE;
@@ -309,17 +393,24 @@ class SyncFitbit extends Command
 
         if ($requestedEndpoint != "BodyWeight" &&
             $requestedEndpoint != "FitStepsDailySummary" &&
-            $requestedEndpoint != "FitStepsPeriodSummary" &&
             $requestedEndpoint != "PatientGoals" &&
-            $requestedEndpoint != "TrackingDevice") {
-            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Unsupported EndPoint - ' . $path);
+            $requestedEndpoint != "TrackingDevice" &&
+            $requestedEndpoint != "Exercise") {
+            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Unsupported EndPoint - ' . $requestedEndpoint);
+            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] -  " . $path);
         } else {
             try {
-                $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path . ".json", $accessToken);
+                if (strpos($path, '.json') !== FALSE) {
+                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path, $accessToken);
+                } else {
+                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path . ".json", $accessToken);
+                }
                 $response = $this->getLibrary()->getParsedResponse($request);
 
                 $responseObject = json_decode(json_encode($response), FALSE);
-                //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseObject, true));
+                /*if ($requestedEndpoint == "Exercise") {
+                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseObject, true));
+                }*/
 
                 return $responseObject;
             } catch (IdentityProviderException $e) {
@@ -342,6 +433,11 @@ class SyncFitbit extends Command
 
         if (is_null($path))
             return NULL;
+
+
+        if (strpos($path, "{ext}") !== FALSE) {
+            $path = str_replace("{ext}", ".json", $path);
+        }
 
         if (strpos($path, "{date}") !== FALSE) {
             if (!$apiAccessLog) {

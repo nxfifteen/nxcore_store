@@ -4,6 +4,7 @@ namespace App\Transform\Fitbit;
 
 use App\AppConstants;
 use App\Service\AwardManager;
+use App\Service\ChallengePve;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Sentry;
@@ -23,7 +24,7 @@ class Entry
         $this->logger = $logger;
     }
 
-    public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager)
+    public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve)
     {
         $translateEntity = NULL;
 
@@ -38,30 +39,51 @@ class Entry
         switch ($data_set) {
             case Constants::FITBITHEPDAILYSTEPS:
                 $translateEntity = [];
-                $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent, $awardManager);
+                try {
+                    $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent, $awardManager, $challengePve);
+                } catch (\Exception $e) {
+                }
                 foreach ($getContent[1] as $index => $item) {
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
                 }
+
                 break;
             case Constants::FITBITHEPPERIODSTEPS:
+                /** @noinspection PhpUnhandledExceptionInspection */
+                $translateEntity = FitbitCountPeriodSteps::translate($doctrine, $getContent);
+                break;
+            case Constants::FITBITEXERCISE:
                 $translateEntity = [];
-                foreach (FitbitCountPeriodSteps::translate($doctrine, $getContent, $awardManager) as $value) {
-                    $translateEntity[] = $value;
+                try {
+                    $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent, $awardManager, $challengePve);
+                } catch (\Exception $e) {
                 }
+
                 foreach ($getContent[1] as $index => $item) {
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
+                }
+
+                if (array_key_exists(3, $getContent) && property_exists($getContent[3], "activities") && $getContent[0]->uuid == "testfitbit") {
+                    foreach ($getContent[3]->activities as $index => $item) {
+                        try {
+                            $translateEntity[] = FitbitExercise::translate($doctrine, $getContent, $index, $challengePve);
+                        } catch (\Exception $e) {
+                        }
+                    }
                 }
                 break;
             case Constants::FITBITEPBODYWEIGHT:
                 $translateEntity = [];
+                /** @noinspection PhpUnhandledExceptionInspection */
                 $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent, $awardManager);
+                /** @noinspection PhpUnhandledExceptionInspection */
                 $translateEntity[] = FitbitBodyFat::translate($doctrine, $getContent, $awardManager);
                 foreach ($getContent[1] as $index => $item) {
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
                 }
                 break;
             default:
-//                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' MISSING ' . $data_set . ' - ' . print_r($getContent, TRUE));
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' MISSING ' . $data_set . ' - ' . print_r($getContent, TRUE));
                 return -3;
                 break;
         }

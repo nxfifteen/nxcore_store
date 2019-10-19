@@ -156,6 +156,11 @@ class Patient implements UserInterface
      */
     private $membership;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgChallengeGlobalPatient", mappedBy="patient", orphanRemoval=true)
+     */
+    private $rpgChallengeGlobals;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -168,6 +173,7 @@ class Patient implements UserInterface
         $this->friendsOf = new ArrayCollection();
         $this->friendsToo = new ArrayCollection();
         $this->settings = new ArrayCollection();
+        $this->rpgChallengeGlobals = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -754,7 +760,7 @@ class Patient implements UserInterface
         return $this;
     }
 
-    public function getPronoun()
+    public function getPronounThey()
     {
         switch ($this->gender) {
             case "male":
@@ -766,7 +772,7 @@ class Patient implements UserInterface
         }
     }
 
-    public function getPronounAlt()
+    public function getPronounThem()
     {
         switch ($this->gender) {
             case "male":
@@ -775,6 +781,18 @@ class Patient implements UserInterface
                 return "her";
             default:
                 return "them";
+        }
+    }
+
+    public function getPronounTheir()
+    {
+        switch ($this->gender) {
+            case "male":
+                return "his";
+            case "female":
+                return "her";
+            default:
+                return "their";
         }
     }
 
@@ -815,6 +833,37 @@ class Patient implements UserInterface
         $newPatient = $membership === null ? null : $this;
         if ($newPatient !== $membership->getPatient()) {
             $membership->setPatient($newPatient);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgChallengeGlobalPatient[]
+     */
+    public function getRpgChallengeGlobals(): Collection
+    {
+        return $this->rpgChallengeGlobals;
+    }
+
+    public function addRpgChallengeGlobal(RpgChallengeGlobalPatient $rpgChallengeGlobal): self
+    {
+        if (!$this->rpgChallengeGlobals->contains($rpgChallengeGlobal)) {
+            $this->rpgChallengeGlobals[] = $rpgChallengeGlobal;
+            $rpgChallengeGlobal->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpgChallengeGlobal(RpgChallengeGlobalPatient $rpgChallengeGlobal): self
+    {
+        if ($this->rpgChallengeGlobals->contains($rpgChallengeGlobal)) {
+            $this->rpgChallengeGlobals->removeElement($rpgChallengeGlobal);
+            // set the owning side to null (unless already changed)
+            if ($rpgChallengeGlobal->getPatient() === $this) {
+                $rpgChallengeGlobal->setPatient(NULL);
+            }
         }
 
         return $this;

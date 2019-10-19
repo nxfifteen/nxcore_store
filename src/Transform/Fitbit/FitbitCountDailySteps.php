@@ -6,10 +6,14 @@ use App\AppConstants;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
+use App\Entity\RpgChallengeGlobalPatient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use App\Service\ChallengePve;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 class FitbitCountDailySteps extends Constants
 {
@@ -19,11 +23,18 @@ class FitbitCountDailySteps extends Constants
      *
      * @param AwardManager    $awardManager
      *
+     * @param ChallengePve    $challengePve
+     *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, ChallengePve $challengePve)
     {
         if (property_exists($jsonContent[0], "uuid")) {
+            if (strtolower($jsonContent[0]->uuid) == "kayleigh") {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+            }
+
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
             if (is_null($patient)) {
@@ -37,11 +48,17 @@ class FitbitCountDailySteps extends Constants
             }
 
             $trackingDeviceRemoteId = self::FITBITSERVICE;
-            $jsonContent[0]->dateTime = new \DateTime();
-            foreach ($jsonContent[1] as $trackingDevice) {
-                if ($trackingDevice->type == "TRACKER") {
-                    $trackingDeviceRemoteId = $trackingDevice->id;
-                    $jsonContent[0]->dateTime = new \DateTime($trackingDevice->lastSyncTime);
+            if ($jsonContent[0]->dateTime == date("Y-m-d 00:00:00")) {
+                try {
+                    $jsonContent[0]->dateTime = new DateTime(str_replace(" 00:00:00", "", $jsonContent[0]->dateTime) . ' ' . date("H:i:s"));
+                } catch (Exception $e) {
+                    AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
+                }
+            } else {
+                try {
+                    $jsonContent[0]->dateTime = new DateTime($jsonContent[0]->dateTime);
+                } catch (Exception $e) {
+                    AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
                 }
             }
 
@@ -51,13 +68,14 @@ class FitbitCountDailySteps extends Constants
                 return NULL;
             }
 
-            if (count($jsonContent) >= 2 && is_object($jsonContent[2]) && property_exists($jsonContent[2], "goals") && property_exists($jsonContent[2]->goals, "steps")) {
+            if (count($jsonContent) >= 3 && array_key_exists(2, $jsonContent) && is_object($jsonContent[2]) && property_exists($jsonContent[2], "goals") && property_exists($jsonContent[2]->goals, "steps")) {
                 /** @var PatientGoals $patientGoal */
                 $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent[2]->goals->steps, NULL, $patient, FALSE);
                 if (is_null($patientGoal)) {
                     return NULL;
                 }
             } else {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($jsonContent, TRUE));
                 return NULL;
             }
 
@@ -86,61 +104,9 @@ class FitbitCountDailySteps extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-                $patient = $awardManager->giveBadge(
-                    $patient,
-                    [
-                        'patients_name' => $patient->getFirstName(),
-                        'html_title' => "Awarded the Step Target badge",
-                        'header_image' => '../badges/trg_steps_achieved_header.png',
-                        "dateTime" => $dataEntry->getDateTime(),
-                        'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
-                        "name" => "Step Target",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Step Target',
-                        'badge_xp' => 5,
-                        'badge_image' => 'trg_steps_achieved',
-                        'badge_text' => "Reached your step goal today",
-                        'badge_longtext' => "Today you did it! You reached your step goal",
-                        'badge_citation' => "Today you did it! You reached your step goal",
-                    ]
-                );
-                $percentageOver = ($dataEntry->getValue() / $dataEntry->getGoal()->getGoal()) * 100;
-                $percentageOver = $percentageOver - 100;
-                if ($percentageOver > 100) {
-                    $patient = $awardManager->giveBadge(
-                        $patient,
-                        [
-                            'patients_name' => $patient->getFirstName(),
-                            'html_title' => "Awarded the Step Target Smashed badge",
-                            'header_image' => '../badges/trg_steps_smashed_header.png',
-                            "dateTime" => $dataEntry->getDateTime(),
-                            'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
-                            "name" => "Step Target Smashed",
-                            "repeat" => FALSE,
-                            'badge_name' => 'Step Target Smashed',
-                            'badge_xp' => 10,
-                            'badge_image' => 'trg_steps_smashed',
-                            'badge_text' => "You walked twice your step goal",
-                            'badge_longtext' => "Wow! I mean, WOW! You walked twice your step goal today",
-                            'badge_citation' => "Wow! I mean, WOW! You walked twice your step goal today",
-                        ]
-                    );
-                }
-            }
-
-            $entityManager = $doctrine->getManager();
-            try {
-                $savedClassType = get_class($dataEntry);
-                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                $entityManager->persist($updatedApi);
-            } catch (\Exception $e) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-            }
-
-            $entityManager->flush();
+            $awardManager->checkForGoalAwards($dataEntry);
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
+            $challengePve->checkAnyRunning($dataEntry);
 
             return $dataEntry;
 

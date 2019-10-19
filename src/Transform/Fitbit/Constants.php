@@ -12,13 +12,22 @@ class Constants extends Transform
 
     const FITBITEPBODYWEIGHT = "TrackingDevice::BodyWeight";
     const FITBITHEPDAILYSTEPS = "TrackingDevice::FitStepsDailySummary";
-    const FITBITHEPPERIODSTEPS = "TrackingDevice::FitStepsPeriodSummary";
+    const FITBITHEPPERIODSTEPS = "FitStepsPeriodSummary";
+    const FITBITEXERCISE = "TrackingDevice::FitStepsDailySummary::Exercise";
 
     public static function getPath(string $endpoint)
     {
         switch ( $endpoint ) {
             case 'BodyWeight':
                 $path = '/body/date/{date}';
+                break;
+
+            case 'serviceProfile':
+                $path = '/profile';
+                break;
+
+            case 'Exercise':
+                $path = '/activities/list{ext}?afterDate={date}&offset=0&limit=20&sort=asc';
                 break;
 
             case 'FitStepsDailySummary':
@@ -53,7 +62,8 @@ class Constants extends Transform
             case 'activities':
                 return [
                     "TrackingDevice",
-                    "FitStepsDailySummary"
+                    "FitStepsDailySummary",
+                    "Exercise",
                 ];
                 break;
             case 'body':
@@ -65,6 +75,18 @@ class Constants extends Transform
 
             default:
                 return null;
+        }
+    }
+
+    protected static function convertExerciseType(int $serviceId)
+    {
+        switch ($serviceId) {
+            case 90013:
+                return "Walking";
+                break;
+            default:
+                return "Custom type";
+                break;
         }
     }
 }

@@ -20,6 +20,7 @@ class SamsungIntraDayFloors extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitFloorsIntraDay|null
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -27,7 +28,25 @@ class SamsungIntraDayFloors extends Constants
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitFloorsIntraDay for " . $jsonContent->remoteId);
+            //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitFloorsIntraDay for " . $jsonContent->remoteId);
+
+            try {
+                $jsonContent->dateTime = new \DateTime($jsonContent->dateTime);
+                $jsonContent->dateTimeEnd = new \DateTime($jsonContent->dateTimeEnd);
+                $jsonContent->dateTimeOffset = new \DateTime($jsonContent->dateTimeOffset);
+                $jsonContent->dateRaw = $jsonContent->dateTime;
+            } catch (\Exception $e) {
+                return NULL;
+            }
+
+            $timeDiff = $jsonContent->dateTimeOffset->format("G");
+            if ($timeDiff > 0) {
+                $jsonContent->dateTime->modify('+ ' . $timeDiff . ' hour');
+                $jsonContent->dateTimeEnd->modify('+ ' . $timeDiff . ' hour');
+            } else if ($timeDiff < 0) {
+                $jsonContent->dateTime->modify('- ' . $timeDiff . ' hour');
+                $jsonContent->dateTimeEnd->modify('- ' . $timeDiff . ' hour');
+            }
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -62,24 +81,14 @@ class SamsungIntraDayFloors extends Constants
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setRemoteId($jsonContent->remoteId);
             $dataEntry->setValue($jsonContent->value);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> $jsonContent->dateTime->format("U")) {
+                $dataEntry->setDateTime($jsonContent->dateTime);
             }
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            try {
-                $savedClassType = get_class($dataEntry);
-                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($updatedApi);
-                $entityManager->flush();
-            } catch (\Exception $e) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-            }
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 

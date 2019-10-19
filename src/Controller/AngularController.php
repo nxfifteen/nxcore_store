@@ -12,13 +12,17 @@ use App\Entity\FitStepsDailySummary;
 use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\RpgMilestones;
-use Ornicar\GravatarBundle\GravatarApi;
+use App\Entity\SiteNavItem;
+use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AngularController extends AbstractController
 {
     private $dateRange = 14;
+
+    /** @var Patient $patient */
+    private $patient;
 
     /**
      * @Route("/help/angular", name="angular_help")
@@ -127,46 +131,60 @@ class AngularController extends AbstractController
     private function hasAccess(String $uuid)
     {
         $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
-
-        /** @var \App\Entity\Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
     }
 
     /**
-     * @Route("/{uuid}/ux/config", name="angular_config")
+     * @Route("/{uuid}/ux/config", name="index_config_fallback")
      * @param String $uuid A users UUID
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function index_config(String $uuid)
+    public function index_config_fallback($uuid)
     {
-        $this->hasAccess($uuid);
+        return $this->index_config();
+    }
 
+    /**
+     * @Route("/ux/config", name="angular_config")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function index_config()
+    {
         $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
 
-        /** @var Patient $patient */
-        $patient = $this->getDoctrine()
-            ->getRepository(Patient::class)
-            ->findOneBy(['uuid' => $uuid]);
+        $this->setupRoute();
 
-        if (!$patient) {
-            $return['status'] = "error";
-            $return['code'] = "404";
-            return $this->json($return);
-        }
-
-        $return['firstrun'] = $patient->getFirstRun();
+        $return['firstrun'] = $this->patient->getFirstRun();
         $return['uiSettings'] = [];
-        foreach ($patient->getUiSettings() as $uiSetting) {
+        foreach ($this->patient->getUiSettings() as $uiSetting) {
             $uiSetting = explode("::", $uiSetting);
             $return['uiSettings'][$uiSetting[0]] = $uiSetting[1];
         }
 
+        $return['navItems'] = $this->buildUserMenu();
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
         return $this->json($return);
+    }
+
+    private function setupRoute(String $userRole = 'ROLE_USER')
+    {
+        if (is_null($this->patient)) $this->patient = $this->getUser();
+
+        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+            $scope->setUser([
+                'id' => $this->patient->getId(),
+                'username' => $this->patient->getUsername(),
+                'email' => $this->patient->getEmail(),
+            ]);
+        });
+
+        $this->hasAccess($userRole);
     }
 
     /**
@@ -797,5 +815,88 @@ class AngularController extends AbstractController
         $return['weight'] = $this->angularGetBodyWeight($uuid, date("Y-m-d"), $readings);
 
         return $this->json($return);
+    }
+
+    private function buildUserMenu()
+    {
+        $navItems = [];
+
+        /** @var SiteNavItem[] $rootMenuItems */
+        $rootMenuItems = $this->getDoctrine()
+            ->getRepository(SiteNavItem::class)
+            ->findBy(['childOf' => 0], ['displayOrder' => 'ASC', 'id' => 'ASC']);
+
+        if ($rootMenuItems) {
+            foreach ($rootMenuItems as $rootMenuItem) {
+                if (
+                    (
+                        ($rootMenuItem->getInDevelopment() && $this->patient->getId() == 1) ||
+                        !$rootMenuItem->getInDevelopment()
+                    ) && (
+                        is_null($rootMenuItem->getAccessLevel()) ||
+                        in_array($rootMenuItem->getAccessLevel(), $this->patient->getRoles())
+                    )
+                ) {
+                    $itemIndex = count($navItems);
+                    if ($rootMenuItem->getTitle()) {
+                        $navItems[$itemIndex] = [
+                            "divider" => TRUE,
+                        ];
+                        $navItems[$itemIndex + 1] =
+                            [
+                                "title" => $rootMenuItem->getTitle(),
+                                "name" => $rootMenuItem->getName(),
+                            ];
+                    } else {
+                        $navItems[$itemIndex] =
+                            [
+                                "name" => $rootMenuItem->getName(),
+                                "url" => $rootMenuItem->getUrl(),
+                                "icon" => $rootMenuItem->getIcon(),
+                            ];
+
+                        if ($rootMenuItem->getBadgeVariant() && $rootMenuItem->getBadgeText()) {
+                            $navItems[$itemIndex]['badge'] = [
+                                "variant" => $rootMenuItem->getBadgeVariant(),
+                                "text" => $rootMenuItem->getBadgeText(),
+                            ];
+                        }
+
+
+                        /** @var SiteNavItem[] $menuChildItems */
+                        $menuChildItems = $this->getDoctrine()
+                            ->getRepository(SiteNavItem::class)
+                            ->findBy(['childOf' => $rootMenuItem->getId()], ['displayOrder' => 'ASC', 'id' => 'ASC']);
+
+                        if ($menuChildItems) {
+                            $navItems[$itemIndex]['children'] = [];
+                            foreach ($menuChildItems as $menuChildItem) {
+                                if (
+                                    (
+                                        ($menuChildItem->getInDevelopment() && $this->patient->getId() == 1) ||
+                                        !$menuChildItem->getInDevelopment()
+                                    ) && (
+                                        is_null($menuChildItem->getAccessLevel()) ||
+                                        in_array($menuChildItem->getAccessLevel(), $this->patient->getRoles())
+                                    )
+                                ) {
+                                    $navItems[$itemIndex]['children'][] =
+                                        [
+                                            "name" => $menuChildItem->getName(),
+                                            "url" => $menuChildItem->getUrl(),
+                                            "icon" => $menuChildItem->getIcon(),
+                                        ];
+                                }
+                            }
+                            if (count($navItems[$itemIndex]['children']) == 0) {
+                                unset($navItems[$itemIndex]['children']);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $navItems;
     }
 }

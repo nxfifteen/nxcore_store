@@ -11,6 +11,7 @@
 namespace App\Transform\Fitbit;
 
 use App\AppConstants;
+use App\Command\DownloadHistoryFitbit;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
@@ -23,18 +24,17 @@ class FitbitCountPeriodSteps extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
-     * @param                 $jsonContent
-     *
-     * @param AwardManager    $awardManager
+     * @param array           $jsonContent
      *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
+     * @throws \Exception
      */
-    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, array $jsonContent)
     {
-        if (property_exists($jsonContent[0], "uuid")) {
+        if (array_key_exists("uuid", $jsonContent[0])) {
 
             /** @var Patient $patient */
-            $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
+            $patient = self::getPatient($doctrine, $jsonContent[0]['uuid']);
             if (is_null($patient)) {
                 return NULL;
             }
@@ -45,129 +45,54 @@ class FitbitCountPeriodSteps extends Constants
                 return NULL;
             }
 
-            $trackingDeviceRemoteId = self::FITBITSERVICE;
-            $jsonContent[0]->dateTime = new \DateTime();
-            foreach ($jsonContent[1] as $trackingDevice) {
-                if ($trackingDevice->type == "TRACKER") {
-                    $trackingDeviceRemoteId = $trackingDevice->id;
-                    $jsonContent[0]->dateTime = new \DateTime($trackingDevice->lastSyncTime);
-                }
-            }
-
             /** @var TrackingDevice $deviceTracking */
-            $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $trackingDeviceRemoteId);
+            $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent[0]['tracker']);
             if (is_null($deviceTracking)) {
                 return NULL;
             }
 
-            if (count($jsonContent) >= 2 && is_object($jsonContent[2]) && property_exists($jsonContent[2], "goals") && property_exists($jsonContent[2]->goals, "steps")) {
-                /** @var PatientGoals $patientGoal */
-                $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", $jsonContent[2]->goals->steps, NULL, $patient, FALSE);
-                if (is_null($patientGoal)) {
-                    return NULL;
-                }
-            } else {
-                /** @var PatientGoals $patientGoal */
-                $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", 10000, NULL, $patient, FALSE);
-                if (is_null($patientGoal)) {
-                    return NULL;
-                }
+            /** @var PatientGoals $patientGoal */
+            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", 10000, NULL, $patient, FALSE);
+            if (is_null($patientGoal)) {
+                return NULL;
             }
 
             $returnEntities = [];
+            foreach ($jsonContent[1] as $item) {
+                if ($item['dateTime'] != date("Y-m-d")) {
 
-            $entityManager = $doctrine->getManager();
-            foreach ($jsonContent[2]->{'activities-steps'} as $item) {
-                if ($item->dateTime != date("Y-m-d")) {
-                    $item->remoteId = $jsonContent[0]->remoteId . 'FitStepsDailySummary' . $item->dateTime;
+                    $item['remoteId'] = sha1($patient->getId() .
+                            $thirdPartyService->getId() .
+                            $thirdPartyService->getName()) .
+                        'FitStepsDailySummary' .
+                        $item['dateTime'];
 
                     /** @var FitStepsDailySummary $dataEntry */
                     $dataEntry = $doctrine->getRepository(FitStepsDailySummary::class)->findOneBy([
-                        'RemoteId' => $item->remoteId,
+                        'RemoteId' => $item['remoteId'],
                         'patient' => $patient,
-                        'trackingDevice' => $deviceTracking,
                     ]);
+
                     if (!$dataEntry) {
                         $dataEntry = new FitStepsDailySummary();
                         $dataEntry->setGoal($patientGoal);
-                    }
 
-                    $dataEntry->setPatient($patient);
-                    $dataEntry->setTrackingDevice($deviceTracking);
-                    $dataEntry->setRemoteId($item->remoteId);
-                    $dataEntry->setValue($item->value);
-                    if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> strtotime($item->dateTime . " 23:59:59")) {
-                        $dataEntry->setDateTime(new \DateTime($item->dateTime . " 23:59:59"));
-                    }
-
-                    if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < strtotime($item->dateTime . " 23:59:59")) {
-                        $deviceTracking->setLastSynced($dataEntry->getDateTime());
-                    }
-
-                    if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-                        $patient = $awardManager->giveBadge(
-                            $patient,
-                            [
-                                'patients_name' => $patient->getFirstName(),
-                                'html_title' => "Awarded the Step Target badge",
-                                'header_image' => '../badges/trg_steps_achieved_header.png',
-                                "dateTime" => $dataEntry->getDateTime(),
-                                'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
-                                "name" => "Step Target",
-                                "repeat" => FALSE,
-                                'badge_name' => 'Step Target',
-                                'badge_xp' => 5,
-                                'badge_image' => 'trg_steps_achieved',
-                                'badge_text' => "Reached your step goal today",
-                                'badge_longtext' => "Today you did it! You reached your step goal",
-                                'badge_citation' => "Today you did it! You reached your step goal",
-                            ]
-                        );
-                        $percentageOver = ($dataEntry->getValue() / $dataEntry->getGoal()->getGoal()) * 100;
-                        $percentageOver = $percentageOver - 100;
-                        if ($percentageOver > 100) {
-                            $patient = $awardManager->giveBadge(
-                                $patient,
-                                [
-                                    'patients_name' => $patient->getFirstName(),
-                                    'html_title' => "Awarded the Step Target Smashed badge",
-                                    'header_image' => '../badges/trg_steps_smashed_header.png',
-                                    "dateTime" => $dataEntry->getDateTime(),
-                                    'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
-                                    "name" => "Step Target Smashed",
-                                    "repeat" => FALSE,
-                                    'badge_name' => 'Step Target Smashed',
-                                    'badge_xp' => 10,
-                                    'badge_image' => 'trg_steps_smashed',
-                                    'badge_text' => "You walked twice your step goal",
-                                    'badge_longtext' => "Wow! I mean, WOW! You walked twice your step goal today",
-                                    'badge_citation' => "Wow! I mean, WOW! You walked twice your step goal today",
-                                ]
-                            );
+                        $dataEntry->setPatient($patient);
+                        $dataEntry->setTrackingDevice($deviceTracking);
+                        $dataEntry->setRemoteId($item['remoteId']);
+                        $dataEntry->setValue($item['value']);
+                        if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> strtotime($item['dateTime'] . " 23:59:59")) {
+                            $dataEntry->setDateTime(new \DateTime($item['dateTime'] . " 23:59:59"));
                         }
+
+                        $returnEntities[] = $dataEntry;
                     }
-
-                    try {
-                        $savedClassType = get_class($dataEntry);
-                        $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                        $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                        $entityManager->persist($updatedApi);
-                    } catch (\Exception $e) {
-                        ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-                    }
-
-                    $returnEntities[] = $dataEntry;
                 }
             }
-
-
-            $entityManager->flush();
 
             return $returnEntities;
 
         }
-
         return NULL;
     }
 }

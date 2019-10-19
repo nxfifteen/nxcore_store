@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class LoginAuthenticatorController extends AbstractController
 {
     private $requestJson;
-    
+
     /**
      * @Route("/users/authenticate", name="login_authenticator")
      * @param Request                      $request
@@ -42,9 +42,9 @@ class LoginAuthenticatorController extends AbstractController
 
         if (!$patient || !$passwordEncoder->isPasswordValid($patient, $this->requestJson->password)) {
             if (!$patient) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' No matching user ' . $this->requestJson->username);
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' No matching user "' . $this->requestJson->username . '" from IP ' . print_r($request->getClientIps(), TRUE));
             } else if (!$passwordEncoder->isPasswordValid($patient, $this->requestJson->password)) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Invalid password for ' . $this->requestJson->username);
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Invalid password for "' . $this->requestJson->username . '" from IP ' . print_r($request->getClientIps(), TRUE));
             }
             $exception = $this->createAccessDeniedException("Invalid login");
             throw $exception;

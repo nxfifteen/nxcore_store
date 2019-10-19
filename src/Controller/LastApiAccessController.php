@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ApiAccessLog;
 use App\Entity\Patient;
+use App\Entity\PatientSettings;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -54,9 +55,22 @@ class LastApiAccessController extends AbstractController
             ->findLastAccess($patient, $service, $endpoint);
 
         if (!$apiAccessLog) {
+            /** @var PatientSettings $dbSettings */
+            $dbSettings = $this->getDoctrine()
+                ->getRepository(PatientSettings::class)
+                ->findOneBy(['patient' => $patient, 'service' => $service, 'name' => 'from']);
+            if ($dbSettings) {
+                $return['status'] = "warning";
+                $return['code'] = "201";
+                $return['message'] = "From birth";
+                $return['payload'] = $dbSettings->getValue()[0];
+
+                return $this->json($return);
+            }
+
             $return['status'] = "warning";
             $return['code'] = "201";
-            $return['message'] = "No last access log for Service/EndPoint combination";
+            $return['message'] = "Fallback date";
             $return['payload'] = "2000-01-01 00:00:00.000";
 
             return $this->json($return);

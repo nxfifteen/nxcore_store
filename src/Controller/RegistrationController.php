@@ -11,6 +11,7 @@ namespace App\Controller;
 use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\PatientFriends;
+use App\Entity\PatientMembership;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -120,6 +121,15 @@ class RegistrationController extends AbstractController
         $patient->setRoles(['ROLE_USER', 'ROLE_BETA']);
         $patient->setApiToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
         $entityManager->persist($patient);
+
+        $membership = new PatientMembership();
+        $membership->setPatient($patient);
+        $membership->setTear('alpha_user');
+        $membership->setSince(new \DateTime());
+        $membership->setLastPaid(new \DateTime());
+        $membership->setActive(TRUE);
+        $membership->setLifetime(TRUE);
+        $entityManager->persist($membership);
 
         /** @var Patient $patientOwner */
         $patientOwner = $doctrine

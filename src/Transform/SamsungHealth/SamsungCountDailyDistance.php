@@ -4,13 +4,19 @@ namespace App\Transform\SamsungHealth;
 
 use App\AppConstants;
 use App\Entity\FitDistanceDailySummary;
+use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
+use App\Entity\RpgChallengeGlobalPatient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
+use App\Service\ChallengePve;
+use App\Transform\Transform;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 class SamsungCountDailyDistance extends Constants
 {
@@ -20,9 +26,12 @@ class SamsungCountDailyDistance extends Constants
      *
      * @param AwardManager    $awardManager
      *
+     * @param ChallengePve    $challengePve
+     *
      * @return FitDistanceDailySummary|null
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, ChallengePve $challengePve)
     {
         $jsonContent = self::decodeJson($getContent);
 
@@ -84,46 +93,23 @@ class SamsungCountDailyDistance extends Constants
             }
 
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < $updateTime) {
-                $dataEntry->setDateTime(new \DateTime(date("Y-m-d H:i:s", $updateTime)));
+                try {
+                    $dataEntry->setDateTime(new DateTime(date("Y-m-d H:i:s", $updateTime)));
+                } catch (Exception $e) {
+                    AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
+                }
             }
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            if ($dataEntry->getTrackingDevice()->getId() == 3) {
-                if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-                    $patient = $awardManager->giveBadge(
-                        $patient,
-                        [
-                            'patients_name' => $patient->getFirstName(),
-                            'html_title' => "Awarded the Distance Target badge",
-                            'header_image' => '../badges/trg_distance_achieved_header.png',
-                            "dateTime" => $dataEntry->getDateTime(),
-                            'relevant_date' => $dataEntry->getDateTime()->format("F jS, Y"),
-                            "name" => "Distance Target Achieved",
-                            "repeat" => FALSE,
-                            'badge_name' => 'Distance Target Achieved',
-                            'badge_xp' => 5,
-                            'badge_image' => 'trg_distance_achieved',
-                            'badge_text' => "Reached your distance goal today",
-                            'badge_longtext' => "Today you did it! Walked the full way",
-                            'badge_citation' => "Today you did it! Walked the full way",
-                        ]
-                    );
-                }
-            }
-
+            if ($dataEntry->getTrackingDevice()->getId() == 3) $awardManager->checkForGoalAwards($dataEntry);
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
             try {
-                $savedClassType = get_class($dataEntry);
-                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($updatedApi);
-                $entityManager->flush();
-            } catch (\Exception $e) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
+                $challengePve->checkAnyRunning($dataEntry);
+            } catch (Exception $e) {
+                AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
             }
 
             return $dataEntry;

@@ -27,6 +27,9 @@ class SamsungFood extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FoodDiary|null
+     * @throws \Exception
+     * @throws \Exception
+     * @throws \Exception
      */
     public static function translateFoodIntake(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -100,17 +103,7 @@ class SamsungFood extends Constants
             if (property_exists($jsonContent, "comment") && !empty($jsonContent->comment)) $dataEntry->setComment($jsonContent->comment);
             $dataEntry->setUnit($unitOfMeasurement);
 
-            try {
-                $savedClassType = "FoodIntake";
-                $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($updatedApi);
-                $entityManager->flush();
-            } catch (\Exception $e) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-            }
+            self::updateApi($doctrine, "FoodIntake", $patient, $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 
@@ -126,6 +119,8 @@ class SamsungFood extends Constants
      * @param String          $getContent
      *
      * @return FoodDatabase|FoodNutrition|null
+     * @throws \Exception
+     * @throws \Exception
      */
     public static function translateFoodInfo(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -149,17 +144,7 @@ class SamsungFood extends Constants
             if (property_exists($jsonContent, "name") && !empty($jsonContent->name) && self::startsWith($jsonContent->name, "MyFitnessPal")) {
                 ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FoodDatabase for " . $jsonContent->remoteId);
 
-                try {
-                    $savedClassType = "FoodDatabase";
-                    $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                    $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, new DateTime());
-
-                    $entityManager = $doctrine->getManager();
-                    $entityManager->persist($updatedApi);
-                    $entityManager->flush();
-                } catch (\Exception $e) {
-                    ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-                }
+                self::updateApi($doctrine, "FoodDatabase", $patient, $thirdPartyService, new DateTime());
 
                 $jsonContent->title = $jsonContent->name;
                 $jsonContent->remoteId = $jsonContent->provider_food_id;
@@ -235,17 +220,7 @@ class SamsungFood extends Constants
                     $dataEntry->setRemoteIds($currentRemoteIds);
                 }
 
-                try {
-                    $savedClassType = "FoodDatabase";
-                    $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                    $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, new DateTime());
-
-                    $entityManager = $doctrine->getManager();
-                    $entityManager->persist($updatedApi);
-                    $entityManager->flush();
-                } catch (\Exception $e) {
-                    ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-                }
+                self::updateApi($doctrine, "FoodDatabase", $patient, $thirdPartyService, new DateTime());
 
                 return $dataEntry;
             }
@@ -262,6 +237,9 @@ class SamsungFood extends Constants
      * @param String          $getContent
      *
      * @return FoodNutrition|null
+     * @throws \Exception
+     * @throws \Exception
+     * @throws \Exception
      */
     public static function translateFood(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -342,17 +320,7 @@ class SamsungFood extends Constants
             }
 
             if (property_exists($jsonContent, "title") && !empty($jsonContent->title) && !self::startsWith($jsonContent->title, "MyFitnessPal")) {
-                try {
-                    $savedClassType = "FoodNutrition";
-                    $savedClassType = str_ireplace("App\\Entity\\", "", $savedClassType);
-                    $updatedApi = self::updateApi($doctrine, $savedClassType, $patient, $thirdPartyService, $dataEntry->getDateTime());
-
-                    $entityManager = $doctrine->getManager();
-                    $entityManager->persist($updatedApi);
-                    $entityManager->flush();
-                } catch (\Exception $e) {
-                    ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());
-                }
+                self::updateApi($doctrine, "FoodNutrition", $patient, $thirdPartyService, $dataEntry->getDateTime());
             }
 
             return $dataEntry;
