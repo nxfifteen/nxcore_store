@@ -187,6 +187,131 @@ class AngularController extends AbstractController
         $this->hasAccess($userRole);
     }
 
+    private function buildUserMenu()
+    {
+        $navItems = [];
+
+        /** @var SiteNavItem[] $rootMenuItems */
+        $rootMenuItems = $this->getDoctrine()
+            ->getRepository(SiteNavItem::class)
+            ->findBy(['childOf' => 0], ['displayOrder' => 'ASC', 'id' => 'ASC']);
+
+        if ($rootMenuItems) {
+            foreach ($rootMenuItems as $rootMenuItem) {
+                if (
+                    (
+                        ($rootMenuItem->getInDevelopment() && $this->patient->getId() == 1) ||
+                        !$rootMenuItem->getInDevelopment()
+                    ) && (
+                        is_null($rootMenuItem->getAccessLevel()) ||
+                        in_array($rootMenuItem->getAccessLevel(), $this->patient->getRoles())
+                    )
+                ) {
+                    $itemIndex = count($navItems);
+                    if ($rootMenuItem->getTitle()) {
+                        $navItems[$itemIndex] = [
+                            "divider" => TRUE,
+                        ];
+                        $navItems[$itemIndex + 1] =
+                            [
+                                "title" => $rootMenuItem->getTitle(),
+                                "name" => $rootMenuItem->getName(),
+                            ];
+                    } else {
+                        $navItems[$itemIndex] =
+                            [
+                                "name" => $rootMenuItem->getName(),
+                                "url" => $rootMenuItem->getUrl(),
+                                "icon" => $rootMenuItem->getIcon(),
+                            ];
+
+                        if ($rootMenuItem->getBadgeVariant() && $rootMenuItem->getBadgeText()) {
+                            $navItems[$itemIndex]['badge'] = [
+                                "variant" => $rootMenuItem->getBadgeVariant(),
+                                "text" => $rootMenuItem->getBadgeText(),
+                            ];
+                        }
+
+                        $navItems[$itemIndex] = $this->doesUserHaveMenuRequired($navItems[$itemIndex], $rootMenuItem);
+
+                        /** @var SiteNavItem[] $menuChildItems */
+                        $menuChildItems = $this->getDoctrine()
+                            ->getRepository(SiteNavItem::class)
+                            ->findBy(['childOf' => $rootMenuItem->getId()], ['displayOrder' => 'ASC', 'id' => 'ASC']);
+
+                        if ($menuChildItems) {
+                            $navItems[$itemIndex]['children'] = [];
+                            foreach ($menuChildItems as $menuChildItem) {
+                                $itemChildIndex = count($navItems[$itemIndex]['children']);
+                                if (
+                                    (
+                                        ($menuChildItem->getInDevelopment() && $this->patient->getId() == 1) ||
+                                        !$menuChildItem->getInDevelopment()
+                                    ) && (
+                                        is_null($menuChildItem->getAccessLevel()) ||
+                                        in_array($menuChildItem->getAccessLevel(), $this->patient->getRoles())
+                                    )
+                                ) {
+                                    $navItems[$itemIndex]['children'][$itemChildIndex] =
+                                        [
+                                            "name" => $menuChildItem->getName(),
+                                            "url" => $menuChildItem->getUrl(),
+                                            "icon" => $menuChildItem->getIcon(),
+                                        ];
+
+                                    $navItems[$itemIndex]['children'][$itemChildIndex] = $this->doesUserHaveMenuRequired($navItems[$itemIndex]['children'][$itemChildIndex], $menuChildItem);
+                                }
+                            }
+                            if (count($navItems[$itemIndex]['children']) == 0) {
+                                unset($navItems[$itemIndex]['children']);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $navItems;
+    }
+
+    /**
+     * @param array       $navItem
+     * @param SiteNavItem $menuItem
+     *
+     * @return mixed
+     */
+    private function doesUserHaveMenuRequired(array $navItem, SiteNavItem $menuItem)
+    {
+        if (!is_null($menuItem->getRequireService()) && is_array($menuItem->getRequireService()) && count($menuItem->getRequireService()) > 0) {
+            foreach ($menuItem->getRequireService() as $persistentObject) {
+
+                if (is_string($persistentObject)) {
+                    /** @var SiteNavItem[] $rootMenuItems */
+                    $rootMenuItems = $this->getDoctrine()
+                        ->getRepository($persistentObject)
+                        ->findBy(['patient' => $this->patient]);
+
+                    if (count($rootMenuItems) == 0) {
+                        $navItem['badge'] = [
+                            "variant" => "danger",
+                            "text" => "No Data",
+                        ];
+                        $navItem['attributes'] = [
+                            "disabled" => TRUE,
+                        ];
+                    } else if (count($rootMenuItems) > 0 && count($rootMenuItems) < 5) {
+                        $navItem['badge'] = [
+                            "variant" => "info",
+                            "text" => "NEW",
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $navItem;
+    }
+
     /**
      * @Route("/{uuid}/ux/feed/dashboard", name="angular_dashboard")
      * @param String $uuid A users UUID
@@ -815,88 +940,5 @@ class AngularController extends AbstractController
         $return['weight'] = $this->angularGetBodyWeight($uuid, date("Y-m-d"), $readings);
 
         return $this->json($return);
-    }
-
-    private function buildUserMenu()
-    {
-        $navItems = [];
-
-        /** @var SiteNavItem[] $rootMenuItems */
-        $rootMenuItems = $this->getDoctrine()
-            ->getRepository(SiteNavItem::class)
-            ->findBy(['childOf' => 0], ['displayOrder' => 'ASC', 'id' => 'ASC']);
-
-        if ($rootMenuItems) {
-            foreach ($rootMenuItems as $rootMenuItem) {
-                if (
-                    (
-                        ($rootMenuItem->getInDevelopment() && $this->patient->getId() == 1) ||
-                        !$rootMenuItem->getInDevelopment()
-                    ) && (
-                        is_null($rootMenuItem->getAccessLevel()) ||
-                        in_array($rootMenuItem->getAccessLevel(), $this->patient->getRoles())
-                    )
-                ) {
-                    $itemIndex = count($navItems);
-                    if ($rootMenuItem->getTitle()) {
-                        $navItems[$itemIndex] = [
-                            "divider" => TRUE,
-                        ];
-                        $navItems[$itemIndex + 1] =
-                            [
-                                "title" => $rootMenuItem->getTitle(),
-                                "name" => $rootMenuItem->getName(),
-                            ];
-                    } else {
-                        $navItems[$itemIndex] =
-                            [
-                                "name" => $rootMenuItem->getName(),
-                                "url" => $rootMenuItem->getUrl(),
-                                "icon" => $rootMenuItem->getIcon(),
-                            ];
-
-                        if ($rootMenuItem->getBadgeVariant() && $rootMenuItem->getBadgeText()) {
-                            $navItems[$itemIndex]['badge'] = [
-                                "variant" => $rootMenuItem->getBadgeVariant(),
-                                "text" => $rootMenuItem->getBadgeText(),
-                            ];
-                        }
-
-
-                        /** @var SiteNavItem[] $menuChildItems */
-                        $menuChildItems = $this->getDoctrine()
-                            ->getRepository(SiteNavItem::class)
-                            ->findBy(['childOf' => $rootMenuItem->getId()], ['displayOrder' => 'ASC', 'id' => 'ASC']);
-
-                        if ($menuChildItems) {
-                            $navItems[$itemIndex]['children'] = [];
-                            foreach ($menuChildItems as $menuChildItem) {
-                                if (
-                                    (
-                                        ($menuChildItem->getInDevelopment() && $this->patient->getId() == 1) ||
-                                        !$menuChildItem->getInDevelopment()
-                                    ) && (
-                                        is_null($menuChildItem->getAccessLevel()) ||
-                                        in_array($menuChildItem->getAccessLevel(), $this->patient->getRoles())
-                                    )
-                                ) {
-                                    $navItems[$itemIndex]['children'][] =
-                                        [
-                                            "name" => $menuChildItem->getName(),
-                                            "url" => $menuChildItem->getUrl(),
-                                            "icon" => $menuChildItem->getIcon(),
-                                        ];
-                                }
-                            }
-                            if (count($navItems[$itemIndex]['children']) == 0) {
-                                unset($navItems[$itemIndex]['children']);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return $navItems;
     }
 }
