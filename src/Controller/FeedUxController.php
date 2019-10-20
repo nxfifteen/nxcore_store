@@ -34,6 +34,8 @@ class FeedUxController extends AbstractController
     /** @var Patient $patient */
     private $patient;
 
+    private $feed_storage;
+
     /**
      * @Route("/feed/activities/log", name="index_activity_log_no_param")
      *
@@ -296,6 +298,7 @@ class FeedUxController extends AbstractController
     private function setupRoute(String $userRole = 'ROLE_USER')
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();
+        $this->feed_storage = NULL;
 
         Sentry\configureScope(function (Sentry\State\Scope $scope): void {
             $scope->setUser([
@@ -2300,6 +2303,7 @@ class FeedUxController extends AbstractController
         if ($dbRpgChallengeGlobalIn) {
             $return['challenges'] = [];
             foreach ($dbRpgChallengeGlobalIn as $dbRpgChallengeGlobal) {
+                $this->feed_storage = 0;
                 if (is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
                     $arrayIndex = count($return['challenges']);
                     $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal->getChallenge(), $dbRpgChallengeGlobal);
