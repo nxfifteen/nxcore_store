@@ -14,6 +14,7 @@ use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
 use App\Entity\RpgChallengeGlobal;
+use App\Entity\RpgChallengeGlobalPatient;
 use App\Entity\RpgMilestones;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
@@ -2278,7 +2279,194 @@ class FeedUxController extends AbstractController
 
 
     /**
-     * @Route("/feed/pve/challenges", name="index_global_challenge")
+     * @Route("/feed/pve/challenges", name="index_global_challenge_in")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_global_challenge_in()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        /** @var RpgChallengeGlobalPatient[] $dbRpgChallengeGlobalIn */
+        $dbRpgChallengeGlobalIn = $this->getDoctrine()
+            ->getRepository(RpgChallengeGlobalPatient::class)
+            ->findBy(['patient' => $this->patient], ['startDateTime' => 'asc', 'challenge' => 'asc']);
+
+        if ($dbRpgChallengeGlobalIn) {
+            $return['challenges'] = [];
+            foreach ($dbRpgChallengeGlobalIn as $dbRpgChallengeGlobal) {
+                if (is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                    $arrayIndex = count($return['challenges']);
+                    $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal->getChallenge(), $dbRpgChallengeGlobal);
+                    if (is_null($return['challenges'][$arrayIndex])) {
+                        unset($return['challenges'][$arrayIndex]);
+                    }
+                }
+            }
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    private function buildChallengeArray(RpgChallengeGlobal $dbRpgChallengeGlobal, RpgChallengeGlobalPatient $challengePatientDetails = NULL)
+    {
+        if (!is_null($dbRpgChallengeGlobal->getProgression())) {
+            $return = $this->findChallengeChildren($dbRpgChallengeGlobal, $challengePatientDetails);
+            if (is_null($return)) {
+                return NULL;
+            }
+        } else {
+            $return = [
+                "id" => $dbRpgChallengeGlobal->getId(),
+                "name" => $dbRpgChallengeGlobal->getName(),
+                "description" => $dbRpgChallengeGlobal->getDescripton(),
+                "criteria" => NULL,
+                "target" => $dbRpgChallengeGlobal->getTarget(),
+                "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
+                "reward" => NULL,
+                "depth" => 0,
+                "isCollapsed" => FALSE,
+            ];
+
+            if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
+                $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
+            } else if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
+                $return['criteria'] = strtolower(str_replace("Fit", "", str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+            }
+
+            if (!is_null($challengePatientDetails)) {
+                if ($challengePatientDetails->getChallenge()->getId() != $dbRpgChallengeGlobal->getId()) {
+                    /** @var RpgChallengeGlobalPatient $challengePatientDetails */
+                    $challengePatientDetails = $this->getDoctrine()
+                        ->getRepository(RpgChallengeGlobalPatient::class)
+                        ->findOneBy(['patient' => $this->patient, 'challenge' => $dbRpgChallengeGlobal->getId()]);
+                }
+
+                if ($challengePatientDetails) {
+                    $return['participation'] = [];
+                    $return['participation']['progress'] = round($challengePatientDetails->getProgress(), 0, PHP_ROUND_HALF_DOWN);
+                    if (!is_null($challengePatientDetails->getStartDateTime())) {
+                        $return['participation']['startDateTime'] = $challengePatientDetails->getStartDateTime()->format("Y-m-d H:i:s");
+                    } else {
+                        $return['participation']['startDateTime'] = NULL;
+                    }
+                    if (!is_null($challengePatientDetails->getFinishDateTime())) {
+                        $return['participation']['finishDateTime'] = $challengePatientDetails->getFinishDateTime()->format("Y-m-d H:i:s");
+                    } else {
+                        $return['participation']['finishDateTime'] = NULL;
+                    }
+                } else {
+                    $return['participation'] = -1;
+                }
+            }
+
+            if (!is_null($dbRpgChallengeGlobal->getReward())) {
+                $return['reward'] = [
+                    "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
+                    "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
+                ];
+            } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                $return['reward'] = [
+                    "xp" => $dbRpgChallengeGlobal->getXp(),
+                    "badge" => NULL,
+                ];
+            }
+        }
+
+        return $return;
+    }
+
+    private function findChallengeChildren(RpgChallengeGlobal $dbRpgChallengeGlobal, RpgChallengeGlobalPatient $challengePatientDetails = NULL)
+    {
+        $return = [
+            "id" => $dbRpgChallengeGlobal->getId(),
+            "name" => $dbRpgChallengeGlobal->getName(),
+            "description" => $dbRpgChallengeGlobal->getDescripton(),
+            "progression" => $dbRpgChallengeGlobal->getProgression(),
+            "criteria" => NULL,
+            "target" => $dbRpgChallengeGlobal->getTarget(),
+            "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
+            "reward" => NULL,
+            "depth" => 0,
+            "isCollapsed" => FALSE,
+        ];
+
+        if (!is_null($challengePatientDetails)) {
+            if ($challengePatientDetails->getChallenge()->getId() != $dbRpgChallengeGlobal->getId()) {
+                /** @var RpgChallengeGlobalPatient $challengePatientDetails */
+                $challengePatientDetails = $this->getDoctrine()
+                    ->getRepository(RpgChallengeGlobalPatient::class)
+                    ->findOneBy(['patient' => $this->patient, 'challenge' => $dbRpgChallengeGlobal->getId()]);
+            }
+
+            if ($challengePatientDetails) {
+                $return['participation'] = [];
+                $return['participation']['progress'] = round($challengePatientDetails->getProgress(), 0, PHP_ROUND_HALF_DOWN);
+                if (!is_null($challengePatientDetails->getStartDateTime())) {
+                    $return['participation']['startDateTime'] = $challengePatientDetails->getStartDateTime()->format("Y-m-d H:i:s");
+                } else {
+                    $return['participation']['startDateTime'] = NULL;
+                }
+                if (!is_null($challengePatientDetails->getFinishDateTime())) {
+                    $return['participation']['finishDateTime'] = $challengePatientDetails->getFinishDateTime()->format("Y-m-d H:i:s");
+                } else {
+                    $return['participation']['finishDateTime'] = NULL;
+                }
+            } else {
+                $return['participation'] = -1;
+            }
+        }
+
+        if (!is_null($dbRpgChallengeGlobal->getReward())) {
+            $return['reward'] = [
+                "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
+                "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
+            ];
+        } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
+            $return['reward'] = [
+                "xp" => $dbRpgChallengeGlobal->getXp(),
+                "badge" => NULL,
+            ];
+        }
+
+        if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
+            $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
+        } else if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
+            $return['criteria'] = strtolower(str_replace("Fit", "", str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+        }
+
+        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
+        $dbRpgChallengeGlobalChildren = $this->getDoctrine()
+            ->getRepository(RpgChallengeGlobal::class)
+            ->findBy(['childOf' => $dbRpgChallengeGlobal, 'active' => TRUE], ['target' => 'asc', 'id' => 'asc']);
+
+        if ($dbRpgChallengeGlobalChildren) {
+            $return['children'] = [];
+            foreach ($dbRpgChallengeGlobalChildren as $dbRpgChallengeGlobalChild) {
+                $return['children'][] = $this->buildChallengeArray($dbRpgChallengeGlobalChild, $challengePatientDetails);
+            }
+            $return['depth'] = $return['children'][0]['depth'] + 1;
+        } else {
+            return NULL;
+        }
+
+        if ($return['depth'] > 0) {
+            $return['isCollapsed'] = TRUE;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @Route("/feed/pve/challenges/all", name="index_global_challenge")
      *
      * @return JsonResponse
      * @throws Exception
@@ -2315,95 +2503,5 @@ class FeedUxController extends AbstractController
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
-    }
-
-    private function buildChallengeArray(RpgChallengeGlobal $dbRpgChallengeGlobal)
-    {
-        if (!is_null($dbRpgChallengeGlobal->getProgression())) {
-            $return = $this->findChallengeChildren($dbRpgChallengeGlobal);
-            if (is_null($return)) {
-                return NULL;
-            }
-        } else {
-            $return = [
-                "id" => $dbRpgChallengeGlobal->getId(),
-                "name" => $dbRpgChallengeGlobal->getName(),
-                "description" => $dbRpgChallengeGlobal->getDescripton(),
-                "criteria" => $dbRpgChallengeGlobal->getCriteria(),
-                "target" => $dbRpgChallengeGlobal->getTarget(),
-                "reward" => NULL,
-            ];
-            if (!is_null($dbRpgChallengeGlobal->getReward())) {
-                $return['reward'] = [
-                    "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
-                    "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
-                ];
-            } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
-                $return['reward'] = [
-                    "xp" => $dbRpgChallengeGlobal->getXp(),
-                    "badge" => NULL,
-                ];
-            }
-        }
-
-        return $return;
-    }
-
-    private function findChallengeChildren(RpgChallengeGlobal $dbRpgChallengeGlobal)
-    {
-        $return = [
-            "id" => $dbRpgChallengeGlobal->getId(),
-            "name" => $dbRpgChallengeGlobal->getName(),
-            "description" => $dbRpgChallengeGlobal->getDescripton(),
-            "progression" => $dbRpgChallengeGlobal->getProgression(),
-            "to" => 0,
-            "reward" => NULL,
-        ];
-        if (!is_null($dbRpgChallengeGlobal->getReward())) {
-            $return['reward'] = [
-                "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
-                "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
-            ];
-        } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
-            $return['reward'] = [
-                "xp" => $dbRpgChallengeGlobal->getXp(),
-                "badge" => NULL,
-            ];
-        }
-
-        if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
-            $return['criteria'] = $dbRpgChallengeGlobal->getCriteria();
-        }
-
-        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
-        $dbRpgChallengeGlobalChildren = $this->getDoctrine()
-            ->getRepository(RpgChallengeGlobal::class)
-            ->findBy(['childOf' => $dbRpgChallengeGlobal, 'active' => TRUE], ['target' => 'asc', 'id' => 'asc']);
-
-        if ($dbRpgChallengeGlobalChildren) {
-            $return['children'] = [];
-            foreach ($dbRpgChallengeGlobalChildren as $dbRpgChallengeGlobalChild) {
-                $return['children'][] = $this->buildChallengeArray($dbRpgChallengeGlobalChild);
-            }
-
-            foreach ($return['children'] as $child) {
-                if (array_key_exists("target", $child)) {
-                    $return['to'] = $child["target"];
-                } else {
-                    foreach ($child['children'] as $subChild) {
-                        if (array_key_exists("target", $subChild)) {
-                            $return['to'] = $subChild["target"];
-                        } else {
-                            $return['to'] = 'whoknows';
-                        }
-                    }
-                }
-            }
-
-        } else {
-            return NULL;
-        }
-
-        return $return;
     }
 }
