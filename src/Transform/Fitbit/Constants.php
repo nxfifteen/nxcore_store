@@ -13,7 +13,8 @@ class Constants extends Transform
     const FITBITEPBODYWEIGHT = "TrackingDevice::BodyWeight";
     const FITBITHEPDAILYSTEPS = "TrackingDevice::FitStepsDailySummary";
     const FITBITHEPPERIODSTEPS = "FitStepsPeriodSummary";
-    const FITBITEXERCISE = "TrackingDevice::FitStepsDailySummary::Exercise";
+    const FITBITHEPDAILYSTEPSEXERCISE = "TrackingDevice::FitStepsDailySummary::Exercise";
+    const FITBITEXERCISE = "TrackingDevice::Exercise";
 
     public static function getPath(string $endpoint)
     {

@@ -52,7 +52,7 @@ class Entry
                 /** @noinspection PhpUnhandledExceptionInspection */
                 $translateEntity = FitbitCountPeriodSteps::translate($doctrine, $getContent);
                 break;
-            case Constants::FITBITEXERCISE:
+            case Constants::FITBITHEPDAILYSTEPSEXERCISE:
                 $translateEntity = [];
                 try {
                     $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent, $awardManager, $challengePve);
@@ -66,7 +66,25 @@ class Entry
                 if (array_key_exists(3, $getContent) && property_exists($getContent[3], "activities") && $getContent[0]->uuid == "testfitbit") {
                     foreach ($getContent[3]->activities as $index => $item) {
                         try {
-                            $translateEntity[] = FitbitExercise::translate($doctrine, $getContent, $index, $challengePve);
+                            $translateEntity[] = FitbitExercise::translate($doctrine, $getContent, $index);
+                        } catch (\Exception $e) {
+                        }
+                    }
+                }
+                break;
+            case Constants::FITBITEXERCISE:
+                $translateEntity = [];
+                $getContent[3] = $getContent[2];
+                unset($getContent[2]);
+
+                foreach ($getContent[1] as $index => $item) {
+                    $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
+                }
+
+                if (array_key_exists(3, $getContent) && property_exists($getContent[3], "activities") && $getContent[0]->uuid == "testfitbit") {
+                    foreach ($getContent[3]->activities as $index => $item) {
+                        try {
+                            $translateEntity[] = FitbitExercise::translate($doctrine, $getContent, $index);
                         } catch (\Exception $e) {
                         }
                     }

@@ -31,9 +31,7 @@ class FitbitCountDailySteps extends Constants
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, ChallengePve $challengePve)
     {
         if (property_exists($jsonContent[0], "uuid")) {
-            if (strtolower($jsonContent[0]->uuid) == "kayleigh") {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
-            }
+            //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
