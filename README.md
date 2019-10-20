@@ -1,7 +1,7 @@
 NxFitness Core - Store
 =========================================
 
-###### Version: 0.0.0
+###### Version: 0.0.3
 
 
 ## Ways to contribute
