@@ -259,6 +259,13 @@ class AngularController extends AbstractController
                                             "icon" => $menuChildItem->getIcon(),
                                         ];
 
+                                    if ($menuChildItem->getBadgeVariant() && $menuChildItem->getBadgeText()) {
+                                        $navItems[$itemIndex]['children'][$itemChildIndex]['badge'] = [
+                                            "variant" => $menuChildItem->getBadgeVariant(),
+                                            "text" => $menuChildItem->getBadgeText(),
+                                        ];
+                                    }
+
                                     $navItems[$itemIndex]['children'][$itemChildIndex] = $this->doesUserHaveMenuRequired($navItems[$itemIndex]['children'][$itemChildIndex], $menuChildItem);
                                 }
                             }
