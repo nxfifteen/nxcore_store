@@ -2430,10 +2430,15 @@ class FeedUxController extends AbstractController
         }
 
         if (!is_null($dbRpgChallengeGlobal->getReward())) {
-            $return['reward'] = [
-                "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
-                "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
-            ];
+            $return['reward'] = [];
+            $return['reward']["badge"] = $dbRpgChallengeGlobal->getReward()->getName();
+
+            if ((is_null($dbRpgChallengeGlobal->getReward()->getXp()) || $dbRpgChallengeGlobal->getReward()->getXp() == 0) && !is_null($dbRpgChallengeGlobal->getProgression()) && !is_null($dbRpgChallengeGlobal->getXp())) {
+                $return['reward']["xp"] = $dbRpgChallengeGlobal->getXp();
+            } else {
+                $return['reward']["xp"] = $dbRpgChallengeGlobal->getReward()->getXp();
+            }
+
         } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
             $return['reward'] = [
                 "xp" => $dbRpgChallengeGlobal->getXp(),
