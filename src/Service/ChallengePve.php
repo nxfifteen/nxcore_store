@@ -13,6 +13,7 @@ namespace App\Service;
 use App\AppConstants;
 use App\Entity\FitDistanceDailySummary;
 use App\Entity\FitStepsDailySummary;
+use App\Entity\RpgChallengeGlobal;
 use App\Entity\RpgChallengeGlobalPatient;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -45,8 +46,6 @@ class ChallengePve
      */
     public function checkAnyRunning($dataEntry)
     {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - Searching for active GLOBAL Challenges");
-
         $challengeCriteria = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
         /** @var RpgChallengeGlobalPatient[] $dbRpgChallengeGlobals */
         $dbRpgChallengeGlobals = $this->doctrine
@@ -57,7 +56,6 @@ class ChallengePve
             $entityManager = $this->doctrine->getManager();
 
             foreach ($dbRpgChallengeGlobals as $dbRpgChallengeGlobal) {
-                //AppConstants::writeToLog('debug_transform.txt', __LINE__ . "  - " . $dbRpgChallengeGlobal->getChallenge()->getName());
                 $dataFindSince = NULL;
                 switch ($challengeCriteria) {
                     case "FitStepsDailySummary":
@@ -82,13 +80,35 @@ class ChallengePve
                         }
                     }
 
+                    $baseRequired = 0;
+                    $challengeRoot = $this->getRootChallenge($dbRpgChallengeGlobal->getChallenge());
+                    if ($challengeRoot->getProgression() == "stage") {
+                        /** @var RpgChallengeGlobal[] $previousStage */
+                        $previousStage = $this->doctrine
+                            ->getRepository(RpgChallengeGlobal::class)
+                            ->createQueryBuilder('c')
+                            ->Where('c.target < :target')
+                            ->setParameter('target', $dbRpgChallengeGlobal->getChallenge()->getTarget())
+                            ->andWhere('c.childOf = :childOf')
+                            ->setParameter('childOf', $dbRpgChallengeGlobal->getChallenge()->getChildOf())
+                            ->setMaxResults(1)
+                            ->orderBy('c.target', 'DESC')
+                            ->getQuery()->getResult();
+
+                        if ($previousStage) {
+                            $return['participation']['debug']['prevStage'] = $previousStage[0]->getId();
+                            $baseRequired = $previousStage[0]->getTarget();
+                        }
+                    }
+
                     $dataFindSinceValue = 0;
                     foreach ($dataFindSince as $item) {
                         $dataFindSinceValue = $dataFindSinceValue + $item->getValue();
                     }
 
-//                    if ($challengeCriteria == "FitStepsDailySummary") AppConstants::writeToLog('debug_transform.txt', __LINE__ . "   - Has then this many steps since the start " . $dataFindSinceValue);
-//                    if ($challengeCriteria == "FitStepsDailySummary") AppConstants::writeToLog('debug_transform.txt', __LINE__ . "   - The completion target is " . $comparisonTarget);
+                    $dataFindSinceValue = $dataFindSinceValue - $baseRequired;
+                    if ($dataFindSinceValue < 0) $dataFindSinceValue = 0;
+
                     if ($dataFindSinceValue > $comparisonTarget) {
                         $dbRpgChallengeGlobal->setProgress(100);
                         $dbRpgChallengeGlobal->setFinishDateTime(new DateTime());
@@ -117,9 +137,16 @@ class ChallengePve
             }
 
             $entityManager->flush();
-        } /*else {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . "  - There are no challenges matching " . $challengeCriteria);
-        }*/
+        }
+    }
+
+    private function getRootChallenge(RpgChallengeGlobal $dbRpgChallengeGlobal)
+    {
+        if (!is_null($dbRpgChallengeGlobal->getChildOf())) {
+            return $this->getRootChallenge($dbRpgChallengeGlobal->getChildOf());
+        } else {
+            return $dbRpgChallengeGlobal;
+        }
     }
 
     /**
@@ -130,8 +157,6 @@ class ChallengePve
      */
     protected static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
     {
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . "  - You want to convert $value $valueUnit to $targetUnit");
-
         if ($valueUnit == "mile" && $targetUnit == "meter") {
             return $value * 1609.34;
         } else if ($valueUnit == "meter" && $targetUnit == "mile") {
