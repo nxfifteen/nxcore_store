@@ -18,6 +18,7 @@ use App\Entity\Patient;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
 use App\Entity\RpgXP;
+use App\Entity\SiteNews;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -116,6 +117,16 @@ class AwardManager
                 $patient = $this->giveXp($patient, $reward->getXp(), "Awarded the " . $reward->getName() . " badge", $dateTime);
             }
 
+            $notification = new SiteNews();
+            $notification->setPatient($patient);
+            $notification->setPublished(new \DateTime());
+            $notification->setTitle("You just won the " . $reward->getName() . " badge");
+            $notification->setText($reward->getText());
+            $notification->setAccent('success');
+            $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
+            $notification->setLink($_ENV['UI_URL'] . '/#/achievements/awards/info/' . $reward->getId());
+            $notification->setPriority(3);
+
 //            try {
 //                $this->sendUserEmail(
 //                    [
@@ -132,6 +143,7 @@ class AwardManager
 //                return $patient;
 //            }
 
+            $entityManager->persist($notification);
             $entityManager->persist($rewarded);
             $entityManager->persist($patient);
             $entityManager->flush();

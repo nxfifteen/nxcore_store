@@ -43,6 +43,26 @@ class SiteNews
      */
     private $accent;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="notifications")
+     */
+    private $patient;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $displayed;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $link;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $priority;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -104,6 +124,54 @@ class SiteNews
     public function setAccent(?string $accent): self
     {
         $this->accent = $accent;
+
+        return $this;
+    }
+
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
+
+        return $this;
+    }
+
+    public function getDisplayed(): ?bool
+    {
+        return $this->displayed;
+    }
+
+    public function setDisplayed(?bool $displayed): self
+    {
+        $this->displayed = $displayed;
+
+        return $this;
+    }
+
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    public function setLink(?string $link): self
+    {
+        $this->link = $link;
+
+        return $this;
+    }
+
+    public function getPriority(): ?int
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(?int $priority): self
+    {
+        $this->priority = $priority;
 
         return $this;
     }

@@ -161,6 +161,11 @@ class Patient implements UserInterface
      */
     private $rpgChallengeGlobals;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\SiteNews", mappedBy="patient")
+     */
+    private $notifications;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -174,6 +179,7 @@ class Patient implements UserInterface
         $this->friendsToo = new ArrayCollection();
         $this->settings = new ArrayCollection();
         $this->rpgChallengeGlobals = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -863,6 +869,37 @@ class Patient implements UserInterface
             // set the owning side to null (unless already changed)
             if ($rpgChallengeGlobal->getPatient() === $this) {
                 $rpgChallengeGlobal->setPatient(NULL);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|SiteNews[]
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(SiteNews $notification): self
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications[] = $notification;
+            $notification->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(SiteNews $notification): self
+    {
+        if ($this->notifications->contains($notification)) {
+            $this->notifications->removeElement($notification);
+            // set the owning side to null (unless already changed)
+            if ($notification->getPatient() === $this) {
+                $notification->setPatient(NULL);
             }
         }
 

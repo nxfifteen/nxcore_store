@@ -18,6 +18,7 @@ use App\Entity\RpgChallengeGlobalPatient;
 use App\Entity\RpgMilestones;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
+use App\Entity\SiteNews;
 use App\Service\AwardManager;
 use DateInterval;
 use DatePeriod;
@@ -2194,6 +2195,96 @@ class FeedUxController extends AbstractController
     }
 
     /**
+     * @Route("/news/site", name="index_news_site")
+     */
+    public function index_news_site()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        /** @var SiteNews[] $newsItemsSite */
+        $newsItemsSite = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => NULL], ['published' => 'DESC']);
+
+        /** @var SiteNews[] $newsItemsPersonal */
+        $newsItemsPersonal = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient, 'priority' => 1], ['published' => 'DESC']);
+
+        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
+        if ($newsItems) {
+            $return['items'] = $this->buildNewsItems($newsItems);
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/news/personal", name="index_news_personal")
+     */
+    public function index_news_personal()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        /** @var SiteNews[] $newsItemsSite */
+        $newsItemsSite = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => NULL, 'priority' => 2], ['published' => 'DESC']);
+
+        /** @var SiteNews[] $newsItemsPersonal */
+        $newsItemsPersonal = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient, 'priority' => 2], ['published' => 'DESC']);
+
+        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
+        if ($newsItems) {
+            $return['items'] = $this->buildNewsItems($newsItems);
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/news/push", name="index_news_push")
+     */
+    public function index_news_push()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        /** @var SiteNews[] $newsItems */
+        $newsItems = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient, 'priority' => 3], ['published' => 'DESC']);
+
+        if ($newsItems) {
+            $return['items'] = $this->buildNewsItems($newsItems);
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
      * @Route("/feed/achievements/awards", name="index_achievements_badges")
      */
     public function index_achievements_badges()
@@ -2510,5 +2601,36 @@ class FeedUxController extends AbstractController
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
+    }
+
+    private function buildNewsItems(array $newsItems)
+    {
+        /** @var SiteNews[] $newsItems */
+        /** @var SiteNews[] $newsItemsSorted */
+        $newsItemsSorted = [];
+        $return = [];
+        foreach ($newsItems as $newsItem) {
+            $newsItemsSorted[$newsItem->getPublished()->format("U") . $newsItem->getId()] = $newsItem;
+        }
+
+        arsort($newsItemsSorted);
+
+        foreach ($newsItemsSorted as $newsItem) {
+            if (is_null($newsItem->getExpires()) || $newsItem->getExpires()->format("U") > date("U")) {
+                $return[] = [
+                    "id" => $newsItem->getId(),
+                    "title" => $newsItem->getTitle(),
+                    "text" => $newsItem->getText(),
+                    "accent" => str_replace("list-group-item-accent-", "", $newsItem->getAccent()),
+                    "displayed" => $newsItem->getDisplayed(),
+                    "expires" => $newsItem->getExpires(),
+                    "link" => $newsItem->getLink(),
+                    "priority" => $newsItem->getPriority(),
+                    "published" => $newsItem->getPublished(),
+                ];
+            }
+        }
+
+        return $return;
     }
 }
