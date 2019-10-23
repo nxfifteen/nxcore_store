@@ -63,6 +63,11 @@ class SiteNews
      */
     private $priority;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $image;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -172,6 +177,18 @@ class SiteNews
     public function setPriority(?int $priority): self
     {
         $this->priority = $priority;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }

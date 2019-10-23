@@ -2215,7 +2215,7 @@ class FeedUxController extends AbstractController
         /** @var SiteNews[] $newsItemsPersonal */
         $newsItemsPersonal = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 1], ['published' => 'DESC']);
+            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
 
         $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
         if ($newsItems) {
@@ -2242,7 +2242,7 @@ class FeedUxController extends AbstractController
 
         foreach ($newsItemsSorted as $newsItem) {
             if (is_null($newsItem->getExpires()) || $newsItem->getExpires()->format("U") > date("U")) {
-                $return[] = [
+                $newReturn = [
                     "id" => $newsItem->getId(),
                     "title" => $newsItem->getTitle(),
                     "text" => $newsItem->getText(),
@@ -2253,6 +2253,19 @@ class FeedUxController extends AbstractController
                     "priority" => $newsItem->getPriority(),
                     "published" => $newsItem->getPublished(),
                 ];
+
+                if (is_null($newsItem->getImage())) {
+                    $newReturn['imageName'] = NULL;
+                    $newReturn['imageHref'] = NULL;
+                } else if (substr($newsItem->getImage(), 0, 4) == "http") {
+                    $newReturn['imageName'] = NULL;
+                    $newReturn['imageHref'] = $newsItem->getImage();
+                } else {
+                    $newReturn['imageName'] = $newsItem->getImage();
+                    $newReturn['imageHref'] = NULL;
+                }
+
+                $return[] = $newReturn;
             }
         }
 
@@ -2273,12 +2286,12 @@ class FeedUxController extends AbstractController
         /** @var SiteNews[] $newsItemsSite */
         $newsItemsSite = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => NULL, 'priority' => 2], ['published' => 'DESC']);
+            ->findBy(['patient' => NULL], ['published' => 'DESC']);
 
         /** @var SiteNews[] $newsItemsPersonal */
         $newsItemsPersonal = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 2], ['published' => 'DESC']);
+            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
 
         $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
         if ($newsItems) {

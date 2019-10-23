@@ -127,8 +127,9 @@ class AwardManager
             $notification->setTitle("You just won the " . $reward->getName() . " badge");
             $notification->setText($reward->getText());
             $notification->setAccent('success');
+            $notification->setImage($reward->getImage());
             $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
-            $notification->setLink($_ENV['UI_URL'] . '/#/achievements/awards/info/' . $reward->getId());
+            $notification->setLink('/achievements/awards/info/' . $reward->getId());
             $notification->setPriority(3);
 
 //            try {
