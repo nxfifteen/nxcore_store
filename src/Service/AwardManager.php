@@ -95,10 +95,10 @@ class AwardManager
         return $patient;
     }
 
-    public function giveReward(Patient $patient, RpgRewards $reward, DateTimeInterface $dateTime = NULL)
+    public function giveReward(Patient $patient, RpgRewards $reward, DateTimeInterface $dateTime = NULL, string $citation = NULL)
     {
         $entityManager = $this->doctrine->getManager();
-        if (!is_null($dateTime)) {
+        if (is_null($dateTime)) {
             try {
                 $dateTime = new DateTime(date("Y-m-d 00:00:00"));
             } catch (Exception $e) {
@@ -125,7 +125,11 @@ class AwardManager
             $notification->setPatient($patient);
             $notification->setPublished(new \DateTime());
             $notification->setTitle("You just won the " . $reward->getName() . " badge");
-            $notification->setText($reward->getText());
+            if (is_null($citation) || $citation == "") {
+                $notification->setText($reward->getText());
+            } else {
+                $notification->setText($citation);
+            }
             $notification->setAccent('success');
             $notification->setImage($reward->getImage());
             $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
@@ -274,9 +278,11 @@ class AwardManager
     /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
      *
-     * @throws \Exception
+     * @param string                                       $citation
+     *
+     * @throws Exception
      */
-    public function checkForGoalAwards($dataEntry)
+    public function checkForGoalAwards($dataEntry, string $citation = NULL)
     {
         if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
             AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $dataEntry->getPatient()->getFirstName() . ' beat ' . $dataEntry->getPatient()->getPronounTheir() . ' goal, so an award is due');
@@ -284,7 +290,17 @@ class AwardManager
             $goalCriteriaShort = $this->getCriteriaShortName($goalCriteria);
             $reward = $this->findAnAward($goalCriteria, $goalCriteriaShort, $dataEntry->getValue(), $dataEntry->getGoal()->getGoal());
             if ($reward) {
-                $this->giveReward($dataEntry->getPatient(), $reward, new DateTime(date("Y-m-d 00:00:00")));
+                if (is_null($citation) || $citation == "") {
+                    if ($goalCriteriaShort == "trg_steps") {
+                        $citation = "You took " . $dataEntry->getValue() . " steps today, beating your goal of only " . $dataEntry->getGoal()->getGoal();
+                    } else if ($goalCriteriaShort == "trg_distance") {
+                        $citation = "You moved " .
+                            number_format(AppConstants::convertUnitOfMeasurement($dataEntry->getValue(), $dataEntry->getUnitOfMeasurement()->getName(), 'km'), 2) .
+                            "km today, beating your goal of only " .
+                            number_format(AppConstants::convertUnitOfMeasurement($dataEntry->getGoal()->getGoal(), $dataEntry->getGoal()->getUnitOfMeasurement()->getName(), 'km'), 2) . "km";
+                    }
+                }
+                $this->giveReward($dataEntry->getPatient(), $reward, new DateTime(date("Y-m-d 00:00:00")), $citation);
             }
         } else {
             AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $dataEntry->getPatient()->getFirstName() . ' has not beaten ' . $dataEntry->getPatient()->getPronounTheir() . ' goal');
@@ -325,7 +341,6 @@ class AwardManager
 //            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Found a smashed award');
         }
 
-//        if (!$reward) AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' No award found');
         return $reward;
     }
 
