@@ -2251,7 +2251,7 @@ class FeedUxController extends AbstractController
                     "expires" => $newsItem->getExpires(),
                     "link" => $newsItem->getLink(),
                     "priority" => $newsItem->getPriority(),
-                    "published" => $newsItem->getPublished(),
+                    "published" => $newsItem->getPublished()->format("l, F jS H:i:s"),
                 ];
 
                 if (is_null($newsItem->getImage())) {
