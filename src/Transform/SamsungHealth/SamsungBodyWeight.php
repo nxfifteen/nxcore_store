@@ -7,6 +7,7 @@ use App\Entity\BodyWeight;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
+use App\Entity\SiteNews;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
@@ -78,9 +79,11 @@ class SamsungBodyWeight extends Constants
                 return NULL;
             }
 
+            $newItem = FALSE;
             /** @var BodyWeight $dataEntry */
             $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
+                $newItem = TRUE;
                 $dataEntry = new BodyWeight();
             }
 
@@ -97,6 +100,23 @@ class SamsungBodyWeight extends Constants
             $dataEntry->setPartOfDay($partOfDay);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
+            }
+
+            if ($newItem) {
+                $notification = new SiteNews();
+                $notification->setPatient($patient);
+                $notification->setPublished(new \DateTime());
+                $notification->setTitle("New Weight Recorded");
+                $notification->setText("You've just recorded a new weight of " . $jsonContent->weightMeasurement . " " . $unitOfMeasurement->getName());
+                $notification->setAccent('success');
+                $notification->setImage("recorded_weight");
+                $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
+                $notification->setLink('/body/weight');
+                $notification->setPriority(3);
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($notification);
+                $entityManager->flush();
             }
 
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());

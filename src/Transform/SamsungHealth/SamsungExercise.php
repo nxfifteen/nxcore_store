@@ -8,6 +8,7 @@ use App\Entity\ExerciseSummary;
 use App\Entity\ExerciseType;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
+use App\Entity\SiteNews;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
@@ -84,9 +85,11 @@ class SamsungExercise extends Constants
             }
 //            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - exerciseType " . $exerciseType->getName());
 
+            $newItem = FALSE;
             /** @var Exercise $dataEntryExercise */
             $dataEntryExercise = $doctrine->getRepository(Exercise::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntryExercise) {
+                $newItem = TRUE;
                 $dataEntryExercise = new Exercise();
             }
 
@@ -138,6 +141,23 @@ class SamsungExercise extends Constants
             if (property_exists($jsonContent, "speedMean") && $jsonContent->speedMean > 0) $dataEntryExerciseSummary->setSpeedMean($jsonContent->speedMean);
 
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
+
+            if ($newItem) {
+                $notification = new SiteNews();
+                $notification->setPatient($patient);
+                $notification->setPublished(new \DateTime());
+                $notification->setTitle("New Exercise Recorded");
+                $notification->setText("You've just recorded a new " . $dataEntryExercise->getExerciseType()->getName());
+                $notification->setAccent('success');
+                $notification->setImage("recorded_exercise");
+                $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
+                $notification->setLink('/activities/log');
+                $notification->setPriority(3);
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($notification);
+                $entityManager->flush();
+            }
 
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntryExercise)), $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
 
