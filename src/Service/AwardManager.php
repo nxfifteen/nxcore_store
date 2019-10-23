@@ -83,10 +83,14 @@ class AwardManager
             $entityManager->persist($reward);
             $entityManager->flush();
         }
-        try {
-            $patient = $this->giveReward($patient, $reward, new DateTime($dateTime));
-        } catch (Exception $e) {
-            AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
+        if (is_object($dateTime)) {
+            $patient = $this->giveReward($patient, $reward, $dateTime);
+        } else {
+            try {
+                $patient = $this->giveReward($patient, $reward, new DateTime($dateTime));
+            } catch (Exception $e) {
+                AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
+            }
         }
         return $patient;
     }
