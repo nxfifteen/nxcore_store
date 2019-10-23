@@ -161,4 +161,23 @@ class AppConstants
                 . ($milliseconds ? ".$milliseconds" : '');
         }
     }
+
+    /**
+     * @param $value
+     * @param $targetUnit
+     *
+     * @return float|int
+     */
+    static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
+    {
+        if ($valueUnit == "mile" && $targetUnit == "meter") {
+            return $value * 1609.34;
+        } else if ($valueUnit == "meter" && $targetUnit == "mile") {
+            return $value / 1609.34;
+        } else if ($valueUnit == "meter" && $targetUnit == "km") {
+            return $value / 1000;
+        }
+
+        return 0.5;
+    }
 }

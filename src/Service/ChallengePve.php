@@ -157,13 +157,7 @@ class ChallengePve
      */
     protected static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
     {
-        if ($valueUnit == "mile" && $targetUnit == "meter") {
-            return $value * 1609.34;
-        } else if ($valueUnit == "meter" && $targetUnit == "mile") {
-            return $value / 1609.34;
-        }
-
-        return 0.5;
+        return AppConstants::convertUnitOfMeasurement($value, $valueUnit, $targetUnit);
     }
 
 }
