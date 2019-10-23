@@ -2316,11 +2316,18 @@ class FeedUxController extends AbstractController
         $this->setupRoute();
 
         /** @var SiteNews[] $newsItems */
-        $newsItems = $this->getDoctrine()
+        $newsItemsFalse = $this->getDoctrine()
             ->getRepository(SiteNews::class)
             ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => FALSE], ['published' => 'DESC']);
 
-        if ($newsItems) {
+        /** @var SiteNews[] $newsItems */
+        $newsItemsNull = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => NULL], ['published' => 'DESC']);
+
+        $newsItems = array_merge($newsItemsNull, $newsItemsFalse);
+
+        if ($newsItems && is_array($newsItems) && count($newsItems) > 0) {
             $return['items'] = $this->buildNewsItems($newsItems);
         } else {
             $return['items'] = [];
