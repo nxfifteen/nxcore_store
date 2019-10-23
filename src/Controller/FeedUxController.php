@@ -23,11 +23,13 @@ use App\Service\AwardManager;
 use DateInterval;
 use DatePeriod;
 use DateTime;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use LogicException;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class FeedUxController extends AbstractController
@@ -296,7 +298,7 @@ class FeedUxController extends AbstractController
         return $this->json($return);
     }
 
-    private function setupRoute(String $userRole = 'ROLE_USER')
+    private function setupRoute(string $userRole = 'ROLE_USER')
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();
         $this->feed_storage = NULL;
@@ -2226,6 +2228,37 @@ class FeedUxController extends AbstractController
         return $this->json($return);
     }
 
+    private function buildNewsItems(array $newsItems)
+    {
+        /** @var SiteNews[] $newsItems */
+        /** @var SiteNews[] $newsItemsSorted */
+        $newsItemsSorted = [];
+        $return = [];
+        foreach ($newsItems as $newsItem) {
+            $newsItemsSorted[$newsItem->getPublished()->format("U") . $newsItem->getId()] = $newsItem;
+        }
+
+        arsort($newsItemsSorted);
+
+        foreach ($newsItemsSorted as $newsItem) {
+            if (is_null($newsItem->getExpires()) || $newsItem->getExpires()->format("U") > date("U")) {
+                $return[] = [
+                    "id" => $newsItem->getId(),
+                    "title" => $newsItem->getTitle(),
+                    "text" => $newsItem->getText(),
+                    "accent" => str_replace("list-group-item-accent-", "", $newsItem->getAccent()),
+                    "displayed" => $newsItem->getDisplayed(),
+                    "expires" => $newsItem->getExpires(),
+                    "link" => $newsItem->getLink(),
+                    "priority" => $newsItem->getPriority(),
+                    "published" => $newsItem->getPublished(),
+                ];
+            }
+        }
+
+        return $return;
+    }
+
     /**
      * @Route("/news/personal", name="index_news_personal")
      */
@@ -2272,10 +2305,54 @@ class FeedUxController extends AbstractController
         /** @var SiteNews[] $newsItems */
         $newsItems = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 3], ['published' => 'DESC']);
+            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => FALSE], ['published' => 'DESC']);
 
         if ($newsItems) {
             $return['items'] = $this->buildNewsItems($newsItems);
+        } else {
+            $return['items'] = [];
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/news/push/seen", name="index_news_push_seen")
+     */
+    public function index_news_push_seen(ManagerRegistry $doctrine, Request $request)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        $requestBody = $request->getContent();
+        $requestBody = str_replace("'", "\"", $requestBody);
+        $requestJson = json_decode($requestBody, FALSE);
+
+        if ($requestJson->toastId > 0) {
+            /** @var SiteNews[] $newsItems */
+            $newsItems = $this->getDoctrine()
+                ->getRepository(SiteNews::class)
+                ->findBy(['patient' => $this->patient, 'id' => $requestJson->toastId]);
+        } else {
+            /** @var SiteNews[] $newsItems */
+            $newsItems = $this->getDoctrine()
+                ->getRepository(SiteNews::class)
+                ->findBy(['patient' => $this->patient, 'text' => $requestJson->message]);
+        }
+
+        if ($newsItems) {
+            $entityManager = $doctrine->getManager();
+            foreach ($newsItems as $newsItem) {
+                $newsItem->setDisplayed(true);
+                $entityManager->persist($newsItem);
+            }
+            $entityManager->flush();
         }
 
         $b = microtime(TRUE);
@@ -2370,7 +2447,6 @@ class FeedUxController extends AbstractController
         $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
-
 
     /**
      * @Route("/feed/pve/challenges", name="index_global_challenge_in")
@@ -2601,36 +2677,5 @@ class FeedUxController extends AbstractController
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
-    }
-
-    private function buildNewsItems(array $newsItems)
-    {
-        /** @var SiteNews[] $newsItems */
-        /** @var SiteNews[] $newsItemsSorted */
-        $newsItemsSorted = [];
-        $return = [];
-        foreach ($newsItems as $newsItem) {
-            $newsItemsSorted[$newsItem->getPublished()->format("U") . $newsItem->getId()] = $newsItem;
-        }
-
-        arsort($newsItemsSorted);
-
-        foreach ($newsItemsSorted as $newsItem) {
-            if (is_null($newsItem->getExpires()) || $newsItem->getExpires()->format("U") > date("U")) {
-                $return[] = [
-                    "id" => $newsItem->getId(),
-                    "title" => $newsItem->getTitle(),
-                    "text" => $newsItem->getText(),
-                    "accent" => str_replace("list-group-item-accent-", "", $newsItem->getAccent()),
-                    "displayed" => $newsItem->getDisplayed(),
-                    "expires" => $newsItem->getExpires(),
-                    "link" => $newsItem->getLink(),
-                    "priority" => $newsItem->getPriority(),
-                    "published" => $newsItem->getPublished(),
-                ];
-            }
-        }
-
-        return $return;
     }
 }
