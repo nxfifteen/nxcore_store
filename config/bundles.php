@@ -17,4 +17,5 @@ return [
     Sentry\SentryBundle\SentryBundle::class => ['all' => true],
     Ornicar\GravatarBundle\OrnicarGravatarBundle::class => ['all' => true],
     Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle::class => ['all' => true],
+    RedjanYm\FCMBundle\RedjanYmFCMBundle::class => ['all' => TRUE],
 ];

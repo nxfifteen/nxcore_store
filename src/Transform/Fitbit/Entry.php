@@ -5,6 +5,7 @@ namespace App\Transform\Fitbit;
 use App\AppConstants;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
+use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Sentry;
@@ -24,7 +25,7 @@ class Entry
         $this->logger = $logger;
     }
 
-    public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve)
+    public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
         $translateEntity = NULL;
 
@@ -66,7 +67,8 @@ class Entry
                 if (array_key_exists(3, $getContent) && property_exists($getContent[3], "activities") && $getContent[0]->uuid == "testfitbit") {
                     foreach ($getContent[3]->activities as $index => $item) {
                         try {
-                            $translateEntity[] = FitbitExercise::translate($doctrine, $getContent, $index);
+                            //translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
+                            $translateEntity[] = FitbitExercise::translate($doctrine, $tweetManager, $getContent, $index);
                         } catch (\Exception $e) {
                         }
                     }
@@ -84,7 +86,8 @@ class Entry
                 if (array_key_exists(3, $getContent) && property_exists($getContent[3], "activities") && $getContent[0]->uuid == "testfitbit") {
                     foreach ($getContent[3]->activities as $index => $item) {
                         try {
-                            $translateEntity[] = FitbitExercise::translate($doctrine, $getContent, $index);
+                            //translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
+                            $translateEntity[] = FitbitExercise::translate($doctrine, $tweetManager, $getContent, $index);
                         } catch (\Exception $e) {
                         }
                     }
@@ -93,7 +96,7 @@ class Entry
             case Constants::FITBITEPBODYWEIGHT:
                 $translateEntity = [];
                 /** @noinspection PhpUnhandledExceptionInspection */
-                $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent, $awardManager);
+                $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent, $awardManager, $tweetManager);
                 /** @noinspection PhpUnhandledExceptionInspection */
                 $translateEntity[] = FitbitBodyFat::translate($doctrine, $getContent, $awardManager);
                 foreach ($getContent[1] as $index => $item) {

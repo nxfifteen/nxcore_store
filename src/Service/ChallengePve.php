@@ -30,13 +30,20 @@ class ChallengePve
      */
     private $awardManager;
 
+    /**
+     * @var TweetManager
+     */
+    private $tweetManager;
+
     public function __construct(
         ManagerRegistry $doctrine,
-        AwardManager $awardManager
+        AwardManager $awardManager,
+        TweetManager $tweetManager
     )
     {
         $this->doctrine = $doctrine;
         $this->awardManager = $awardManager;
+        $this->tweetManager = $tweetManager;
     }
 
     /**
@@ -56,19 +63,24 @@ class ChallengePve
             $entityManager = $this->doctrine->getManager();
 
             foreach ($dbRpgChallengeGlobals as $dbRpgChallengeGlobal) {
-                $dataFindSince = NULL;
+                $criteriaTakenSincePVEStartDateDB = NULL;
                 switch ($challengeCriteria) {
                     case "FitStepsDailySummary":
-                        /** @var FitStepsDailySummary[] $dataFindSince */
-                        $dataFindSince = $this->doctrine->getRepository(FitStepsDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(), $dbRpgChallengeGlobal->getStartDateTime());
+                        /** @var FitStepsDailySummary[] $criteriaTakenSincePVEStartDateDB */
+                        $criteriaTakenSincePVEStartDateDB = $this->doctrine->getRepository(FitStepsDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(), $dbRpgChallengeGlobal->getStartDateTime());
                         break;
                     case "FitDistanceDailySummary":
-                        /** @var FitDistanceDailySummary[] $dataFindSince */
-                        $dataFindSince = $this->doctrine->getRepository(FitDistanceDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(), $dbRpgChallengeGlobal->getStartDateTime());
+                        /** @var FitDistanceDailySummary[] $criteriaTakenSincePVEStartDateDB */
+                        $criteriaTakenSincePVEStartDateDB = $this->doctrine->getRepository(FitDistanceDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(), $dbRpgChallengeGlobal->getStartDateTime());
                         break;
                 }
 
-                if ($dataFindSince) {
+                if ($criteriaTakenSincePVEStartDateDB) {
+                    $criteriaTakenSincePVEStartDate = 0;
+                    foreach ($criteriaTakenSincePVEStartDateDB as $item) {
+                        $criteriaTakenSincePVEStartDate = $criteriaTakenSincePVEStartDate + $item->getValue();
+                    }
+
                     $comparisonTarget = $dbRpgChallengeGlobal->getChallenge()->getTarget();
                     if ($challengeCriteria == "FitDistanceDailySummary") {
                         if (
@@ -91,25 +103,23 @@ class ChallengePve
                             ->setParameter('target', $dbRpgChallengeGlobal->getChallenge()->getTarget())
                             ->andWhere('c.childOf = :childOf')
                             ->setParameter('childOf', $dbRpgChallengeGlobal->getChallenge()->getChildOf())
-                            ->setMaxResults(1)
                             ->orderBy('c.target', 'DESC')
                             ->getQuery()->getResult();
 
                         if ($previousStage) {
                             $return['participation']['debug']['prevStage'] = $previousStage[0]->getId();
-                            $baseRequired = $previousStage[0]->getTarget();
+                            foreach ($previousStage as $item) {
+                                $baseRequired = $baseRequired + $item->getTarget();
+                            }
                         }
                     }
 
-                    $dataFindSinceValue = 0;
-                    foreach ($dataFindSince as $item) {
-                        $dataFindSinceValue = $dataFindSinceValue + $item->getValue();
-                    }
+                    $comparisonTarget = ($comparisonTarget + $baseRequired);
 
-                    $dataFindSinceValue = $dataFindSinceValue - $baseRequired;
-                    if ($dataFindSinceValue < 0) $dataFindSinceValue = 0;
-
-                    if ($dataFindSinceValue > $comparisonTarget) {
+                    if ($criteriaTakenSincePVEStartDate < $baseRequired) {
+                        $dbRpgChallengeGlobal->setProgress(0);
+                        $entityManager->persist($dbRpgChallengeGlobal);
+                    } else if ($criteriaTakenSincePVEStartDate > $comparisonTarget) {
                         $dbRpgChallengeGlobal->setProgress(100);
                         $dbRpgChallengeGlobal->setFinishDateTime(new DateTime());
                         $entityManager->persist($dbRpgChallengeGlobal);
@@ -130,22 +140,13 @@ class ChallengePve
                             }
                         }
                     } else {
-                        $dbRpgChallengeGlobal->setProgress(round(($dataFindSinceValue / $comparisonTarget) * 100, 0, PHP_ROUND_HALF_DOWN));
+                        $dbRpgChallengeGlobal->setProgress(round(($criteriaTakenSincePVEStartDate / $comparisonTarget) * 100, 0, PHP_ROUND_HALF_DOWN));
                         $entityManager->persist($dbRpgChallengeGlobal);
                     }
                 }
             }
 
             $entityManager->flush();
-        }
-    }
-
-    private function getRootChallenge(RpgChallengeGlobal $dbRpgChallengeGlobal)
-    {
-        if (!is_null($dbRpgChallengeGlobal->getChildOf())) {
-            return $this->getRootChallenge($dbRpgChallengeGlobal->getChildOf());
-        } else {
-            return $dbRpgChallengeGlobal;
         }
     }
 
@@ -158,6 +159,15 @@ class ChallengePve
     protected static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
     {
         return AppConstants::convertUnitOfMeasurement($value, $valueUnit, $targetUnit);
+    }
+
+    private function getRootChallenge(RpgChallengeGlobal $dbRpgChallengeGlobal)
+    {
+        if (!is_null($dbRpgChallengeGlobal->getChildOf())) {
+            return $this->getRootChallenge($dbRpgChallengeGlobal->getChildOf());
+        } else {
+            return $dbRpgChallengeGlobal;
+        }
     }
 
 }

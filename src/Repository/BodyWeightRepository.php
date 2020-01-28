@@ -28,6 +28,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
+     * @throws \Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {
@@ -81,6 +82,92 @@ class BodyWeightRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     *
+     * @return mixed
+     * @throws NonUniqueResultException
+     */
+    public function findLast(String $patientId)
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.DateTime', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param String             $patientId
+     *
+     * @param \DateTimeInterface $dateTime
+     *
+     * @return mixed
+     * @throws NonUniqueResultException
+     * @throws \Exception
+     */
+    public function findSevenDayAgo(String $patientId, \DateTimeInterface $dateTime)
+    {
+        $interval = new DateInterval('P6D');
+        $dateTime->sub($interval);
+
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime < :currentDateTime')
+            ->setParameter('currentDateTime', $dateTime->format("Y-m-d 00:00:00"))
+            ->orderBy('c.DateTime', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param String             $patientId
+     *
+     * @param \DateTimeInterface $dateTime
+     *
+     * @return mixed
+     * @throws NonUniqueResultException
+     */
+    public function findSevenDayAverage(String $patientId, \DateTimeInterface $dateTime)
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime <= :currentDateTime')
+            ->setParameter('currentDateTime', $dateTime->format("Y-m-d 00:00:00"))
+            ->orderBy('c.DateTime', 'DESC')
+            ->select('avg(c.measurement) as avg')
+            ->getQuery()->getOneOrNullResult()['avg'];
+    }
+
+    /**
+     * @param String             $patientId
+     *
+     * @param \DateTimeInterface $dateTime
+     *
+     * @return mixed
+     * @throws NonUniqueResultException
+     */
+    public function findPrevious(String $patientId, \DateTimeInterface $dateTime)
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime < :currentDateTime')
+            ->setParameter('currentDateTime', $dateTime->format("Y-m-d 00:00:00"))
+            ->orderBy('c.DateTime', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     /**

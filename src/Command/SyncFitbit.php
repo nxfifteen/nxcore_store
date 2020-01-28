@@ -11,6 +11,7 @@ use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
+use App\Service\TweetManager;
 use App\Transform\Fitbit\Constants;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -54,6 +55,11 @@ class SyncFitbit extends Command
      */
     private $challengePve;
 
+    /**
+     * @var TweetManager
+     */
+    private $tweetManager;
+
     private $syncDate;
     private $syncPeriod;
     private $userSubscriptions;
@@ -64,18 +70,22 @@ class SyncFitbit extends Command
      * @param ManagerRegistry $doctrine
      * @param LoggerInterface $logger
      * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param TweetManager    $tweetManager
      */
     public function dependencyInjection(
         ManagerRegistry $doctrine,
         LoggerInterface $logger,
         AwardManager $awardManager,
-        ChallengePve $challengePve
+        ChallengePve $challengePve,
+        TweetManager $tweetManager
     ): void
     {
         $this->doctrine = $doctrine;
         $this->logger = $logger;
         $this->awardManager = $awardManager;
         $this->challengePve = $challengePve;
+        $this->tweetManager = $tweetManager;
     }
 
     /**
@@ -229,7 +239,7 @@ class SyncFitbit extends Command
                             if (!is_null($serviceDataArray) && count($serviceDataArray) > 1 && !empty($serviceDataArray[1])) {
                                 $transformerClass = new $transformerClassName($this->logger);
                                 /** @noinspection PhpUndefinedMethodInspection */
-                                $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager, $this->challengePve);
+                                $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager, $this->challengePve, $this->tweetManager);
 
                                 if (is_array($savedId)) {
                                     $remove = TRUE;
@@ -273,7 +283,7 @@ class SyncFitbit extends Command
 
     private function checkSubscription($settingsEndpoint, AccessToken $accessToken, Patient $patient)
     {
-//        AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
+        AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
         $serviceEndpoint = $this->convertEndpointToSubscription($settingsEndpoint);
 
         $subscriptionFound = FALSE;
@@ -282,23 +292,24 @@ class SyncFitbit extends Command
         if (!is_null($serviceEndpoint)) {
             $userSubscriptions = $this->pullSubscription($accessToken);
             if (count($userSubscriptions) > 0) {
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $userSubscription = ' . print_r($userSubscriptions, TRUE));
                 $currentSubs = [];
                 foreach ($userSubscriptions as $apiSubscription) {
                     if ($apiSubscription->collectionType == $serviceEndpoint) {
                         $subscriptionFound = TRUE;
                         $subscriptionId = $apiSubscription->subscriptionId;
+                        break;
                     }
                 }
             }
-//            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $userSubscription = ' . print_r($userSubscriptions, TRUE));
 
             if (!$subscriptionFound) {
-//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' subscribing too ' . $serviceEndpoint . ' as ' . $patient->getId());
-                $subRequest = $this->postSubscription($accessToken, "/" . $serviceEndpoint, $patient->getId());
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' subscribing too ' . $serviceEndpoint . ' as ' . $patient->getId()."_".$serviceEndpoint);
+                $subRequest = $this->postSubscription($accessToken, "/" . $serviceEndpoint, $patient->getId() . "_" . $serviceEndpoint);
 //                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($subRequest, TRUE));
-            } /*else {
-                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' already subscribed too ' . $serviceEndpoint . ' as ' . $subscriptionId);
-            }*/
+            } else {
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' already subscribed too ' . $serviceEndpoint . ' as ' . $subscriptionId);
+            }
         }
     }
 

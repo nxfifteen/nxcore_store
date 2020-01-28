@@ -12,6 +12,7 @@ use App\Entity\FitFloorsIntraDay;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
+use App\Entity\PatientDevice;
 use App\Entity\RpgChallengeFriends;
 use App\Entity\RpgChallengeGlobal;
 use App\Entity\RpgChallengeGlobalPatient;
@@ -20,10 +21,12 @@ use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
 use App\Entity\SiteNews;
 use App\Service\AwardManager;
+use App\Service\TweetManager;
 use DateInterval;
 use DatePeriod;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use LogicException;
 use Sentry;
@@ -107,7 +110,7 @@ class FeedUxController extends AbstractController
 
             $return['title'] = $dateFrom->format("F, Y");
 
-            $interval = new \DateInterval('P' . strtoupper($searchRange));
+            $interval = new DateInterval('P' . strtoupper($searchRange));
             $dateBackTill->sub($interval);
             $return['dateBackTill'] = $dateBackTill->format("Y-m-d");
 
@@ -214,7 +217,6 @@ class FeedUxController extends AbstractController
             $exerciseStepCountSum = 0;
             if ($exerciseType == "Walking") {
                 if (is_null($dbExercise->getSteps())) {
-                    $exerciseStepCount = [];
                     $dbIntraDaySteps = $this->getDoctrine()
                         ->getRepository(FitStepsIntraDay::class)
                         ->findSumDates(
@@ -319,7 +321,7 @@ class FeedUxController extends AbstractController
      *
      * @throws LogicException If the Security component is not available
      */
-    private function hasAccess(String $userRole = 'ROLE_USER')
+    private function hasAccess(string $userRole = 'ROLE_USER')
     {
         $this->denyAccessUnlessGranted($userRole, NULL, 'User tried to access a page without having ' . $userRole);
     }
@@ -330,6 +332,7 @@ class FeedUxController extends AbstractController
      * @param int $activityId
      *
      * @return JsonResponse
+     * @throws NonUniqueResultException
      */
     public function index_activity_log_detail(int $activityId)
     {
@@ -437,6 +440,14 @@ class FeedUxController extends AbstractController
                 }
             }
 
+            $daysExerciseSum = $this->getDoctrine()->getRepository(Exercise::class)->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('p.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->andWhere('c.dateTimeStart LIKE :dateTimeStart')
+                ->setParameter('dateTimeStart', $dbExercise->getDateTimeStart()->format("Y-m-d") . "%")
+                ->select('sum(c.duration) as sum')
+                ->getQuery()->getOneOrNullResult()['sum'];
 
             $startedTimeStamp = intval($dbExercise->getDateTimeStart()->format("U")) * 1000;
             $return['results'] = [
@@ -450,7 +461,7 @@ class FeedUxController extends AbstractController
                 "started" => $exerciseDateStarted,
                 "finished" => $exerciseDateFinished,
                 "duration" => round(($dbExercise->getDuration() / 60), 0),
-                "durationTotal" => -1,
+                "durationTotal" => round((intval($daysExerciseSum) / 60), 0),
                 "steps" => $exerciseStepCountSum,
                 "stepsTotal" => $dayStepTotal,
                 "altitudeMax" => round($dbExercise->getExerciseSummary()->getAltitudeMax(), 2),
@@ -629,14 +640,49 @@ class FeedUxController extends AbstractController
     }
 
     /**
-     * @Route("/feed/dashboard", name="ux_aggregator")
-     *
-     * @param AwardManager $awardManager
+     * @Route("/feed/hass", name="index_hass_digest")
      *
      * @return JsonResponse
      * @throws Exception
      */
-    public function index(AwardManager $awardManager)
+    public function index_hass_digest()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        $return['uuid'] = $this->patient->getUuid();
+        $return['steps'] = $this->getPatientSteps()['value'];
+        $return['floors'] = $this->getPatientFloors()['value'];
+        $return['water'] = 0;
+        $return['weight'] = $this->getPatientWeight()['value'];
+        $return['fat'] = 0;
+        $return['bmi'] = 0;
+        $return['minutes_active'] = 0;
+        $return['calories'] = 0;
+        $return['distance'] = $this->getPatientDistance()['value'];
+        $return['weight_loss'] = 0;
+        $return['resting_heart_rate'] = 0;
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/dashboard", name="ux_aggregator")
+     *
+     * @param AwardManager $awardManager
+     *
+     * @param TweetManager $tweetManager
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index(AwardManager $awardManager, TweetManager $tweetManager)
     {
         $return = [];
         $return['genTime'] = -1;
@@ -664,11 +710,44 @@ class FeedUxController extends AbstractController
             $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
             $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new DateTime(date("Y-m-d 00:00:00")));
 
+            $tweetManager->sendNotification(
+                "First login for " . date("l jS F, Y"),
+                "You've #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                $this->patient,
+                TRUE
+            );
+
             if ($this->patient->getLoginStreak() % 5 == 0) {
                 $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new DateTime(date("Y-m-d 00:00:00")));
             }
 
-            if ($this->patient->getLoginStreak() % 31 == 0) {
+            if ($this->patient->getLoginStreak() % 182 == 0) {
+                $this->patient = $awardManager->giveBadge(
+                    $this->patient,
+                    [
+                        'patients_name' => $this->patient->getFirstName(),
+                        'html_title' => "Awarded the Six Month badge",
+                        'header_image' => '../badges/streak_six_month_header.png',
+                        "dateTime" => new DateTime(),
+                        'relevant_date' => (new DateTime())->format("F jS, Y"),
+                        "name" => "Six Months",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Six Months',
+                        'badge_xp' => 186,
+                        'badge_image' => 'streak_six_month',
+                        'badge_text' => "6 Month Streak",
+                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
+                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
+                    ]
+                );
+
+                $tweetManager->sendNotification(
+                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                    NULL,
+                    $this->patient,
+                    FALSE
+                );
+            } else if ($this->patient->getLoginStreak() % 30 == 0) {
                 $this->patient = $awardManager->giveBadge(
                     $this->patient,
                     [
@@ -687,26 +766,12 @@ class FeedUxController extends AbstractController
                         'badge_citation' => "You've logged in every day for a full month",
                     ]
                 );
-            }
 
-            if ($this->patient->getLoginStreak() % 186 == 0) {
-                $this->patient = $awardManager->giveBadge(
+                $tweetManager->sendNotification(
+                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                    NULL,
                     $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Six Month badge",
-                        'header_image' => '../badges/streak_six_month_header.png',
-                        "dateTime" => new DateTime(),
-                        'relevant_date' => (new DateTime())->format("F jS, Y"),
-                        "name" => "Six Months",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Six Months',
-                        'badge_xp' => 186,
-                        'badge_image' => 'streak_six_month',
-                        'badge_text' => "6 Month Streak",
-                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
-                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
-                    ]
+                    FALSE
                 );
             }
 
@@ -1467,6 +1532,7 @@ class FeedUxController extends AbstractController
      * @param int         $dateRange
      *
      * @return array
+     * @throws Exception
      */
     private function getPatientWeight($pro = FALSE, String $date = NULL, int $dateRange = 31)
     {
@@ -2341,6 +2407,10 @@ class FeedUxController extends AbstractController
 
     /**
      * @Route("/news/push/seen", name="index_news_push_seen")
+     * @param ManagerRegistry $doctrine
+     * @param Request         $request
+     *
+     * @return JsonResponse
      */
     public function index_news_push_seen(ManagerRegistry $doctrine, Request $request)
     {
@@ -2352,28 +2422,191 @@ class FeedUxController extends AbstractController
 
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
+        $requestBody = str_replace('&#39;', "'", $requestBody);
         $requestJson = json_decode($requestBody, FALSE);
 
-        if ($requestJson->toastId > 0) {
-            /** @var SiteNews[] $newsItems */
-            $newsItems = $this->getDoctrine()
-                ->getRepository(SiteNews::class)
-                ->findBy(['patient' => $this->patient, 'id' => $requestJson->toastId]);
-        } else {
-            /** @var SiteNews[] $newsItems */
-            $newsItems = $this->getDoctrine()
-                ->getRepository(SiteNews::class)
-                ->findBy(['patient' => $this->patient, 'text' => $requestJson->message]);
+        if (is_object($requestJson)) {
+            if (property_exists($requestJson, "toastId") && $requestJson->toastId > 0) {
+                /** @var SiteNews[] $newsItems */
+                $newsItems = $this->getDoctrine()
+                    ->getRepository(SiteNews::class)
+                    ->findBy(['patient' => $this->patient, 'id' => $requestJson->toastId]);
+            } else {
+                /** @var SiteNews[] $newsItems */
+                $newsItems = $this->getDoctrine()
+                    ->getRepository(SiteNews::class)
+                    ->findBy(['patient' => $this->patient, 'text' => $requestJson->message]);
+            }
+
+            if ($newsItems) {
+                $entityManager = $doctrine->getManager();
+                foreach ($newsItems as $newsItem) {
+                    $newsItem->setDisplayed(TRUE);
+                    $entityManager->persist($newsItem);
+                }
+                $entityManager->flush();
+            }
         }
 
-        if ($newsItems) {
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/user/gsm", name="index_register_gsm")
+     * @param ManagerRegistry $doctrine
+     * @param Request         $request
+     *
+     * @return JsonResponse
+     */
+    public function index_register_gsm(ManagerRegistry $doctrine, Request $request)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        $requestBody = $request->getContent();
+        $requestBody = str_replace("'", "\"", $requestBody);
+        $requestBody = str_replace('&#39;', "'", $requestBody);
+        $requestJson = json_decode($requestBody, FALSE);
+
+        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+
+        /** @var PatientDevice $accessDevice */
+        $accessDevice = $this->getDoctrine()
+            ->getRepository(PatientDevice::class)
+            ->findOneBy([
+                'patient' => $this->patient,
+                'id' => $requestJson->deviceId,
+            ]);
+
+        if ($accessDevice) {
+            $accessDevice->setSms($requestJson->fcm_id);
+
             $entityManager = $doctrine->getManager();
-            foreach ($newsItems as $newsItem) {
-                $newsItem->setDisplayed(true);
-                $entityManager->persist($newsItem);
-            }
+            $entityManager->persist($accessDevice);
             $entityManager->flush();
+        } else {
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Unknown Device ' . $requestJson->deviceId . ' for ' . $this->patient->getId());
         }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/loggedin/{deviceId}", name="index_loggedin_feedback")
+     * @param string          $deviceId
+     * @param ManagerRegistry $doctrine
+     * @param Request         $request
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_loggedin_feedback(string $deviceId, ManagerRegistry $doctrine, Request $request)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        $requestBody = $request->getContent();
+        $requestBody = str_replace("'", "\"", $requestBody);
+        $requestBody = str_replace('&#39;', "'", $requestBody);
+        $requestJson = json_decode($requestBody, FALSE);
+
+        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+
+        if (property_exists($requestJson, "deviceInfo")) {
+            $requestDeviceInfo = $requestJson->deviceInfo;
+            $app = $requestJson->cordova;
+            if ($requestJson->production == "development") {
+                $version = $requestJson->version . "-dev";
+                $production = FALSE;
+            } else {
+                $version = $requestJson->version;
+                $production = TRUE;
+            }
+            if ($requestDeviceInfo->device == "Unknown") {
+                $requestDeviceInfo->device = $requestJson->cordova;
+            }
+        } else {
+            $requestDeviceInfo = $requestJson;
+            $version = 'legacy';
+            $app = 'unknown';
+            $production = TRUE;
+        }
+
+        $accessDevice = NULL;
+        if ($deviceId > 0) {
+            /** @var PatientDevice $accessDevice */
+            $accessDevice = $this->getDoctrine()
+                ->getRepository(PatientDevice::class)
+                ->findOneBy([
+                    'patient' => $this->patient,
+                    'id' => $deviceId,
+                    'production' => $production,
+                ]);
+        }
+
+        if (!$accessDevice) {
+            $deviceId = -1;
+
+            /** @var PatientDevice $accessDevice */
+            $accessDevice = $this->getDoctrine()
+                ->getRepository(PatientDevice::class)
+                ->findOneBy([
+                    'patient' => $this->patient,
+                    'os' => $requestDeviceInfo->os,
+                    'browser' => $requestDeviceInfo->browser,
+                    'device' => $requestDeviceInfo->device,
+                    'os_version' => $requestDeviceInfo->os_version,
+                    'browser_version' => $requestDeviceInfo->browser_version,
+                    'production' => $production,
+                ]);
+        }
+
+        if ($accessDevice && $deviceId > 0) {
+            $accessDevice->setBrowser($requestDeviceInfo->browser);
+            $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
+            $accessDevice->setDevice($requestDeviceInfo->device);
+            $accessDevice->setOs($requestDeviceInfo->os);
+            $accessDevice->setOsVersion($requestDeviceInfo->os_version);
+            $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
+            $accessDevice->setVersion($version);
+            $accessDevice->setApp($app);
+            $accessDevice->setProduction($production);
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Updated');
+        } else if ($accessDevice) {
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Found');
+        } else {
+            $accessDevice = new PatientDevice();
+            $accessDevice->setPatient($this->patient);
+            $accessDevice->setBrowser($requestDeviceInfo->browser);
+            $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
+            $accessDevice->setDevice($requestDeviceInfo->device);
+            $accessDevice->setOs($requestDeviceInfo->os);
+            $accessDevice->setOsVersion($requestDeviceInfo->os_version);
+            $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
+            $accessDevice->setVersion($version);
+            $accessDevice->setApp($app);
+            $accessDevice->setProduction($production);
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' New device');
+        }
+        $accessDevice->setLastSeen(new DateTime());
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->persist($accessDevice);
+        $entityManager->flush();
+
+        $return['id'] = $accessDevice->getId();
 
         $b = microtime(TRUE);
         $c = $b - $a;
@@ -2420,6 +2653,7 @@ class FeedUxController extends AbstractController
      * @param int $readings A users UUID
      *
      * @return JsonResponse
+     * @throws Exception
      */
     public function index_body_weight(int $readings)
     {

@@ -47,14 +47,21 @@ class AwardManager
      */
     private $twig;
 
+    /**
+     * @var TweetManager
+     */
+    private $tweetManager;
+
     public function __construct(
         ManagerRegistry $doctrine,
         Swift_Mailer $mailer,
-        Environment $twig)
+        Environment $twig,
+        TweetManager $tweetManager)
     {
         $this->doctrine = $doctrine;
         $this->mailer = $mailer;
         $this->twig = $twig;
+        $this->tweetManager = $tweetManager;
     }
 
     public function test()
@@ -95,7 +102,7 @@ class AwardManager
         return $patient;
     }
 
-    public function giveReward(Patient $patient, RpgRewards $reward, DateTimeInterface $dateTime = NULL, string $citation = NULL)
+    public function giveReward(Patient $patient, RpgRewards $reward, DateTimeInterface $dateTime = NULL, string $citation = NULL, bool $tweeted = FALSE)
     {
         $entityManager = $this->doctrine->getManager();
         if (is_null($dateTime)) {
@@ -135,6 +142,24 @@ class AwardManager
             $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
             $notification->setLink('/achievements/awards/info/' . $reward->getId());
             $notification->setPriority(3);
+
+            if (!$tweeted) {
+                $this->tweetManager->sendNotification(
+                    "@" . $patient->getUuid() . " just #won the " . $reward->getName() . " #badge! :heavy_check_mark:",
+                    "Congratulations!!",
+                    $patient,
+                    FALSE,
+                    "https://core.nxfifteen.me.uk/assets/badges/" . $reward->getImage() . ".png"
+                );
+
+                $this->tweetManager->sendNotification(
+                    "You just #won the " . $reward->getName() . " #badge! :heavy_check_mark:",
+                    $notification->getTitle() . " - " . $notification->getText(),
+                    $patient,
+                    TRUE,
+                    "https://core.nxfifteen.me.uk/assets/badges/" . $reward->getImage() . ".png"
+                );
+            }
 
 //            try {
 //                $this->sendUserEmail(
@@ -285,7 +310,6 @@ class AwardManager
     public function checkForGoalAwards($dataEntry, string $citation = NULL)
     {
         if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $dataEntry->getPatient()->getFirstName() . ' beat ' . $dataEntry->getPatient()->getPronounTheir() . ' goal, so an award is due');
             $goalCriteria = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
             $goalCriteriaShort = $this->getCriteriaShortName($goalCriteria);
             $reward = $this->findAnAward($goalCriteria, $goalCriteriaShort, $dataEntry->getValue(), $dataEntry->getGoal()->getGoal());
@@ -300,10 +324,9 @@ class AwardManager
                             number_format(AppConstants::convertUnitOfMeasurement($dataEntry->getGoal()->getGoal(), $dataEntry->getGoal()->getUnitOfMeasurement()->getName(), 'km'), 2) . "km";
                     }
                 }
-                $this->giveReward($dataEntry->getPatient(), $reward, new DateTime(date("Y-m-d 00:00:00")), $citation);
+
+                $this->giveReward($dataEntry->getPatient(), $reward, new DateTime(date($dataEntry->getDateTime()->format("Y-m-d") . " 00:00:00")), $citation);
             }
-        } else {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $dataEntry->getPatient()->getFirstName() . ' has not beaten ' . $dataEntry->getPatient()->getPronounTheir() . ' goal');
         }
     }
 

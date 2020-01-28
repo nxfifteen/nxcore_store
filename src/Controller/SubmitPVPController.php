@@ -6,6 +6,7 @@ use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
 use App\Service\AwardManager;
+use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,9 +28,12 @@ class SubmitPVPController extends AbstractController
      *
      * @param AwardManager    $awardManager
      *
+     * @param TweetManager    $tweetManager
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
      */
-    public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager)
+    public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager, TweetManager $tweetManager)
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();
 
@@ -87,6 +91,27 @@ class SubmitPVPController extends AbstractController
         $entityManager = $doctrine->getManager();
         $entityManager->persist($newChallenge);
         $entityManager->flush();
+
+        $tweetManager->sendNotification(
+            "Game on! :fist:  @" . $this->patient->getUuid() . " vs. @" . $friend->getUuid() . " :fist:",
+            "Who will be the first to get " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . "? And they only have " . $requestJson->duration . " days :clock1: to do it",
+            $this->patient,
+            FALSE
+        );
+
+        $tweetManager->sendNotification(
+            "Game on! :fist: You're #challenge against @" . $friend->getUuid() . " was accepted",
+            "Now you only have " . $requestJson->duration . " days :clock1: to reach " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . " before " . $friend->getPronounThey() . " does.",
+            $this->patient,
+            TRUE
+        );
+
+        $tweetManager->sendNotification(
+            "Game on! :fist: You've taken up the #challenge against @" . $this->patient->getUuid(),
+            "Now you only have " . $requestJson->duration . " days :clock1: to reach " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . " before " . $this->patient->getPronounThey() . " does.",
+            $friend,
+            TRUE
+        );
 
         try {
             $awardManager->sendUserEmail(

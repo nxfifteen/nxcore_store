@@ -32,5 +32,12 @@ services:
         tags:
         - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
 
-    # add more service definitions when explicit configuration is needed
+    RedjanYm\FCMBundle\FCMClient:
+      arguments: ['@sngrl.firebase_php_notification']
+
+    sngrl\PhpFirebaseCloudMessaging\Client:
+      calls:
+        - [setApiKey, ['%redjan_ym_fcm.firebase_api_key%']]
+
+  # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

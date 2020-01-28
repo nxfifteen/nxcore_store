@@ -166,6 +166,11 @@ class Patient implements UserInterface
      */
     private $notifications;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientDevice", mappedBy="patient", orphanRemoval=true)
+     */
+    private $devices;
+
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -180,6 +185,7 @@ class Patient implements UserInterface
         $this->settings = new ArrayCollection();
         $this->rpgChallengeGlobals = new ArrayCollection();
         $this->notifications = new ArrayCollection();
+        $this->devices = new ArrayCollection();
     }
 
     public function getApiToken(): ?string
@@ -900,6 +906,37 @@ class Patient implements UserInterface
             // set the owning side to null (unless already changed)
             if ($notification->getPatient() === $this) {
                 $notification->setPatient(NULL);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PatientDevice[]
+     */
+    public function getDevices(): Collection
+    {
+        return $this->devices;
+    }
+
+    public function addDevice(PatientDevice $device): self
+    {
+        if (!$this->devices->contains($device)) {
+            $this->devices[] = $device;
+            $device->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDevice(PatientDevice $device): self
+    {
+        if ($this->devices->contains($device)) {
+            $this->devices->removeElement($device);
+            // set the owning side to null (unless already changed)
+            if ($device->getPatient() === $this) {
+                $device->setPatient(NULL);
             }
         }
 

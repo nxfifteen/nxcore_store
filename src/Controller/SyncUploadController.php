@@ -8,6 +8,7 @@ use App\Entity\PatientCredentials;
 use App\Entity\SyncQueue;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
+use App\Service\TweetManager;
 use App\Transform\Fitbit\Constants;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,6 +36,7 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
      */
     public function sync_webhook_post(String $service, LoggerInterface $logger)
     {
@@ -48,6 +50,7 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
      */
     public function sync_webhook_get(String $service, LoggerInterface $logger)
     {
@@ -127,7 +130,7 @@ class SyncUploadController extends AbstractController
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function index_post(String $service, String $data_set, LoggerInterface $logger, AwardManager $awardManager, ChallengePve $challengePve)
+    public function index_post(String $service, String $data_set, LoggerInterface $logger, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
         $request = Request::createFromGlobals();
 
@@ -159,7 +162,7 @@ class SyncUploadController extends AbstractController
         } else {
             $transformerClass = new $transformerClassName($logger);
             /** @noinspection PhpUndefinedMethodInspection */
-            $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine(), $awardManager, $challengePve);
+            $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine(), $awardManager, $challengePve, $tweetManager);
         }
 
         if (is_array($savedId)) {

@@ -245,6 +245,12 @@
     "ramsey/uuid": {
         "version": "3.8.0"
     },
+    "redjanym/fcm-bundle": {
+        "version": "1.1.62"
+    },
+    "redjanym/php-firebase-cloud-messaging": {
+        "version": "v1.1.4"
+    },
     "sentry/sdk": {
         "version": "2.0.4"
     },
@@ -360,6 +366,12 @@
             "./src/Controller/.gitignore",
             "./src/Kernel.php"
         ]
+    },
+    "symfony/http-client": {
+        "version": "v4.3.5"
+    },
+    "symfony/http-client-contracts": {
+        "version": "v1.1.7"
     },
     "symfony/http-foundation": {
         "version": "v4.3.4"

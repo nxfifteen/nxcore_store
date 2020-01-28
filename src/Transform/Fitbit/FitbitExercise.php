@@ -10,8 +10,10 @@ use App\Entity\ExerciseType;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
 use App\Entity\PatientCredentials;
+use App\Entity\SiteNews;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
+use App\Service\TweetManager;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
@@ -21,14 +23,15 @@ class FitbitExercise extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
-     * @param                 $activity
-     *
+     * @param                 $getContent
      * @param int             $deviceArrayIndex
+     *
+     * @param TweetManager    $tweetManager
      *
      * @return Exercise|null
      * @throws \Exception
      */
-    public static function translate(ManagerRegistry $doctrine, $getContent, int $deviceArrayIndex = 0)
+    public static function translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
     {
         if (property_exists($getContent[3], "activities") && property_exists($getContent[3]->activities[$deviceArrayIndex], "logId")) {
             $activity = $getContent[3]->activities[$deviceArrayIndex];
@@ -82,10 +85,12 @@ class FitbitExercise extends Constants
                 return NULL;
             }
 
+            $newItem = FALSE;
             /** @var Exercise $dataEntryExercise */
             $dataEntryExercise = $doctrine->getRepository(Exercise::class)->findOneBy(['RemoteId' => $activity->logId, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntryExercise) {
                 $dataEntryExercise = new Exercise();
+                $newItem = TRUE;
             }
 
             $dataEntryExercise->setPatient($patient);
@@ -206,6 +211,30 @@ class FitbitExercise extends Constants
             if (property_exists($activity, "speed") && $activity->speed > 0) $dataEntryExerciseSummary->setSpeedMean($activity->speed);
 
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
+
+            if ($newItem) {
+                $tweetManager->sendNotification(
+                    "@" . $patient->getUuid() . " just #recorded a new " . round($dataEntryExercise->getDuration() / 60, 0) . " minute #" . strtolower($dataEntryExercise->getExerciseType()->getTag()) . " :dog_14:",
+                    NULL,
+                    $patient,
+                    FALSE
+                );
+
+                $notification = new SiteNews();
+                $notification->setPatient($patient);
+                $notification->setPublished(new \DateTime());
+                $notification->setTitle("New Exercise Recorded");
+                $notification->setText("You've just recorded a new " . strtolower($dataEntryExercise->getExerciseType()->getTag()));
+                $notification->setAccent('success');
+                $notification->setImage("recorded_exercise");
+                $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
+                $notification->setLink('/activities/log');
+                $notification->setPriority(3);
+
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($notification);
+                $entityManager->flush();
+            }
 
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntryExercise)), $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
 

@@ -12,6 +12,7 @@ use App\Entity\SiteNews;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use PhpParser\Node\Expr\Array_;
 
@@ -23,10 +24,12 @@ class SamsungExercise extends Constants
      *
      * @param AwardManager    $awardManager
      *
+     * @param TweetManager    $tweetManager
+     *
      * @return Exercise|null
      * @throws \Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager)
     {
         $jsonContent = self::decodeJson($getContent);
         // AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
@@ -143,11 +146,18 @@ class SamsungExercise extends Constants
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
 
             if ($newItem) {
+                $tweetManager->sendNotification(
+                    "@" . $patient->getUuid() . " just #recorded a new " . round($dataEntryExercise->getDuration() / 60, 0) . " minute #" . strtolower($dataEntryExercise->getExerciseType()->getTag()) . " :dog_14:",
+                    NULL,
+                    $patient,
+                    FALSE
+                );
+
                 $notification = new SiteNews();
                 $notification->setPatient($patient);
                 $notification->setPublished(new \DateTime());
                 $notification->setTitle("New Exercise Recorded");
-                $notification->setText("You've just recorded a new " . $dataEntryExercise->getExerciseType()->getName());
+                $notification->setText("You've just recorded a new " . strtolower($dataEntryExercise->getExerciseType()->getTag()));
                 $notification->setAccent('success');
                 $notification->setImage("recorded_exercise");
                 $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));

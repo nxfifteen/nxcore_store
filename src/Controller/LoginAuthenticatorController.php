@@ -54,6 +54,7 @@ class LoginAuthenticatorController extends AbstractController
 
         $returnPatient = [];
         $returnPatient['username'] = $patient->getUuid();
+        $returnPatient['deviceId'] = '0';
         $returnPatient['token'] = $patient->getApiToken();
         $returnPatient['firstrun'] = $patient->getFirstRun();
         $returnPatient['name'] = $patient->getFirstName();

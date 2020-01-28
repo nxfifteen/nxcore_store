@@ -4,6 +4,7 @@ namespace App\Transform\SamsungHealth;
 
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
+use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Sentry;
@@ -23,7 +24,7 @@ class Entry
         $this->logger = $logger;
     }
 
-    public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve)
+    public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
         $translateEntity = NULL;
 
@@ -71,7 +72,7 @@ class Entry
                 break;
             case Constants::SAMSUNGHEALTHEPEXERCISE:
                 try {
-                    $translateEntity = SamsungExercise::translate($doctrine, $getContent, $awardManager);
+                    $translateEntity = SamsungExercise::translate($doctrine, $getContent, $awardManager, $tweetManager);
                 } catch (\Exception $e) {
                 }
                 break;

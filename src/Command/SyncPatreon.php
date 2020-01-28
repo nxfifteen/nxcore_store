@@ -107,7 +107,7 @@ class SyncPatreon extends Command
 
                 try {
                     $patron_user = $api_client->fetch_user();
-                    if (array_key_exists("included", $patron_user) && array_key_exists("0", $patron_user['included']) && array_key_exists("attributes", $patron_user['included'][0])) {
+                    if (is_array($patron_user) && array_key_exists("included", $patron_user) && array_key_exists("0", $patron_user['included']) && array_key_exists("attributes", $patron_user['included'][0])) {
                         $this->entityManager = $this->doctrine->getManager();
                         $endPointTearSettings = $this->updateUserTear($patron_user['included'][0]['attributes'], $patreonCredential->getPatient(), $service);
                         $endPointStatusSettings = $this->updateUserStatus($patron_user['included'][0]['attributes'], $patreonCredential->getPatient(), $service);
@@ -115,6 +115,8 @@ class SyncPatreon extends Command
                         $this->checkMembershipTear($endPointTearSettings, $endPointStatusSettings, $patreonCredential->getPatient());
 
                         $this->entityManager->flush();
+                    } else {
+                        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Patreon ' . print_r($patron_user, TRUE));
                     }
                 } catch (APIException $e) {
                 } catch (CurlException $e) {
@@ -241,6 +243,8 @@ class SyncPatreon extends Command
             $patientMembership->setLastPaid(new DateTime('1900-01-01 00:00:00'));
         }
 
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Patreon ' . print_r($settingsTear, TRUE));
+
         $patientMembership->setTear($this->getTearFromPaidCent($settingsTear[0]));
         if (strtolower($settingsStatus[1]) == "paid") {
             $patientMembership->setActive(TRUE);
@@ -267,6 +271,8 @@ class SyncPatreon extends Command
     function getTearFromPaidCent(int $latestPaid)
     {
         switch ($latestPaid) {
+            case "0":
+                return "follower";
             case "100":
                 return "shoutout";
             case "500":
