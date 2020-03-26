@@ -172,6 +172,9 @@ class AngularController extends AbstractController
         return $this->json($return);
     }
 
+    /**
+     * @param String $userRole
+     */
     private function setupRoute(String $userRole = 'ROLE_USER')
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();

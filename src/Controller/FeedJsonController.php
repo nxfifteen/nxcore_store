@@ -259,7 +259,11 @@ class FeedJsonController extends AbstractController
         $returnArray['level_next'] = $returnArray['next'] - $returnArray['current'];
         $returnArray['level_percentage'] = 100 - ($returnArray['next'] - $returnArray['current']);
 
-        $returnArray['log'] = $this->patient->getXp()->last()->getReason();
+        if (count($this->patient->getXp()) > 0) {
+            $returnArray['log'] = $this->patient->getXp()->last()->getReason();
+        } else {
+            $returnArray['log'] = "";
+        }
 
         return $this->json($returnArray);
     }

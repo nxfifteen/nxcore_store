@@ -221,7 +221,9 @@ class AwardManager
 
     private function updateDifficultyFactor(Patient $patient, int $i)
     {
-        $x = $patient->getRpgFactor();
+        //$x = $patient->getRpgFactor();
+        // @var $x Base RPG factor
+        $x = 1;
         if ($i == 10) {
             $patient->setRpgFactor($x - 0.01);
         } else if ($i == 20) {
