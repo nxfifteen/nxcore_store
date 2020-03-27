@@ -17,7 +17,7 @@ class FitbitBodyFat extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
-     * @param                 $jsonContent
+     * @param array           $jsonContent
      *
      * @param AwardManager    $awardManager
      *
@@ -26,7 +26,7 @@ class FitbitBodyFat extends Constants
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
     {
-        if (property_exists($jsonContent[0], "uuid") && $jsonContent[2]->body->fat > 0) {
+        if (property_exists($jsonContent[0], "uuid") && property_exists($jsonContent[2], "fat") && $jsonContent[2]->fat > 0) {
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
             if (is_null($patient)) {
@@ -58,15 +58,15 @@ class FitbitBodyFat extends Constants
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "BodyFat", $jsonContent[2]->goals->fat, $unitOfMeasurement, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "BodyFat", 21, $unitOfMeasurement, $patient);
             if (is_null($patientGoal)) {
                 return NULL;
             }
 
-            $jsonContent[0]->remoteId = $jsonContent[0]->remoteId . 'FitbitBodyFat' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
+            $remoteId = $jsonContent[0]->remoteId . 'FitbitBodyFat' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
 
             /** @var BodyFat $dataEntry */
-            $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $jsonContent[0]->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
                 $dataEntry = new BodyFat();
             }
@@ -74,8 +74,8 @@ class FitbitBodyFat extends Constants
             $dataEntry->setPatient($patient);
 
             $dataEntry->setTrackingDevice($deviceTracking);
-            $dataEntry->setRemoteId($jsonContent[0]->remoteId);
-            $dataEntry->setMeasurement($jsonContent[2]->body->fat);
+            $dataEntry->setRemoteId($remoteId);
+            $dataEntry->setMeasurement($jsonContent[2]->fat);
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
             $dataEntry->setPatientGoal($patientGoal);
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent[0]->dateTime))->format("U")) {

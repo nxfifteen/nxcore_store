@@ -24,7 +24,7 @@ class FitbitBodyWeight extends Constants
 {
     /**
      * @param ManagerRegistry $doctrine
-     * @param Object          $jsonContent
+     * @param array           $jsonContent
      *
      * @param AwardManager    $awardManager
      *
@@ -35,7 +35,7 @@ class FitbitBodyWeight extends Constants
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, TweetManager $tweetManager)
     {
-        if (property_exists($jsonContent[0], "uuid") && $jsonContent[2]->body->weight > 0) {
+        if (property_exists($jsonContent[0], "uuid") && $jsonContent[2]->weight > 0) {
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
@@ -78,18 +78,18 @@ class FitbitBodyWeight extends Constants
 
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "BodyWeight", $jsonContent[2]->goals->weight, $unitOfMeasurement, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "BodyWeight", 70.32, $unitOfMeasurement, $patient);
             if (is_null($patientGoal)) {
 
                 return NULL;
             }
 
 
-            $jsonContent[0]->remoteId = $jsonContent[0]->remoteId . 'FitbitBodyWeight' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
+            $remoteId = $jsonContent[0]->remoteId . 'FitbitBodyWeight' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
 
             $newItem = FALSE;
             /** @var BodyWeight $dataEntry */
-            $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy(['RemoteId' => $jsonContent[0]->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy(['RemoteId' => $remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
                 if ((new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d") == date("Y-m-d")) $newItem = TRUE;
                 $dataEntry = new BodyWeight();
@@ -98,12 +98,12 @@ class FitbitBodyWeight extends Constants
             $dataEntry->setPatient($patient);
 
             $dataEntry->setTrackingDevice($deviceTracking);
-            $dataEntry->setRemoteId($jsonContent[0]->remoteId);
+            $dataEntry->setRemoteId($remoteId);
             $dataEntry->setPatientGoal($patientGoal);
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent[0]->dateTime))->format("U")) {
                 $dataEntry->setDateTime(new \DateTime($jsonContent[0]->dateTime));
             }
-            $dataEntry->setMeasurement($jsonContent[2]->body->weight);
+            $dataEntry->setMeasurement($jsonContent[2]->weight);
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
             $dataEntry->setPartOfDay($partOfDay);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

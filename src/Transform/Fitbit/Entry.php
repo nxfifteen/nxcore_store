@@ -7,6 +7,7 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use phpDocumentor\Reflection\Types\Object_;
 use Psr\Log\LoggerInterface;
 use Sentry;
 
@@ -94,11 +95,37 @@ class Entry
                 }
                 break;
             case Constants::FITBITEPBODYWEIGHT:
+
                 $translateEntity = [];
-                /** @noinspection PhpUnhandledExceptionInspection */
-                $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent, $awardManager, $tweetManager);
-                /** @noinspection PhpUnhandledExceptionInspection */
-                $translateEntity[] = FitbitBodyFat::translate($doctrine, $getContent, $awardManager);
+                if (is_array($getContent[2]->weight)) {
+                    AppConstants::writeToLog('debug_transform.txt', "[" . __LINE__ . "] - Array passed");
+                    AppConstants::writeToLog('debug_transform.txt', "[" . __LINE__ . "] - " . print_r($getContent, TRUE));
+
+                    $returnIDs = [];
+                    foreach ($getContent[2]->weight as $weightItem) {
+                        $jsonItem = [];
+                        $jsonItem[0] = $getContent[0];
+                        $jsonItem[1] = $getContent[1];
+                        $jsonItem[2] = $weightItem;
+
+                        $jsonItem[0]->dateTime = $weightItem->date . " " . $weightItem->time;
+
+                        AppConstants::writeToLog('debug_transform.txt', "[" . __LINE__ . "] - " . print_r($jsonItem, TRUE));
+
+                        /** @noinspection PhpUnhandledExceptionInspection */
+                        $translateEntity[] = FitbitBodyWeight::translate($doctrine, $jsonItem, $awardManager, $tweetManager);
+                        /** @noinspection PhpUnhandledExceptionInspection */
+                        $translateEntity[] = FitbitBodyFat::translate($doctrine, $jsonItem, $awardManager);
+                    }
+                } else if (is_object($getContent)) {
+                    /** @noinspection PhpUnhandledExceptionInspection */
+                    $translateEntity[] = FitbitBodyWeight::translate($doctrine, $getContent, $awardManager, $tweetManager);
+                    /** @noinspection PhpUnhandledExceptionInspection */
+                    $translateEntity[] = FitbitBodyFat::translate($doctrine, $getContent, $awardManager);
+                } else {
+                    AppConstants::writeToLog('debug_transform.txt', "[" . __LINE__ . "] - Something else passed");
+                }
+
                 foreach ($getContent[1] as $index => $item) {
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
                 }

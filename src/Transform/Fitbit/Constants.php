@@ -20,7 +20,7 @@ class Constants extends Transform
     {
         switch ( $endpoint ) {
             case 'BodyWeight':
-                $path = '/body/date/{date}';
+                $path = '/body/log/weight/date/{date}/{period}{ext}';
                 break;
 
             case 'serviceProfile':

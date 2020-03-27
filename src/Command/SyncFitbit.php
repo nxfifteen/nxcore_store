@@ -146,7 +146,7 @@ class SyncFitbit extends Command
                             if ($dbPatientSettingsUntilOR) {
                                 $dbPatientSettingsUntilOR = $dbPatientSettingsUntilOR->getValue();
                             } else {
-//                                AppConstants::writeToLog('debug_transform.txt', $serviceSyncQueue->getCredentials()->getPatient()->getUuid() . " has no overrides");
+                                AppConstants::writeToLog('debug_transform.txt', $serviceSyncQueue->getCredentials()->getPatient()->getUuid() . " has no overrides");
 
                                 $entityManager = $this->doctrine->getManager();
                                 $entityManager->remove($serviceSyncQueue);
@@ -180,12 +180,12 @@ class SyncFitbit extends Command
                             foreach ($endpoints as $endpoint) {
 
                                 if (!is_null($dbPatientSettingsUntilOR) && is_array($dbPatientSettingsUntilOR) && count($dbPatientSettingsUntilOR) > 0) {
-//                                    AppConstants::writeToLog('debug_transform.txt', "Starting endpoint: " . $endpoint);
+                                    AppConstants::writeToLog('debug_transform.txt', "Starting endpoint: " . $endpoint);
                                     if (in_array($endpoint, $dbPatientSettingsUntilOR)) {
-//                                        AppConstants::writeToLog('debug_transform.txt', " Which is in the override");
+                                        AppConstants::writeToLog('debug_transform.txt', " Which is in the override");
                                         $continueQueueActions = TRUE;
                                     } else {
-//                                        AppConstants::writeToLog('debug_transform.txt', " Which is NOT in the override");
+                                        AppConstants::writeToLog('debug_transform.txt', " Which is NOT in the override");
                                         $continueQueueActions = FALSE;
                                         $entityManager = $this->doctrine->getManager();
                                         $entityManager->remove($serviceSyncQueue);
@@ -209,7 +209,7 @@ class SyncFitbit extends Command
                                         if (!$patientSettings) {
                                             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'No supported end points');
                                         } else {
-                                            //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Permission over ' . print_r($patientSettings->getValue(), TRUE));
+                                            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Permission over ' . print_r($patientSettings->getValue(), TRUE));
                                             foreach ($patientSettings->getValue() as $settingsEndpoint) {
                                                 if (
                                                     is_null($dbPatientSettingsUntilOR) ||
@@ -231,13 +231,16 @@ class SyncFitbit extends Command
                                         AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " .
                                             'Updating ' . $endpoint .
                                             ' for ' . $serviceSyncQueue->getCredentials()->getPatient()->getUsername());
-                                        $serviceDataArray[] = $this->pullBabel($accessToken, $serviceSyncQueue, $endpoint);
+
+                                        $var = $this->pullBabel($accessToken, $serviceSyncQueue, $endpoint);
+                                        $serviceDataArray[] = $var;
                                     }
                                 }
                             }
 
                             if (!is_null($serviceDataArray) && count($serviceDataArray) > 1 && !empty($serviceDataArray[1])) {
                                 $transformerClass = new $transformerClassName($this->logger);
+
                                 /** @noinspection PhpUndefinedMethodInspection */
                                 $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager, $this->challengePve, $this->tweetManager);
 
@@ -401,6 +404,9 @@ class SyncFitbit extends Command
             ->findLastAccess($serviceSyncQueue->getCredentials()->getPatient(), $serviceSyncQueue->getCredentials()->getService(), $requestedEndpoint);
 
         $path = $this->getApiPath($requestedEndpoint, $apiAccessLog);
+        /*if ($requestedEndpoint == "BodyWeight") {
+            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $path);
+        }*/
 
         if ($requestedEndpoint != "BodyWeight" &&
             $requestedEndpoint != "FitStepsDailySummary" &&
@@ -419,7 +425,7 @@ class SyncFitbit extends Command
                 $response = $this->getLibrary()->getParsedResponse($request);
 
                 $responseObject = json_decode(json_encode($response), FALSE);
-                /*if ($requestedEndpoint == "Exercise") {
+                /*if ($requestedEndpoint == "BodyWeight") {
                     AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseObject, true));
                 }*/
 
@@ -460,6 +466,14 @@ class SyncFitbit extends Command
             $path = str_replace("{date}", $this->syncDate, $path);
         }
 
+        if (strpos($path, "{+31days}") !== FALSE) {
+            $path = str_replace("{+31days}", date("Y-m-d"), $path);
+        }
+
+        if (strpos($path, "{today}") !== FALSE) {
+            $path = str_replace("{today}", date("Y-m-d"), $path);
+        }
+
         if (strpos($path, "{period}") !== FALSE) {
             $syncPeriod = $this->getDaysSyncPeriod();
             $path = str_replace("{period}", $syncPeriod, $path);
@@ -477,14 +491,8 @@ class SyncFitbit extends Command
             $daysSince = "7d";
         } else if ($daysSince < 30) {
             $daysSince = "30d";
-        } else if ($daysSince < 90) {
-            $daysSince = "3m";
-        } else if ($daysSince < 180) {
-            $daysSince = "6m";
-        } else if ($daysSince < 364) {
-            $daysSince = "1y";
         } else {
-            $daysSince = "1y";
+            $daysSince = "1m";
         }
 
         return $daysSince;
