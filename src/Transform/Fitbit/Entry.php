@@ -98,10 +98,6 @@ class Entry
 
                 $translateEntity = [];
                 if (is_array($getContent[2]->weight)) {
-                    AppConstants::writeToLog('debug_transform.txt', "[" . __LINE__ . "] - Array passed");
-                    AppConstants::writeToLog('debug_transform.txt', "[" . __LINE__ . "] - " . print_r($getContent, TRUE));
-
-                    $returnIDs = [];
                     foreach ($getContent[2]->weight as $weightItem) {
                         $jsonItem = [];
                         $jsonItem[0] = $getContent[0];
@@ -109,8 +105,6 @@ class Entry
                         $jsonItem[2] = $weightItem;
 
                         $jsonItem[0]->dateTime = $weightItem->date . " " . $weightItem->time;
-
-                        AppConstants::writeToLog('debug_transform.txt', "[" . __LINE__ . "] - " . print_r($jsonItem, TRUE));
 
                         /** @noinspection PhpUnhandledExceptionInspection */
                         $translateEntity[] = FitbitBodyWeight::translate($doctrine, $jsonItem, $awardManager, $tweetManager);
