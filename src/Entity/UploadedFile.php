@@ -33,9 +33,14 @@ class UploadedFile
     private $license;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\WorkoutExercise", inversedBy="images")
+     * @ORM\ManyToOne(targetEntity="App\Entity\WorkoutExercise", inversedBy="uploads")
      */
-    private $workoutExercise;
+    private $exercise;
+
+    /**
+     * @ORM\Column(type="string", length=255, options={"default":"url"})
+     */
+    private $type;
 
     public function getId(): ?int
     {
@@ -78,14 +83,26 @@ class UploadedFile
         return $this;
     }
 
-    public function getWorkoutExercise(): ?WorkoutExercise
+    public function getExercise(): ?WorkoutExercise
     {
-        return $this->workoutExercise;
+        return $this->exercise;
     }
 
-    public function setWorkoutExercise(?WorkoutExercise $workoutExercise): self
+    public function setExercise(?WorkoutExercise $exercise): self
     {
-        $this->workoutExercise = $workoutExercise;
+        $this->exercise = $exercise;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }

@@ -45,19 +45,20 @@ class WorkoutExercise
     private $license;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\UploadedFile", mappedBy="workoutExercise")
-     */
-    private $images;
-
-    /**
      * @ORM\OneToMany(targetEntity="App\Entity\WorkoutMuscleRelation", mappedBy="exercise", orphanRemoval=true)
      */
     private $muscles;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\UploadedFile", mappedBy="exercise")
+     */
+    private $uploads;
 
     public function __construct()
     {
         $this->images = new ArrayCollection();
         $this->muscles = new ArrayCollection();
+        $this->uploads = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,37 +127,6 @@ class WorkoutExercise
     }
 
     /**
-     * @return Collection|UploadedFile[]
-     */
-    public function getImages(): Collection
-    {
-        return $this->images;
-    }
-
-    public function addImage(UploadedFile $image): self
-    {
-        if (!$this->images->contains($image)) {
-            $this->images[] = $image;
-            $image->setWorkoutExercise($this);
-        }
-
-        return $this;
-    }
-
-    public function removeImage(UploadedFile $image): self
-    {
-        if ($this->images->contains($image)) {
-            $this->images->removeElement($image);
-            // set the owning side to null (unless already changed)
-            if ($image->getWorkoutExercise() === $this) {
-                $image->setWorkoutExercise(NULL);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection|WorkoutMuscleRelation[]
      */
     public function getMuscles(): Collection
@@ -181,6 +151,37 @@ class WorkoutExercise
             // set the owning side to null (unless already changed)
             if ($muscle->getExercise() === $this) {
                 $muscle->setExercise(NULL);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UploadedFile[]
+     */
+    public function getUploads(): Collection
+    {
+        return $this->uploads;
+    }
+
+    public function addUpload(UploadedFile $upload): self
+    {
+        if (!$this->uploads->contains($upload)) {
+            $this->uploads[] = $upload;
+            $upload->setExercise($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUpload(UploadedFile $upload): self
+    {
+        if ($this->uploads->contains($upload)) {
+            $this->uploads->removeElement($upload);
+            // set the owning side to null (unless already changed)
+            if ($upload->getExercise() === $this) {
+                $upload->setExercise(NULL);
             }
         }
 
