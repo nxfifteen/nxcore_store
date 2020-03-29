@@ -40,16 +40,6 @@ class WorkoutExercise
     private $equipment;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\WorkoutMuscle", inversedBy="exercisesPrimary")
-     */
-    private $musclePrimary;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\WorkoutMuscle", inversedBy="exercisesSecondary")
-     */
-    private $muscleSecondary;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ContributionLicense")
      */
     private $license;
@@ -59,9 +49,15 @@ class WorkoutExercise
      */
     private $images;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\WorkoutMuscleRelation", mappedBy="exercise", orphanRemoval=true)
+     */
+    private $muscles;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
+        $this->muscles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -117,30 +113,6 @@ class WorkoutExercise
         return $this;
     }
 
-    public function getMusclePrimary(): ?WorkoutMuscle
-    {
-        return $this->musclePrimary;
-    }
-
-    public function setMusclePrimary(?WorkoutMuscle $musclePrimary): self
-    {
-        $this->musclePrimary = $musclePrimary;
-
-        return $this;
-    }
-
-    public function getMuscleSecondary(): ?WorkoutMuscle
-    {
-        return $this->muscleSecondary;
-    }
-
-    public function setMuscleSecondary(?WorkoutMuscle $muscleSecondary): self
-    {
-        $this->muscleSecondary = $muscleSecondary;
-
-        return $this;
-    }
-
     public function getLicense(): ?ContributionLicense
     {
         return $this->license;
@@ -183,4 +155,36 @@ class WorkoutExercise
 
         return $this;
     }
+
+    /**
+     * @return Collection|WorkoutMuscleRelation[]
+     */
+    public function getMuscles(): Collection
+    {
+        return $this->muscles;
+    }
+
+    public function addMuscle(WorkoutMuscleRelation $muscle): self
+    {
+        if (!$this->muscles->contains($muscle)) {
+            $this->muscles[] = $muscle;
+            $muscle->setExercise($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMuscle(WorkoutMuscleRelation $muscle): self
+    {
+        if ($this->muscles->contains($muscle)) {
+            $this->muscles->removeElement($muscle);
+            // set the owning side to null (unless already changed)
+            if ($muscle->getExercise() === $this) {
+                $muscle->setExercise(NULL);
+            }
+        }
+
+        return $this;
+    }
+
 }

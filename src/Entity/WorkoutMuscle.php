@@ -28,26 +28,9 @@ class WorkoutMuscle
      */
     private $isFront;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\WorkoutExercise", mappedBy="muscle")
-     */
-    private $exercises;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\WorkoutExercise", mappedBy="musclePrimary")
-     */
-    private $exercisesPrimary;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\WorkoutExercise", mappedBy="muscleSecondary")
-     */
-    private $exercisesSecondary;
-
     public function __construct()
     {
-        $this->exercises = new ArrayCollection();
-        $this->exercisesPrimary = new ArrayCollection();
-        $this->exercisesSecondary = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -79,96 +62,4 @@ class WorkoutMuscle
         return $this;
     }
 
-    /**
-     * @return Collection|WorkoutExercise[]
-     */
-    public function getExercises(): Collection
-    {
-        return $this->exercises;
-    }
-
-    public function addExercise(WorkoutExercise $exercise): self
-    {
-        if (!$this->exercises->contains($exercise)) {
-            $this->exercises[] = $exercise;
-            $exercise->setMuscle($this);
-        }
-
-        return $this;
-    }
-
-    public function removeExercise(WorkoutExercise $exercise): self
-    {
-        if ($this->exercises->contains($exercise)) {
-            $this->exercises->removeElement($exercise);
-            // set the owning side to null (unless already changed)
-            if ($exercise->getMuscle() === $this) {
-                $exercise->setMuscle(NULL);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|WorkoutExercise[]
-     */
-    public function getExercisesPrimary(): Collection
-    {
-        return $this->exercisesPrimary;
-    }
-
-    public function addExercisesPrimary(WorkoutExercise $exercisesPrimary): self
-    {
-        if (!$this->exercisesPrimary->contains($exercisesPrimary)) {
-            $this->exercisesPrimary[] = $exercisesPrimary;
-            $exercisesPrimary->setMusclePrimary($this);
-        }
-
-        return $this;
-    }
-
-    public function removeExercisesPrimary(WorkoutExercise $exercisesPrimary): self
-    {
-        if ($this->exercisesPrimary->contains($exercisesPrimary)) {
-            $this->exercisesPrimary->removeElement($exercisesPrimary);
-            // set the owning side to null (unless already changed)
-            if ($exercisesPrimary->getMusclePrimary() === $this) {
-                $exercisesPrimary->setMusclePrimary(NULL);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|WorkoutExercise[]
-     */
-    public function getExercisesSecondary(): Collection
-    {
-        return $this->exercisesSecondary;
-    }
-
-    public function addExercisesSecondary(WorkoutExercise $exercisesSecondary): self
-    {
-        if (!$this->exercisesSecondary->contains($exercisesSecondary)) {
-            $this->exercisesSecondary[] = $exercisesSecondary;
-            $exercisesSecondary->setMuscleSecondary($this);
-        }
-
-        return $this;
-    }
-
-    public function removeExercisesSecondary(WorkoutExercise $exercisesSecondary): self
-    {
-        if ($this->exercisesSecondary->contains($exercisesSecondary)) {
-            $this->exercisesSecondary->removeElement($exercisesSecondary);
-            // set the owning side to null (unless already changed)
-            if ($exercisesSecondary->getMuscleSecondary() === $this) {
-                $exercisesSecondary->setMuscleSecondary(NULL);
-            }
-        }
-
-        return $this;
-    }
 }
