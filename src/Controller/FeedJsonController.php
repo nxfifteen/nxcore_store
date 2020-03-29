@@ -7,6 +7,11 @@ use App\Entity\BodyWeight;
 use App\Entity\ConsumeWater;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
+use App\Entity\WorkoutCategories;
+use App\Entity\WorkoutEquipment;
+use App\Entity\WorkoutExercise;
+use App\Entity\WorkoutMuscle;
+use App\Entity\WorkoutMuscleRelation;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -283,5 +288,185 @@ class FeedJsonController extends AbstractController
         $returnArray['loginStreak'] = $this->patient->getLoginStreak();
 
         return $this->json($returnArray);
+    }
+
+    /**
+     * @Route("/json/exercises/overview", name="json_exercisesOverview")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function exercisesOverview()
+    {
+        $this->setupRoute();
+
+        $return = [];
+
+        /** @var WorkoutExercise[] $exercises */
+        $exercises = $this->getDoctrine()
+            ->getRepository(WorkoutExercise::class)
+            ->findAll();
+
+        foreach ($exercises as $exercise) {
+            $formattedArray = [
+                "id" => $exercise->getId(),
+                "name" => $exercise->getName(),
+                "description" => $exercise->getDescription(),
+                "license" => $exercise->getLicense(),
+            ];
+            $formattedArray['category'] = [];
+            foreach ($exercise->getCategory() as $category) {
+                $formattedArray['category'][] = $category->getName();
+            }
+            $formattedArray['equipment'] = $exercise->getEquipment()->getName();
+
+            /** @var WorkoutMuscleRelation[] $relatedExercises */
+            $relatedExercises = $this->getDoctrine()
+                ->getRepository(WorkoutMuscleRelation::class)
+                ->findBy(['exercise' => $exercise]);
+            $formattedArray['muscles'] = [];
+            foreach ($relatedExercises as $muscleRelation) {
+                $formattedArray['muscles'][] = [
+                    "name" => $muscleRelation->getMuscle()->getName(),
+                    "isFront" => $muscleRelation->getMuscle()->getIsFront(),
+                    "isPrimary" => $muscleRelation->getIsPrimary(),
+                ];
+            }
+            $formattedArray['resources'] = [];
+            foreach ($exercise->getUploads() as $upload) {
+                $formattedArray['resources'][] = [
+                    "name" => $upload->getName(),
+                    "type" => $upload->getType(),
+                    "path" => $upload->getPath(),
+                ];
+            }
+
+            $return[] = $formattedArray;
+        }
+
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/json/exercises/category/overview", name="json_exercisesCategoryOverview")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function exercisesCategoryOverview()
+    {
+        $this->setupRoute();
+
+        $return = [];
+
+        /** @var WorkoutCategories[] $workoutCategories */
+        $workoutCategories = $this->getDoctrine()
+            ->getRepository(WorkoutCategories::class)
+            ->findAll();
+
+        foreach ($workoutCategories as $workout) {
+            $formattedArray = [
+                "id" => $workout->getId(),
+                "name" => $workout->getName(),
+                "exercises" => count($workout->getExercises()),
+            ];
+            $formattedArray['sub'] = [];
+            foreach ($workout->getExercises() as $exercise) {
+                $formattedArray['sub'][] = [
+                    "id" => $exercise->getId(),
+                    "name" => $exercise->getName(),
+                    "description" => $exercise->getDescription(),
+                    "license" => $exercise->getLicense(),
+                ];
+            }
+
+            $return[] = $formattedArray;
+        }
+
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/json/exercises/equipment/overview", name="json_exercisesEquipmentOverview")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function exercisesEquipmentOverview()
+    {
+        $this->setupRoute();
+
+        $return = [];
+
+        /** @var WorkoutEquipment[] $workoutEquipment */
+        $workoutEquipment = $this->getDoctrine()
+            ->getRepository(WorkoutEquipment::class)
+            ->findAll();
+
+        foreach ($workoutEquipment as $workout) {
+            /** @var WorkoutExercise[] $relatedExercises */
+            $relatedExercises = $this->getDoctrine()
+                ->getRepository(WorkoutExercise::class)
+                ->findBy(['equipment' => $workout]);
+
+            $formattedArray = [
+                "id" => $workout->getId(),
+                "name" => $workout->getName(),
+                "exercises" => count($relatedExercises),
+            ];
+            $formattedArray['sub'] = [];
+            foreach ($relatedExercises as $exercise) {
+                $formattedArray['sub'][] = [
+                    "id" => $exercise->getId(),
+                    "name" => $exercise->getName(),
+                    "description" => $exercise->getDescription(),
+                    "license" => $exercise->getLicense(),
+                ];
+            }
+
+            $return[] = $formattedArray;
+        }
+
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/json/exercises/muscle/overview", name="json_exercisesMuscleOverview")
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function exercisesMuscleOverview()
+    {
+        $this->setupRoute();
+
+        $return = [];
+
+        /** @var WorkoutMuscle[] $workoutMuscle */
+        $workoutMuscle = $this->getDoctrine()
+            ->getRepository(WorkoutMuscle::class)
+            ->findAll();
+
+        foreach ($workoutMuscle as $workout) {
+            /** @var WorkoutMuscleRelation[] $relatedExercises */
+            $relatedExercises = $this->getDoctrine()
+                ->getRepository(WorkoutMuscleRelation::class)
+                ->findBy(['muscle' => $workout]);
+
+            $formattedArray = [
+                "id" => $workout->getId(),
+                "name" => $workout->getName(),
+                "exercises" => count($relatedExercises),
+            ];
+            $formattedArray['sub'] = [];
+            foreach ($relatedExercises as $muscleRelation) {
+                $formattedArray['sub'][] = [
+                    "id" => $muscleRelation->getExercise()->getId(),
+                    "name" => $muscleRelation->getExercise()->getName(),
+                    "description" => $muscleRelation->getExercise()->getDescription(),
+                    "license" => $muscleRelation->getExercise()->getLicense(),
+                ];
+            }
+
+            $return[] = $formattedArray;
+        }
+
+        return $this->json($return);
     }
 }
