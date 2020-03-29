@@ -260,7 +260,7 @@ class FeedJsonController extends AbstractController
         $returnArray['level'] = $this->patient->getRpgLevel();
         $returnArray['factor'] = $this->patient->getRpgFactor();
         $returnArray['current'] = round($this->patient->getXpTotal(), 0);
-        $returnArray['next'] = ceil( $returnArray['current'] / 100 ) * 100;
+        $returnArray['next'] = ceil($returnArray['current'] / 100) * 100;
         $returnArray['level_next'] = $returnArray['next'] - $returnArray['current'];
         $returnArray['level_percentage'] = 100 - ($returnArray['next'] - $returnArray['current']);
 
@@ -323,14 +323,52 @@ class FeedJsonController extends AbstractController
             $relatedExercises = $this->getDoctrine()
                 ->getRepository(WorkoutMuscleRelation::class)
                 ->findBy(['exercise' => $exercise]);
-            $formattedArray['muscles'] = [];
+            $formattedArray['muscles'] = [
+                "front" => [],
+                "back" => [],
+                "front_svg" => [],
+                "back_svg" => [],
+            ];
             foreach ($relatedExercises as $muscleRelation) {
-                $formattedArray['muscles'][] = [
-                    "name" => $muscleRelation->getMuscle()->getName(),
-                    "isFront" => $muscleRelation->getMuscle()->getIsFront(),
-                    "isPrimary" => $muscleRelation->getIsPrimary(),
-                ];
+                if ($muscleRelation->getMuscle()->getIsFront()) {
+                    $formattedArray['muscles']["front"][] = [
+                        "id" => $muscleRelation->getMuscle()->getId(),
+                        "name" => $muscleRelation->getMuscle()->getName(),
+                        "isPrimary" => $muscleRelation->getIsPrimary(),
+                    ];
+                    if ($muscleRelation->getIsPrimary()) {
+                        $formattedArray['muscles']["front_svg"][] = "url(/assets/muscles/primary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    } else {
+                        $formattedArray['muscles']["front_svg"][] = "url(/assets/muscles/secondary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    }
+                } else {
+                    $formattedArray['muscles']["back"][] = [
+                        "id" => $muscleRelation->getMuscle()->getId(),
+                        "name" => $muscleRelation->getMuscle()->getName(),
+                        "isPrimary" => $muscleRelation->getIsPrimary(),
+                    ];
+                    if ($muscleRelation->getIsPrimary()) {
+                        $formattedArray['muscles']["back_svg"][] = "url(/assets/muscles/primary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    } else {
+                        $formattedArray['muscles']["back_svg"][] = "url(/assets/muscles/secondary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    }
+                }
             }
+
+            if (count($formattedArray['muscles']["front_svg"]) > 0) {
+                $formattedArray['muscles']["front_svg"] = join(",", $formattedArray['muscles']["front_svg"]) . ",url(/assets/muscles/muscular_system_front.svg)";
+            } else {
+                $formattedArray['muscles']["front_svg"] = "url(/assets/muscles/muscular_system_back.svg";
+            }
+
+            if (count($formattedArray['muscles']["back_svg"]) > 0) {
+                $formattedArray['muscles']["back_svg"] = join(",", $formattedArray['muscles']["back_svg"]) . ",url(/assets/muscles/muscular_system_back.svg)";
+            } else {
+                $formattedArray['muscles']["back_svg"] = "url(/assets/muscles/muscular_system_back.svg";
+            }
+
+            //url(/assets/muscles/muscular_system_front.svg)
+
             $formattedArray['resources'] = [];
             foreach ($exercise->getUploads() as $upload) {
                 $formattedArray['resources'][] = [
