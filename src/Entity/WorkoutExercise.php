@@ -29,20 +29,9 @@ class WorkoutExercise
     private $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\WorkoutCategories", inversedBy="exercises")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $category;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\WorkoutEquipment", inversedBy="exercises")
      */
     private $equipment;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ContributionLicense")
-     */
-    private $license;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\WorkoutMuscleRelation", mappedBy="exercise", orphanRemoval=true)
@@ -54,10 +43,21 @@ class WorkoutExercise
      */
     private $uploads;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\WorkoutCategories", inversedBy="exercises")
+     */
+    private $category;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ContributionLicense")
+     */
+    private $license;
+
     public function __construct()
     {
         $this->muscles = new ArrayCollection();
         $this->uploads = new ArrayCollection();
+        $this->category = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -89,18 +89,6 @@ class WorkoutExercise
         return $this;
     }
 
-    public function getCategory(): ?WorkoutCategories
-    {
-        return $this->category;
-    }
-
-    public function setCategory(?WorkoutCategories $category): self
-    {
-        $this->category = $category;
-
-        return $this;
-    }
-
     public function getEquipment(): ?WorkoutEquipment
     {
         return $this->equipment;
@@ -109,18 +97,6 @@ class WorkoutExercise
     public function setEquipment(?WorkoutEquipment $equipment): self
     {
         $this->equipment = $equipment;
-
-        return $this;
-    }
-
-    public function getLicense(): ?ContributionLicense
-    {
-        return $this->license;
-    }
-
-    public function setLicense(?ContributionLicense $license): self
-    {
-        $this->license = $license;
 
         return $this;
     }
@@ -183,6 +159,44 @@ class WorkoutExercise
                 $upload->setExercise(NULL);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|WorkoutCategories[]
+     */
+    public function getCategory(): Collection
+    {
+        return $this->category;
+    }
+
+    public function addCategory(WorkoutCategories $category): self
+    {
+        if (!$this->category->contains($category)) {
+            $this->category[] = $category;
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(WorkoutCategories $category): self
+    {
+        if ($this->category->contains($category)) {
+            $this->category->removeElement($category);
+        }
+
+        return $this;
+    }
+
+    public function getLicense(): ?ContributionLicense
+    {
+        return $this->license;
+    }
+
+    public function setLicense(?ContributionLicense $license): self
+    {
+        $this->license = $license;
 
         return $this;
     }

@@ -23,14 +23,8 @@ class WorkoutEquipment
      */
     private $name;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\WorkoutExercise", mappedBy="equipment")
-     */
-    private $exercises;
-
     public function __construct()
     {
-        $this->exercises = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -50,34 +44,4 @@ class WorkoutEquipment
         return $this;
     }
 
-    /**
-     * @return Collection|WorkoutExercise[]
-     */
-    public function getExercises(): Collection
-    {
-        return $this->exercises;
-    }
-
-    public function addExercise(WorkoutExercise $exercise): self
-    {
-        if (!$this->exercises->contains($exercise)) {
-            $this->exercises[] = $exercise;
-            $exercise->setEquipment($this);
-        }
-
-        return $this;
-    }
-
-    public function removeExercise(WorkoutExercise $exercise): self
-    {
-        if ($this->exercises->contains($exercise)) {
-            $this->exercises->removeElement($exercise);
-            // set the owning side to null (unless already changed)
-            if ($exercise->getEquipment() === $this) {
-                $exercise->setEquipment(NULL);
-            }
-        }
-
-        return $this;
-    }
 }

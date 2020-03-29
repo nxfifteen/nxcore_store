@@ -24,7 +24,7 @@ class WorkoutCategories
     private $name;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\WorkoutExercise", mappedBy="category")
+     * @ORM\ManyToMany(targetEntity="App\Entity\WorkoutExercise", mappedBy="category")
      */
     private $exercises;
 
@@ -62,7 +62,7 @@ class WorkoutCategories
     {
         if (!$this->exercises->contains($exercise)) {
             $this->exercises[] = $exercise;
-            $exercise->setCategory($this);
+            $exercise->addCategory($this);
         }
 
         return $this;
@@ -72,10 +72,7 @@ class WorkoutCategories
     {
         if ($this->exercises->contains($exercise)) {
             $this->exercises->removeElement($exercise);
-            // set the owning side to null (unless already changed)
-            if ($exercise->getCategory() === $this) {
-                $exercise->setCategory(NULL);
-            }
+            $exercise->removeCategory($this);
         }
 
         return $this;
