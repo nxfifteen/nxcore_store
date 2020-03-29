@@ -27,12 +27,12 @@ class SiteNavItem
     private $url;
 
     /**
-     * @ORM\Column(type="boolean", nullable=true)
+     * @ORM\Column(type="boolean", options={"default":0})
      */
     private $divider;
 
     /**
-     * @ORM\Column(type="boolean", nullable=true)
+     * @ORM\Column(type="boolean", options={"default":0})
      */
     private $title;
 
@@ -42,7 +42,7 @@ class SiteNavItem
     private $icon;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default":0})
      */
     private $displayOrder;
 
@@ -57,7 +57,7 @@ class SiteNavItem
     private $badgeText;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default":0})
      */
     private $childOf;
 
@@ -67,7 +67,7 @@ class SiteNavItem
     private $accessLevel;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", options={"default":false})
      */
     private $inDevelopment;
 
