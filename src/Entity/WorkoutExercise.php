@@ -56,7 +56,6 @@ class WorkoutExercise
 
     public function __construct()
     {
-        $this->images = new ArrayCollection();
         $this->muscles = new ArrayCollection();
         $this->uploads = new ArrayCollection();
     }
