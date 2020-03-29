@@ -206,8 +206,11 @@ class AngularController extends AbstractController
                         ($rootMenuItem->getInDevelopment() && $this->patient->getId() == 1) ||
                         !$rootMenuItem->getInDevelopment()
                     ) && (
-                        is_null($rootMenuItem->getAccessLevel()) ||
-                        in_array($rootMenuItem->getAccessLevel(), $this->patient->getRoles())
+                        $rootMenuItem->getAccessLevel() != "disabled" && (
+                            is_null($rootMenuItem->getAccessLevel()) ||
+                            in_array($rootMenuItem->getAccessLevel(), $this->patient->getRoles()) ||
+                            in_array("ROLE_ADMIN", $this->patient->getRoles())
+                        )
                     )
                 ) {
                     $itemIndex = count($navItems);
@@ -251,8 +254,11 @@ class AngularController extends AbstractController
                                         ($menuChildItem->getInDevelopment() && $this->patient->getId() == 1) ||
                                         !$menuChildItem->getInDevelopment()
                                     ) && (
-                                        is_null($menuChildItem->getAccessLevel()) ||
-                                        in_array($menuChildItem->getAccessLevel(), $this->patient->getRoles())
+                                        $rootMenuItem->getAccessLevel() != "disabled" && (
+                                            is_null($rootMenuItem->getAccessLevel()) ||
+                                            in_array($rootMenuItem->getAccessLevel(), $this->patient->getRoles()) ||
+                                            in_array("ROLE_ADMIN", $this->patient->getRoles())
+                                        )
                                     )
                                 ) {
                                     $navItems[$itemIndex]['children'][$itemChildIndex] =
