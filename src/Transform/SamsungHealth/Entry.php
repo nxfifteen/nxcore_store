@@ -2,6 +2,8 @@
 
 namespace App\Transform\SamsungHealth;
 
+use App\AppConstants;
+use App\Entity\Patient;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
@@ -14,14 +16,19 @@ class Entry
 
     private $logger;
 
+    /** @var Patient $patient */
+    private $patient;
+
     /**
      * Entry constructor.
      *
      * @param LoggerInterface $logger
+     * @param Patient         $patient
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, Patient $patient = null)
     {
         $this->logger = $logger;
+        $this->patient = $patient;
     }
 
     public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
@@ -30,7 +37,6 @@ class Entry
 
         Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set): void {
             $scope->setUser([
-                'id' => "269VLG",
                 'service' => 'Samsung Health',
                 'data_set' => $data_set,
             ]);

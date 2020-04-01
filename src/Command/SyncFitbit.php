@@ -239,7 +239,7 @@ class SyncFitbit extends Command
                             }
 
                             if (!is_null($serviceDataArray) && count($serviceDataArray) > 1 && !empty($serviceDataArray[1])) {
-                                $transformerClass = new $transformerClassName($this->logger);
+                                $transformerClass = new $transformerClassName($this->logger, $serviceSyncQueue->getCredentials()->getPatient());
 
                                 /** @noinspection PhpUndefinedMethodInspection */
                                 $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager, $this->challengePve, $this->tweetManager);

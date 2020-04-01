@@ -19,6 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SyncUploadController extends AbstractController
 {
+
     /**
      * @Route("/help/upload", name="sync_upload_help")
      */
@@ -160,7 +161,11 @@ class SyncUploadController extends AbstractController
             $logger->error('I could not find a Entry class for ' . $service);
             $savedId = -2;
         } else {
-            $transformerClass = new $transformerClassName($logger);
+            if (!is_null($this->getUser()) && is_object($this->getUser()) && get_class($this->getUser()) == "App\Entity\Patient") {
+                $transformerClass = new $transformerClassName($logger, $this->getUser());
+            } else {
+                $transformerClass = new $transformerClassName($logger);
+            }
             /** @noinspection PhpUndefinedMethodInspection */
             $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine(), $awardManager, $challengePve, $tweetManager);
         }

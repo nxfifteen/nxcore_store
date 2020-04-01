@@ -3,6 +3,7 @@
 namespace App\Transform\Fitbit;
 
 use App\AppConstants;
+use App\Entity\Patient;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
@@ -16,22 +17,49 @@ class Entry
 
     private $logger;
 
+    /** @var Patient $patient */
+    private $patient;
+
     /**
      * Entry constructor.
      *
      * @param LoggerInterface $logger
+     * @param Patient         $patient
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, Patient $patient = null)
     {
         $this->logger = $logger;
+        $this->patient = $patient;
     }
 
     public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
         $translateEntity = NULL;
 
+        if (!is_null($this->patient)) {
+            Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set): void {
+                $scope->setUser([
+                    'id' => $this->patient->getId(),
+                    'username' => $this->patient->getUsername(),
+                    'email' => $this->patient->getEmail(),
+                    'service' => 'Fitbit',
+                    'data_set' => $data_set,
+                ]);
+            });
+        } else {
+            Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set): void {
+                $scope->setUser([
+                    'service' => 'Fitbit',
+                    'data_set' => $data_set,
+                ]);
+            });
+        }
+
         Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set, $getContent): void {
             $scope->setUser([
+                'id' => $this->patient->getId(),
+                'username' => $this->patient->getUsername(),
+                'email' => $this->patient->getEmail(),
                 'content' => $getContent,
                 'service' => 'Fitbit',
                 'data_set' => $data_set,
