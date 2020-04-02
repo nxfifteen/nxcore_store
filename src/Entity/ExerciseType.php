@@ -26,6 +26,11 @@ class ExerciseType
      */
     private $tag;
 
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $MET;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -51,6 +56,18 @@ class ExerciseType
     public function setTag(?string $tag): self
     {
         $this->tag = $tag;
+
+        return $this;
+    }
+
+    public function getMET(): ?float
+    {
+        return $this->MET;
+    }
+
+    public function setMET(?float $MET): self
+    {
+        $this->MET = $MET;
 
         return $this;
     }
