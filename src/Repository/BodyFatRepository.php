@@ -1,29 +1,12 @@
 <?php
 
-/*
-* This file is part of the Storage module in NxFIFTEEN Core.
-*
-* Copyright (c) 2019. Stuart McCulloch Anderson
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*
-* @package     Store
-* @version     0.0.0.x
-* @since       0.0.0.1
-* @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
-* @link        https://nxfifteen.me.uk NxFIFTEEN
-* @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
-* @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
-* @copyright   2019 Stuart McCulloch Anderson
-* @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
-*/
-
 namespace App\Repository;
 
 use App\Entity\BodyFat;
+use DateInterval;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
  * @method BodyFat|null find($id, $lockMode = null, $lockVersion = null)
@@ -33,61 +16,69 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class BodyFatRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BodyFat::class);
     }
 
-    public function getLastReading( String $patientId ) {
+    /**
+     * @param String $patientId
+     * @param String $date
+     * @param int    $lastDays
+     *
+     * @return mixed
+     */
+    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
+    {
+        $dateObject = new DateTime($date);
+
+        try {
+            $interval = new DateInterval('P' . $lastDays . 'D');
+            $dateObject->sub($interval);
+            $today = $dateObject->format("Y-m-d") . " 00:00:00";
+        } catch (\Exception $e) {
+            $today = $date . " 00:00:00";
+        }
+        $todayEnd = $date . " 23:59:00";
+
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->orderBy('c.date_time', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    public function findByDate( String $patientId, String $date ) {
-        $today = $date . " 00:00:00";
-
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('c.date_time >= :val')
+            ->andWhere('c.DateTime >= :val')
             ->setParameter('val', $today)
+            ->andWhere('c.DateTime <= :valEnd')
+            ->setParameter('valEnd', $todayEnd)
             ->andWhere('p.uuid = :patientId')
             ->setParameter('patientId', $patientId)
-            ->orderBy('c.date_time', 'ASC')
+            ->orderBy('c.DateTime', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
-//    /**
-//     * @return BodyFat[] Returns an array of BodyFat objects
-//     */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param String $patientId
+     * @param String $date
+     *
+     * @return mixed
+     */
+    public function findByDateRange(String $patientId, String $date)
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('b.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        return $this->findByDateRangeHistorical($patientId, $date, 0);
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?BodyFat
+    /**
+     * @param String $patientId
+     *
+     * @return mixed
+     */
+    public function findFirst(String $patientId)
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.DateTime', 'ASC')
+            ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
     }
-    */
 }

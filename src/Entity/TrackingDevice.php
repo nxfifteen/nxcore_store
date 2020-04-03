@@ -1,42 +1,20 @@
 <?php
 
-/*
-* This file is part of the Storage module in NxFIFTEEN Core.
-*
-* Copyright (c) 2019. Stuart McCulloch Anderson
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*
-* @package     Store
-* @version     0.0.0.x
-* @since       0.0.0.1
-* @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
-* @link        https://nxfifteen.me.uk NxFIFTEEN
-* @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
-* @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
-* @copyright   2019 Stuart McCulloch Anderson
-* @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
-*/
-
 namespace App\Entity;
+
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\TrackingDeviceRepository")
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceService", columns={"remote_id","service_id","patient_id"})})
  *
- * @ApiResource
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "name": "exact", "patient": "exact", "type": "exact", "remote_id": "exact"})
+ * @ORM\Entity(repositoryClass="App\Repository\TrackingDeviceRepository")
  */
 class TrackingDevice
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
+     * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(type="integer")
      */
     private $id;
 
@@ -46,19 +24,24 @@ class TrackingDevice
     private $name;
 
     /**
-     * @ORM\Column(type="integer", length=3, nullable=true)
+     * @ORM\Column(type="string", length=200, nullable=true)
+     */
+    private $comment;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $battery;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $lastSyncTime;
+    private $lastSynced;
 
     /**
-     * @ORM\Column(type="string", unique=true, length=255, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $remote_id;
+    private $remoteId;
 
     /**
      * @ORM\Column(type="string", length=150, nullable=true)
@@ -66,14 +49,24 @@ class TrackingDevice
     private $type;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="trackingDevice")
-     * @ORM\JoinColumn(name="patient_id", referencedColumnName="id")
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $manufacturer;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $model;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="trackingDevices")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $patient;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService")
-     * @ORM\JoinColumn(name="service", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="App\Entity\ThirdPartyService", inversedBy="trackingDevices")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $service;
 
@@ -94,14 +87,14 @@ class TrackingDevice
         return $this;
     }
 
-    public function getPatient(): ?Patient
+    public function getComment(): ?string
     {
-        return $this->patient;
+        return $this->comment;
     }
 
-    public function setPatient(?Patient $patient): self
+    public function setComment(?string $comment): self
     {
-        $this->patient = $patient;
+        $this->comment = $comment;
 
         return $this;
     }
@@ -118,26 +111,26 @@ class TrackingDevice
         return $this;
     }
 
-    public function getLastSyncTime(): ?\DateTimeInterface
+    public function getLastSynced(): ?\DateTimeInterface
     {
-        return $this->lastSyncTime;
+        return $this->lastSynced;
     }
 
-    public function setLastSyncTime(?\DateTimeInterface $lastSyncTime): self
+    public function setLastSynced(?\DateTimeInterface $lastSynced): self
     {
-        $this->lastSyncTime = $lastSyncTime;
+        $this->lastSynced = $lastSynced;
 
         return $this;
     }
 
     public function getRemoteId(): ?string
     {
-        return $this->remote_id;
+        return $this->remoteId;
     }
 
-    public function setRemoteId(?string $remote_id): self
+    public function setRemoteId(?string $remoteId): self
     {
-        $this->remote_id = $remote_id;
+        $this->remoteId = $remoteId;
 
         return $this;
     }
@@ -150,6 +143,42 @@ class TrackingDevice
     public function setType(?string $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getManufacturer(): ?string
+    {
+        return $this->manufacturer;
+    }
+
+    public function setManufacturer(string $manufacturer): self
+    {
+        $this->manufacturer = $manufacturer;
+
+        return $this;
+    }
+
+    public function getModel(): ?string
+    {
+        return $this->model;
+    }
+
+    public function setModel(?string $model): self
+    {
+        $this->model = $model;
+
+        return $this;
+    }
+
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
 
         return $this;
     }

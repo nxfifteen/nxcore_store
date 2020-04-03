@@ -1,874 +1,945 @@
 <?php
 
-/*
- * This file is part of the Storage module in NxFIFTEEN Core.
- *
- * Copyright (c) 2019. Stuart McCulloch Anderson
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- *
- * @package     Store
- * @version     0.0.0.x
- * @since       0.0.0.1
- * @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
- * @link        https://nxfifteen.me.uk NxFIFTEEN
- * @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
- * @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
- * @copyright   2019 Stuart McCulloch Anderson
- * @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
- */
-    
-    namespace App\Entity;
+namespace App\Entity;
 
-    use Doctrine\Common\Collections\ArrayCollection;
-    use Doctrine\Common\Collections\Collection;
-    use /** @noinspection PhpUnusedAliasInspection */ Doctrine\ORM\Mapping as ORM;
-    use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Annotation\ApiResource;
-    use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Annotation\ApiFilter;
-    use /** @noinspection PhpUnusedAliasInspection */ ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-    use Symfony\Component\Security\Core\User\UserInterface;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Ornicar\GravatarBundle\GravatarApi;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+
+/**
+ * @ORM\Entity(repositoryClass="App\Repository\PatientRepository")
+ *
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "uuid": "exact"})
+ */
+class Patient implements UserInterface
+{
+    /**
+     * @ORM\Id()
+     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(type="integer")
+     */
+    private $id;
 
     /**
-     * @ORM\Entity(repositoryClass="App\Repository\PatientRepository")
-     *
-     * @ApiResource
-     * @ApiFilter(SearchFilter::class, properties={"id": "exact", "uuid": "exact"})
+     * @ORM\Column(type="string", length=180, unique=true)
      */
-    class Patient implements UserInterface
+    private $uuid;
+
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
+
+    /**
+     * @var string The hashed password
+     * @ORM\Column(type="string")
+     */
+    private $password;
+
+    /**
+     * @ORM\Column(type="string", unique=true)
+     */
+    private $apiToken;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\FitStepsDailySummary", mappedBy="patient", orphanRemoval=true)
+     */
+    private $fitStepsDailySummaries;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\TrackingDevice", mappedBy="patient", orphanRemoval=true)
+     */
+    private $trackingDevices;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $firstName;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $surName;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $avatar;
+
+    /**
+     * @ORM\Column(type="json_array", nullable=true)
+     */
+    private $uiSettings = [];
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgXP", mappedBy="patient", orphanRemoval=true)
+     */
+    private $xp;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgRewardsAwarded", mappedBy="patient", orphanRemoval=true, cascade={"persist"})
+     */
+    private $rewards;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $rpgFactor;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $firstRun;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $email;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientCredentials", mappedBy="patient", orphanRemoval=true)
+     */
+    private $patientCredentials;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgChallengeFriends", mappedBy="challenger", orphanRemoval=true)
+     */
+    private $rpgChallenges;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgChallengeFriends", mappedBy="challenged", orphanRemoval=true)
+     */
+    private $rpgChallenger;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $dateOfBirth;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientFriends", mappedBy="friendA", orphanRemoval=true)
+     */
+    private $friendsOf;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientFriends", mappedBy="friendB", orphanRemoval=true)
+     */
+    private $friendsToo;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientSettings", mappedBy="patient", orphanRemoval=true)
+     */
+    private $settings;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $gender;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $lastLoggedIn;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $loginStreak;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\PatientMembership", mappedBy="patient", cascade={"persist", "remove"})
+     */
+    private $membership;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgChallengeGlobalPatient", mappedBy="patient", orphanRemoval=true)
+     */
+    private $rpgChallengeGlobals;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\SiteNews", mappedBy="patient")
+     */
+    private $notifications;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PatientDevice", mappedBy="patient", orphanRemoval=true)
+     */
+    private $devices;
+
+    public function __construct()
     {
-        /**
-         * @ORM\Id
-         * @ORM\GeneratedValue(strategy="AUTO")
-         * @ORM\Column(type="integer")
-         */
-        private $id;
+        $this->fitStepsDailySummaries = new ArrayCollection();
+        $this->trackingDevices = new ArrayCollection();
+        $this->xp = new ArrayCollection();
+        $this->rewards = new ArrayCollection();
+        $this->patientCredentials = new ArrayCollection();
+        $this->rpgChallenges = new ArrayCollection();
+        $this->rpgChallenger = new ArrayCollection();
+        $this->friendsOf = new ArrayCollection();
+        $this->friendsToo = new ArrayCollection();
+        $this->settings = new ArrayCollection();
+        $this->rpgChallengeGlobals = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
+        $this->devices = new ArrayCollection();
+    }
 
-        /**
-         * @ORM\Column(type="string", length=180, unique=true)
-         */
-        private $uuid;
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
 
-        /**
-         * @ORM\Column(type="json")
-         */
-        private $roles = [];
+    public function setApiToken(string $apiToken): self
+    {
+        $this->apiToken = $apiToken;
 
-        /**
-         * @ORM\Column(type="string", length=255, nullable=true)
-         */
-        private $fname;
+        return $this;
+    }
 
-        /**
-         * @ORM\Column(type="string", length=255, nullable=true)
-         */
-        private $lname;
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-        /**
-         * @ORM\Column(type="date", nullable=true)
-         */
-        private $birthday;
+    public function getUuid(): ?string
+    {
+        return $this->uuid;
+    }
 
-        /**
-         * @ORM\Column(type="float", nullable=true)
-         */
-        private $height;
+    public function setUuid(string $uuid): self
+    {
+        $this->uuid = $uuid;
 
-        /**
-         * @ORM\Column(type="string", length=255, nullable=true)
-         */
-        private $email;
+        return $this;
+    }
 
-        /**
-         * @ORM\Column(type="string", length=6, nullable=true)
-         */
-        private $gender;
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
 
-        /**
-         * @ORM\Column(type="string", nullable=true)
-         */
-        private $timezone;
+    /**
+     * @see UserInterface
+     */
+    public function getPassword(): string
+    {
+        return (string)$this->password;
+    }
 
-        /**
-         * @ORM\Column(type="string", length=255, nullable=true)
-         */
-        private $avatar;
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
 
-        /**
-         * @ORM\Column(type="string", nullable=true)
-         */
-        private $password;
+        return $this;
+    }
 
-        /**
-         * @ORM\Column(type="integer", length=6, nullable=true)
-         */
-        private $stepGoal;
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
 
-        /**
-         * @ORM\Column(type="integer", length=4, nullable=true)
-         */
-        private $floorGoal;
+        return array_unique($roles);
+    }
 
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\BodyWeight", mappedBy="patient", orphanRemoval=true)
-         */
-        private $bodyWeights;
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
 
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\CountDailyStep", mappedBy="patient")
-         */
-        private $stepCount;
+        return $this;
+    }
 
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\CountDailyFloor", mappedBy="patient")
-         */
-        private $floorCount;
+    /**
+     * @see UserInterface
+     */
+    public function getSalt()
+    {
+        // not needed when using the "bcrypt" algorithm in security.yaml
+    }
 
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\ThirdPartyRelations", mappedBy="patient")
-         */
-        private $thirdPartyRelations;
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
+    {
+        return (string)$this->uuid;
+    }
 
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\BodyBmi", mappedBy="patient")
-         */
-        private $bodyBmi;
+    /**
+     * @return Collection|TrackingDevice[]
+     */
+    public function getTrackingDevices(): Collection
+    {
+        return $this->trackingDevices;
+    }
 
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\CountDailyDistance", mappedBy="patient")
-         */
-        private $distanceCount;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\CountDailyCalories", mappedBy="patient")
-         */
-        private $calorieCount;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\CountDailyElevation", mappedBy="patient")
-         */
-        private $elevationCount;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\NutritionInformation", mappedBy="patient")
-         */
-        private $nutritionInformation;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\TrackingDevice", mappedBy="patient")
-         */
-        private $trackingDevice;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\SleepEpisode", mappedBy="patient")
-         */
-        private $sleepEpisode;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\SportActivity", mappedBy="patient")
-         */
-        private $sportActivity;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\BodyFat", mappedBy="patient", orphanRemoval=true)
-         */
-        private $bodyFats;
-
-        /**
-         * @ORM\OneToMany(targetEntity="App\Entity\WaterIntake", mappedBy="patient", orphanRemoval=true)
-         */
-        private $waterIntakes;
-
-        public function __construct()
-        {
-            $this->bodyWeights = new ArrayCollection();
-            $this->stepCount = new ArrayCollection();
-            $this->floorCount = new ArrayCollection();
-            $this->bodyFats = new ArrayCollection();
-            $this->thirdPartyRelations = new ArrayCollection();
-            $this->bodyBmi = new ArrayCollection();
-            $this->distanceCount = new ArrayCollection();
-            $this->calorieCount = new ArrayCollection();
-            $this->elevationCount = new ArrayCollection();
-            $this->nutritionInformation = new ArrayCollection();
-            $this->sportActivity = new ArrayCollection();
-            $this->trackingDevice = new ArrayCollection();
-            $this->sleepEpisode = new ArrayCollection();
-            $this->waterIntakes = new ArrayCollection();
+    public function addTrackingDevice(TrackingDevice $trackingDevice): self
+    {
+        if (!$this->trackingDevices->contains($trackingDevice)) {
+            $this->trackingDevices[] = $trackingDevice;
+            $trackingDevice->setPatient($this);
         }
 
-        public function getId()
-        {
-            return $this->id;
-        }
+        return $this;
+    }
 
-        public function getFname(): ?string
-        {
-            return $this->fname;
-        }
-
-        public function setFname( ?string $fname ): self
-        {
-            $this->fname = $fname;
-
-            return $this;
-        }
-
-        public function getLname(): ?string
-        {
-            return $this->lname;
-        }
-
-        public function setLname( ?string $lname ): self
-        {
-            $this->lname = $lname;
-
-            return $this;
-        }
-
-        public function getBirthday(): ?\DateTimeInterface
-        {
-            return $this->birthday;
-        }
-
-        public function setBirthday( ?\DateTimeInterface $birthday ): self
-        {
-            $this->birthday = $birthday;
-
-            return $this;
-        }
-
-        public function getHeight(): ?float
-        {
-            return $this->height;
-        }
-
-        public function setHeight( ?float $height ): self
-        {
-            $this->height = $height;
-
-            return $this;
-        }
-
-        public function getEmail(): ?string
-        {
-            return $this->email;
-        }
-
-        public function setEmail( string $email ): self
-        {
-            $this->email = $email;
-
-            return $this;
-        }
-
-        public function getGender(): ?string
-        {
-            return $this->gender;
-        }
-
-        public function setGender( ?string $gender ): self
-        {
-            $this->gender = $gender;
-
-            return $this;
-        }
-
-        public function getStepGoal(): ?int
-        {
-            if ( is_null($this->stepGoal) ) {
-                $this->stepGoal = 10000;
+    public function removeTrackingDevice(TrackingDevice $trackingDevice): self
+    {
+        if ($this->trackingDevices->contains($trackingDevice)) {
+            $this->trackingDevices->removeElement($trackingDevice);
+            // set the owning side to null (unless already changed)
+            if ($trackingDevice->getPatient() === $this) {
+                $trackingDevice->setPatient(null);
             }
-            return $this->stepGoal;
         }
 
-        public function setStepGoal( ?int $stepGoal ): self
-        {
-            $this->stepGoal = $stepGoal;
+        return $this;
+    }
 
-            return $this;
+    /**
+     * @return Collection|FitStepsDailySummary[]
+     */
+    public function getFitStepsDailySummaries(): Collection
+    {
+        return $this->fitStepsDailySummaries;
+    }
+
+    public function addFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
+    {
+        if (!$this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
+            $this->fitStepsDailySummaries[] = $fitStepsDailySummary;
+            $fitStepsDailySummary->setPatient($this);
         }
 
-        public function getFloorGoal(): ?int
-        {
-            if ( is_null($this->floorGoal) ) {
-                $this->floorGoal = 16;
+        return $this;
+    }
+
+    public function removeFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
+    {
+        if ($this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
+            $this->fitStepsDailySummaries->removeElement($fitStepsDailySummary);
+            // set the owning side to null (unless already changed)
+            if ($fitStepsDailySummary->getPatient() === $this) {
+                $fitStepsDailySummary->setPatient(null);
             }
-            return $this->floorGoal;
         }
 
-        public function setFloorGoal( ?int $floorGoal ): self
-        {
-            $this->floorGoal = $floorGoal;
-
-            return $this;
-        }
-
-        public function getPassword(): ?string
-        {
-            return $this->password;
-        }
-
-        public function setPassword( string $password ): self
-        {
-            if ( array_key_exists("DATABASE_SALT", $_ENV) ) {
-                $dbSalt = $_ENV[ 'DATABASE_SALT' ];
-            } else {
-                $dbSalt = '$0m3 $4lt 1$ b3tt3r th4n n0n3, but y0u y0u r34lly $h0uld h4v3 4 DATABASE_SALT 3nv v4r14bl3';
-            }
-
-            $this->password = hash("sha256", $dbSalt . $password);
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|BodyWeight[]
-         */
-        public function getBodyWeights(): Collection
-        {
-            return $this->bodyWeights;
-        }
-
-        public function addBodyWeight( BodyWeight $bodyWeight ): self
-        {
-            if ( !$this->bodyWeights->contains($bodyWeight) ) {
-                $this->bodyWeights[] = $bodyWeight;
-                $bodyWeight->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeBodyWeight( BodyWeight $bodyWeight ): self
-        {
-            if ( $this->bodyWeights->contains($bodyWeight) ) {
-                $this->bodyWeights->removeElement($bodyWeight);
-                // set the owning side to null (unless already changed)
-                if ( $bodyWeight->getPatient() === $this ) {
-                    $bodyWeight->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|BodyFat[]
-         */
-        public function getBodyFats(): Collection
-        {
-            return $this->bodyFats;
-        }
-
-        public function addBodyFat( BodyFat $bodyFat ): self
-        {
-            if ( !$this->bodyFats->contains($bodyFat) ) {
-                $this->bodyFats[] = $bodyFat;
-                $bodyFat->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeBodyFat( BodyFat $bodyFat ): self
-        {
-            if ( $this->bodyFats->contains($bodyFat) ) {
-                $this->bodyFats->removeElement($bodyFat);
-                // set the owning side to null (unless already changed)
-                if ( $bodyFat->getPatient() === $this ) {
-                    $bodyFat->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|CountDailyStep[]
-         */
-        public function getStepCount(): Collection
-        {
-            return $this->stepCount;
-        }
-
-        public function addStepCount( CountDailyStep $stepCount ): self
-        {
-            if ( !$this->stepCount->contains($stepCount) ) {
-                $this->stepCount[] = $stepCount;
-                $stepCount->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeStepCount( CountDailyStep $stepCount ): self
-        {
-            if ( $this->stepCount->contains($stepCount) ) {
-                $this->stepCount->removeElement($stepCount);
-                // set the owning side to null (unless already changed)
-                if ( $stepCount->getPatient() === $this ) {
-                    $stepCount->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|CountDailyFloor[]
-         */
-        public function getFloorCount(): Collection
-        {
-            return $this->floorCount;
-        }
-
-        public function addFloorCount( CountDailyFloor $floorCount ): self
-        {
-            if ( !$this->floorCount->contains($floorCount) ) {
-                $this->floorCount[] = $floorCount;
-                $floorCount->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeFloorCount( CountDailyFloor $floorCount ): self
-        {
-            if ( $this->floorCount->contains($floorCount) ) {
-                $this->floorCount->removeElement($floorCount);
-                // set the owning side to null (unless already changed)
-                if ( $floorCount->getPatient() === $this ) {
-                    $floorCount->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|ThirdPartyRelations[]
-         */
-        public function getThirdPartyRelations(): Collection
-        {
-            return $this->thirdPartyRelations;
-        }
-
-        public function addThirdPartyRelation( ThirdPartyRelations $thirdPartyRelation ): self
-        {
-            if ( !$this->thirdPartyRelations->contains($thirdPartyRelation) ) {
-                $this->thirdPartyRelations[] = $thirdPartyRelation;
-                $thirdPartyRelation->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeThirdPartyRelation( ThirdPartyRelations $thirdPartyRelation ): self
-        {
-            if ( $this->thirdPartyRelations->contains($thirdPartyRelation) ) {
-                $this->thirdPartyRelations->removeElement($thirdPartyRelation);
-                // set the owning side to null (unless already changed)
-                if ( $thirdPartyRelation->getPatient() === $this ) {
-                    $thirdPartyRelation->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|BodyBmi[]
-         */
-        public function getBodyBmi(): Collection
-        {
-            return $this->bodyBmi;
-        }
-
-        public function addBodyBmi( BodyBmi $bodyBmi ): self
-        {
-            if ( !$this->bodyBmi->contains($bodyBmi) ) {
-                $this->bodyBmi[] = $bodyBmi;
-                $bodyBmi->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeBodyBmi( BodyBmi $bodyBmi ): self
-        {
-            if ( $this->bodyBmi->contains($bodyBmi) ) {
-                $this->bodyBmi->removeElement($bodyBmi);
-                // set the owning side to null (unless already changed)
-                if ( $bodyBmi->getPatient() === $this ) {
-                    $bodyBmi->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|CountDailyDistance[]
-         */
-        public function getDistanceCount(): Collection
-        {
-            return $this->distanceCount;
-        }
-
-        public function addDistanceCount( CountDailyDistance $distanceCount ): self
-        {
-            if ( !$this->distanceCount->contains($distanceCount) ) {
-                $this->distanceCount[] = $distanceCount;
-                $distanceCount->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeDistanceCount( CountDailyDistance $distanceCount ): self
-        {
-            if ( $this->distanceCount->contains($distanceCount) ) {
-                $this->distanceCount->removeElement($distanceCount);
-                // set the owning side to null (unless already changed)
-                if ( $distanceCount->getPatient() === $this ) {
-                    $distanceCount->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|CountDailyCalories[]
-         */
-        public function getCalorieCount(): Collection
-        {
-            return $this->calorieCount;
-        }
-
-        public function addCalorieCount( CountDailyCalories $calorieCount ): self
-        {
-            if ( !$this->calorieCount->contains($calorieCount) ) {
-                $this->calorieCount[] = $calorieCount;
-                $calorieCount->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeCalorieCount( CountDailyCalories $calorieCount ): self
-        {
-            if ( $this->calorieCount->contains($calorieCount) ) {
-                $this->calorieCount->removeElement($calorieCount);
-                // set the owning side to null (unless already changed)
-                if ( $calorieCount->getPatient() === $this ) {
-                    $calorieCount->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|CountDailyElevation[]
-         */
-        public function getElevationCount(): Collection
-        {
-            return $this->elevationCount;
-        }
-
-        public function addElevationCount( CountDailyElevation $elevationCount ): self
-        {
-            if ( !$this->elevationCount->contains($elevationCount) ) {
-                $this->elevationCount[] = $elevationCount;
-                $elevationCount->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeElevationCount( CountDailyElevation $elevationCount ): self
-        {
-            if ( $this->elevationCount->contains($elevationCount) ) {
-                $this->elevationCount->removeElement($elevationCount);
-                // set the owning side to null (unless already changed)
-                if ( $elevationCount->getPatient() === $this ) {
-                    $elevationCount->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|NutritionInformation[]
-         */
-        public function getNutritionInformation(): Collection
-        {
-            return $this->nutritionInformation;
-        }
-
-        public function addNutritionInformation( NutritionInformation $nutritionInformation ): self
-        {
-            if ( !$this->nutritionInformation->contains($nutritionInformation) ) {
-                $this->nutritionInformation[] = $nutritionInformation;
-                $nutritionInformation->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeNutritionInformation( NutritionInformation $nutritionInformation ): self
-        {
-            if ( $this->nutritionInformation->contains($nutritionInformation) ) {
-                $this->nutritionInformation->removeElement($nutritionInformation);
-                // set the owning side to null (unless already changed)
-                if ( $nutritionInformation->getPatient() === $this ) {
-                    $nutritionInformation->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|SportActivity[]
-         */
-        public function getSportActivity(): Collection
-        {
-            return $this->sportActivity;
-        }
-
-        public function addSportActivity( SportActivity $sportActivity ): self
-        {
-            if ( !$this->sportActivity->contains($sportActivity) ) {
-                $this->sportActivity[] = $sportActivity;
-                $sportActivity->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeSportActivity( SportActivity $sportActivity ): self
-        {
-            if ( $this->sportActivity->contains($sportActivity) ) {
-                $this->sportActivity->removeElement($sportActivity);
-                // set the owning side to null (unless already changed)
-                if ( $sportActivity->getPatient() === $this ) {
-                    $sportActivity->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @return Collection|TrackingDevice[]
-         */
-        public function getTrackingDevice(): Collection
-        {
-            return $this->trackingDevice;
-        }
-
-        public function addTrackingDevice( TrackingDevice $trackingDevice ): self
-        {
-            if ( !$this->trackingDevice->contains($trackingDevice) ) {
-                $this->trackingDevice[] = $trackingDevice;
-                $trackingDevice->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeTrackingDevice( TrackingDevice $trackingDevice ): self
-        {
-            if ( $this->trackingDevice->contains($trackingDevice) ) {
-                $this->trackingDevice->removeElement($trackingDevice);
-                // set the owning side to null (unless already changed)
-                if ( $trackingDevice->getPatient() === $this ) {
-                    $trackingDevice->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        public function getTimezone(): ?string
-        {
-            return $this->timezone;
-        }
-
-        public function setTimezone( ?string $timezone ): self
-        {
-            $this->timezone = $timezone;
-
-            return $this;
-        }
-
-        public function getAvatar(): ?string
-        {
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(?string $firstName): self
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getSurName(): ?string
+    {
+        return $this->surName;
+    }
+
+    public function setSurName(?string $surName): self
+    {
+        $this->surName = $surName;
+
+        return $this;
+    }
+
+    public function getAvatar(): ?string
+    {
+        if (is_null($this->avatar)) {
+            $gravatarApi = new GravatarApi();
+            return $return['avatar'] = $gravatarApi->getUrl($this->email, 128, 'g', 'identicon');
+        } else {
             return $this->avatar;
         }
+    }
 
-        public function setAvatar( ?string $avatar ): self
-        {
-            $this->avatar = $avatar;
+    public function setAvatar(?string $avatar): self
+    {
+        $this->avatar = $avatar;
 
-            return $this;
+        return $this;
+    }
+
+    public function getUiSettings(): ?array
+    {
+        return $this->uiSettings;
+    }
+
+    public function setUiSettings(?array $uiSettings): self
+    {
+        $this->uiSettings = $uiSettings;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgXP[]
+     */
+    public function getXp(): Collection
+    {
+        return $this->xp;
+    }
+
+    public function addXp(RpgXP $xp): self
+    {
+        if (!$this->xp->contains($xp)) {
+            $this->xp[] = $xp;
+            $xp->setPatient($this);
         }
 
-        /**
-         * @return Collection|SleepEpisode[]
-         */
-        public function getSleepEpisode(): Collection
-        {
-            return $this->sleepEpisode;
-        }
+        return $this;
+    }
 
-        public function addSleepEpisode( SleepEpisode $sleepEpisode ): self
-        {
-            if ( !$this->sleepEpisode->contains($sleepEpisode) ) {
-                $this->sleepEpisode[] = $sleepEpisode;
-                $sleepEpisode->setPatient($this);
+    public function removeXp(RpgXP $xp): self
+    {
+        if ($this->xp->contains($xp)) {
+            $this->xp->removeElement($xp);
+            // set the owning side to null (unless already changed)
+            if ($xp->getPatient() === $this) {
+                $xp->setPatient(null);
             }
-
-            return $this;
         }
 
-        public function removeSleepEpisode( SleepEpisode $sleepEpisode ): self
-        {
-            if ( $this->sleepEpisode->contains($sleepEpisode) ) {
-                $this->sleepEpisode->removeElement($sleepEpisode);
-                // set the owning side to null (unless already changed)
-                if ( $sleepEpisode->getPatient() === $this ) {
-                    $sleepEpisode->setPatient(NULL);
-                }
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgRewardsAwarded[]
+     */
+    public function getRewards(): Collection
+    {
+        return $this->rewards;
+    }
+
+    public function addReward(RpgRewardsAwarded $reward): self
+    {
+        if (!$this->rewards->contains($reward)) {
+            $this->rewards[] = $reward;
+            $reward->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReward(RpgRewardsAwarded $reward): self
+    {
+        if ($this->rewards->contains($reward)) {
+            $this->rewards->removeElement($reward);
+            // set the owning side to null (unless already changed)
+            if ($reward->getPatient() === $this) {
+                $reward->setPatient(null);
             }
-
-            return $this;
         }
 
-        /**
-         * @return Collection|WaterIntake[]
-         */
-        public function getWaterIntakes(): Collection
-        {
-            return $this->waterIntakes;
-        }
+        return $this;
+    }
 
-        public function addWaterIntake( WaterIntake $waterIntake ): self
-        {
-            if ( !$this->waterIntakes->contains($waterIntake) ) {
-                $this->waterIntakes[] = $waterIntake;
-                $waterIntake->setPatient($this);
-            }
-
-            return $this;
-        }
-
-        public function removeWaterIntake( WaterIntake $waterIntake ): self
-        {
-            if ( $this->waterIntakes->contains($waterIntake) ) {
-                $this->waterIntakes->removeElement($waterIntake);
-                // set the owning side to null (unless already changed)
-                if ( $waterIntake->getPatient() === $this ) {
-                    $waterIntake->setPatient(NULL);
-                }
-            }
-
-            return $this;
-        }
-
-        /**
-         * @ORM\Column(type="string", unique=true)
-         */
-        private $apiToken;
-
-        public function getApiToken(): ?string
-        {
-            return $this->apiToken;
-        }
-
-        public function setApiToken( string $apiToken ): self
-        {
-            $this->apiToken = $apiToken;
-
-            return $this;
-        }
-
-        public function getUuid(): ?string
-        {
-            return $this->uuid;
-        }
-
-        public function setUuid( string $uuid ): self
-        {
-            $this->uuid = $uuid;
-
-            return $this;
-        }
-
-        /**
-         * Returns the username used to authenticate the user.
-         *
-         * @return string The username
-         */
-        public function getUsername(): string
-        {
-            return (string)$this->uuid;
-        }
-
-        /**
-         * Returns the roles granted to the user.
-         *
-         *     public function getRoles()
-         *     {
-         *         return ['ROLE_USER'];
-         *     }
-         *
-         * Alternatively, the roles might be stored on a ``roles`` property,
-         * and populated in any number of different ways when the user object
-         * is created.
-         *
-         * @return (Role|string)[] The user roles
-         */
-        public function getRoles(): array
-        {
-            $roles = $this->roles;
-            // guarantee every user at least has ROLE_USER
-            $roles[] = 'ROLE_USER';
-
-            return array_unique($roles);
-        }
-
-        public function setRoles( array $roles ): self
-        {
-            $this->roles = $roles;
-
-            return $this;
-        }
-
-        /**
-         * Returns the salt that was originally used to encode the password.
-         *
-         * This can return null if the password was not encoded using a salt.
-         *
-         * @return string|null The salt
-         */
-        public function getSalt()
-        {
-            // TODO: Implement getSalt() method.
-        }
-
-        /**
-         * Removes sensitive data from the user.
-         *
-         * This is important if, at any given point, sensitive information like
-         * the plain-text password is stored on this object.
-         */
-        public function eraseCredentials()
-        {
-            // TODO: Implement eraseCredentials() method.
+    public function getRpgFactor(): ?float
+    {
+        if (is_null($this->rpgFactor)) {
+            return 1;
+        } else {
+            return $this->rpgFactor;
         }
     }
+
+    public function setRpgFactor(?float $rpgFactor): self
+    {
+        $this->rpgFactor = $rpgFactor;
+
+        return $this;
+    }
+
+    public function getXpTotal()
+    {
+        $totalXp = 0;
+        /** @var RpgXP $value */
+        foreach ($this->xp as $value) {
+            $totalXp = $totalXp + $value->getValue();
+        }
+        return $totalXp;
+    }
+
+    public function getRpgLevel()
+    {
+        $totalXp = $this->getXpTotal();
+        return intval(explode(".", ( $totalXp / 100 ))[0]);
+    }
+
+    public function getFirstRun(): ?bool
+    {
+        if (is_null($this->firstRun) || $this->firstRun) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function setFirstRun(?bool $firstRun): self
+    {
+        $this->firstRun = $firstRun;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PatientCredentials[]
+     */
+    public function getPatientCredentials(): Collection
+    {
+        return $this->patientCredentials;
+    }
+
+    public function addPatientCredential(PatientCredentials $patientCredential): self
+    {
+        if (!$this->patientCredentials->contains($patientCredential)) {
+            $this->patientCredentials[] = $patientCredential;
+            $patientCredential->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removePatientCredential(PatientCredentials $patientCredential): self
+    {
+        if ($this->patientCredentials->contains($patientCredential)) {
+            $this->patientCredentials->removeElement($patientCredential);
+            // set the owning side to null (unless already changed)
+            if ($patientCredential->getPatient() === $this) {
+                $patientCredential->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgChallengeFriends[]
+     */
+    public function getRpgChallenges(): Collection
+    {
+        return $this->rpgChallenges;
+    }
+
+    public function addRpgChallenge(RpgChallengeFriends $rpgChallenge): self
+    {
+        if (!$this->rpgChallenges->contains($rpgChallenge)) {
+            $this->rpgChallenges[] = $rpgChallenge;
+            $rpgChallenge->setChallenger($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpgChallenge(RpgChallengeFriends $rpgChallenge): self
+    {
+        if ($this->rpgChallenges->contains($rpgChallenge)) {
+            $this->rpgChallenges->removeElement($rpgChallenge);
+            // set the owning side to null (unless already changed)
+            if ($rpgChallenge->getChallenger() === $this) {
+                $rpgChallenge->setChallenger(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgChallengeFriends[]
+     */
+    public function getRpgChallenger(): Collection
+    {
+        return $this->rpgChallenger;
+    }
+
+    public function addRpgChallenger(RpgChallengeFriends $rpgChallenger): self
+    {
+        if (!$this->rpgChallenger->contains($rpgChallenger)) {
+            $this->rpgChallenger[] = $rpgChallenger;
+            $rpgChallenger->setChallenged($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpgChallenger(RpgChallengeFriends $rpgChallenger): self
+    {
+        if ($this->rpgChallenger->contains($rpgChallenger)) {
+            $this->rpgChallenger->removeElement($rpgChallenger);
+            // set the owning side to null (unless already changed)
+            if ($rpgChallenger->getChallenged() === $this) {
+                $rpgChallenger->setChallenged(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDateOfBirth(): ?\DateTimeInterface
+    {
+        return $this->dateOfBirth;
+    }
+
+    public function setDateOfBirth(?\DateTimeInterface $dateOfBirth): self
+    {
+        $this->dateOfBirth = $dateOfBirth;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PatientFriends[]
+     */
+    public function getFriendsOf(): Collection
+    {
+        return $this->friendsOf;
+    }
+
+    public function addFriendsOf(PatientFriends $friendsOf): self
+    {
+        if (!$this->friendsOf->contains($friendsOf)) {
+            $this->friendsOf[] = $friendsOf;
+            $friendsOf->setFriendA($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendsOf(PatientFriends $friendsOf): self
+    {
+        if ($this->friendsOf->contains($friendsOf)) {
+            $this->friendsOf->removeElement($friendsOf);
+            // set the owning side to null (unless already changed)
+            if ($friendsOf->getFriendA() === $this) {
+                $friendsOf->setFriendA(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PatientFriends[]
+     */
+    public function getFriendsToo(): Collection
+    {
+        return $this->friendsToo;
+    }
+
+    public function addFriendsToo(PatientFriends $friendsToo): self
+    {
+        if (!$this->friendsToo->contains($friendsToo)) {
+            $this->friendsToo[] = $friendsToo;
+            $friendsToo->setFriendB($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendsToo(PatientFriends $friendsToo): self
+    {
+        if ($this->friendsToo->contains($friendsToo)) {
+            $this->friendsToo->removeElement($friendsToo);
+            // set the owning side to null (unless already changed)
+            if ($friendsToo->getFriendB() === $this) {
+                $friendsToo->setFriendB(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Patient $friend
+     *
+     * @return bool
+     */
+    public function isFriendOf($friend): bool {
+
+        return true;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFriendsWith(): array
+    {
+        $allFriends = [];
+        /**
+         * @var PatientFriends $friendToo
+         */
+        foreach ($this->friendsToo as $friendToo) {
+            if (!is_null($friendToo->getAccepted()) && $friendToo->getAccepted()) {
+                $allFriends[] = [
+                    "id" => $friendToo->getFriendA()->getId(),
+                    "name" => $friendToo->getFriendA()->getFirstName(),
+                    "uuid" => $friendToo->getFriendA()->getUuid(),
+                    "avatar" => $friendToo->getFriendA()->getAvatar(),
+                ];
+            }
+        }
+
+        /**
+         * @var PatientFriends $friendToo
+         */
+        foreach ($this->friendsOf as $friendOf) {
+            if (!is_null($friendOf->getAccepted()) && $friendOf->getAccepted()) {
+                $allFriends[] = [
+                    "id" => $friendOf->getFriendB()->getId(),
+                    "name" => $friendOf->getFriendB()->getFirstName(),
+                    "uuid" => $friendOf->getFriendB()->getUuid(),
+                    "avatar" => $friendOf->getFriendB()->getAvatar(),
+                ];
+            }
+        }
+
+        return $allFriends;
+    }
+
+    /**
+     * @return Collection|PatientSettings[]
+     */
+    public function getSettings(): Collection
+    {
+        return $this->settings;
+    }
+
+    public function addSetting(PatientSettings $setting): self
+    {
+        if (!$this->settings->contains($setting)) {
+            $this->settings[] = $setting;
+            $setting->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSetting(PatientSettings $setting): self
+    {
+        if ($this->settings->contains($setting)) {
+            $this->settings->removeElement($setting);
+            // set the owning side to null (unless already changed)
+            if ($setting->getPatient() === $this) {
+                $setting->setPatient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?string $gender): self
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function getPronounThey()
+    {
+        switch ($this->gender) {
+            case "male":
+                return "he";
+            case "female":
+                return "she";
+            default:
+                return "they";
+        }
+    }
+
+    public function getPronounThem()
+    {
+        switch ($this->gender) {
+            case "male":
+                return "him";
+            case "female":
+                return "her";
+            default:
+                return "them";
+        }
+    }
+
+    public function getPronounTheir()
+    {
+        switch ($this->gender) {
+            case "male":
+                return "his";
+            case "female":
+                return "her";
+            default:
+                return "their";
+        }
+    }
+
+    public function getLastLoggedIn(): ?\DateTimeInterface
+    {
+        return $this->lastLoggedIn;
+    }
+
+    public function setLastLoggedIn(?\DateTimeInterface $lastLoggedIn): self
+    {
+        $this->lastLoggedIn = $lastLoggedIn;
+
+        return $this;
+    }
+
+    public function getLoginStreak(): ?int
+    {
+        return $this->loginStreak;
+    }
+
+    public function setLoginStreak(?int $loginStreak): self
+    {
+        $this->loginStreak = $loginStreak;
+
+        return $this;
+    }
+
+    public function getMembership(): ?PatientMembership
+    {
+        return $this->membership;
+    }
+
+    public function setMembership(?PatientMembership $membership): self
+    {
+        $this->membership = $membership;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newPatient = $membership === null ? null : $this;
+        if ($newPatient !== $membership->getPatient()) {
+            $membership->setPatient($newPatient);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgChallengeGlobalPatient[]
+     */
+    public function getRpgChallengeGlobals(): Collection
+    {
+        return $this->rpgChallengeGlobals;
+    }
+
+    public function addRpgChallengeGlobal(RpgChallengeGlobalPatient $rpgChallengeGlobal): self
+    {
+        if (!$this->rpgChallengeGlobals->contains($rpgChallengeGlobal)) {
+            $this->rpgChallengeGlobals[] = $rpgChallengeGlobal;
+            $rpgChallengeGlobal->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRpgChallengeGlobal(RpgChallengeGlobalPatient $rpgChallengeGlobal): self
+    {
+        if ($this->rpgChallengeGlobals->contains($rpgChallengeGlobal)) {
+            $this->rpgChallengeGlobals->removeElement($rpgChallengeGlobal);
+            // set the owning side to null (unless already changed)
+            if ($rpgChallengeGlobal->getPatient() === $this) {
+                $rpgChallengeGlobal->setPatient(NULL);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|SiteNews[]
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(SiteNews $notification): self
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications[] = $notification;
+            $notification->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(SiteNews $notification): self
+    {
+        if ($this->notifications->contains($notification)) {
+            $this->notifications->removeElement($notification);
+            // set the owning side to null (unless already changed)
+            if ($notification->getPatient() === $this) {
+                $notification->setPatient(NULL);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PatientDevice[]
+     */
+    public function getDevices(): Collection
+    {
+        return $this->devices;
+    }
+
+    public function addDevice(PatientDevice $device): self
+    {
+        if (!$this->devices->contains($device)) {
+            $this->devices[] = $device;
+            $device->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDevice(PatientDevice $device): self
+    {
+        if ($this->devices->contains($device)) {
+            $this->devices->removeElement($device);
+            // set the owning side to null (unless already changed)
+            if ($device->getPatient() === $this) {
+                $device->setPatient(NULL);
+            }
+        }
+
+        return $this;
+    }
+}

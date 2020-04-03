@@ -1,29 +1,12 @@
 <?php
 
-/*
-* This file is part of the Storage module in NxFIFTEEN Core.
-*
-* Copyright (c) 2019. Stuart McCulloch Anderson
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*
-* @package     Store
-* @version     0.0.0.x
-* @since       0.0.0.1
-* @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
-* @link        https://nxfifteen.me.uk NxFIFTEEN
-* @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
-* @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
-* @copyright   2019 Stuart McCulloch Anderson
-* @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
-*/
-
 namespace App\Repository;
 
 use App\Entity\Exercise;
+use DateInterval;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
  * @method Exercise|null find($id, $lockMode = null, $lockVersion = null)
@@ -33,37 +16,41 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class ExerciseRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Exercise::class);
     }
 
-    // /**
-    //  * @return Exercise[] Returns an array of Exercise objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param String $patientId
+     * @param String $date
+     * @param int    $lastDays
+     *
+     * @return mixed
+     */
+    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $dateObject = new DateTime($date);
 
-    /*
-    public function findOneBySomeField($value): ?Exercise
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
+        try {
+            $interval = new DateInterval('P' . $lastDays . 'D');
+            $dateObject->sub($interval);
+            $today = $dateObject->format("Y-m-d") . " 00:00:00";
+        } catch (\Exception $e) {
+            $today = $date . " 00:00:00";
+        }
+        $todayEnd = $date . " 23:59:00";
+
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('c.dateTimeStart >= :val')
+            ->setParameter('val', $today)
+            ->andWhere('c.dateTimeStart <= :valEnd')
+            ->setParameter('valEnd', $todayEnd)
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.dateTimeStart', 'ASC')
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
     }
-    */
 }

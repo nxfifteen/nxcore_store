@@ -1,26 +1,35 @@
 security:
   encoders:
     App\Entity\Patient:
-      cost: 12
-      algorithm: bcrypt
+      algorithm: auto
 
   # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
   providers:
-    app_user_key_provider:
+    # used to reload user from session & other features (e.g. switch_user)
+    app_user_provider:
       entity:
         class: App\Entity\Patient
-        property: apiToken
-
+        property: uuid
   firewalls:
-    dev:
-      pattern: ^/(_(profiler|wdt)|css|images|js|api)/
-      security: false
-
+#    dev:
+#      pattern: ^/(_(profiler|wdt)|css|images|js)/
+#      security: false
     main:
       anonymous: ~
+      logout: ~
+
       guard:
         authenticators:
         - App\Security\TokenAuthenticator
 
+      # activate different ways to authenticate
+      # https://symfony.com/doc/current/security.html#firewalls-authentication
+
+      # https://symfony.com/doc/current/security/impersonating_user.html
+      # switch_user: true
+
+  # Easy way to control access for large sections of your site
+  # Note: Only the *first* access control that matches will be used
   access_control:
-    - { path: ^/json, roles: ROLE_USER }
+  # - { path: ^/json, roles: ROLE_USER }
+  # - { path: ^/profile, roles: ROLE_USER }

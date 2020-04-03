@@ -1,28 +1,10 @@
 <?php
 
-/*
-* This file is part of the Storage module in NxFIFTEEN Core.
-*
-* Copyright (c) 2019. Stuart McCulloch Anderson
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*
-* @package     Store
-* @version     0.0.0.x
-* @since       0.0.0.1
-* @author      Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
-* @link        https://nxfifteen.me.uk NxFIFTEEN
-* @link        https://git.nxfifteen.rocks/nx-health NxFIFTEEN Core
-* @link        https://git.nxfifteen.rocks/nx-health/store NxFIFTEEN Core Storage
-* @copyright   2019 Stuart McCulloch Anderson
-* @license     https://license.nxfifteen.rocks/mit/2015-2019/ MIT
-*/
-
 namespace App\Controller;
 
 use App\Entity\ApiAccessLog;
 use App\Entity\Patient;
+use App\Entity\PatientSettings;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -30,20 +12,33 @@ class LastApiAccessController extends AbstractController
 {
 
     /**
-     * @Route("/json/{id}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
-     * @param String $id A users UUID
-     * @param String $service The Service ID requested
+     * @Route("/help/last_upload", name="get_endpoint_last_help")
+     */
+    public function index_help()
+    {
+        return $this->render('last_api_access/index.html.twig', [
+            'controller_name' => 'LastApiAccessController',
+        ]);
+    }
+
+    /**
+     * @Route("/json/{uuid}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
+     * @param String $uuid     A users UUID
+     * @param String $service  The Service ID requested
      * @param String $endpoint The endpoint name
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function index(String $id, String $service, String $endpoint)
+    public function index(String $uuid, String $service, String $endpoint)
     {
+        $this->hasAccess($uuid);
+
         $return = [];
 
         /** @var Patient $patient */
         $patient = $this->getDoctrine()
             ->getRepository(Patient::class)
-            ->findByUuid($id);
+            ->findOneBy(['uuid' => $uuid]);
 
         if (!$patient) {
             $return['status'] = "error";
@@ -60,9 +55,22 @@ class LastApiAccessController extends AbstractController
             ->findLastAccess($patient, $service, $endpoint);
 
         if (!$apiAccessLog) {
+            /** @var PatientSettings $dbSettings */
+            $dbSettings = $this->getDoctrine()
+                ->getRepository(PatientSettings::class)
+                ->findOneBy(['patient' => $patient, 'service' => $service, 'name' => 'from']);
+            if ($dbSettings) {
+                $return['status'] = "warning";
+                $return['code'] = "201";
+                $return['message'] = "From birth";
+                $return['payload'] = $dbSettings->getValue()[0];
+
+                return $this->json($return);
+            }
+
             $return['status'] = "warning";
             $return['code'] = "201";
-            $return['message'] = "No last access log for Service/EndPoint combination";
+            $return['message'] = "Fallback date";
             $return['payload'] = "2000-01-01 00:00:00.000";
 
             return $this->json($return);
@@ -75,4 +83,22 @@ class LastApiAccessController extends AbstractController
 
         return $this->json($return);
     }
+
+    /**
+     * @param String $uuid
+     *
+     * @throws \LogicException If the Security component is not available
+     */
+    private function hasAccess(String $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+
+        /** @var \App\Entity\Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
+
 }

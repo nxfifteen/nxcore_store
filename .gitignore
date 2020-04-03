@@ -1,9 +1,15 @@
 
 ###> symfony/framework-bundle ###
-/.env
+/.env.local
+/.env.local.php
+/.env.*.local
 /public/bundles/
+/assets/images/avatars/*.jpg
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
-/.gtm/
-/src/Plugins/*/
+
+/.idea/
+/bin/test/
+
+/src/Controller/DummyController.php

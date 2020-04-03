@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\WorkoutMuscleRelation;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
+
+/**
+ * @method WorkoutMuscleRelation|null find($id, $lockMode = NULL, $lockVersion = NULL)
+ * @method WorkoutMuscleRelation|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method WorkoutMuscleRelation[]    findAll()
+ * @method WorkoutMuscleRelation[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ */
+class WorkoutMuscleRelationRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, WorkoutMuscleRelation::class);
+    }
+
+    // /**
+    //  * @return WorkoutMuscleRelation[] Returns an array of WorkoutMuscleRelation objects
+    //  */
+    /*
+    public function findByExampleField($value)
+    {
+        return $this->createQueryBuilder('w')
+            ->andWhere('w.exampleField = :val')
+            ->setParameter('val', $value)
+            ->orderBy('w.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    */
+
+    /*
+    public function findOneBySomeField($value): ?WorkoutMuscleRelation
+    {
+        return $this->createQueryBuilder('w')
+            ->andWhere('w.exampleField = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+    */
+}
