@@ -12,7 +12,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20200402162256 extends AbstractMigration
+final class Version20200403213909 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -33,7 +33,7 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE contribution_license CHANGE link link VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE exercise CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL, CHANGE steps steps INT DEFAULT NULL');
         $this->addSql('ALTER TABLE exercise_summary CHANGE altitude_gain altitude_gain DOUBLE PRECISION DEFAULT NULL, CHANGE altitude_loss altitude_loss DOUBLE PRECISION DEFAULT NULL, CHANGE altitude_max altitude_max DOUBLE PRECISION DEFAULT NULL, CHANGE altitude_min altitude_min DOUBLE PRECISION DEFAULT NULL, CHANGE cadence_max cadence_max DOUBLE PRECISION DEFAULT NULL, CHANGE cadence_mean cadence_mean DOUBLE PRECISION DEFAULT NULL, CHANGE cadence_min cadence_min DOUBLE PRECISION DEFAULT NULL, CHANGE calorie calorie DOUBLE PRECISION DEFAULT NULL, CHANGE distance_incline distance_incline DOUBLE PRECISION DEFAULT NULL, CHANGE distance_decline distance_decline DOUBLE PRECISION DEFAULT NULL, CHANGE distance distance DOUBLE PRECISION DEFAULT NULL, CHANGE speed_max speed_max DOUBLE PRECISION DEFAULT NULL, CHANGE speed_mean speed_mean DOUBLE PRECISION DEFAULT NULL, CHANGE heart_rate_max heart_rate_max DOUBLE PRECISION DEFAULT NULL, CHANGE heart_rate_mean heart_rate_mean DOUBLE PRECISION DEFAULT NULL, CHANGE heart_rate_min heart_rate_min DOUBLE PRECISION DEFAULT NULL');
-        $this->addSql('ALTER TABLE exercise_type ADD met DOUBLE PRECISION DEFAULT NULL, CHANGE tag tag VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE exercise_type CHANGE tag tag VARCHAR(255) DEFAULT NULL, CHANGE met met DOUBLE PRECISION DEFAULT NULL');
         $this->addSql('ALTER TABLE fit_calories_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE fit_distance_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE fit_floors_intra_day CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL');
@@ -60,21 +60,10 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE tracking_device CHANGE name name VARCHAR(150) DEFAULT NULL, CHANGE comment comment VARCHAR(200) DEFAULT NULL, CHANGE battery battery INT DEFAULT NULL, CHANGE last_synced last_synced DATETIME DEFAULT NULL, CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL, CHANGE type type VARCHAR(150) DEFAULT NULL, CHANGE manufacturer manufacturer VARCHAR(255) DEFAULT NULL, CHANGE model model VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE uploaded_file CHANGE exercise_id exercise_id INT DEFAULT NULL, CHANGE type type VARCHAR(255) DEFAULT \'url\' NOT NULL');
         $this->addSql('ALTER TABLE workout_exercise CHANGE equipment_id equipment_id INT DEFAULT NULL, CHANGE license_id license_id INT DEFAULT NULL');
-        $this->addSql('INSERT INTO workout_muscle VALUES(1, \'Triceps Brochii\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(2, \'Anterior Deltoid\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(3, \'Pectoralis Major\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(4, \'Pectus Abdominis\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(5, \'Biceps Femoris\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(6, \'Gastrocnemius\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(7, \'Gluteus Maximus\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(8, \'Latissimus Dorsi\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(9, \'Soleus\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(10, \'Trapezius\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(11, \'Biceps Brochii\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(12, \'Brachialis\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(13, \'Obliquus Externus Abdominis\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(14, \'Quadriceps Femoris\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(15, \'Serratus Anterior\', 1)');
+        $this->addSql('INSERT INTO part_of_day VALUES(1, \'morning\')');
+        $this->addSql('INSERT INTO part_of_day VALUES(2, \'afternoon\')');
+        $this->addSql('INSERT INTO part_of_day VALUES(3, \'evening\')');
+        $this->addSql('INSERT INTO part_of_day VALUES(4, \'night\')');
     }
 
     public function down(Schema $schema) : void
@@ -91,7 +80,7 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE contribution_license CHANGE link link VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE exercise CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE steps steps INT DEFAULT NULL');
         $this->addSql('ALTER TABLE exercise_summary CHANGE altitude_gain altitude_gain DOUBLE PRECISION DEFAULT \'NULL\', CHANGE altitude_loss altitude_loss DOUBLE PRECISION DEFAULT \'NULL\', CHANGE altitude_max altitude_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE altitude_min altitude_min DOUBLE PRECISION DEFAULT \'NULL\', CHANGE cadence_max cadence_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE cadence_mean cadence_mean DOUBLE PRECISION DEFAULT \'NULL\', CHANGE cadence_min cadence_min DOUBLE PRECISION DEFAULT \'NULL\', CHANGE calorie calorie DOUBLE PRECISION DEFAULT \'NULL\', CHANGE distance_incline distance_incline DOUBLE PRECISION DEFAULT \'NULL\', CHANGE distance_decline distance_decline DOUBLE PRECISION DEFAULT \'NULL\', CHANGE distance distance DOUBLE PRECISION DEFAULT \'NULL\', CHANGE speed_max speed_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE speed_mean speed_mean DOUBLE PRECISION DEFAULT \'NULL\', CHANGE heart_rate_max heart_rate_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE heart_rate_mean heart_rate_mean DOUBLE PRECISION DEFAULT \'NULL\', CHANGE heart_rate_min heart_rate_min DOUBLE PRECISION DEFAULT \'NULL\'');
-        $this->addSql('ALTER TABLE exercise_type DROP met, CHANGE tag tag VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
+        $this->addSql('ALTER TABLE exercise_type CHANGE tag tag VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE met met DOUBLE PRECISION DEFAULT \'NULL\'');
         $this->addSql('ALTER TABLE fit_calories_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE fit_distance_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE fit_floors_intra_day CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
@@ -118,20 +107,9 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE tracking_device CHANGE name name VARCHAR(150) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE comment comment VARCHAR(200) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE battery battery INT DEFAULT NULL, CHANGE last_synced last_synced DATETIME DEFAULT \'NULL\', CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE type type VARCHAR(150) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE manufacturer manufacturer VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE model model VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE uploaded_file CHANGE exercise_id exercise_id INT DEFAULT NULL, CHANGE type type VARCHAR(255) DEFAULT \'\'url\'\' NOT NULL COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE workout_exercise CHANGE equipment_id equipment_id INT DEFAULT NULL, CHANGE license_id license_id INT DEFAULT NULL');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 1');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 2');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 3');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 4');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 5');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 6');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 7');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 8');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 9');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 10');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 11');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 12');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 13');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 14');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 15');
+        $this->addSql('DELETE FROM part_of_day WHERE id = 1');
+        $this->addSql('DELETE FROM part_of_day WHERE id = 2');
+        $this->addSql('DELETE FROM part_of_day WHERE id = 3');
+        $this->addSql('DELETE FROM part_of_day WHERE id = 4');
     }
 }

@@ -12,7 +12,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20200402162256 extends AbstractMigration
+final class Version20200403154505 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -33,7 +33,7 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE contribution_license CHANGE link link VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE exercise CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL, CHANGE steps steps INT DEFAULT NULL');
         $this->addSql('ALTER TABLE exercise_summary CHANGE altitude_gain altitude_gain DOUBLE PRECISION DEFAULT NULL, CHANGE altitude_loss altitude_loss DOUBLE PRECISION DEFAULT NULL, CHANGE altitude_max altitude_max DOUBLE PRECISION DEFAULT NULL, CHANGE altitude_min altitude_min DOUBLE PRECISION DEFAULT NULL, CHANGE cadence_max cadence_max DOUBLE PRECISION DEFAULT NULL, CHANGE cadence_mean cadence_mean DOUBLE PRECISION DEFAULT NULL, CHANGE cadence_min cadence_min DOUBLE PRECISION DEFAULT NULL, CHANGE calorie calorie DOUBLE PRECISION DEFAULT NULL, CHANGE distance_incline distance_incline DOUBLE PRECISION DEFAULT NULL, CHANGE distance_decline distance_decline DOUBLE PRECISION DEFAULT NULL, CHANGE distance distance DOUBLE PRECISION DEFAULT NULL, CHANGE speed_max speed_max DOUBLE PRECISION DEFAULT NULL, CHANGE speed_mean speed_mean DOUBLE PRECISION DEFAULT NULL, CHANGE heart_rate_max heart_rate_max DOUBLE PRECISION DEFAULT NULL, CHANGE heart_rate_mean heart_rate_mean DOUBLE PRECISION DEFAULT NULL, CHANGE heart_rate_min heart_rate_min DOUBLE PRECISION DEFAULT NULL');
-        $this->addSql('ALTER TABLE exercise_type ADD met DOUBLE PRECISION DEFAULT NULL, CHANGE tag tag VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE exercise_type CHANGE tag tag VARCHAR(255) DEFAULT NULL, CHANGE met met DOUBLE PRECISION DEFAULT NULL');
         $this->addSql('ALTER TABLE fit_calories_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE fit_distance_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE fit_floors_intra_day CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL');
@@ -60,21 +60,37 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE tracking_device CHANGE name name VARCHAR(150) DEFAULT NULL, CHANGE comment comment VARCHAR(200) DEFAULT NULL, CHANGE battery battery INT DEFAULT NULL, CHANGE last_synced last_synced DATETIME DEFAULT NULL, CHANGE remote_id remote_id VARCHAR(255) DEFAULT NULL, CHANGE type type VARCHAR(150) DEFAULT NULL, CHANGE manufacturer manufacturer VARCHAR(255) DEFAULT NULL, CHANGE model model VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE uploaded_file CHANGE exercise_id exercise_id INT DEFAULT NULL, CHANGE type type VARCHAR(255) DEFAULT \'url\' NOT NULL');
         $this->addSql('ALTER TABLE workout_exercise CHANGE equipment_id equipment_id INT DEFAULT NULL, CHANGE license_id license_id INT DEFAULT NULL');
-        $this->addSql('INSERT INTO workout_muscle VALUES(1, \'Triceps Brochii\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(2, \'Anterior Deltoid\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(3, \'Pectoralis Major\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(4, \'Pectus Abdominis\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(5, \'Biceps Femoris\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(6, \'Gastrocnemius\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(7, \'Gluteus Maximus\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(8, \'Latissimus Dorsi\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(9, \'Soleus\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(10, \'Trapezius\', 0)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(11, \'Biceps Brochii\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(12, \'Brachialis\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(13, \'Obliquus Externus Abdominis\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(14, \'Quadriceps Femoris\', 1)');
-        $this->addSql('INSERT INTO workout_muscle VALUES(15, \'Serratus Anterior\', 1)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(1, \'Dashboard\', \'/dashboard\', 0, 0, \'fa fa-dashboard\', -1000, NULL, NULL, 0, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(2, \'Fun\', NULL, 0, 1, NULL, -250, NULL, NULL, 0, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(4, \'Awards\', \'/achievements/awards\', 0, 0, \'fa fa-diamond\', -249, NULL, NULL, 0, NULL, 0, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(6, \'Leaderboard\', \'/rpg/leaderboard\', 0, 0, \'fa fa-users\', -239, NULL, NULL, 0, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(7, \'1:1 Challenges\', \'/rpg/challenges\', 0, 0, \'fa fa-trophy\', -219, NULL, NULL, 0, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(8, \'Stats\', NULL, 0, 1, NULL, -450, NULL, NULL, 0, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(11, \'Administration\', NULL, 0, 1, NULL, 900, NULL, NULL, 0, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(12, \'Your Account\', \'/setup\', 0, 0, \'fa fa-cogs\', 980, NULL, NULL, 0, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(13, \'Body Weight\', \'/body/weight\', 0, 0, \'medicalIcons-scale-tool-to-control-body-weight-standing-on-it\', -429, NULL, NULL, 0, NULL, 0, \'a:1:{i:0;s:21:\"App\\Entity\\BodyWeight\";}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(14, \'Activity Log\', \'/activities/log\', 0, 0, \'fa fa-archive\', -419, NULL, NULL, 0, NULL, 0, \'a:1:{i:0;s:19:\"App\\Entity\\Exercise\";}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(15, \'Profile\', \'/setup/profile\', 0, 0, \'fa fa-user\', 981, NULL, NULL, 12, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(16, \'Select Your Account\', \'/setup/oauth\', 0, 0, \'fa fa-external-link\', 982, NULL, NULL, 12, NULL, 0, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(17, \'Activity Tracker\', \'/activities/tracker\', 0, 0, \'fa fa-percent\', -418, NULL, NULL, 0, \'disabled\', 1, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(18, \'Help\', NULL, 1, 1, NULL, 1000, NULL, NULL, 0, NULL, 1, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(19, \'Patreon\', \'/help/patreon\', 0, 0, \'fa fa-dollar\', 1010, NULL, NULL, 22, NULL, 1, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(20, \'Privacy Policy\', \'/help/privacy\', 0, 0, \'fa fa-low-vision\', 1020, NULL, NULL, 22, NULL, 1, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(21, \'Terms of Service\', \'/help/terms\', 0, 0, \'fa fa-legal\', 1030, NULL, NULL, 22, NULL, 1, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(22, \'Help\', \'/help\', 0, 0, \'fa fa-life-saver\', 1001, NULL, NULL, 0, NULL, 1, \'a:0:{}\')');
+        $this->addSql('INSERT INTO site_nav_item VALUES(23, \'Challenges\', \'/rpg/pve/challenges\', 0, 0, \'adventureIcons-sports-10\', -229, NULL, NULL, 0, NULL, 0, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(24, \'Workouts\', NULL, 0, 1, NULL, -760, NULL, NULL, 0, NULL, 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(26, \'Exercises\', \'/exercises/overview\', 0, 0, \'fitnessIcons-person\', -749, NULL, NULL, 37, NULL, 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(27, \'New Exercise\', \'/exercises/add\', 0, 0, \'fitnessIcons-person\', 951, NULL, NULL, 30, \'ROLE_CONTRIBUTOR\', 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(30, \'Exercises\', \'/exercises/admin\', 0, 0, \'ico-cogs\', 950, NULL, NULL, 0, \'ROLE_CONTRIBUTOR\', 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(31, \'Muscle Overview\', \'/exercises/muscle/overview\', 0, 0, \'fitnessIcons-silhouette-2\', -748, NULL, NULL, 37, NULL, 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(32, \'New Muscle\', \'/exercises/muscle/add\', 0, 0, \'fitnessIcons-silhouette-2\', 952, NULL, NULL, 30, \'ROLE_CONTRIBUTOR\', 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(33, \'Equipment Overview\', \'/exercises/equipment/overview\', 0, 0, \'fitnessIcons-silhouette-4\', -747, NULL, NULL, 37, NULL, 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(34, \'New Equipment\', \'/exercises/equipment/add\', 0, 0, \'fitnessIcons-silhouette-4\', 953, NULL, NULL, 30, \'ROLE_CONTRIBUTOR\', 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(35, \'Category Overview\', \'/exercises/category/overview\', 0, 0, \'fitnessIcons-people-1\', -746, NULL, NULL, 37, NULL, 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(36, \'New Category\', \'/exercises/category/add\', 0, 0, \'fitnessIcons-people-1\', 954, NULL, NULL, 30, \'ROLE_CONTRIBUTOR\', 1, NULL)');
+        $this->addSql('INSERT INTO site_nav_item VALUES(37, \'Exercise\', \'/exercises\', 0, 0, \'fitnessIcons-silhouette-1\', -750, NULL, NULL, 0, NULL, 1, NULL)');
+
     }
 
     public function down(Schema $schema) : void
@@ -91,7 +107,7 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE contribution_license CHANGE link link VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE exercise CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE steps steps INT DEFAULT NULL');
         $this->addSql('ALTER TABLE exercise_summary CHANGE altitude_gain altitude_gain DOUBLE PRECISION DEFAULT \'NULL\', CHANGE altitude_loss altitude_loss DOUBLE PRECISION DEFAULT \'NULL\', CHANGE altitude_max altitude_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE altitude_min altitude_min DOUBLE PRECISION DEFAULT \'NULL\', CHANGE cadence_max cadence_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE cadence_mean cadence_mean DOUBLE PRECISION DEFAULT \'NULL\', CHANGE cadence_min cadence_min DOUBLE PRECISION DEFAULT \'NULL\', CHANGE calorie calorie DOUBLE PRECISION DEFAULT \'NULL\', CHANGE distance_incline distance_incline DOUBLE PRECISION DEFAULT \'NULL\', CHANGE distance_decline distance_decline DOUBLE PRECISION DEFAULT \'NULL\', CHANGE distance distance DOUBLE PRECISION DEFAULT \'NULL\', CHANGE speed_max speed_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE speed_mean speed_mean DOUBLE PRECISION DEFAULT \'NULL\', CHANGE heart_rate_max heart_rate_max DOUBLE PRECISION DEFAULT \'NULL\', CHANGE heart_rate_mean heart_rate_mean DOUBLE PRECISION DEFAULT \'NULL\', CHANGE heart_rate_min heart_rate_min DOUBLE PRECISION DEFAULT \'NULL\'');
-        $this->addSql('ALTER TABLE exercise_type DROP met, CHANGE tag tag VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
+        $this->addSql('ALTER TABLE exercise_type CHANGE tag tag VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE met met DOUBLE PRECISION DEFAULT \'NULL\'');
         $this->addSql('ALTER TABLE fit_calories_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE fit_distance_daily_summary CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE fit_floors_intra_day CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
@@ -118,20 +134,36 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE tracking_device CHANGE name name VARCHAR(150) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE comment comment VARCHAR(200) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE battery battery INT DEFAULT NULL, CHANGE last_synced last_synced DATETIME DEFAULT \'NULL\', CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE type type VARCHAR(150) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE manufacturer manufacturer VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE model model VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE uploaded_file CHANGE exercise_id exercise_id INT DEFAULT NULL, CHANGE type type VARCHAR(255) DEFAULT \'\'url\'\' NOT NULL COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE workout_exercise CHANGE equipment_id equipment_id INT DEFAULT NULL, CHANGE license_id license_id INT DEFAULT NULL');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 1');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 2');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 3');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 4');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 5');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 6');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 7');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 8');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 9');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 10');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 11');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 12');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 13');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 14');
-        $this->addSql('DELETE FROM workout_muscle WHERE id = 15');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 1');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 2');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 4');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 6');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 7');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 8');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 11');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 12');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 13');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 14');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 15');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 16');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 17');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 18');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 19');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 20');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 21');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 22');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 23');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 24');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 26');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 27');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 30');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 31');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 32');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 33');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 34');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 35');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 36');
+        $this->addSql('DELETE FROM site_nav_item WHERE id = 37');
+
     }
 }
