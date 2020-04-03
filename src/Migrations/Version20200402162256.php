@@ -1,4 +1,6 @@
 <?php
+/** @noinspection SqlResolve */
+/** @noinspection PhpUnhandledExceptionInspection */
 
 declare(strict_types=1);
 
@@ -116,20 +118,20 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('ALTER TABLE tracking_device CHANGE name name VARCHAR(150) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE comment comment VARCHAR(200) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE battery battery INT DEFAULT NULL, CHANGE last_synced last_synced DATETIME DEFAULT \'NULL\', CHANGE remote_id remote_id VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE type type VARCHAR(150) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE manufacturer manufacturer VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci, CHANGE model model VARCHAR(255) DEFAULT \'NULL\' COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE uploaded_file CHANGE exercise_id exercise_id INT DEFAULT NULL, CHANGE type type VARCHAR(255) DEFAULT \'\'url\'\' NOT NULL COLLATE utf8mb4_unicode_ci');
         $this->addSql('ALTER TABLE workout_exercise CHANGE equipment_id equipment_id INT DEFAULT NULL, CHANGE license_id license_id INT DEFAULT NULL');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.id = 1');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 2');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 3');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 4');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 5');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 6');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 7');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 8');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 9');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 10');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 11');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 12');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 13');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 14');
-        $this->addSql('DELETE FROM workout_muscle WHERE workout_muscle.`id` = 15');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 1');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 2');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 3');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 4');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 5');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 6');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 7');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 8');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 9');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 10');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 11');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 12');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 13');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 14');
+        $this->addSql('DELETE FROM workout_muscle WHERE id = 15');
     }
 }
