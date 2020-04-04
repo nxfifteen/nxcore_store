@@ -22,16 +22,6 @@ class RpgRewards
     private $name;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $xp;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $image;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $text;
@@ -62,28 +52,6 @@ class RpgRewards
         $this->name = $name;
 
         return $this;
-    }
-
-    public function getXp(): ?float
-    {
-        return $this->xp;
-    }
-
-    public function setXp(?float $xp): self
-    {
-        $this->xp = $xp;
-
-        return $this;
-    }
-
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    public function getImageUrl(): ?string
-    {
-        return $this->image;
     }
 
     public function setImage(?string $image): self
