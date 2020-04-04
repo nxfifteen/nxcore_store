@@ -69,6 +69,10 @@ class BodyWeightRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
+        if (count($weightRecords) == 0) {
+            return [];
+        }
+
         /** @var DateTime[] $period */
         $period = new DatePeriod(
             $dateObject,
