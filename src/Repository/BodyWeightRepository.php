@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\BodyWeight;
 use DateInterval;
+use DatePeriod;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -20,6 +21,17 @@ class BodyWeightRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BodyWeight::class);
+    }
+
+    /**
+     * @param String $patientId
+     * @param String $date
+     *
+     * @return mixed
+     */
+    public function findByDateRange(String $patientId, String $date)
+    {
+        return $this->findByDateRangeHistorical($patientId, $date, 0);
     }
 
     /**
@@ -43,7 +55,8 @@ class BodyWeightRepository extends ServiceEntityRepository
         }
         $todayEnd = $date . " 23:59:00";
 
-        return $this->createQueryBuilder('c')
+        /** @var BodyWeight[] $weightRecords */
+        $weightRecords = $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
             ->andWhere('c.DateTime >= :val')
             ->setParameter('val', $today)
@@ -54,17 +67,35 @@ class BodyWeightRepository extends ServiceEntityRepository
             ->orderBy('c.DateTime', 'ASC')
             ->getQuery()
             ->getResult();
-    }
 
-    /**
-     * @param String $patientId
-     * @param String $date
-     *
-     * @return mixed
-     */
-    public function findByDateRange(String $patientId, String $date)
-    {
-        return $this->findByDateRangeHistorical($patientId, $date, 0);
+        /** @var DateTime[] $period */
+        $period = new DatePeriod(
+            $dateObject,
+            new DateInterval('P1D'),
+            new DateTime($date)
+        );
+        $dateArray = [];
+        foreach ($period as $key => $value) {
+            $dateArray[] = $value;
+        }
+
+        $loopDateCount = 0;
+        $loopWeightCount = 0;
+        $weightReturnData = [];
+        /** @var BodyWeight $previousWeightRecord */
+        $previousWeightRecord = NULL;
+        for ($i = 0; $i <= ($lastDays - 1); $i++) {
+            if ($weightRecords[$loopWeightCount]->getDateTime()->format("Y-m-d") == $dateArray[$i]->format('Y-m-d')) {
+                $previousWeightRecord = clone $weightRecords[$loopWeightCount];
+                $weightReturnData[] = clone $weightRecords[$loopWeightCount];
+                $loopWeightCount++;
+            } else {
+                $previousWeightRecord->setDateTime($dateArray[$i]);
+                $weightReturnData[] = clone $previousWeightRecord;
+            }
+        }
+
+        return $weightReturnData;
     }
 
     /**
@@ -189,7 +220,7 @@ class BodyWeightRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult()['sum'];
         } catch (NonUniqueResultException $e) {
-            return null;
+            return NULL;
         }
     }
 }
