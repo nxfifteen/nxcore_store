@@ -37,6 +37,16 @@ class RpgRewards
      */
     private $indicator;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $type;
+
+    /**
+     * @ORM\Column(type="text")
+     */
+    private $payload;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -93,6 +103,30 @@ class RpgRewards
     public function setIndicator(?RpgIndicator $indicator): self
     {
         $this->indicator = $indicator;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getPayload(): ?string
+    {
+        return $this->payload;
+    }
+
+    public function setPayload(string $payload): self
+    {
+        $this->payload = $payload;
 
         return $this;
     }
