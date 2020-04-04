@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\AppConstants;
 use App\Entity\BodyWeight;
 use DateInterval;
 use DatePeriod;
@@ -84,14 +85,16 @@ class BodyWeightRepository extends ServiceEntityRepository
         $weightReturnData = [];
         /** @var BodyWeight $previousWeightRecord */
         $previousWeightRecord = NULL;
-        for ($i = 0; $i <= ($lastDays - 1); $i++) {
+        for ($i = 0; $i <= ($lastDays - 1); $i++){
             if ($weightRecords[$loopWeightCount]->getDateTime()->format("Y-m-d") == $dateArray[$i]->format('Y-m-d')) {
                 $previousWeightRecord = clone $weightRecords[$loopWeightCount];
                 $weightReturnData[] = clone $weightRecords[$loopWeightCount];
                 $loopWeightCount++;
             } else {
-                $previousWeightRecord->setDateTime($dateArray[$i]);
-                $weightReturnData[] = clone $previousWeightRecord;
+                if (!is_null($previousWeightRecord)) {
+                    $previousWeightRecord->setDateTime($dateArray[$i]);
+                    $weightReturnData[] = clone $previousWeightRecord;
+                }
             }
         }
 
