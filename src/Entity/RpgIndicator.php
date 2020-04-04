@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -40,6 +42,16 @@ class RpgIndicator
      * @ORM\Column(type="string", length=255)
      */
     private $comparator;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgRewards", mappedBy="indicator", orphanRemoval=true)
+     */
+    private $rewards;
+
+    public function __construct()
+    {
+        $this->rewards = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -102,6 +114,37 @@ class RpgIndicator
     public function setComparator(string $comparator): self
     {
         $this->comparator = $comparator;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RpgRewards[]
+     */
+    public function getRewards(): Collection
+    {
+        return $this->rewards;
+    }
+
+    public function addReward(RpgRewards $reward): self
+    {
+        if (!$this->rewards->contains($reward)) {
+            $this->rewards[] = $reward;
+            $reward->setIndicator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReward(RpgRewards $reward): self
+    {
+        if ($this->rewards->contains($reward)) {
+            $this->rewards->removeElement($reward);
+            // set the owning side to null (unless already changed)
+            if ($reward->getIndicator() === $this) {
+                $reward->setIndicator(null);
+            }
+        }
 
         return $this;
     }

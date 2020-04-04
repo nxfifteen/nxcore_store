@@ -41,6 +41,12 @@ class RpgRewards
      */
     private $textLong;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\RpgIndicator", inversedBy="rewards")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $indicator;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -107,6 +113,18 @@ class RpgRewards
     public function setTextLong(?string $textLong): self
     {
         $this->textLong = $textLong;
+
+        return $this;
+    }
+
+    public function getIndicator(): ?RpgIndicator
+    {
+        return $this->indicator;
+    }
+
+    public function setIndicator(?RpgIndicator $indicator): self
+    {
+        $this->indicator = $indicator;
 
         return $this;
     }
