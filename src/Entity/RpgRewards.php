@@ -64,13 +64,6 @@ class RpgRewards
         return $this;
     }
 
-    public function setImage(?string $image): self
-    {
-        $this->image = $image;
-
-        return $this;
-    }
-
     public function getText(): ?string
     {
         return $this->text;
