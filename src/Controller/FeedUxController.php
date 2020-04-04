@@ -673,170 +673,6 @@ class FeedUxController extends AbstractController
     }
 
     /**
-     * @Route("/feed/dashboard", name="ux_aggregator")
-     *
-     * @param AwardManager $awardManager
-     *
-     * @param TweetManager $tweetManager
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function index(AwardManager $awardManager, TweetManager $tweetManager)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(TRUE);
-
-        $this->setupRoute();
-
-        $return['status'] = "okay";
-        $return['code'] = "200";
-
-        $return['milestones'] = $this->getPatientMilestones();
-        $return['steps'] = $this->getPatientSteps();
-        $return['floors'] = $this->getPatientFloors();
-        $return['distance'] = $this->getPatientDistance();
-        $return['rpg_friends'] = $this->getPatientFriends();
-        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
-        $return['awards'] = $this->getPatientAwards();
-        $return['weight'] = $this->getPatientWeight();
-
-        if (
-            is_null($this->patient->getLastLoggedIn()) ||
-            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
-        ) {
-            $this->patient->setLastLoggedIn(new DateTime());
-            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
-            $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new DateTime(date("Y-m-d 00:00:00")));
-
-            $tweetManager->sendNotification(
-                "First login for " . date("l jS F, Y"),
-                "You've #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                $this->patient,
-                TRUE
-            );
-
-            if ($this->patient->getLoginStreak() % 5 == 0) {
-                $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new DateTime(date("Y-m-d 00:00:00")));
-            }
-
-            if ($this->patient->getLoginStreak() % 182 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Six Month badge",
-                        'header_image' => '../badges/streak_six_month_header.png',
-                        "dateTime" => new DateTime(),
-                        'relevant_date' => (new DateTime())->format("F jS, Y"),
-                        "name" => "Six Months",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Six Months',
-                        'badge_xp' => 186,
-                        'badge_image' => 'streak_six_month',
-                        'badge_text' => "6 Month Streak",
-                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
-                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
-                    ]
-                );
-
-                $tweetManager->sendNotification(
-                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                    NULL,
-                    $this->patient,
-                    FALSE
-                );
-            } else if ($this->patient->getLoginStreak() % 30 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Full Month badge",
-                        'header_image' => '../badges/streak_month_header.png',
-                        "dateTime" => new DateTime(),
-                        'relevant_date' => (new DateTime())->format("F jS, Y"),
-                        "name" => "Full Month",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Full Month',
-                        'badge_xp' => 31,
-                        'badge_image' => 'streak_month',
-                        'badge_text' => "31 Day Streak",
-                        'badge_longtext' => "You've logged in every day for a full month",
-                        'badge_citation' => "You've logged in every day for a full month",
-                    ]
-                );
-
-                $tweetManager->sendNotification(
-                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                    NULL,
-                    $this->patient,
-                    FALSE
-                );
-            }
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($this->patient);
-            $entityManager->flush();
-        }
-
-        $b = microtime(TRUE);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @return null
-     */
-    private function getPatientMilestones()
-    {
-        $return = [];
-
-        if (is_null($this->patient)) $this->patient = $this->getUser();
-
-        $return['distance'] = [];
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var float $distance */
-        $distance = $this->getDoctrine()
-            ->getRepository(FitDistanceDailySummary::class)
-            ->getSumOfValues($this->patient->getUuid());
-        if (!is_numeric($distance)) {
-            return NULL;
-        }
-        $distance = ($distance / 1000);
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var RpgMilestones[] $distanceMileStonesLess */
-        $distanceMileStonesLess = $this->getDoctrine()
-            ->getRepository(RpgMilestones::class)
-            ->getLessThan('distance', $distance);
-        foreach ($distanceMileStonesLess as $distanceMileStoneLess) {
-            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance, 2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
-        }
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var RpgMilestones[] $distanceMileStonesMore */
-        $distanceMileStonesMore = $this->getDoctrine()
-            ->getRepository(RpgMilestones::class)
-            ->getMoreThan('distance', $distance);
-
-        foreach ($distanceMileStonesMore as $distanceMileStoneMore) {
-            $times = number_format($distance / $distanceMileStoneMore->getValue(), 0);
-            if ($times == 1) {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "*";
-            } else if ($times == 2) {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
-            } else {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
-                    . $times . "** times.";
-            }
-        }
-
-        return $return;
-    }
-
-    /**
      * @param bool $pro
      *
      * @return array|null
@@ -1029,6 +865,179 @@ class FeedUxController extends AbstractController
     }
 
     /**
+     * @param bool        $pro
+     * @param String|null $date
+     * @param int         $dateRange
+     *
+     * @return array
+     * @throws Exception
+     */
+    private function getPatientWeight($pro = FALSE, String $date = NULL, int $dateRange = 31)
+    {
+        $returnSummary = [];
+
+        if (is_null($this->patient)) $this->patient = $this->getUser();
+
+        if (is_null($date)) $date = date("Y-m-d");
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var BodyWeight[] $product */
+        $product = $this->getDoctrine()
+            ->getRepository(BodyWeight::class)
+            ->findByDateRangeHistorical($this->patient->getUuid(), $date, $dateRange);
+        if (count($product) == 0) {
+            return NULL;
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var BodyWeight[] $productFirst */
+        $productFirst = $this->getDoctrine()
+            ->getRepository(BodyWeight::class)
+            ->findFirst($this->patient->getUuid());
+
+        $returnSummary['value'] = 0;
+        $returnSummary['unit'] = 0;
+        $returnSummary['goal'] = 0;
+        $returnSummary['progress'] = 0;
+        $returnSummary['since'] = $product[0]->getDateTime()->format("M Y");
+
+        if ($pro) {
+            $returnSummary['widget'] = [];
+            $buildArrayRecorded = [];
+            $buildArrayAverage = [];
+            $buildArrayAverageLoss = [];
+
+            if (count($product) > 0) {
+                $countWeight = 0;
+                $sumWeight = 0;
+
+                /** @var BodyWeight[] $product */
+                foreach ($product as $item) {
+                    if (is_numeric($item->getMeasurement())) {
+                        $returnSummary['value'] = round($item->getMeasurement(), 2);
+                        $returnSummary['unit'] = $item->getUnitOfMeasurement()->getName();
+
+                        $buildArrayRecorded[] = [
+                            "name" => intval($item->getDateTime()->format("U")),
+                            "value" => round($item->getMeasurement(), 2),
+                        ];
+
+                        $sumWeight = $sumWeight + $item->getMeasurement();
+                        $countWeight++;
+
+                        if (count($buildArrayAverage) == 0) {
+                            $buildArrayAverage[] = [
+                                "name" => intval($item->getDateTime()->format("U")),
+                                "value" => round($item->getMeasurement(), 2),
+                            ];
+                        } else {
+                            $newAvgIndex = count($buildArrayAverage) - 1;
+                            $buildArrayAverage[] = [
+                                "name" => intval($item->getDateTime()->format("U")),
+                                "value" => round($sumWeight / $countWeight, 2),
+                            ];
+
+                            $buildArrayAverageLoss[] = $buildArrayAverage[$newAvgIndex]['value'] - $buildArrayAverage[$newAvgIndex - 1]['value'];
+                        }
+                    }
+                }
+
+                $returnSummary['widget'][] = [
+                    "name" => "Recorded " . $returnSummary['unit'],
+                    "series" => $buildArrayRecorded,
+                ];
+                $returnSummary['widget'][] = [
+                    "name" => "Average " . $returnSummary['unit'],
+                    "series" => $buildArrayAverage,
+                ];
+
+                $returnSummary['loss'] = $buildArrayAverageLoss;
+            }
+
+
+        } else {
+
+            $returnSummary['loss'] = [];
+
+            $returnSummary['widget'] = [];
+            $returnSummary['widget']['labels'] = [];
+            $returnSummary['widget']['data'] = [];
+            $returnSummary['widget']['axis']['min'] = 0;
+            $returnSummary['widget']['axis']['max'] = 0;
+
+            $buildArrayAverageLoss = [];
+
+            if (count($product) > 0) {
+                /** @var BodyWeight[] $product */
+                foreach ($product as $item) {
+                    if (is_numeric($item->getMeasurement())) {
+                        $returnSummary['value'] = round($item->getMeasurement(), 2);
+                        $returnSummary['unit'] = $item->getUnitOfMeasurement()->getName();
+
+                        if (is_numeric($item->getPatientGoal()->getGoal())) {
+                            $returnSummary['widget']['data'][0]['label'] = "Goal " . $item->getPatientGoal()->getUnitOfMeasurement()->getName();
+                            $returnSummary['widget']['data'][0]['data'][] = round($item->getPatientGoal()->getGoal(), 2);
+                        }
+
+                        $returnSummary['widget']['data'][1]['label'] = "Recorded " . $item->getUnitOfMeasurement()->getName();
+
+                        if ($item->getMeasurement() == 0) {
+                            $newAvgIndex = count($returnSummary['widget']['data'][1]['data']) - 1;
+                            $returnSummary['widget']['data'][1]['data'][] = $returnSummary['widget']['data'][1]['data'][$newAvgIndex];
+                            $returnSummary['value'] = $returnSummary['widget']['data'][1]['data'][$newAvgIndex];
+                        } else {
+                            $returnSummary['widget']['data'][1]['data'][] = round($item->getMeasurement(), 2);
+                        }
+
+                        if (count($returnSummary['widget']['data'][1]['data']) == 1) {
+                            $returnSummary['widget']['data'][2]['label'] = "Average " . $item->getUnitOfMeasurement()->getName();
+                            $returnSummary['widget']['data'][2]['data'][] = round($item->getMeasurement(), 2);
+
+                            $buildArrayAverageLoss[] = 0;
+                        } else {
+                            $newAvgIndex = count($returnSummary['widget']['data'][2]['data']) - 1;
+
+                            $returnSummary['widget']['data'][2]['label'] = "Average " . $item->getUnitOfMeasurement()->getName();
+                            $countWeight = $returnSummary['widget']['data'][1]['data'];
+                            $sumWeight = array_sum($returnSummary['widget']['data'][1]['data']);
+                            $returnSummary['widget']['data'][2]['data'][] = round($sumWeight / count($countWeight), 2);
+
+                            $buildArrayAverageLoss[] = round($returnSummary['widget']['data'][2]['data'][$newAvgIndex] - ($sumWeight / count($countWeight)), 2);
+                        }
+
+                        $returnSummary['widget']['labels'][] = $item->getDateTime()->format("D, jS M");
+
+                        if ($returnSummary['widget']['axis']['min'] == 0 || $returnSummary['widget']['axis']['min'] > $returnSummary['value']) {
+                            $returnSummary['widget']['axis']['min'] = $returnSummary['value'];
+                        }
+
+                        if ($returnSummary['widget']['axis']['max'] == 0 || $returnSummary['widget']['axis']['max'] < $returnSummary['value']) {
+                            $returnSummary['widget']['axis']['max'] = $returnSummary['value'];
+                        }
+                    }
+                }
+
+                $returnSummary['loss'] = $buildArrayAverageLoss;
+            }
+
+            $firstMeasurement = round($productFirst[0]->getMeasurement(), 2);
+            $currentMeasurement = round($product[(count($product) - 1)]->getMeasurement(), 2);
+            $targetMeasurement = round($product[(count($product) - 1)]->getPatientGoal()->getGoal(), 2);
+            $totalToReach = round($firstMeasurement - $targetMeasurement, 2);
+            $totalProgress = round($firstMeasurement - $currentMeasurement, 2);
+            $progressPercentage = round(($totalProgress / $totalToReach) * 100, 2);
+            if ($progressPercentage > 100) $progressPercentage = 100;
+
+            $returnSummary['goal'] = $targetMeasurement;
+            $returnSummary['progress'] = $progressPercentage;
+            $returnSummary['widget']['axis']['min'] = $returnSummary['widget']['axis']['min'] - 1;
+            $returnSummary['widget']['axis']['max'] = $returnSummary['widget']['axis']['max'] + 1;
+        }
+
+        return $returnSummary;
+    }
+
+    /**
      * @return array|null
      */
     private function getPatientDistance()
@@ -1068,6 +1077,170 @@ class FeedUxController extends AbstractController
         }
 
         return $returnSummary;
+    }
+
+    /**
+     * @Route("/feed/dashboard", name="ux_aggregator")
+     *
+     * @param AwardManager $awardManager
+     *
+     * @param TweetManager $tweetManager
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index(AwardManager $awardManager, TweetManager $tweetManager)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(TRUE);
+
+        $this->setupRoute();
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+
+        $return['milestones'] = $this->getPatientMilestones();
+        $return['steps'] = $this->getPatientSteps();
+        $return['floors'] = $this->getPatientFloors();
+        $return['distance'] = $this->getPatientDistance();
+        $return['rpg_friends'] = $this->getPatientFriends();
+        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
+        $return['awards'] = $this->getPatientAwards();
+        $return['weight'] = $this->getPatientWeight();
+
+        if (
+            is_null($this->patient->getLastLoggedIn()) ||
+            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
+        ) {
+            $this->patient->setLastLoggedIn(new DateTime());
+            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
+            $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new DateTime(date("Y-m-d 00:00:00")));
+
+            $tweetManager->sendNotification(
+                "First login for " . date("l jS F, Y"),
+                "You've #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                $this->patient,
+                TRUE
+            );
+
+            if ($this->patient->getLoginStreak() % 5 == 0) {
+                $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new DateTime(date("Y-m-d 00:00:00")));
+            }
+
+            if ($this->patient->getLoginStreak() % 182 == 0) {
+                $this->patient = $awardManager->giveBadge(
+                    $this->patient,
+                    [
+                        'patients_name' => $this->patient->getFirstName(),
+                        'html_title' => "Awarded the Six Month badge",
+                        'header_image' => '../badges/streak_six_month_header.png',
+                        "dateTime" => new DateTime(),
+                        'relevant_date' => (new DateTime())->format("F jS, Y"),
+                        "name" => "Six Months",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Six Months',
+                        'badge_xp' => 186,
+                        'badge_image' => 'streak_six_month',
+                        'badge_text' => "6 Month Streak",
+                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
+                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
+                    ]
+                );
+
+                $tweetManager->sendNotification(
+                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                    NULL,
+                    $this->patient,
+                    FALSE
+                );
+            } else if ($this->patient->getLoginStreak() % 30 == 0) {
+                $this->patient = $awardManager->giveBadge(
+                    $this->patient,
+                    [
+                        'patients_name' => $this->patient->getFirstName(),
+                        'html_title' => "Awarded the Full Month badge",
+                        'header_image' => '../badges/streak_month_header.png',
+                        "dateTime" => new DateTime(),
+                        'relevant_date' => (new DateTime())->format("F jS, Y"),
+                        "name" => "Full Month",
+                        "repeat" => FALSE,
+                        'badge_name' => 'Full Month',
+                        'badge_xp' => 31,
+                        'badge_image' => 'streak_month',
+                        'badge_text' => "31 Day Streak",
+                        'badge_longtext' => "You've logged in every day for a full month",
+                        'badge_citation' => "You've logged in every day for a full month",
+                    ]
+                );
+
+                $tweetManager->sendNotification(
+                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                    NULL,
+                    $this->patient,
+                    FALSE
+                );
+            }
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($this->patient);
+            $entityManager->flush();
+        }
+
+        $b = microtime(TRUE);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @return null
+     */
+    private function getPatientMilestones()
+    {
+        $return = [];
+
+        if (is_null($this->patient)) $this->patient = $this->getUser();
+
+        $return['distance'] = [];
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var float $distance */
+        $distance = $this->getDoctrine()
+            ->getRepository(FitDistanceDailySummary::class)
+            ->getSumOfValues($this->patient->getUuid());
+        if (!is_numeric($distance)) {
+            return NULL;
+        }
+        $distance = ($distance / 1000);
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var RpgMilestones[] $distanceMileStonesLess */
+        $distanceMileStonesLess = $this->getDoctrine()
+            ->getRepository(RpgMilestones::class)
+            ->getLessThan('distance', $distance);
+        foreach ($distanceMileStonesLess as $distanceMileStoneLess) {
+            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance, 2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var RpgMilestones[] $distanceMileStonesMore */
+        $distanceMileStonesMore = $this->getDoctrine()
+            ->getRepository(RpgMilestones::class)
+            ->getMoreThan('distance', $distance);
+
+        foreach ($distanceMileStonesMore as $distanceMileStoneMore) {
+            $times = number_format($distance / $distanceMileStoneMore->getValue(), 0);
+            if ($times == 1) {
+                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "*";
+            } else if ($times == 2) {
+                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
+            } else {
+                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
+                    . $times . "** times.";
+            }
+        }
+
+        return $return;
     }
 
     /**
@@ -1521,179 +1694,6 @@ class FeedUxController extends AbstractController
                     "count" => 1,
                 ];
             }
-        }
-
-        return $returnSummary;
-    }
-
-    /**
-     * @param bool        $pro
-     * @param String|null $date
-     * @param int         $dateRange
-     *
-     * @return array
-     * @throws Exception
-     */
-    private function getPatientWeight($pro = FALSE, String $date = NULL, int $dateRange = 31)
-    {
-        $returnSummary = [];
-
-        if (is_null($this->patient)) $this->patient = $this->getUser();
-
-        if (is_null($date)) $date = date("Y-m-d");
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var BodyWeight[] $product */
-        $product = $this->getDoctrine()
-            ->getRepository(BodyWeight::class)
-            ->findByDateRangeHistorical($this->patient->getUuid(), $date, $dateRange);
-        if (count($product) == 0) {
-            return NULL;
-        }
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var BodyWeight[] $productFirst */
-        $productFirst = $this->getDoctrine()
-            ->getRepository(BodyWeight::class)
-            ->findFirst($this->patient->getUuid());
-
-        $returnSummary['value'] = 0;
-        $returnSummary['unit'] = 0;
-        $returnSummary['goal'] = 0;
-        $returnSummary['progress'] = 0;
-        $returnSummary['since'] = $product[0]->getDateTime()->format("M Y");
-
-        if ($pro) {
-            $returnSummary['widget'] = [];
-            $buildArrayRecorded = [];
-            $buildArrayAverage = [];
-            $buildArrayAverageLoss = [];
-
-            if (count($product) > 0) {
-                $countWeight = 0;
-                $sumWeight = 0;
-
-                /** @var BodyWeight[] $product */
-                foreach ($product as $item) {
-                    if (is_numeric($item->getMeasurement())) {
-                        $returnSummary['value'] = round($item->getMeasurement(), 2);
-                        $returnSummary['unit'] = $item->getUnitOfMeasurement()->getName();
-
-                        $buildArrayRecorded[] = [
-                            "name" => intval($item->getDateTime()->format("U")),
-                            "value" => round($item->getMeasurement(), 2),
-                        ];
-
-                        $sumWeight = $sumWeight + $item->getMeasurement();
-                        $countWeight++;
-
-                        if (count($buildArrayAverage) == 0) {
-                            $buildArrayAverage[] = [
-                                "name" => intval($item->getDateTime()->format("U")),
-                                "value" => round($item->getMeasurement(), 2),
-                            ];
-                        } else {
-                            $newAvgIndex = count($buildArrayAverage) - 1;
-                            $buildArrayAverage[] = [
-                                "name" => intval($item->getDateTime()->format("U")),
-                                "value" => round($sumWeight / $countWeight, 2),
-                            ];
-
-                            $buildArrayAverageLoss[] = $buildArrayAverage[$newAvgIndex]['value'] - $buildArrayAverage[$newAvgIndex - 1]['value'];
-                        }
-                    }
-                }
-
-                $returnSummary['widget'][] = [
-                    "name" => "Recorded " . $returnSummary['unit'],
-                    "series" => $buildArrayRecorded,
-                ];
-                $returnSummary['widget'][] = [
-                    "name" => "Average " . $returnSummary['unit'],
-                    "series" => $buildArrayAverage,
-                ];
-
-                $returnSummary['loss'] = $buildArrayAverageLoss;
-            }
-
-
-        } else {
-
-            $returnSummary['loss'] = [];
-
-            $returnSummary['widget'] = [];
-            $returnSummary['widget']['labels'] = [];
-            $returnSummary['widget']['data'] = [];
-            $returnSummary['widget']['axis']['min'] = 0;
-            $returnSummary['widget']['axis']['max'] = 0;
-
-            $buildArrayAverageLoss = [];
-
-            if (count($product) > 0) {
-                /** @var BodyWeight[] $product */
-                foreach ($product as $item) {
-                    if (is_numeric($item->getMeasurement())) {
-                        $returnSummary['value'] = round($item->getMeasurement(), 2);
-                        $returnSummary['unit'] = $item->getUnitOfMeasurement()->getName();
-
-                        if (is_numeric($item->getPatientGoal()->getGoal())) {
-                            $returnSummary['widget']['data'][0]['label'] = "Goal " . $item->getPatientGoal()->getUnitOfMeasurement()->getName();
-                            $returnSummary['widget']['data'][0]['data'][] = round($item->getPatientGoal()->getGoal(), 2);
-                        }
-
-                        $returnSummary['widget']['data'][1]['label'] = "Recorded " . $item->getUnitOfMeasurement()->getName();
-
-                        if ($item->getMeasurement() == 0) {
-                            $newAvgIndex = count($returnSummary['widget']['data'][1]['data']) - 1;
-                            $returnSummary['widget']['data'][1]['data'][] = $returnSummary['widget']['data'][1]['data'][$newAvgIndex];
-                            $returnSummary['value'] = $returnSummary['widget']['data'][1]['data'][$newAvgIndex];
-                        } else {
-                            $returnSummary['widget']['data'][1]['data'][] = round($item->getMeasurement(), 2);
-                        }
-
-                        if (count($returnSummary['widget']['data'][1]['data']) == 1) {
-                            $returnSummary['widget']['data'][2]['label'] = "Average " . $item->getUnitOfMeasurement()->getName();
-                            $returnSummary['widget']['data'][2]['data'][] = round($item->getMeasurement(), 2);
-
-                            $buildArrayAverageLoss[] = 0;
-                        } else {
-                            $newAvgIndex = count($returnSummary['widget']['data'][2]['data']) - 1;
-
-                            $returnSummary['widget']['data'][2]['label'] = "Average " . $item->getUnitOfMeasurement()->getName();
-                            $countWeight = $returnSummary['widget']['data'][1]['data'];
-                            $sumWeight = array_sum($returnSummary['widget']['data'][1]['data']);
-                            $returnSummary['widget']['data'][2]['data'][] = round($sumWeight / count($countWeight), 2);
-
-                            $buildArrayAverageLoss[] = round($returnSummary['widget']['data'][2]['data'][$newAvgIndex] - ($sumWeight / count($countWeight)), 2);
-                        }
-
-                        $returnSummary['widget']['labels'][] = $item->getDateTime()->format("D, jS M");
-
-                        if ($returnSummary['widget']['axis']['min'] == 0 || $returnSummary['widget']['axis']['min'] > $returnSummary['value']) {
-                            $returnSummary['widget']['axis']['min'] = $returnSummary['value'];
-                        }
-
-                        if ($returnSummary['widget']['axis']['max'] == 0 || $returnSummary['widget']['axis']['max'] < $returnSummary['value']) {
-                            $returnSummary['widget']['axis']['max'] = $returnSummary['value'];
-                        }
-                    }
-                }
-
-                $returnSummary['loss'] = $buildArrayAverageLoss;
-            }
-
-            $firstMeasurement = round($productFirst[0]->getMeasurement(), 2);
-            $currentMeasurement = round($product[(count($product) - 1)]->getMeasurement(), 2);
-            $targetMeasurement = round($product[(count($product) - 1)]->getPatientGoal()->getGoal(), 2);
-            $totalToReach = round($firstMeasurement - $targetMeasurement, 2);
-            $totalProgress = round($firstMeasurement - $currentMeasurement, 2);
-            $progressPercentage = round(($totalProgress / $totalToReach) * 100, 2);
-            if ($progressPercentage > 100) $progressPercentage = 100;
-
-            $returnSummary['goal'] = $targetMeasurement;
-            $returnSummary['progress'] = $progressPercentage;
-            $returnSummary['widget']['axis']['min'] = $returnSummary['widget']['axis']['min'] - 1;
-            $returnSummary['widget']['axis']['max'] = $returnSummary['widget']['axis']['max'] + 1;
         }
 
         return $returnSummary;
