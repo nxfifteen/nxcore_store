@@ -1113,6 +1113,18 @@ class FeedUxController extends AbstractController
             is_null($this->patient->getLastLoggedIn()) ||
             $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
         ) {
+            if (is_null($this->patient->getLastLoggedIn())) {
+                $lastRecordedLogin = 0;
+            } else {
+                $lastRecordedLogin = $this->patient->getLastLoggedIn()->format("U");
+            }
+            $currentTime = date("U");
+            $lastLoggedInWas = $currentTime - $lastRecordedLogin;
+
+            if ($lastLoggedInWas > ((60 * 60 * 24) - 120)) {
+                $this->patient->setLoginStreak(0);
+            }
+
             $this->patient->setLastLoggedIn(new DateTime());
             $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
             $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new DateTime(date("Y-m-d 00:00:00")));
