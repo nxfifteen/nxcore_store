@@ -307,13 +307,30 @@ class AwardManager
     }
 
     /**
+     * @param mixed       $dataEntry
+     * @param string|NULL $citation
+     */
+    public function checkForAwards($dataEntry, string $citation = NULL)
+    {
+        switch ($citation) {
+            default:
+                if (get_class($dataEntry) == "FitStepsDailySummary" || get_class($dataEntry) == "FitDistanceDailySummary") {
+                    try {
+                        $this->checkForGoalAwards($dataEntry);
+                    } catch (Exception $e) {
+                    }
+                }
+                break;
+
+        }
+    }
+
+    /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
-     *
-     * @param string                                       $citation
      *
      * @throws Exception
      */
-    public function checkForGoalAwards($dataEntry, string $citation = NULL)
+    private function checkForGoalAwards($dataEntry)
     {
         AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
 

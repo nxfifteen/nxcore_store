@@ -82,7 +82,7 @@ class SamsungCountDailySteps extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            $awardManager->checkForGoalAwards($dataEntry);
+            $awardManager->checkForAwards($dataEntry, "goal");
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
             try {
                 $challengePve->checkAnyRunning($dataEntry);
