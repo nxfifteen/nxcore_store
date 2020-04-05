@@ -22,16 +22,6 @@ class RpgRewards
     private $name;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private $xp;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $image;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $text;
@@ -40,6 +30,22 @@ class RpgRewards
      * @ORM\Column(type="text", nullable=true)
      */
     private $textLong;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\RpgIndicator", inversedBy="rewards")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $indicator;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $type;
+
+    /**
+     * @ORM\Column(type="text")
+     */
+    private $payload;
 
     public function getId(): ?int
     {
@@ -54,35 +60,6 @@ class RpgRewards
     public function setName(string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getXp(): ?float
-    {
-        return $this->xp;
-    }
-
-    public function setXp(?float $xp): self
-    {
-        $this->xp = $xp;
-
-        return $this;
-    }
-
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    public function getImageUrl(): ?string
-    {
-        return $this->image;
-    }
-
-    public function setImage(?string $image): self
-    {
-        $this->image = $image;
 
         return $this;
     }
@@ -107,6 +84,42 @@ class RpgRewards
     public function setTextLong(?string $textLong): self
     {
         $this->textLong = $textLong;
+
+        return $this;
+    }
+
+    public function getIndicator(): ?RpgIndicator
+    {
+        return $this->indicator;
+    }
+
+    public function setIndicator(?RpgIndicator $indicator): self
+    {
+        $this->indicator = $indicator;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getPayload(): ?string
+    {
+        return $this->payload;
+    }
+
+    public function setPayload(string $payload): self
+    {
+        $this->payload = $payload;
 
         return $this;
     }

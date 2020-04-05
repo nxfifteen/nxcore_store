@@ -1127,7 +1127,8 @@ class FeedUxController extends AbstractController
 
             $this->patient->setLastLoggedIn(new DateTime());
             $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
-            $awardManager->giveXp($this->patient, 5, "First login for " . date("l jS F, Y"), new DateTime(date("Y-m-d 00:00:00")));
+            // checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
+            $awardManager->checkForAwards(["reason" => "first"], "login", $this->patient);
 
             $tweetManager->sendNotification(
                 "First login for " . date("l jS F, Y"),
@@ -1137,28 +1138,11 @@ class FeedUxController extends AbstractController
             );
 
             if ($this->patient->getLoginStreak() % 5 == 0) {
-                $awardManager->giveXp($this->patient, 5, "You've logged in " . $this->patient->getLoginStreak() . " days in a row!", new DateTime(date("Y-m-d 00:00:00")));
+                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
             }
 
             if ($this->patient->getLoginStreak() % 182 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Six Month badge",
-                        'header_image' => '../badges/streak_six_month_header.png',
-                        "dateTime" => new DateTime(),
-                        'relevant_date' => (new DateTime())->format("F jS, Y"),
-                        "name" => "Six Months",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Six Months',
-                        'badge_xp' => 186,
-                        'badge_image' => 'streak_six_month',
-                        'badge_text' => "6 Month Streak",
-                        'badge_longtext' => "You've logged in every day for a six month! That's incredible",
-                        'badge_citation' => "You've logged in every day for a six month! That's incredible",
-                    ]
-                );
+                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
 
                 $tweetManager->sendNotification(
                     "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
@@ -1167,24 +1151,7 @@ class FeedUxController extends AbstractController
                     FALSE
                 );
             } else if ($this->patient->getLoginStreak() % 30 == 0) {
-                $this->patient = $awardManager->giveBadge(
-                    $this->patient,
-                    [
-                        'patients_name' => $this->patient->getFirstName(),
-                        'html_title' => "Awarded the Full Month badge",
-                        'header_image' => '../badges/streak_month_header.png',
-                        "dateTime" => new DateTime(),
-                        'relevant_date' => (new DateTime())->format("F jS, Y"),
-                        "name" => "Full Month",
-                        "repeat" => FALSE,
-                        'badge_name' => 'Full Month',
-                        'badge_xp' => 31,
-                        'badge_image' => 'streak_month',
-                        'badge_text' => "31 Day Streak",
-                        'badge_longtext' => "You've logged in every day for a full month",
-                        'badge_citation' => "You've logged in every day for a full month",
-                    ]
-                );
+                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
 
                 $tweetManager->sendNotification(
                     "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
@@ -1696,13 +1663,14 @@ class FeedUxController extends AbstractController
                     $returnSummary[$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d");
                 }
             } else {
+                $payloadArray = json_decode($reward->getReward()->getPayload());
                 $returnSummary[$reward->getReward()->getId()] = [
                     "id" => $reward->getReward()->getId(),
-                    "name" => $reward->getReward()->getName(),
+                    "name" => $payloadArray->name,
                     "awarded" => $reward->getDatetime()->format("Y-m-d"),
-                    "image" => $reward->getReward()->getImageUrl(),
-                    "text" => $reward->getReward()->getText(),
-                    "longtext" => $reward->getReward()->getTextLong(),
+                    "image" => $payloadArray->badge_image,
+                    "text" => $payloadArray->badge_text,
+                    "longtext" => $payloadArray->badge_longtext,
                     "count" => 1,
                 ];
             }

@@ -124,20 +124,38 @@ class ChallengePve
                         $dbRpgChallengeGlobal->setFinishDateTime(new DateTime());
                         $entityManager->persist($dbRpgChallengeGlobal);
 
-                        if (!is_null($dbRpgChallengeGlobal->getChallenge()->getReward())) {
-                            $this->awardManager->giveReward($dataEntry->getPatient(), $dbRpgChallengeGlobal->getChallenge()->getReward(), $dataEntry->getDateTime());
-                        }
-
-                        if (!is_null($dbRpgChallengeGlobal->getChallenge()->getXp())) {
-                            if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
-                                $this->awardManager->giveXp($dataEntry->getPatient(), $dbRpgChallengeGlobal->getChallenge()->getXp(), 'Completed Global Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(), $dataEntry->getDateTime());
-                            } else if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
-                                $this->awardManager->giveXp($dataEntry->getPatient(), $dbRpgChallengeGlobal->getChallenge()->getXp(), 'Completed Global Challenge Leg ' . substr($dbRpgChallengeGlobal->getChallenge()->getDescripton(), 0, 223), $dataEntry->getDateTime());
-                            } else if (!is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
-                                $this->awardManager->giveXp($dataEntry->getPatient(), $dbRpgChallengeGlobal->getChallenge()->getXp(), 'Completed Global Challenge Stage ' . $dbRpgChallengeGlobal->getChallenge()->getName(), $dataEntry->getDateTime());
-                            } else {
-                                $this->awardManager->giveXp($dataEntry->getPatient(), $dbRpgChallengeGlobal->getChallenge()->getXp(), 'Completed PVE Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(), $dataEntry->getDateTime());
-                            }
+                        if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                            $this->awardManager->checkForAwards(
+                                $dbRpgChallengeGlobal->getChallenge(),
+                                "challenge",
+                                $dataEntry->getPatient(),
+                                'Completed Global Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
+                                $dataEntry->getDateTime()
+                            );
+                        } else if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                            $this->awardManager->checkForAwards(
+                                $dbRpgChallengeGlobal->getChallenge(),
+                                "challenge",
+                                $dataEntry->getPatient(),
+                                'Completed Global Challenge Leg ' . substr($dbRpgChallengeGlobal->getChallenge()->getDescripton(), 0, 223),
+                                $dataEntry->getDateTime()
+                            );
+                        } else if (!is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                            $this->awardManager->checkForAwards(
+                                $dbRpgChallengeGlobal->getChallenge(),
+                                "challenge",
+                                $dataEntry->getPatient(),
+                                'Completed Global Challenge Stage ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
+                                $dataEntry->getDateTime()
+                            );
+                        } else {
+                            $this->awardManager->checkForAwards(
+                                $dbRpgChallengeGlobal->getChallenge(),
+                                "challenge",
+                                $dataEntry->getPatient(),
+                                'Completed PVE Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
+                                $dataEntry->getDateTime()
+                            );
                         }
                     } else {
                         $dbRpgChallengeGlobal->setProgress(round(($criteriaTakenSincePVEStartDate / $comparisonTarget) * 100, 0, PHP_ROUND_HALF_DOWN));

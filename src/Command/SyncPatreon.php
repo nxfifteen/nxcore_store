@@ -257,8 +257,7 @@ class SyncPatreon extends Command
         } catch (Exception $e) {
         }
 
-        $this->awardMembersBadge($patientMembership);
-
+        $this->awardManager->checkForAwards($patientMembership, "membership");
         $this->entityManager->persist($patientMembership);
     }
 
@@ -283,27 +282,4 @@ class SyncPatreon extends Command
                 return "all_history";
         }
     }
-
-    private function awardMembersBadge(PatientMembership $patientMembership)
-    {
-        $this->awardManager->giveBadge(
-            $patientMembership->getPatient(),
-            [
-                'patients_name' => $patientMembership->getPatient()->getFirstName(),
-                'html_title' => "Patreon",
-                'header_image' => '../badges/patreon_header.png',
-                "dateTime" => $patientMembership->getLastPaid(),
-                'relevant_date' => $patientMembership->getLastPaid()->format("F jS, Y"),
-                "name" => "patreon name",
-                "repeat" => FALSE,
-                'badge_name' => 'patreon badge_name',
-                'badge_xp' => 0,
-                'badge_image' => 'patreon',
-                'badge_text' => "patreon badge_text",
-                'badge_longtext' => "patreon badge_longtext",
-                'badge_citation' => "patreon badge_citation",
-            ]
-        );
-    }
-
 }

@@ -55,6 +55,18 @@ class SyncUploadController extends AbstractController
      */
     public function sync_webhook_get(String $service, LoggerInterface $logger)
     {
+        if (strtolower($service) == "habitica") {
+            $request = Request::createFromGlobals();
+            $jsonContent = json_decode($request->getContent(), FALSE);
+
+            AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - ' . $jsonContent->user->_id);
+            AppConstants::writeToLog('webhook_' . $service . '.txt', $request->getContent());
+
+            $response = new JsonResponse();
+            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+            return $response;
+        }
+
         if (is_array($_GET) && array_key_exists("verify", $_GET)) {
             if ($_GET['verify'] != "c9dc17fc026d90cf8ddb6d7e1960828962265bac03605449054fb2e9033c927c") {
                 AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
