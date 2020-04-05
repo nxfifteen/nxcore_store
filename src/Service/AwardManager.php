@@ -18,9 +18,6 @@ use App\Entity\Patient;
 use App\Entity\PatientMembership;
 use App\Entity\RpgIndicator;
 use App\Entity\RpgRewards;
-use App\Entity\RpgRewardsAwarded;
-use App\Entity\RpgXP;
-use App\Entity\SiteNews;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -53,6 +50,16 @@ class AwardManager
      * @var TweetManager
      */
     private $tweetManager;
+
+    /**
+     * @var Patient
+     */
+    private $patient;
+
+    /**
+     * @var DateTimeInterface
+     */
+    private $dateTime;
 
     public function __construct(
         ManagerRegistry $doctrine,
@@ -134,6 +141,20 @@ class AwardManager
      */
     public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
+        if (!is_null($patient)) {
+            $this->patient = $patient;
+        } else if (get_class($dataEntry) == "App\Entity\FitStepsDailySummary" || get_class($dataEntry) == "App\Entity\FitDistanceDailySummary" || get_class($dataEntry) == "App\Entity\PatientMembership") {
+            $this->patient = $dataEntry->getPatient();
+        } else {
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Cant get a patient class from = ' . get_class($dataEntry));
+        }
+
+        if (!is_null($dateTime)) {
+            $this->dateTime = $dateTime;
+        } else {
+            $this->dateTime = new DateTime();
+        }
+
         switch ($criteria) {
             case "membership":
                 $this->checkForMembershipAwards($dataEntry);
@@ -158,96 +179,16 @@ class AwardManager
     }
 
     /**
-     * @param array $dataEntry
-     */
-    private function checkForLoginAwards(array $dataEntry)
-    {
-        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, true));
-    }
-
-    /**
      * @param PatientMembership $dataEntry
      */
     private function checkForMembershipAwards(PatientMembership $dataEntry)
     {
-        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
-    }
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
+        $indicatorDataSet = "membership";
+        $indicatorType = $dataEntry->getTear();
+        $indicatorComparator = $dataEntry->getActive();
 
-    /**
-     * @param mixed                  $dataEntry
-     * @param string|NULL            $criteria
-     * @param Patient|NULL           $patient
-     * @param string|NULL            $citation
-     * @param DateTimeInterface|null $dateTime
-     */
-    private function checkForChallengeAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
-    {
-        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
-        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $citation);
-
-    }
-
-    /**
-     * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForGoalAwards($dataEntry)
-    {
-        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
-
-        if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
-            $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
-            $indicatorType = "goal";
-            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
-                $indicatorComparator = ">300%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
-                $indicatorComparator = ">250%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
-                $indicatorComparator = ">200%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
-                $indicatorComparator = ">150%";
-            } else {
-                $indicatorComparator = ">100%";
-            }
-            $indicatorObject = $this->findAnIndicator($indicatorDataSet, $indicatorType, $indicatorComparator);
-            if (is_null($indicatorObject)) {
-                AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': No indicator was found');
-            } else {
-                AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator found = ' . $indicatorObject->getName());
-                if (count($indicatorObject->getRewards()) == 0) {
-                    AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator has no awards');
-                    $awardDefaultArray = $this->findAwardInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
-                    if (is_array($awardDefaultArray)) {
-                        foreach ($awardDefaultArray as $item) {
-                            $rewardObject = $this->installReward($item, $indicatorObject);
-                            $indicatorObject->addReward($rewardObject);
-                        }
-                    }
-                }
-                AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator has ' . count($indicatorObject->getRewards()) . ' awards');
-            }
-
-
-//            $goalCriteria = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
-//            $goalCriteriaShort = $this->getCriteriaShortName($goalCriteria);
-//            $reward = $this->findAnAward($goalCriteria, $goalCriteriaShort, $dataEntry->getValue(), $dataEntry->getGoal()->getGoal());
-//            if ($reward) {
-//                if (is_null($citation) || $citation == "") {
-//                    if ($goalCriteriaShort == "trg_steps") {
-//                        $citation = "You took " . $dataEntry->getValue() . " steps today, beating your goal of only " . $dataEntry->getGoal()->getGoal();
-//                    } else if ($goalCriteriaShort == "trg_distance") {
-//                        $citation = "You moved " .
-//                            number_format(AppConstants::convertUnitOfMeasurement($dataEntry->getValue(), $dataEntry->getUnitOfMeasurement()->getName(), 'km'), 2) .
-//                            "km today, beating your goal of only " .
-//                            number_format(AppConstants::convertUnitOfMeasurement($dataEntry->getGoal()->getGoal(), $dataEntry->getGoal()->getUnitOfMeasurement()->getName(), 'km'), 2) . "km";
-//                    }
-//                }
-//
-//                $this->giveReward($dataEntry->getPatient(), $reward, new DateTime(date($dataEntry->getDateTime()->format("Y-m-d") . " 00:00:00")), $citation);
-//            }
-        }
+        $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
     }
 
     /**
@@ -325,6 +266,23 @@ class AwardManager
                     ],
                 ],
             ],
+            'membership' => [
+                'all_history' => [
+                    '1' => [
+                        "name" => "Full Member",
+                    ],
+                ],
+                'beta_user' => [
+                    '1' => [
+                        "name" => "Beta Tester",
+                    ],
+                ],
+                'alpha_user' => [
+                    '1' => [
+                        "name" => "Alpha Tester",
+                    ],
+                ],
+            ],
         ];
 
         if (array_key_exists($indicatorDataSet, $standard) &&
@@ -332,8 +290,35 @@ class AwardManager
             array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
             return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
         } else {
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $indicatorDataSet);
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $indicatorType);
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $indicatorComparator);
             return NULL;
         }
+    }
+
+    /**
+     * @param array  $indicatorArray
+     * @param string $indicatorDataSet
+     * @param string $indicatorType
+     * @param string $indicatorComparator
+     *
+     * @return RpgIndicator
+     */
+    private function installIndicator(array $indicatorArray, string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
+    {
+        $indicatorObject = new RpgIndicator();
+        $indicatorObject->setName($indicatorArray['name']);
+        if (array_key_exists("description", $indicatorArray)) $indicatorObject->setDescription($indicatorArray['description']);
+        $indicatorObject->setDataSet($indicatorDataSet);
+        $indicatorObject->setType($indicatorType);
+        $indicatorObject->setComparator($indicatorComparator);
+
+        $entityManager = $this->doctrine->getManager();
+        $entityManager->persist($indicatorObject);
+        $entityManager->flush();
+
+        return $indicatorObject;
     }
 
     /**
@@ -514,6 +499,38 @@ class AwardManager
                     ],
                 ],
             ],
+            'membership' => [
+                'all_history' => [
+                    '1' => [
+                        [
+                            'name' => 'Patreon Supporter XP',
+                            'text' => 'patreon xp',
+                            'text_long' => 'patreon xp longtext',
+                            'type' => "xp",
+                            'payload' => 10,
+                        ],
+                        [
+                            'name' => 'Patreon Supporter',
+                            'text' => 'patreon badge',
+                            'text_long' => 'patreon badge_longtext',
+                            'type' => "badge",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         if (array_key_exists($indicatorDataSet, $standard) &&
@@ -523,30 +540,6 @@ class AwardManager
         } else {
             return NULL;
         }
-    }
-
-    /**
-     * @param array  $indicatorArray
-     * @param string $indicatorDataSet
-     * @param string $indicatorType
-     * @param string $indicatorComparator
-     *
-     * @return RpgIndicator
-     */
-    private function installIndicator(array $indicatorArray, string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
-    {
-        $indicatorObject = new RpgIndicator();
-        $indicatorObject->setName($indicatorArray['name']);
-        if (array_key_exists("description", $indicatorArray)) $indicatorObject->setDescription($indicatorArray['description']);
-        $indicatorObject->setDataSet($indicatorDataSet);
-        $indicatorObject->setType($indicatorType);
-        $indicatorObject->setComparator($indicatorComparator);
-
-        $entityManager = $this->doctrine->getManager();
-        $entityManager->persist($indicatorObject);
-        $entityManager->flush();
-
-        return $indicatorObject;
     }
 
     /**
@@ -570,6 +563,102 @@ class AwardManager
         $entityManager->flush();
 
         return $rewardObject;
+    }
+
+    /**
+     * @param array $dataEntry
+     */
+    private function checkForLoginAwards(array $dataEntry)
+    {
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, TRUE));
+
+//        $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
+    }
+
+    /**
+     * @param mixed                  $dataEntry
+     * @param string|NULL            $criteria
+     * @param Patient|NULL           $patient
+     * @param string|NULL            $citation
+     * @param DateTimeInterface|null $dateTime
+     */
+    private function checkForChallengeAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
+    {
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $citation);
+
+//        $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
+
+    }
+
+    /**
+     * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForGoalAwards($dataEntry)
+    {
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
+
+        if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
+            $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
+            $indicatorType = "goal";
+            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
+                $indicatorComparator = ">300%";
+            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
+                $indicatorComparator = ">250%";
+            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
+                $indicatorComparator = ">200%";
+            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
+                $indicatorComparator = ">150%";
+            } else {
+                $indicatorComparator = ">100%";
+            }
+
+            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
+        }
+    }
+
+    private function findAndDeliveryRewards(string $indicatorDataSet, string $indicatorType, string $indicatorComparator, DateTimeInterface $dateTime = null)
+    {
+        if (!is_null($dateTime)) {
+            $this->dateTime = $dateTime;
+        }
+
+        $indicatorObject = $this->findAnIndicator($indicatorDataSet, $indicatorType, $indicatorComparator);
+        if (is_null($indicatorObject)) {
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': No indicator was found');
+        } else {
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator found = ' . $indicatorObject->getName());
+            if (count($indicatorObject->getRewards()) == 0) {
+                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator has no awards');
+                $awardDefaultArray = $this->findAwardInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
+                if (is_array($awardDefaultArray)) {
+                    foreach ($awardDefaultArray as $item) {
+                        $rewardObject = $this->installReward($item, $indicatorObject);
+                        $indicatorObject->addReward($rewardObject);
+                    }
+                }
+            }
+
+            foreach ($indicatorObject->getRewards() as $reward) {
+                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $reward->getType());
+                $transformerClassName = 'App\\AwardDelivery\\' . ucwords($reward->getType());
+                if (!class_exists($transformerClassName)) {
+                    //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . ucwords($reward->getType()));
+                } else {
+                    if (is_null($dateTime)) {
+                        $dateTime = new DateTime();
+                    }
+
+                    //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__);
+                    $rewardDelivery = new $transformerClassName($this->doctrine, $this->patient, $reward);
+                    /** @noinspection PhpUndefinedMethodInspection */
+                    $rewardDelivery->deliveryReward($this->dateTime);
+                }
+            }
+        }
     }
 
 }
