@@ -1663,13 +1663,14 @@ class FeedUxController extends AbstractController
                     $returnSummary[$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d");
                 }
             } else {
+                $payloadArray = json_decode($reward->getReward()->getPayload());
                 $returnSummary[$reward->getReward()->getId()] = [
                     "id" => $reward->getReward()->getId(),
-                    "name" => $reward->getReward()->getName(),
+                    "name" => $payloadArray->name,
                     "awarded" => $reward->getDatetime()->format("Y-m-d"),
-                    "image" => $reward->getReward()->getImageUrl(),
-                    "text" => $reward->getReward()->getText(),
-                    "longtext" => $reward->getReward()->getTextLong(),
+                    "image" => $payloadArray->badge_image,
+                    "text" => $payloadArray->badge_text,
+                    "longtext" => $payloadArray->badge_longtext,
                     "count" => 1,
                 ];
             }

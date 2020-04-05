@@ -59,14 +59,13 @@ class Xp extends AwardDelivery
 
                 $xpToAward = round(($this->reward->getPayload() * $this->patient->getRpgFactor()), 0, PHP_ROUND_HALF_DOWN);
 
-                $entityManager = $this->doctrine->getManager();
-
                 $xpAward = new RpgXP();
                 $xpAward->setDatetime($dateTime);
                 $xpAward->setReason($reasoning);
                 $xpAward->setValue($xpToAward);
                 $xpAward->setPatient($this->patient);
 
+                $entityManager = $this->doctrine->getManager();
                 $entityManager->persist($xpAward);
                 $entityManager->flush();
 
