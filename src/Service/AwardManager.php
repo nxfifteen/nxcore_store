@@ -106,90 +106,6 @@ class AwardManager
 //        return $patient;
     }
 
-    public function giveReward(Patient $patient, RpgRewards $reward, DateTimeInterface $dateTime = NULL, string $citation = NULL, bool $tweeted = FALSE)
-    {
-        $entityManager = $this->doctrine->getManager();
-        if (is_null($dateTime)) {
-            try {
-                $dateTime = new DateTime(date("Y-m-d 00:00:00"));
-            } catch (Exception $e) {
-                AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
-            }
-        }
-        /** @var RpgRewardsAwarded $rewards */
-        $rewards = $this->doctrine->getRepository(RpgRewardsAwarded::class)->findOneBy(['patient' => $patient, 'reward' => $reward, 'datetime' => $dateTime]);
-        if (!$rewards) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Awarding ' . $patient->getFirstName() . ' the ' . $reward->getName() . ' badge');
-
-            $rewarded = new RpgRewardsAwarded();
-            $rewarded->setPatient($patient);
-            $rewarded->setDatetime($dateTime);
-            $rewarded->setReward($reward);
-
-            $patient->addReward($rewarded);
-
-            if ($reward->getXp() > 0) {
-                $patient = $this->giveXp($patient, $reward->getXp(), "Awarded the " . $reward->getName() . " badge", $dateTime);
-            }
-
-            $notification = new SiteNews();
-            $notification->setPatient($patient);
-            $notification->setPublished(new \DateTime());
-            $notification->setTitle("You just won the " . $reward->getName() . " badge");
-            if (is_null($citation) || $citation == "") {
-                $notification->setText($reward->getText());
-            } else {
-                $notification->setText($citation);
-            }
-            $notification->setAccent('success');
-            $notification->setImage($reward->getImage());
-            $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
-            $notification->setLink('/achievements/awards/info/' . $reward->getId());
-            $notification->setPriority(3);
-
-            if (!$tweeted) {
-                $this->tweetManager->sendNotification(
-                    "@" . $patient->getUuid() . " just #won the " . $reward->getName() . " #badge! :heavy_check_mark:",
-                    "Congratulations!!",
-                    $patient,
-                    FALSE,
-                    "https://core.nxfifteen.me.uk/assets/badges/" . $reward->getImage() . ".png"
-                );
-
-                $this->tweetManager->sendNotification(
-                    "You just #won the " . $reward->getName() . " #badge! :heavy_check_mark:",
-                    $notification->getTitle() . " - " . $notification->getText(),
-                    $patient,
-                    TRUE,
-                    "https://core.nxfifteen.me.uk/assets/badges/" . $reward->getImage() . ".png"
-                );
-            }
-
-//            try {
-//                $this->sendUserEmail(
-//                    [
-//                        $patient->getEmail() => $patient->getFirstName() . ' ' . $patient->getSurName(),
-//                    ],
-//                    'award_badge',
-//                    $options
-//                );
-//            } catch (LoaderError $e) {
-//                return $patient;
-//            } catch (RuntimeError $e) {
-//                return $patient;
-//            } catch (SyntaxError $e) {
-//                return $patient;
-//            }
-
-            $entityManager->persist($notification);
-            $entityManager->persist($rewarded);
-            $entityManager->persist($patient);
-            $entityManager->flush();
-        }
-        return $patient;
-
-    }
-
     public function giveXp(Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
     {
         if ($xpAwarded > 0) {
@@ -307,12 +223,18 @@ class AwardManager
     }
 
     /**
-     * @param mixed       $dataEntry
-     * @param string|NULL $citation
+     * @param mixed                  $dataEntry
+     * @param string|NULL            $criteria
+     * @param Patient|NULL           $patient
+     * @param string|NULL            $citation
+     * @param DateTimeInterface|null $dateTime
      */
-    public function checkForAwards($dataEntry, string $citation = NULL)
+    public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
-        switch ($citation) {
+        switch ($criteria) {
+            case "challenge":
+                $this->checkForChallengeAwards($dataEntry, $criteria, $patient, $citation, $dateTime);
+                break;
             default:
                 if (get_class($dataEntry) == "FitStepsDailySummary" || get_class($dataEntry) == "FitDistanceDailySummary") {
                     try {
@@ -323,6 +245,20 @@ class AwardManager
                 break;
 
         }
+    }
+
+    /**
+     * @param mixed                  $dataEntry
+     * @param string|NULL            $criteria
+     * @param Patient|NULL           $patient
+     * @param string|NULL            $citation
+     * @param DateTimeInterface|null $dateTime
+     */
+    private function checkForChallengeAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
+    {
+        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
+        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $citation);
+
     }
 
     /**
