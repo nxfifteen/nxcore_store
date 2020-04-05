@@ -15,6 +15,7 @@ use App\AppConstants;
 use App\Entity\FitDistanceDailySummary;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
+use App\Entity\PatientMembership;
 use App\Entity\RpgIndicator;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
@@ -68,104 +69,6 @@ class AwardManager
     public function test()
     {
         AppConstants::writeToLog('debug_transform.txt', __LINE__);
-    }
-
-    public function giveBadge(Patient $patient, array $options)
-    {
-        return $patient;
-
-        // @TODO: RPG
-//        $entityManager = $this->doctrine->getManager();
-//        $dateTime = $options["dateTime"];
-//        $name = $options["badge_name"];
-//        $xp = $options["badge_xp"];
-//        $image = $options["badge_image"];
-//        $text = $options["badge_text"];
-//        $longtext = $options["badge_longtext"];
-//        /** @var RpgRewards $reward */
-//        $reward = $this->doctrine->getRepository(RpgRewards::class)->findOneBy(['name' => $name, 'text' => $text]);
-//        if (!$reward) {
-//            $reward = new RpgRewards();
-//            $reward->setName($name);
-//            $reward->setImage($image);
-//            $reward->setText($text);
-//            $reward->setTextLong($longtext);
-//            $reward->setXp($xp);
-//            $entityManager->persist($reward);
-//            $entityManager->flush();
-//        }
-//        if (is_object($dateTime)) {
-//            $patient = $this->giveReward($patient, $reward, $dateTime);
-//        } else {
-//            try {
-//                $patient = $this->giveReward($patient, $reward, new DateTime($dateTime));
-//            } catch (Exception $e) {
-//                AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
-//            }
-//        }
-//        return $patient;
-    }
-
-    public function giveXp(Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
-    {
-        if ($xpAwarded > 0) {
-            /** @var RpgXP $xpAlreadyAwarded */
-            $xpAlreadyAwarded = $this->doctrine->getRepository(RpgXP::class)->findOneBy(['patient' => $patient, 'reason' => $reasoning, 'datetime' => $dateTime]);
-            if (!$xpAlreadyAwarded) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Awarding ' . $patient->getFirstName() . ' ' . $xpAwarded . 'XP for ' . $reasoning);
-
-                // $currentXp = $patient->getXpTotal();
-                $xpToAward = 0;
-                for ($i = 1; $i <= $xpAwarded; $i++) {
-                    $patient = $this->updateDifficultyFactor($patient, $patient->getRpgLevel());
-                    $xpToAward = $xpToAward + round((1 * $patient->getRpgFactor()), 0, PHP_ROUND_HALF_DOWN);
-                }
-
-                $entityManager = $this->doctrine->getManager();
-
-                $xpAward = new RpgXP();
-                $xpAward->setDatetime($dateTime);
-                $xpAward->setReason($reasoning);
-                $xpAward->setValue($xpToAward);
-                $xpAward->setPatient($patient);
-
-                $entityManager->persist($xpAward);
-                $entityManager->flush();
-
-                $patient->addXp($xpAward);
-            }
-        }
-
-        return $patient;
-    }
-
-    private function updateDifficultyFactor(Patient $patient, int $i)
-    {
-        //$x = $patient->getRpgFactor();
-        // @var $x Base RPG factor
-        $x = 1;
-        if ($i == 10) {
-            $patient->setRpgFactor($x - 0.01);
-        } else if ($i == 20) {
-            $patient->setRpgFactor($x - 0.02);
-        } else if ($i == 30) {
-            $patient->setRpgFactor($x - 0.03);
-        } else if ($i == 40) {
-            $patient->setRpgFactor($x - 0.05);
-        } else if ($i == 50) {
-            $patient->setRpgFactor($x - 0.08);
-        } else if ($i == 60) {
-            $patient->setRpgFactor($x - 0.10);
-        } else if ($i == 70) {
-            $patient->setRpgFactor($x - 0.15);
-        } else if ($i == 80) {
-            $patient->setRpgFactor($x - 0.20);
-        } else if ($i == 90) {
-            $patient->setRpgFactor($x - 0.30);
-        }/* else if ($i == 100) {
-            $patient->setRpgFactor($x - 0.60);
-        }*/
-        return $patient;
     }
 
     /**
@@ -232,6 +135,13 @@ class AwardManager
     public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
         switch ($criteria) {
+            case "membership":
+                $this->checkForMembershipAwards($dataEntry);
+                break;
+            case "login":
+                $this->checkForLoginAwards($dataEntry);
+                break;
+            case "pve":
             case "challenge":
                 $this->checkForChallengeAwards($dataEntry, $criteria, $patient, $citation, $dateTime);
                 break;
@@ -245,6 +155,22 @@ class AwardManager
                 break;
 
         }
+    }
+
+    /**
+     * @param array $dataEntry
+     */
+    private function checkForLoginAwards(array $dataEntry)
+    {
+        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, true));
+    }
+
+    /**
+     * @param PatientMembership $dataEntry
+     */
+    private function checkForMembershipAwards(PatientMembership $dataEntry)
+    {
+        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
     }
 
     /**
@@ -295,18 +221,7 @@ class AwardManager
                     $awardDefaultArray = $this->findAwardInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
                     if (is_array($awardDefaultArray)) {
                         foreach ($awardDefaultArray as $item) {
-                            $rewardObject = new RpgRewards();
-                            $rewardObject->setName($item['name']);
-                            $rewardObject->setText($item['text']);
-                            $rewardObject->setTextLong($item['text_long']);
-                            $rewardObject->setIndicator($indicatorObject);
-                            $rewardObject->setType($item['type']);
-                            $rewardObject->setPayload($item['payload']);
-
-                            $entityManager = $this->doctrine->getManager();
-                            $entityManager->persist($rewardObject);
-                            $entityManager->flush();
-
+                            $rewardObject = $this->installReward($item, $indicatorObject);
                             $indicatorObject->addReward($rewardObject);
                         }
                     }
@@ -355,15 +270,7 @@ class AwardManager
             if (is_null($indicatorArray)) {
                 return NULL;
             } else {
-                $indicatorObject = new RpgIndicator();
-                $indicatorObject->setName($indicatorArray['name']);
-                $indicatorObject->setDataSet($indicatorDataSet);
-                $indicatorObject->setType($indicatorType);
-                $indicatorObject->setComparator($indicatorComparator);
-
-                $entityManager = $this->doctrine->getManager();
-                $entityManager->persist($indicatorObject);
-                $entityManager->flush();
+                $indicatorObject = $this->installIndicator($indicatorArray, $indicatorDataSet, $indicatorType, $indicatorComparator);
             }
         }
 
@@ -616,6 +523,53 @@ class AwardManager
         } else {
             return NULL;
         }
+    }
+
+    /**
+     * @param array  $indicatorArray
+     * @param string $indicatorDataSet
+     * @param string $indicatorType
+     * @param string $indicatorComparator
+     *
+     * @return RpgIndicator
+     */
+    private function installIndicator(array $indicatorArray, string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
+    {
+        $indicatorObject = new RpgIndicator();
+        $indicatorObject->setName($indicatorArray['name']);
+        if (array_key_exists("description", $indicatorArray)) $indicatorObject->setDescription($indicatorArray['description']);
+        $indicatorObject->setDataSet($indicatorDataSet);
+        $indicatorObject->setType($indicatorType);
+        $indicatorObject->setComparator($indicatorComparator);
+
+        $entityManager = $this->doctrine->getManager();
+        $entityManager->persist($indicatorObject);
+        $entityManager->flush();
+
+        return $indicatorObject;
+    }
+
+    /**
+     * @param array        $item
+     * @param RpgIndicator $indicatorObject
+     *
+     * @return RpgRewards
+     */
+    private function installReward(array $item, RpgIndicator $indicatorObject)
+    {
+        $rewardObject = new RpgRewards();
+        $rewardObject->setName($item['name']);
+        $rewardObject->setText($item['text']);
+        $rewardObject->setTextLong($item['text_long']);
+        $rewardObject->setIndicator($indicatorObject);
+        $rewardObject->setType($item['type']);
+        $rewardObject->setPayload($item['payload']);
+
+        $entityManager = $this->doctrine->getManager();
+        $entityManager->persist($rewardObject);
+        $entityManager->flush();
+
+        return $rewardObject;
     }
 
 }
