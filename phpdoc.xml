@@ -8,7 +8,7 @@
         <target>docs/dist</target>
     </transformer>
     <transformations>
-        <template name="clean"/>
+        <template name="xml"/>
     </transformations>
     <files>
         <directory>src</directory>
