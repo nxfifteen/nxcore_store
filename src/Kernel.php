@@ -44,6 +44,7 @@ class Kernel extends BaseKernel
     {
         date_default_timezone_set($_ENV['TIMEZONE']);
 
+        /** @noinspection PhpIncludeInspection */
         $contents = require $this->getProjectDir().'/config/bundles.php';
         foreach ($contents as $class => $envs) {
             if ($envs[$this->environment] ?? $envs['all'] ?? false) {
