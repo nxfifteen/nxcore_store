@@ -1130,7 +1130,7 @@ class FeedUxController extends AbstractController
 
         if (
             is_null($this->patient->getLastLoggedIn()) ||
-            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d") || true
+            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
         ) {
             if (is_null($this->patient->getLastLoggedIn())) {
                 $lastRecordedLogin = 0;
