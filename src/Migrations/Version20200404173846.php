@@ -1,6 +1,6 @@
 <?php
 /**
- * DONE This file is part of NxFIFTEEN Fitness Core.
+ * This file is part of NxFIFTEEN Fitness Core.
  *
  * @link      https://nxfifteen.me.uk/projects/nx-health/store
  * @link      https://nxfifteen.me.uk/projects/nx-health/
@@ -11,7 +11,7 @@
  */
 
 /**
- * DONE This file is part of NxFIFTEEN Fitness Core.
+ * This file is part of NxFIFTEEN Fitness Core.
  *
  * @link      https://nxfifteen.me.uk/projects/nx-health/store
  * @link      https://nxfifteen.me.uk/projects/nx-health/
