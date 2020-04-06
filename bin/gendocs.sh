@@ -21,7 +21,7 @@ rm -rf "${WIKIPATH}"
 git clone git@nxfifteen.me.uk:nx-health/store.wiki.git "${WIKIPATH}"
 
 mkdir -p "${WIKIPATH}/phpdoc"
-mv "${DISTPATH}/ApiIndex.md" "${WIKIPATH}/phpdoc/Index.md"
+mv "${DISTPATH}/ApiIndex.md" "${WIKIPATH}/phpdoc.md"
 
 # shellcheck disable=SC2164
 cd "${DISTPATH}"
@@ -41,11 +41,11 @@ do
         MDLINKORI=${DISTFILE/.\//}
         MDLINKNEW=${DESTFILE/.\//}
         MDLINKNEW=${MDLINKNEW/.md/}
-        sed -i "s|${MDLINKORI}|${MDLINKNEW}|g" "${WIKIPATH}/phpdoc/Index.md"
+        sed -i "s|${MDLINKORI}|${MDLINKNEW}|g" "${WIKIPATH}/phpdoc.md"
     fi
 done
 
-sed -i "s|](|](phpdoc/|g" "${WIKIPATH}/phpdoc/Index.md"
+sed -i "s|](|](phpdoc/|g" "${WIKIPATH}/phpdoc.md"
 
 # shellcheck disable=SC2164
 cd "${WIKIPATH}/phpdoc/"
