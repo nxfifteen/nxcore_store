@@ -29,6 +29,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 
+/**
+ * Class FitbitExercise
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitExercise extends Constants
 {
     /**
@@ -255,6 +260,14 @@ class FitbitExercise extends Constants
         return NULL;
     }
 
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param ThirdPartyService $service
+     * @param                   $path
+     *
+     * @return \SimpleXMLElement|null
+     */
     private static function pullTCXData(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $service, $path)
     {
         /** @var PatientCredentials $accessToken */
@@ -284,6 +297,9 @@ class FitbitExercise extends Constants
         return NULL;
     }
 
+    /**
+     * @return Fitbit
+     */
     private static function getLibrary()
     {
         return new Fitbit([

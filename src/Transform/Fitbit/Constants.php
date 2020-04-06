@@ -14,18 +14,49 @@ namespace App\Transform\Fitbit;
 
 use App\Transform\Transform;
 
+/**
+ *
+ */
 define("FITBIT_COM", "https://api.fitbit.com");
 
+/**
+ * Class Constants
+ *
+ * @package App\Transform\Fitbit
+ */
 class Constants extends Transform
 {
+    /**
+     *
+     */
     const FITBITSERVICE = "Fitbit";
 
+    /**
+     *
+     */
     const FITBITEPBODYWEIGHT = "TrackingDevice::BodyWeight";
+    /**
+     *
+     */
     const FITBITHEPDAILYSTEPS = "TrackingDevice::FitStepsDailySummary";
+    /**
+     *
+     */
     const FITBITHEPPERIODSTEPS = "FitStepsPeriodSummary";
+    /**
+     *
+     */
     const FITBITHEPDAILYSTEPSEXERCISE = "TrackingDevice::FitStepsDailySummary::Exercise";
+    /**
+     *
+     */
     const FITBITEXERCISE = "TrackingDevice::Exercise";
 
+    /**
+     * @param string $endpoint
+     *
+     * @return string|null
+     */
     public static function getPath(string $endpoint)
     {
         switch ( $endpoint ) {
@@ -68,6 +99,11 @@ class Constants extends Transform
         return FITBIT_COM . "/1/user/-$path";
     }
 
+    /**
+     * @param $endpoint
+     *
+     * @return array|null
+     */
     public static function convertSubscriptionToClass($endpoint) {
         switch ( $endpoint ) {
             case 'activities':
@@ -89,6 +125,11 @@ class Constants extends Transform
         }
     }
 
+    /**
+     * @param int $serviceId
+     *
+     * @return string
+     */
     protected static function convertExerciseType(int $serviceId)
     {
         switch ($serviceId) {

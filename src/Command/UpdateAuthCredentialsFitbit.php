@@ -58,6 +58,9 @@ class UpdateAuthCredentialsFitbit extends Command {
         $this->refreshFitbitTokens();
     }
 
+    /**
+     * @throws \Exception
+     */
     private function refreshFitbitTokens()
     {
         $queryCallback = $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit';

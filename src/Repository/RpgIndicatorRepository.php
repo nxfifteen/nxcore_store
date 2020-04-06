@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class RpgIndicatorRepository extends ServiceEntityRepository
 {
+    /**
+     * RpgIndicatorRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, RpgIndicator::class);

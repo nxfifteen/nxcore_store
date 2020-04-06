@@ -23,6 +23,11 @@ use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungConsumeCaffeine
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungConsumeCaffeine extends Constants
 {
     /**

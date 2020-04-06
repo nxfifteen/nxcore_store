@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class ContributionLicenseRepository extends ServiceEntityRepository
 {
+    /**
+     * ContributionLicenseRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ContributionLicense::class);

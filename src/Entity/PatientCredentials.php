@@ -53,16 +53,27 @@ class PatientCredentials
      */
     private $expires;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -70,11 +81,19 @@ class PatientCredentials
         return $this;
     }
 
+    /**
+     * @return ThirdPartyService|null
+     */
     public function getService(): ?ThirdPartyService
     {
         return $this->service;
     }
 
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;
@@ -82,11 +101,19 @@ class PatientCredentials
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getToken(): ?string
     {
         return $this->token;
     }
 
+    /**
+     * @param string $token
+     *
+     * @return $this
+     */
     public function setToken(string $token): self
     {
         $this->token = $token;
@@ -94,11 +121,19 @@ class PatientCredentials
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRefreshToken(): ?string
     {
         return $this->refreshToken;
     }
 
+    /**
+     * @param string|null $refreshToken
+     *
+     * @return $this
+     */
     public function setRefreshToken(?string $refreshToken): self
     {
         $this->refreshToken = $refreshToken;
@@ -106,11 +141,19 @@ class PatientCredentials
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getExpires(): ?\DateTimeInterface
     {
         return $this->expires;
     }
 
+    /**
+     * @param \DateTimeInterface|null $expires
+     *
+     * @return $this
+     */
     public function setExpires(?\DateTimeInterface $expires): self
     {
         $this->expires = $expires;

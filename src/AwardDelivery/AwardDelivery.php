@@ -13,6 +13,11 @@
 namespace App\AwardDelivery;
 
 
+/**
+ * Class AwardDelivery
+ *
+ * @package App\AwardDelivery
+ */
 class AwardDelivery
 {
 

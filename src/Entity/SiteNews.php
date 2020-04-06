@@ -78,16 +78,27 @@ class SiteNews
      */
     private $image;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
+    /**
+     * @param string $title
+     *
+     * @return $this
+     */
     public function setTitle(string $title): self
     {
         $this->title = $title;
@@ -95,11 +106,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getText(): ?string
     {
         return $this->text;
     }
 
+    /**
+     * @param string $text
+     *
+     * @return $this
+     */
     public function setText(string $text): self
     {
         $this->text = $text;
@@ -107,11 +126,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getPublished(): ?\DateTimeInterface
     {
         return $this->published;
     }
 
+    /**
+     * @param \DateTimeInterface $published
+     *
+     * @return $this
+     */
     public function setPublished(\DateTimeInterface $published): self
     {
         $this->published = $published;
@@ -119,11 +146,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getExpires(): ?\DateTimeInterface
     {
         return $this->expires;
     }
 
+    /**
+     * @param \DateTimeInterface|null $expires
+     *
+     * @return $this
+     */
     public function setExpires(?\DateTimeInterface $expires): self
     {
         $this->expires = $expires;
@@ -131,11 +166,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getAccent(): ?string
     {
         return $this->accent;
     }
 
+    /**
+     * @param string|null $accent
+     *
+     * @return $this
+     */
     public function setAccent(?string $accent): self
     {
         $this->accent = $accent;
@@ -143,11 +186,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -155,11 +206,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getDisplayed(): ?bool
     {
         return $this->displayed;
     }
 
+    /**
+     * @param bool|null $displayed
+     *
+     * @return $this
+     */
     public function setDisplayed(?bool $displayed): self
     {
         $this->displayed = $displayed;
@@ -167,11 +226,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getLink(): ?string
     {
         return $this->link;
     }
 
+    /**
+     * @param string|null $link
+     *
+     * @return $this
+     */
     public function setLink(?string $link): self
     {
         $this->link = $link;
@@ -179,11 +246,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getPriority(): ?int
     {
         return $this->priority;
     }
 
+    /**
+     * @param int|null $priority
+     *
+     * @return $this
+     */
     public function setPriority(?int $priority): self
     {
         $this->priority = $priority;
@@ -191,11 +266,19 @@ class SiteNews
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getImage(): ?string
     {
         return $this->image;
     }
 
+    /**
+     * @param string $image
+     *
+     * @return $this
+     */
     public function setImage(string $image): self
     {
         $this->image = $image;

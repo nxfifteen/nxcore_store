@@ -72,16 +72,27 @@ class BodyWeight
      */
     private $RemoteId;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -89,11 +100,19 @@ class BodyWeight
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
@@ -101,11 +120,19 @@ class BodyWeight
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getMeasurement(): ?float
     {
         return $this->measurement;
     }
 
+    /**
+     * @param float $measurement
+     *
+     * @return $this
+     */
     public function setMeasurement(float $measurement): self
     {
         $this->measurement = $measurement;
@@ -113,11 +140,19 @@ class BodyWeight
         return $this;
     }
 
+    /**
+     * @return UnitOfMeasurement|null
+     */
     public function getUnitOfMeasurement(): ?UnitOfMeasurement
     {
         return $this->unitOfMeasurement;
     }
 
+    /**
+     * @param UnitOfMeasurement|null $unitOfMeasurement
+     *
+     * @return $this
+     */
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;
@@ -125,11 +160,19 @@ class BodyWeight
         return $this;
     }
 
+    /**
+     * @return PartOfDay|null
+     */
     public function getPartOfDay(): ?PartOfDay
     {
         return $this->partOfDay;
     }
 
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
@@ -137,11 +180,19 @@ class BodyWeight
         return $this;
     }
 
+    /**
+     * @return PatientGoals|null
+     */
     public function getPatientGoal(): ?PatientGoals
     {
         return $this->patientGoal;
     }
 
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
     public function setPatientGoal(?PatientGoals $patientGoal): self
     {
         $this->patientGoal = $patientGoal;
@@ -149,11 +200,19 @@ class BodyWeight
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getDateTime(): ?\DateTimeInterface
     {
         return $this->DateTime;
     }
 
+    /**
+     * @param \DateTimeInterface $DateTime
+     *
+     * @return $this
+     */
     public function setDateTime(\DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
@@ -161,11 +220,19 @@ class BodyWeight
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;

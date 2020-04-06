@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class PartOfDayRepository extends ServiceEntityRepository
 {
+    /**
+     * PartOfDayRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, PartOfDay::class);

@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class RpgRewardsAwardedRepository extends ServiceEntityRepository
 {
+    /**
+     * RpgRewardsAwardedRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, RpgRewardsAwarded::class);

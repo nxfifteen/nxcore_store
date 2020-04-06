@@ -20,6 +20,11 @@ use App\Entity\RpgChallengeGlobalPatient;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class ChallengePve
+ *
+ * @package App\Service
+ */
 class ChallengePve
 {
     /**
@@ -37,6 +42,13 @@ class ChallengePve
      */
     private $tweetManager;
 
+    /**
+     * ChallengePve constructor.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param AwardManager    $awardManager
+     * @param TweetManager    $tweetManager
+     */
     public function __construct(
         ManagerRegistry $doctrine,
         AwardManager $awardManager,
@@ -182,6 +194,11 @@ class ChallengePve
         return AppConstants::convertUnitOfMeasurement($value, $valueUnit, $targetUnit);
     }
 
+    /**
+     * @param RpgChallengeGlobal $dbRpgChallengeGlobal
+     *
+     * @return RpgChallengeGlobal
+     */
     private function getRootChallenge(RpgChallengeGlobal $dbRpgChallengeGlobal)
     {
         if (!is_null($dbRpgChallengeGlobal->getChildOf())) {

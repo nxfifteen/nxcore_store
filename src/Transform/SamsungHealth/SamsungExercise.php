@@ -26,6 +26,11 @@ use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use PhpParser\Node\Expr\Array_;
 
+/**
+ * Class SamsungExercise
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungExercise extends Constants
 {
     /**

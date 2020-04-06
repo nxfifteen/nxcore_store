@@ -21,6 +21,11 @@ use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungCountDailyCalories
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungCountDailyCalories extends Constants
 {
     /**

@@ -24,11 +24,21 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class PatientCredentialsRepository extends ServiceEntityRepository
 {
+    /**
+     * PatientCredentialsRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, PatientCredentials::class);
     }
 
+    /**
+     * @param int $serviceId
+     *
+     * @return mixed
+     */
     public function findExpired(int $serviceId)
     {
         return $this->createQueryBuilder('a')

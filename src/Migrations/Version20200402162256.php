@@ -26,11 +26,19 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200402162256 extends AbstractMigration
 {
+    /**
+     * @return string
+     */
     public function getDescription() : string
     {
         return '';
     }
 
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
@@ -89,6 +97,11 @@ final class Version20200402162256 extends AbstractMigration
         $this->addSql('INSERT INTO workout_muscle VALUES(15, \'Serratus Anterior\', 1)');
     }
 
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function down(Schema $schema) : void
     {
         // this down() migration is auto-generated, please modify it to your needs

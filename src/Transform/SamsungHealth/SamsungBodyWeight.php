@@ -25,6 +25,11 @@ use App\Service\AwardManager;
 use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungBodyWeight
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungBodyWeight extends Constants
 {
     /**

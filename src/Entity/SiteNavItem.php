@@ -86,16 +86,27 @@ class SiteNavItem
      */
     private $requireService = [];
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -103,11 +114,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getUrl(): ?string
     {
         return $this->url;
     }
 
+    /**
+     * @param string|null $url
+     *
+     * @return $this
+     */
     public function setUrl(?string $url): self
     {
         $this->url = $url;
@@ -115,11 +134,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getDivider(): ?bool
     {
         return $this->divider;
     }
 
+    /**
+     * @param bool|null $divider
+     *
+     * @return $this
+     */
     public function setDivider(?bool $divider): self
     {
         $this->divider = $divider;
@@ -127,11 +154,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getTitle(): ?bool
     {
         return $this->title;
     }
 
+    /**
+     * @param bool|null $title
+     *
+     * @return $this
+     */
     public function setTitle(?bool $title): self
     {
         $this->title = $title;
@@ -139,11 +174,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getIcon(): ?string
     {
         return $this->icon;
     }
 
+    /**
+     * @param string|null $icon
+     *
+     * @return $this
+     */
     public function setIcon(?string $icon): self
     {
         $this->icon = $icon;
@@ -151,11 +194,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getDisplayOrder(): ?int
     {
         return $this->displayOrder;
     }
 
+    /**
+     * @param int $displayOrder
+     *
+     * @return $this
+     */
     public function setDisplayOrder(int $displayOrder): self
     {
         $this->displayOrder = $displayOrder;
@@ -163,11 +214,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getBadgeVariant(): ?string
     {
         return $this->badgeVariant;
     }
 
+    /**
+     * @param string|null $badgeVariant
+     *
+     * @return $this
+     */
     public function setBadgeVariant(?string $badgeVariant): self
     {
         $this->badgeVariant = $badgeVariant;
@@ -175,11 +234,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getBadgeText(): ?string
     {
         return $this->badgeText;
     }
 
+    /**
+     * @param string|null $badgeText
+     *
+     * @return $this
+     */
     public function setBadgeText(?string $badgeText): self
     {
         $this->badgeText = $badgeText;
@@ -187,11 +254,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getChildOf(): ?int
     {
         return $this->childOf;
     }
 
+    /**
+     * @param int $childOf
+     *
+     * @return $this
+     */
     public function setChildOf(int $childOf): self
     {
         $this->childOf = $childOf;
@@ -199,11 +274,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getAccessLevel(): ?string
     {
         return $this->accessLevel;
     }
 
+    /**
+     * @param string|null $accessLevel
+     *
+     * @return $this
+     */
     public function setAccessLevel(?string $accessLevel): self
     {
         $this->accessLevel = $accessLevel;
@@ -211,11 +294,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getInDevelopment(): ?bool
     {
         return $this->inDevelopment;
     }
 
+    /**
+     * @param bool $inDevelopment
+     *
+     * @return $this
+     */
     public function setInDevelopment(bool $inDevelopment): self
     {
         $this->inDevelopment = $inDevelopment;
@@ -223,11 +314,19 @@ class SiteNavItem
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
     public function getRequireService(): ?array
     {
         return $this->requireService;
     }
 
+    /**
+     * @param array|null $requireService
+     *
+     * @return $this
+     */
     public function setRequireService(?array $requireService): self
     {
         $this->requireService = $requireService;

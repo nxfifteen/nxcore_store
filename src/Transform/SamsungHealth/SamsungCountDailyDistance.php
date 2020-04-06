@@ -28,6 +28,11 @@ use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 
+/**
+ * Class SamsungCountDailyDistance
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungCountDailyDistance extends Constants
 {
     /**

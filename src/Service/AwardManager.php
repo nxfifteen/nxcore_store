@@ -31,6 +31,11 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
+/**
+ * Class AwardManager
+ *
+ * @package App\Service
+ */
 class AwardManager
 {
     /**

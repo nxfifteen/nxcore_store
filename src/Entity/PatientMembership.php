@@ -56,16 +56,27 @@ class PatientMembership
      */
     private $lastPaid;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTear(): ?string
     {
         return $this->tear;
     }
 
+    /**
+     * @param string $tear
+     *
+     * @return $this
+     */
     public function setTear(string $tear): self
     {
         $this->tear = $tear;
@@ -73,11 +84,19 @@ class PatientMembership
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getSince(): ?\DateTimeInterface
     {
         return $this->since;
     }
 
+    /**
+     * @param \DateTimeInterface $since
+     *
+     * @return $this
+     */
     public function setSince(\DateTimeInterface $since): self
     {
         $this->since = $since;
@@ -85,11 +104,19 @@ class PatientMembership
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getActive(): ?bool
     {
         return $this->active;
     }
 
+    /**
+     * @param bool $active
+     *
+     * @return $this
+     */
     public function setActive(bool $active): self
     {
         $this->active = $active;
@@ -97,11 +124,19 @@ class PatientMembership
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getLifetime(): ?bool
     {
         return $this->lifetime;
     }
 
+    /**
+     * @param bool $lifetime
+     *
+     * @return $this
+     */
     public function setLifetime(bool $lifetime): self
     {
         $this->lifetime = $lifetime;
@@ -109,11 +144,19 @@ class PatientMembership
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -121,11 +164,19 @@ class PatientMembership
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getLastPaid(): ?\DateTimeInterface
     {
         return $this->lastPaid;
     }
 
+    /**
+     * @param \DateTimeInterface $lastPaid
+     *
+     * @return $this
+     */
     public function setLastPaid(\DateTimeInterface $lastPaid): self
     {
         $this->lastPaid = $lastPaid;

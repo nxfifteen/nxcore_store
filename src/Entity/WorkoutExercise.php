@@ -63,6 +63,9 @@ class WorkoutExercise
      */
     private $license;
 
+    /**
+     * WorkoutExercise constructor.
+     */
     public function __construct()
     {
         $this->muscles = new ArrayCollection();
@@ -70,16 +73,27 @@ class WorkoutExercise
         $this->category = new ArrayCollection();
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -87,11 +101,19 @@ class WorkoutExercise
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
+    /**
+     * @param string $description
+     *
+     * @return $this
+     */
     public function setDescription(string $description): self
     {
         $this->description = $description;
@@ -99,11 +121,19 @@ class WorkoutExercise
         return $this;
     }
 
+    /**
+     * @return WorkoutEquipment|null
+     */
     public function getEquipment(): ?WorkoutEquipment
     {
         return $this->equipment;
     }
 
+    /**
+     * @param WorkoutEquipment|null $equipment
+     *
+     * @return $this
+     */
     public function setEquipment(?WorkoutEquipment $equipment): self
     {
         $this->equipment = $equipment;
@@ -119,6 +149,11 @@ class WorkoutExercise
         return $this->muscles;
     }
 
+    /**
+     * @param WorkoutMuscleRelation $muscle
+     *
+     * @return $this
+     */
     public function addMuscle(WorkoutMuscleRelation $muscle): self
     {
         if (!$this->muscles->contains($muscle)) {
@@ -129,6 +164,11 @@ class WorkoutExercise
         return $this;
     }
 
+    /**
+     * @param WorkoutMuscleRelation $muscle
+     *
+     * @return $this
+     */
     public function removeMuscle(WorkoutMuscleRelation $muscle): self
     {
         if ($this->muscles->contains($muscle)) {
@@ -150,6 +190,11 @@ class WorkoutExercise
         return $this->uploads;
     }
 
+    /**
+     * @param UploadedFile $upload
+     *
+     * @return $this
+     */
     public function addUpload(UploadedFile $upload): self
     {
         if (!$this->uploads->contains($upload)) {
@@ -160,6 +205,11 @@ class WorkoutExercise
         return $this;
     }
 
+    /**
+     * @param UploadedFile $upload
+     *
+     * @return $this
+     */
     public function removeUpload(UploadedFile $upload): self
     {
         if ($this->uploads->contains($upload)) {
@@ -181,6 +231,11 @@ class WorkoutExercise
         return $this->category;
     }
 
+    /**
+     * @param WorkoutCategories $category
+     *
+     * @return $this
+     */
     public function addCategory(WorkoutCategories $category): self
     {
         if (!$this->category->contains($category)) {
@@ -190,6 +245,11 @@ class WorkoutExercise
         return $this;
     }
 
+    /**
+     * @param WorkoutCategories $category
+     *
+     * @return $this
+     */
     public function removeCategory(WorkoutCategories $category): self
     {
         if ($this->category->contains($category)) {
@@ -199,11 +259,19 @@ class WorkoutExercise
         return $this;
     }
 
+    /**
+     * @return ContributionLicense|null
+     */
     public function getLicense(): ?ContributionLicense
     {
         return $this->license;
     }
 
+    /**
+     * @param ContributionLicense|null $license
+     *
+     * @return $this
+     */
     public function setLicense(?ContributionLicense $license): self
     {
         $this->license = $license;

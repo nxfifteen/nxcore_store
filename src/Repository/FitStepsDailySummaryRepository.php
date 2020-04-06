@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class FitStepsDailySummaryRepository extends ServiceEntityRepository
 {
+    /**
+     * FitStepsDailySummaryRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FitStepsDailySummary::class);
@@ -48,6 +53,12 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param String $patientId
+     * @param        $dateSince
+     *
+     * @return mixed
+     */
     public function findSince(String $patientId, $dateSince)
     {
         /** @var \DateTime $dateSince */
@@ -62,6 +73,13 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param String $patientId
+     * @param        $dateSince
+     * @param        $dateTill
+     *
+     * @return mixed
+     */
     public function findBetween(String $patientId, $dateSince, $dateTill)
     {
         /** @var \DateTime $dateSince */
@@ -78,6 +96,12 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param String $patientId
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
     public function findHighest(String $patientId, int $trackingDevice)
     {
         return $this->createQueryBuilder('c')

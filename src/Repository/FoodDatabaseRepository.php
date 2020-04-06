@@ -25,6 +25,11 @@ use Doctrine\ORM\NonUniqueResultException;
  */
 class FoodDatabaseRepository extends ServiceEntityRepository
 {
+    /**
+     * FoodDatabaseRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FoodDatabase::class);

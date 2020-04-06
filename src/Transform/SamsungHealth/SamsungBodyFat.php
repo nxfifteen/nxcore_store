@@ -23,6 +23,11 @@ use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungBodyFat
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungBodyFat extends Constants
 {
     /**

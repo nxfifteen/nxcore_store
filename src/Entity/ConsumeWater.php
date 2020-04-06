@@ -84,16 +84,27 @@ class ConsumeWater
      */
     private $patientGoal;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return float|null
+     */
     public function getMeasurement(): ?float
     {
         return $this->measurement;
     }
 
+    /**
+     * @param float $measurement
+     *
+     * @return $this
+     */
     public function setMeasurement(float $measurement): self
     {
         $this->measurement = $measurement;
@@ -101,11 +112,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getDateTime(): ?\DateTimeInterface
     {
         return $this->DateTime;
     }
 
+    /**
+     * @param \DateTimeInterface $DateTime
+     *
+     * @return $this
+     */
     public function setDateTime(\DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
@@ -113,11 +132,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -125,11 +152,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
@@ -137,11 +172,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function gettrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function settrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
@@ -149,11 +192,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return ThirdPartyService|null
+     */
     public function getService(): ?ThirdPartyService
     {
         return $this->service;
     }
 
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;
@@ -161,11 +212,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getComment(): ?string
     {
         return $this->comment;
     }
 
+    /**
+     * @param string|null $comment
+     *
+     * @return $this
+     */
     public function setComment(?string $comment): self
     {
         $this->comment = $comment;
@@ -173,11 +232,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return UnitOfMeasurement|null
+     */
     public function getUnitOfMeasurement(): ?UnitOfMeasurement
     {
         return $this->unitOfMeasurement;
     }
 
+    /**
+     * @param UnitOfMeasurement|null $unitOfMeasurement
+     *
+     * @return $this
+     */
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;
@@ -185,11 +252,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return PartOfDay|null
+     */
     public function getPartOfDay(): ?PartOfDay
     {
         return $this->partOfDay;
     }
 
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
@@ -197,11 +272,19 @@ class ConsumeWater
         return $this;
     }
 
+    /**
+     * @return PatientGoals|null
+     */
     public function getPatientGoal(): ?PatientGoals
     {
         return $this->patientGoal;
     }
 
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
     public function setPatientGoal(?PatientGoals $patientGoal): self
     {
         $this->patientGoal = $patientGoal;

@@ -81,16 +81,27 @@ class RpgChallengeGlobal
      */
     private $unitOfMeasurement;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -98,11 +109,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getDescripton(): ?string
     {
         return $this->descripton;
     }
 
+    /**
+     * @param string|null $descripton
+     *
+     * @return $this
+     */
     public function setDescripton(?string $descripton): self
     {
         $this->descripton = $descripton;
@@ -110,11 +129,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return $this|null
+     */
     public function getChildren(): ?self
     {
         return $this->children;
     }
 
+    /**
+     * @param RpgChallengeGlobal|null $children
+     *
+     * @return $this
+     */
     public function setChildren(?self $children): self
     {
         $this->children = $children;
@@ -128,11 +155,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return $this|null
+     */
     public function getChildOf(): ?self
     {
         return $this->childOf;
     }
 
+    /**
+     * @param RpgChallengeGlobal|null $childOf
+     *
+     * @return $this
+     */
     public function setChildOf(?self $childOf): self
     {
         $this->childOf = $childOf;
@@ -140,11 +175,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getActive(): ?bool
     {
         return $this->active;
     }
 
+    /**
+     * @param bool|null $active
+     *
+     * @return $this
+     */
     public function setActive(?bool $active): self
     {
         $this->active = $active;
@@ -152,11 +195,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getCriteria(): ?string
     {
         return $this->criteria;
     }
 
+    /**
+     * @param string|null $criteria
+     *
+     * @return $this
+     */
     public function setCriteria(?string $criteria): self
     {
         $this->criteria = $criteria;
@@ -164,11 +215,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getTarget(): ?float
     {
         return $this->target;
     }
 
+    /**
+     * @param float|null $target
+     *
+     * @return $this
+     */
     public function setTarget(?float $target): self
     {
         $this->target = $target;
@@ -176,11 +235,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getProgression(): ?string
     {
         return $this->progression;
     }
 
+    /**
+     * @param string|null $progression
+     *
+     * @return $this
+     */
     public function setProgression(?string $progression): self
     {
         $this->progression = $progression;
@@ -188,11 +255,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return RpgRewards|null
+     */
     public function getReward(): ?RpgRewards
     {
         return $this->reward;
     }
 
+    /**
+     * @param RpgRewards|null $reward
+     *
+     * @return $this
+     */
     public function setReward(?RpgRewards $reward): self
     {
         $this->reward = $reward;
@@ -200,11 +275,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getXp(): ?float
     {
         return $this->xp;
     }
 
+    /**
+     * @param float|null $xp
+     *
+     * @return $this
+     */
     public function setXp(?float $xp): self
     {
         $this->xp = $xp;
@@ -212,11 +295,19 @@ class RpgChallengeGlobal
         return $this;
     }
 
+    /**
+     * @return UnitOfMeasurement|null
+     */
     public function getUnitOfMeasurement(): ?UnitOfMeasurement
     {
         return $this->unitOfMeasurement;
     }
 
+    /**
+     * @param UnitOfMeasurement|null $unitOfMeasurement
+     *
+     * @return $this
+     */
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;

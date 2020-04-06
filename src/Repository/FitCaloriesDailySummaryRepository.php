@@ -26,6 +26,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class FitCaloriesDailySummaryRepository extends ServiceEntityRepository
 {
+    /**
+     * FitCaloriesDailySummaryRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FitCaloriesDailySummary::class);

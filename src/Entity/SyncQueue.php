@@ -48,16 +48,27 @@ class SyncQueue
      */
     private $service;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return PatientCredentials|null
+     */
     public function getCredentials(): ?PatientCredentials
     {
         return $this->credentials;
     }
 
+    /**
+     * @param PatientCredentials|null $credentials
+     *
+     * @return $this
+     */
     public function setCredentials(?PatientCredentials $credentials): self
     {
         $this->credentials = $credentials;
@@ -65,11 +76,19 @@ class SyncQueue
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEndpoint(): ?string
     {
         return $this->endpoint;
     }
 
+    /**
+     * @param string $endpoint
+     *
+     * @return $this
+     */
     public function setEndpoint(string $endpoint): self
     {
         $this->endpoint = $endpoint;
@@ -77,11 +96,19 @@ class SyncQueue
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getDatetime(): ?\DateTimeInterface
     {
         return $this->datetime;
     }
 
+    /**
+     * @param \DateTimeInterface $datetime
+     *
+     * @return $this
+     */
     public function setDatetime(\DateTimeInterface $datetime): self
     {
         $this->datetime = $datetime;
@@ -89,11 +116,19 @@ class SyncQueue
         return $this;
     }
 
+    /**
+     * @return ThirdPartyService|null
+     */
     public function getService(): ?ThirdPartyService
     {
         return $this->service;
     }
 
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;

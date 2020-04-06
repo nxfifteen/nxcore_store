@@ -21,9 +21,17 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use Sentry;
 
+/**
+ * Class Entry
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class Entry
 {
 
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     /** @var Patient $patient */
@@ -41,6 +49,16 @@ class Entry
         $this->patient = $patient;
     }
 
+    /**
+     * @param String          $data_set
+     * @param String          $getContent
+     * @param ManagerRegistry $doctrine
+     * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param TweetManager    $tweetManager
+     *
+     * @return array|int|null
+     */
     public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
         $translateEntity = NULL;

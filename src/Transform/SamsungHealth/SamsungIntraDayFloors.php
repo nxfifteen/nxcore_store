@@ -22,6 +22,11 @@ use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungIntraDayFloors
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungIntraDayFloors extends Constants
 {
     /**

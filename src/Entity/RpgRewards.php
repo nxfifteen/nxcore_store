@@ -57,16 +57,27 @@ class RpgRewards
      */
     private $payload;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -74,11 +85,19 @@ class RpgRewards
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getText(): ?string
     {
         return $this->text;
     }
 
+    /**
+     * @param string $text
+     *
+     * @return $this
+     */
     public function setText(string $text): self
     {
         $this->text = $text;
@@ -86,11 +105,19 @@ class RpgRewards
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTextLong(): ?string
     {
         return $this->textLong;
     }
 
+    /**
+     * @param string|null $textLong
+     *
+     * @return $this
+     */
     public function setTextLong(?string $textLong): self
     {
         $this->textLong = $textLong;
@@ -98,11 +125,19 @@ class RpgRewards
         return $this;
     }
 
+    /**
+     * @return RpgIndicator|null
+     */
     public function getIndicator(): ?RpgIndicator
     {
         return $this->indicator;
     }
 
+    /**
+     * @param RpgIndicator|null $indicator
+     *
+     * @return $this
+     */
     public function setIndicator(?RpgIndicator $indicator): self
     {
         $this->indicator = $indicator;
@@ -110,11 +145,19 @@ class RpgRewards
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
+    /**
+     * @param string $type
+     *
+     * @return $this
+     */
     public function setType(string $type): self
     {
         $this->type = $type;
@@ -122,11 +165,19 @@ class RpgRewards
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getPayload(): ?string
     {
         return $this->payload;
     }
 
+    /**
+     * @param string $payload
+     *
+     * @return $this
+     */
     public function setPayload(string $payload): self
     {
         $this->payload = $payload;

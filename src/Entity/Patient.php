@@ -181,6 +181,9 @@ class Patient implements UserInterface
      */
     private $devices;
 
+    /**
+     * Patient constructor.
+     */
     public function __construct()
     {
         $this->fitStepsDailySummaries = new ArrayCollection();
@@ -198,11 +201,19 @@ class Patient implements UserInterface
         $this->devices = new ArrayCollection();
     }
 
+    /**
+     * @return string|null
+     */
     public function getApiToken(): ?string
     {
         return $this->apiToken;
     }
 
+    /**
+     * @param string $apiToken
+     *
+     * @return $this
+     */
     public function setApiToken(string $apiToken): self
     {
         $this->apiToken = $apiToken;
@@ -210,16 +221,27 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getUuid(): ?string
     {
         return $this->uuid;
     }
 
+    /**
+     * @param string $uuid
+     *
+     * @return $this
+     */
     public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
@@ -244,6 +266,11 @@ class Patient implements UserInterface
         return (string)$this->password;
     }
 
+    /**
+     * @param string $password
+     *
+     * @return $this
+     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
@@ -263,6 +290,11 @@ class Patient implements UserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array $roles
+     *
+     * @return $this
+     */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
@@ -296,6 +328,11 @@ class Patient implements UserInterface
         return $this->trackingDevices;
     }
 
+    /**
+     * @param TrackingDevice $trackingDevice
+     *
+     * @return $this
+     */
     public function addTrackingDevice(TrackingDevice $trackingDevice): self
     {
         if (!$this->trackingDevices->contains($trackingDevice)) {
@@ -306,6 +343,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param TrackingDevice $trackingDevice
+     *
+     * @return $this
+     */
     public function removeTrackingDevice(TrackingDevice $trackingDevice): self
     {
         if ($this->trackingDevices->contains($trackingDevice)) {
@@ -327,6 +369,11 @@ class Patient implements UserInterface
         return $this->fitStepsDailySummaries;
     }
 
+    /**
+     * @param FitStepsDailySummary $fitStepsDailySummary
+     *
+     * @return $this
+     */
     public function addFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
     {
         if (!$this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
@@ -337,6 +384,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param FitStepsDailySummary $fitStepsDailySummary
+     *
+     * @return $this
+     */
     public function removeFitStepsDailySummary(FitStepsDailySummary $fitStepsDailySummary): self
     {
         if ($this->fitStepsDailySummaries->contains($fitStepsDailySummary)) {
@@ -350,11 +402,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
+    /**
+     * @param string|null $firstName
+     *
+     * @return $this
+     */
     public function setFirstName(?string $firstName): self
     {
         $this->firstName = $firstName;
@@ -362,11 +422,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getSurName(): ?string
     {
         return $this->surName;
     }
 
+    /**
+     * @param string|null $surName
+     *
+     * @return $this
+     */
     public function setSurName(?string $surName): self
     {
         $this->surName = $surName;
@@ -374,6 +442,9 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getAvatar(): ?string
     {
         if (is_null($this->avatar)) {
@@ -384,6 +455,11 @@ class Patient implements UserInterface
         }
     }
 
+    /**
+     * @param string|null $avatar
+     *
+     * @return $this
+     */
     public function setAvatar(?string $avatar): self
     {
         $this->avatar = $avatar;
@@ -391,11 +467,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
     public function getUiSettings(): ?array
     {
         return $this->uiSettings;
     }
 
+    /**
+     * @param array|null $uiSettings
+     *
+     * @return $this
+     */
     public function setUiSettings(?array $uiSettings): self
     {
         $this->uiSettings = $uiSettings;
@@ -411,6 +495,11 @@ class Patient implements UserInterface
         return $this->xp;
     }
 
+    /**
+     * @param RpgXP $xp
+     *
+     * @return $this
+     */
     public function addXp(RpgXP $xp): self
     {
         if (!$this->xp->contains($xp)) {
@@ -421,6 +510,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param RpgXP $xp
+     *
+     * @return $this
+     */
     public function removeXp(RpgXP $xp): self
     {
         if ($this->xp->contains($xp)) {
@@ -442,6 +536,11 @@ class Patient implements UserInterface
         return $this->rewards;
     }
 
+    /**
+     * @param RpgRewardsAwarded $reward
+     *
+     * @return $this
+     */
     public function addReward(RpgRewardsAwarded $reward): self
     {
         if (!$this->rewards->contains($reward)) {
@@ -452,6 +551,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param RpgRewardsAwarded $reward
+     *
+     * @return $this
+     */
     public function removeReward(RpgRewardsAwarded $reward): self
     {
         if ($this->rewards->contains($reward)) {
@@ -465,6 +569,9 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getRpgFactor(): ?float
     {
         if (is_null($this->rpgFactor)) {
@@ -474,6 +581,11 @@ class Patient implements UserInterface
         }
     }
 
+    /**
+     * @param float|null $rpgFactor
+     *
+     * @return $this
+     */
     public function setRpgFactor(?float $rpgFactor): self
     {
         $this->rpgFactor = $rpgFactor;
@@ -481,6 +593,9 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return float|int|null
+     */
     public function getXpTotal()
     {
         $totalXp = 0;
@@ -491,12 +606,18 @@ class Patient implements UserInterface
         return $totalXp;
     }
 
+    /**
+     * @return int
+     */
     public function getRpgLevel()
     {
         $totalXp = $this->getXpTotal();
         return intval(explode(".", ( $totalXp / 100 ))[0]);
     }
 
+    /**
+     * @return bool|null
+     */
     public function getFirstRun(): ?bool
     {
         if (is_null($this->firstRun) || $this->firstRun) {
@@ -506,6 +627,11 @@ class Patient implements UserInterface
         }
     }
 
+    /**
+     * @param bool|null $firstRun
+     *
+     * @return $this
+     */
     public function setFirstRun(?bool $firstRun): self
     {
         $this->firstRun = $firstRun;
@@ -513,11 +639,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
+    /**
+     * @param string $email
+     *
+     * @return $this
+     */
     public function setEmail(string $email): self
     {
         $this->email = $email;
@@ -533,6 +667,11 @@ class Patient implements UserInterface
         return $this->patientCredentials;
     }
 
+    /**
+     * @param PatientCredentials $patientCredential
+     *
+     * @return $this
+     */
     public function addPatientCredential(PatientCredentials $patientCredential): self
     {
         if (!$this->patientCredentials->contains($patientCredential)) {
@@ -543,6 +682,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param PatientCredentials $patientCredential
+     *
+     * @return $this
+     */
     public function removePatientCredential(PatientCredentials $patientCredential): self
     {
         if ($this->patientCredentials->contains($patientCredential)) {
@@ -564,6 +708,11 @@ class Patient implements UserInterface
         return $this->rpgChallenges;
     }
 
+    /**
+     * @param RpgChallengeFriends $rpgChallenge
+     *
+     * @return $this
+     */
     public function addRpgChallenge(RpgChallengeFriends $rpgChallenge): self
     {
         if (!$this->rpgChallenges->contains($rpgChallenge)) {
@@ -574,6 +723,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param RpgChallengeFriends $rpgChallenge
+     *
+     * @return $this
+     */
     public function removeRpgChallenge(RpgChallengeFriends $rpgChallenge): self
     {
         if ($this->rpgChallenges->contains($rpgChallenge)) {
@@ -595,6 +749,11 @@ class Patient implements UserInterface
         return $this->rpgChallenger;
     }
 
+    /**
+     * @param RpgChallengeFriends $rpgChallenger
+     *
+     * @return $this
+     */
     public function addRpgChallenger(RpgChallengeFriends $rpgChallenger): self
     {
         if (!$this->rpgChallenger->contains($rpgChallenger)) {
@@ -605,6 +764,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param RpgChallengeFriends $rpgChallenger
+     *
+     * @return $this
+     */
     public function removeRpgChallenger(RpgChallengeFriends $rpgChallenger): self
     {
         if ($this->rpgChallenger->contains($rpgChallenger)) {
@@ -618,11 +782,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getDateOfBirth(): ?\DateTimeInterface
     {
         return $this->dateOfBirth;
     }
 
+    /**
+     * @param \DateTimeInterface|null $dateOfBirth
+     *
+     * @return $this
+     */
     public function setDateOfBirth(?\DateTimeInterface $dateOfBirth): self
     {
         $this->dateOfBirth = $dateOfBirth;
@@ -638,6 +810,11 @@ class Patient implements UserInterface
         return $this->friendsOf;
     }
 
+    /**
+     * @param PatientFriends $friendsOf
+     *
+     * @return $this
+     */
     public function addFriendsOf(PatientFriends $friendsOf): self
     {
         if (!$this->friendsOf->contains($friendsOf)) {
@@ -648,6 +825,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param PatientFriends $friendsOf
+     *
+     * @return $this
+     */
     public function removeFriendsOf(PatientFriends $friendsOf): self
     {
         if ($this->friendsOf->contains($friendsOf)) {
@@ -669,6 +851,11 @@ class Patient implements UserInterface
         return $this->friendsToo;
     }
 
+    /**
+     * @param PatientFriends $friendsToo
+     *
+     * @return $this
+     */
     public function addFriendsToo(PatientFriends $friendsToo): self
     {
         if (!$this->friendsToo->contains($friendsToo)) {
@@ -679,6 +866,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param PatientFriends $friendsToo
+     *
+     * @return $this
+     */
     public function removeFriendsToo(PatientFriends $friendsToo): self
     {
         if ($this->friendsToo->contains($friendsToo)) {
@@ -747,6 +939,11 @@ class Patient implements UserInterface
         return $this->settings;
     }
 
+    /**
+     * @param PatientSettings $setting
+     *
+     * @return $this
+     */
     public function addSetting(PatientSettings $setting): self
     {
         if (!$this->settings->contains($setting)) {
@@ -757,6 +954,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param PatientSettings $setting
+     *
+     * @return $this
+     */
     public function removeSetting(PatientSettings $setting): self
     {
         if ($this->settings->contains($setting)) {
@@ -770,11 +972,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getGender(): ?string
     {
         return $this->gender;
     }
 
+    /**
+     * @param string|null $gender
+     *
+     * @return $this
+     */
     public function setGender(?string $gender): self
     {
         $this->gender = $gender;
@@ -782,6 +992,9 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getPronounThey()
     {
         switch ($this->gender) {
@@ -794,6 +1007,9 @@ class Patient implements UserInterface
         }
     }
 
+    /**
+     * @return string
+     */
     public function getPronounThem()
     {
         switch ($this->gender) {
@@ -806,6 +1022,9 @@ class Patient implements UserInterface
         }
     }
 
+    /**
+     * @return string
+     */
     public function getPronounTheir()
     {
         switch ($this->gender) {
@@ -818,11 +1037,19 @@ class Patient implements UserInterface
         }
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getLastLoggedIn(): ?\DateTimeInterface
     {
         return $this->lastLoggedIn;
     }
 
+    /**
+     * @param \DateTimeInterface|null $lastLoggedIn
+     *
+     * @return $this
+     */
     public function setLastLoggedIn(?\DateTimeInterface $lastLoggedIn): self
     {
         $this->lastLoggedIn = $lastLoggedIn;
@@ -830,11 +1057,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getLoginStreak(): ?int
     {
         return $this->loginStreak;
     }
 
+    /**
+     * @param int|null $loginStreak
+     *
+     * @return $this
+     */
     public function setLoginStreak(?int $loginStreak): self
     {
         $this->loginStreak = $loginStreak;
@@ -842,11 +1077,19 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @return PatientMembership|null
+     */
     public function getMembership(): ?PatientMembership
     {
         return $this->membership;
     }
 
+    /**
+     * @param PatientMembership|null $membership
+     *
+     * @return $this
+     */
     public function setMembership(?PatientMembership $membership): self
     {
         $this->membership = $membership;
@@ -868,6 +1111,11 @@ class Patient implements UserInterface
         return $this->rpgChallengeGlobals;
     }
 
+    /**
+     * @param RpgChallengeGlobalPatient $rpgChallengeGlobal
+     *
+     * @return $this
+     */
     public function addRpgChallengeGlobal(RpgChallengeGlobalPatient $rpgChallengeGlobal): self
     {
         if (!$this->rpgChallengeGlobals->contains($rpgChallengeGlobal)) {
@@ -878,6 +1126,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param RpgChallengeGlobalPatient $rpgChallengeGlobal
+     *
+     * @return $this
+     */
     public function removeRpgChallengeGlobal(RpgChallengeGlobalPatient $rpgChallengeGlobal): self
     {
         if ($this->rpgChallengeGlobals->contains($rpgChallengeGlobal)) {
@@ -899,6 +1152,11 @@ class Patient implements UserInterface
         return $this->notifications;
     }
 
+    /**
+     * @param SiteNews $notification
+     *
+     * @return $this
+     */
     public function addNotification(SiteNews $notification): self
     {
         if (!$this->notifications->contains($notification)) {
@@ -909,6 +1167,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param SiteNews $notification
+     *
+     * @return $this
+     */
     public function removeNotification(SiteNews $notification): self
     {
         if ($this->notifications->contains($notification)) {
@@ -930,6 +1193,11 @@ class Patient implements UserInterface
         return $this->devices;
     }
 
+    /**
+     * @param PatientDevice $device
+     *
+     * @return $this
+     */
     public function addDevice(PatientDevice $device): self
     {
         if (!$this->devices->contains($device)) {
@@ -940,6 +1208,11 @@ class Patient implements UserInterface
         return $this;
     }
 
+    /**
+     * @param PatientDevice $device
+     *
+     * @return $this
+     */
     public function removeDevice(PatientDevice $device): self
     {
         if ($this->devices->contains($device)) {

@@ -55,16 +55,27 @@ class FitFloorsIntraDay
      */
     private $trackingDevice;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getDateTime(): ?\DateTimeInterface
     {
         return $this->DateTime;
     }
 
+    /**
+     * @param \DateTimeInterface $DateTime
+     *
+     * @return $this
+     */
     public function setDateTime(\DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
@@ -72,11 +83,19 @@ class FitFloorsIntraDay
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string|null $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(?string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
@@ -84,11 +103,19 @@ class FitFloorsIntraDay
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getValue(): ?int
     {
         return $this->value;
     }
 
+    /**
+     * @param int $value
+     *
+     * @return $this
+     */
     public function setValue(int $value): self
     {
         $this->value = $value;
@@ -96,11 +123,19 @@ class FitFloorsIntraDay
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -108,11 +143,19 @@ class FitFloorsIntraDay
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;

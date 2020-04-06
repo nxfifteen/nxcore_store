@@ -60,6 +60,9 @@ class WorkoutMuscleRelation
         return $this;
     }
 
+    /**
+     * @return WorkoutExercise|null
+     */
     public function getExercise(): ?WorkoutExercise
     {
         return $this->exercise;

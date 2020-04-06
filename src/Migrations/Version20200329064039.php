@@ -26,7 +26,12 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200329064039 extends AbstractMigration
 {
-    public function down(Schema $schema): void
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function down(Schema $schema) : void
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -73,12 +78,20 @@ final class Version20200329064039 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_76AB38AA139DAB25 ON workout_exercise (muscle_secondary_id)');
     }
 
-    public function getDescription(): string
+    /**
+     * @return string
+     */
+    public function getDescription() : string
     {
         return '';
     }
 
-    public function up(Schema $schema): void
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');

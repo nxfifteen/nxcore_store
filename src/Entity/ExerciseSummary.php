@@ -112,16 +112,27 @@ class ExerciseSummary
      */
     private $heartRateMin;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Exercise|null
+     */
     public function getExercise(): ?Exercise
     {
         return $this->exercise;
     }
 
+    /**
+     * @param Exercise $exercise
+     *
+     * @return $this
+     */
     public function setExercise(Exercise $exercise): self
     {
         $this->exercise = $exercise;
@@ -129,11 +140,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getAltitudeGain(): ?float
     {
         return $this->altitudeGain;
     }
 
+    /**
+     * @param float|null $altitudeGain
+     *
+     * @return $this
+     */
     public function setAltitudeGain(?float $altitudeGain): self
     {
         $this->altitudeGain = $altitudeGain;
@@ -141,11 +160,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getAltitudeLoss(): ?float
     {
         return $this->altitudeLoss;
     }
 
+    /**
+     * @param float|null $altitudeLoss
+     *
+     * @return $this
+     */
     public function setAltitudeLoss(?float $altitudeLoss): self
     {
         $this->altitudeLoss = $altitudeLoss;
@@ -153,11 +180,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getAltitudeMax(): ?float
     {
         return $this->altitudeMax;
     }
 
+    /**
+     * @param float|null $altitudeMax
+     *
+     * @return $this
+     */
     public function setAltitudeMax(?float $altitudeMax): self
     {
         $this->altitudeMax = $altitudeMax;
@@ -165,11 +200,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getAltitudeMin(): ?float
     {
         return $this->altitudeMin;
     }
 
+    /**
+     * @param float|null $altitudeMin
+     *
+     * @return $this
+     */
     public function setAltitudeMin(?float $altitudeMin): self
     {
         $this->altitudeMin = $altitudeMin;
@@ -177,11 +220,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCadenceMax(): ?float
     {
         return $this->cadenceMax;
     }
 
+    /**
+     * @param float|null $cadenceMax
+     *
+     * @return $this
+     */
     public function setCadenceMax(?float $cadenceMax): self
     {
         $this->cadenceMax = $cadenceMax;
@@ -189,11 +240,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCadenceMean(): ?float
     {
         return $this->cadenceMean;
     }
 
+    /**
+     * @param float|null $cadenceMean
+     *
+     * @return $this
+     */
     public function setCadenceMean(?float $cadenceMean): self
     {
         $this->cadenceMean = $cadenceMean;
@@ -201,11 +260,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCadenceMin(): ?float
     {
         return $this->cadenceMin;
     }
 
+    /**
+     * @param float|null $cadenceMin
+     *
+     * @return $this
+     */
     public function setCadenceMin(?float $cadenceMin): self
     {
         $this->cadenceMin = $cadenceMin;
@@ -213,11 +280,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCalorie(): ?float
     {
         return $this->calorie;
     }
 
+    /**
+     * @param float|null $calorie
+     *
+     * @return $this
+     */
     public function setCalorie(?float $calorie): self
     {
         $this->calorie = $calorie;
@@ -225,11 +300,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getDistanceIncline(): ?float
     {
         return $this->distanceIncline;
     }
 
+    /**
+     * @param float|null $distanceIncline
+     *
+     * @return $this
+     */
     public function setDistanceIncline(?float $distanceIncline): self
     {
         $this->distanceIncline = $distanceIncline;
@@ -237,11 +320,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getDistanceDecline(): ?float
     {
         return $this->distanceDecline;
     }
 
+    /**
+     * @param float|null $distanceDecline
+     *
+     * @return $this
+     */
     public function setDistanceDecline(?float $distanceDecline): self
     {
         $this->distanceDecline = $distanceDecline;
@@ -249,11 +340,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getDistance(): ?float
     {
         return $this->distance;
     }
 
+    /**
+     * @param float|null $distance
+     *
+     * @return $this
+     */
     public function setDistance(?float $distance): self
     {
         $this->distance = $distance;
@@ -261,11 +360,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getSpeedMax(): ?float
     {
         return $this->speedMax;
     }
 
+    /**
+     * @param float|null $speedMax
+     *
+     * @return $this
+     */
     public function setSpeedMax(?float $speedMax): self
     {
         $this->speedMax = $speedMax;
@@ -273,11 +380,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getSpeedMean(): ?float
     {
         return $this->speedMean;
     }
 
+    /**
+     * @param float|null $speedMean
+     *
+     * @return $this
+     */
     public function setSpeedMean(?float $speedMean): self
     {
         $this->speedMean = $speedMean;
@@ -285,11 +400,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getHeartRateMax(): ?float
     {
         return $this->heartRateMax;
     }
 
+    /**
+     * @param float|null $heartRateMax
+     *
+     * @return $this
+     */
     public function setHeartRateMax(?float $heartRateMax): self
     {
         $this->heartRateMax = $heartRateMax;
@@ -297,11 +420,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getHeartRateMean(): ?float
     {
         return $this->heartRateMean;
     }
 
+    /**
+     * @param float|null $heartRateMean
+     *
+     * @return $this
+     */
     public function setHeartRateMean(?float $heartRateMean): self
     {
         $this->heartRateMean = $heartRateMean;
@@ -309,11 +440,19 @@ class ExerciseSummary
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getHeartRateMin(): ?float
     {
         return $this->heartRateMin;
     }
 
+    /**
+     * @param float|null $heartRateMin
+     *
+     * @return $this
+     */
     public function setHeartRateMin(?float $heartRateMin): self
     {
         $this->heartRateMin = $heartRateMin;

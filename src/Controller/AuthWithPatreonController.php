@@ -25,6 +25,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class AuthWithPatreonController
+ *
+ * @package App\Controller
+ */
 class AuthWithPatreonController extends AbstractController
 {
     /**

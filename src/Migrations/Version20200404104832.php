@@ -26,11 +26,19 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200404104832 extends AbstractMigration
 {
+    /**
+     * @return string
+     */
     public function getDescription() : string
     {
         return '';
     }
 
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
@@ -75,6 +83,11 @@ final class Version20200404104832 extends AbstractMigration
         $this->addSql('INSERT INTO third_party_service VALUES(NULL, \'Habitica\')');
     }
 
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function down(Schema $schema) : void
     {
         // this down() migration is auto-generated, please modify it to your needs

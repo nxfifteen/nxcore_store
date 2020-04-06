@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class SiteNavItemRepository extends ServiceEntityRepository
 {
+    /**
+     * SiteNavItemRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, SiteNavItem::class);

@@ -70,8 +70,17 @@ class SyncFitbit extends Command
      */
     private $tweetManager;
 
+    /**
+     * @var
+     */
     private $syncDate;
+    /**
+     * @var
+     */
     private $syncPeriod;
+    /**
+     * @var
+     */
     private $userSubscriptions;
 
     /**
@@ -106,6 +115,9 @@ class SyncFitbit extends Command
         $this->syncServiceFitbit();
     }
 
+    /**
+     *
+     */
     private function syncServiceFitbit()
     {
         /** @var ThirdPartyService $service */
@@ -285,6 +297,11 @@ class SyncFitbit extends Command
         }*/
     }
 
+    /**
+     * @param PatientCredentials $credentials
+     *
+     * @return AccessToken
+     */
     private function getAccessToken(PatientCredentials $credentials)
     {
         return new AccessToken([
@@ -294,6 +311,11 @@ class SyncFitbit extends Command
         ]);
     }
 
+    /**
+     * @param             $settingsEndpoint
+     * @param AccessToken $accessToken
+     * @param Patient     $patient
+     */
     private function checkSubscription($settingsEndpoint, AccessToken $accessToken, Patient $patient)
     {
         AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
@@ -326,6 +348,11 @@ class SyncFitbit extends Command
         }
     }
 
+    /**
+     * @param $endpoint
+     *
+     * @return string|null
+     */
     private function convertEndpointToSubscription($endpoint)
     {
         switch ($endpoint) {
@@ -341,6 +368,12 @@ class SyncFitbit extends Command
         }
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     *
+     * @return array
+     */
     private function pullSubscription(AccessToken $accessToken, $endpoint = "")
     {
         if (is_null($this->userSubscriptions)) {
@@ -376,6 +409,9 @@ class SyncFitbit extends Command
         return $this->userSubscriptions;
     }
 
+    /**
+     * @return Fitbit
+     */
     private function getLibrary()
     {
         return new Fitbit([
@@ -385,6 +421,13 @@ class SyncFitbit extends Command
         ]);
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     * @param string      $subId
+     *
+     * @return array|mixed
+     */
     private function postSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
     {
         $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
@@ -406,6 +449,13 @@ class SyncFitbit extends Command
         return [];
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param SyncQueue   $serviceSyncQueue
+     * @param string      $requestedEndpoint
+     *
+     * @return array|mixed
+     */
     private function pullBabel(AccessToken $accessToken, SyncQueue $serviceSyncQueue, string $requestedEndpoint)
     {
         /** @var ApiAccessLog $patient */
@@ -494,6 +544,9 @@ class SyncFitbit extends Command
         return $path;
     }
 
+    /**
+     * @return float|int|string
+     */
     private function getDaysSyncPeriod()
     {
         $daysSince = (date("U") - strtotime($this->syncDate)) / (60 * 60 * 24);
@@ -508,6 +561,13 @@ class SyncFitbit extends Command
         return $daysSince;
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     * @param string      $subId
+     *
+     * @return array|mixed
+     */
     private function deleteSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
     {
         $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";

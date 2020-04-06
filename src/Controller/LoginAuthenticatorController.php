@@ -20,8 +20,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+/**
+ * Class LoginAuthenticatorController
+ *
+ * @package App\Controller
+ */
 class LoginAuthenticatorController extends AbstractController
 {
+    /**
+     * @var
+     */
     private $requestJson;
 
     /**

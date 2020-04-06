@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class ExerciseSummaryRepository extends ServiceEntityRepository
 {
+    /**
+     * ExerciseSummaryRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ExerciseSummary::class);

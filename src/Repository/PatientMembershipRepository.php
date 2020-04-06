@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class PatientMembershipRepository extends ServiceEntityRepository
 {
+    /**
+     * PatientMembershipRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, PatientMembership::class);

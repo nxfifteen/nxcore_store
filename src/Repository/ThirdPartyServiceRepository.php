@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class ThirdPartyServiceRepository extends ServiceEntityRepository
 {
+    /**
+     * ThirdPartyServiceRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ThirdPartyService::class);

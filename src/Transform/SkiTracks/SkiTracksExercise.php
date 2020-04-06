@@ -25,6 +25,11 @@ use App\Service\AwardManager;
 use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SkiTracksExercise
+ *
+ * @package App\Transform\SkiTracks
+ */
 class SkiTracksExercise extends Constants
 {
     /**

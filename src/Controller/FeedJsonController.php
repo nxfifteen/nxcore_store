@@ -26,6 +26,11 @@ use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class FeedJsonController
+ *
+ * @package App\Controller
+ */
 class FeedJsonController extends AbstractController
 {
     /** @var Patient $patient */
@@ -43,6 +48,9 @@ class FeedJsonController extends AbstractController
         return $this->FitStepsDailySummaryDateTracker(date("Y-m-d"), -1);
     }
 
+    /**
+     *
+     */
     private function setupRoute()
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();

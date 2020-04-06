@@ -25,11 +25,23 @@ use Doctrine\ORM\NonUniqueResultException;
  */
 class ApiAccessLogRepository extends ServiceEntityRepository
 {
+    /**
+     * ApiAccessLogRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ApiAccessLog::class);
     }
 
+    /**
+     * @param $patient
+     * @param $service
+     * @param $entity
+     *
+     * @return ApiAccessLog|null
+     */
     public function findLastAccess($patient, $service, $entity): ?ApiAccessLog
     {
         try {

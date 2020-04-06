@@ -25,6 +25,11 @@ use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 
+/**
+ * Class FitbitCountDailySteps
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitCountDailySteps extends Constants
 {
     /**

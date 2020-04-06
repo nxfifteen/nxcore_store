@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class RpgChallengeGlobalPatientRepository extends ServiceEntityRepository
 {
+    /**
+     * RpgChallengeGlobalPatientRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, RpgChallengeGlobalPatient::class);

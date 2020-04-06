@@ -43,16 +43,27 @@ class RpgRewardsAwarded
      */
     private $reward;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -60,11 +71,19 @@ class RpgRewardsAwarded
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getDatetime(): ?\DateTimeInterface
     {
         return $this->datetime;
     }
 
+    /**
+     * @param \DateTimeInterface $datetime
+     *
+     * @return $this
+     */
     public function setDatetime(\DateTimeInterface $datetime): self
     {
         $this->datetime = $datetime;
@@ -72,11 +91,19 @@ class RpgRewardsAwarded
         return $this;
     }
 
+    /**
+     * @return RpgRewards|null
+     */
     public function getReward(): ?RpgRewards
     {
         return $this->reward;
     }
 
+    /**
+     * @param RpgRewards|null $reward
+     *
+     * @return $this
+     */
     public function setReward(?RpgRewards $reward): self
     {
         $this->reward = $reward;

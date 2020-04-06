@@ -27,6 +27,11 @@ use Doctrine\ORM\NonUniqueResultException;
  */
 class FitDistanceDailySummaryRepository extends ServiceEntityRepository
 {
+    /**
+     * FitDistanceDailySummaryRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FitDistanceDailySummary::class);
@@ -69,6 +74,12 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param String $patientId
+     * @param        $dateSince
+     *
+     * @return mixed
+     */
     public function findSince(String $patientId, $dateSince)
     {
         /** @var \DateTime $dateSince */
@@ -83,6 +94,12 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param String $patientId
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
     public function findHighest(String $patientId, int $trackingDevice = 0)
     {
         if ($trackingDevice > 0) {

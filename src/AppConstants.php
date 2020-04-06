@@ -22,13 +22,34 @@ use Swift_Message;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * Class AppConstants
+ *
+ * @package App
+ */
 class AppConstants
 {
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param DateTimeInterface $dateTime
+     * @param string            $name
+     * @param float             $xp
+     * @param string            $image
+     * @param string            $text
+     * @param string            $longtext
+     *
+     * @return Patient
+     */
     static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, DateTimeInterface $dateTime, string $name, float $xp, string $image, string $text, string $longtext)
     {
         return $patient;
     }
 
+    /**
+     * @param String $fileName
+     * @param String $body
+     */
     static function writeToLog(String $fileName, String $body)
     {
         try {
@@ -55,11 +76,26 @@ class AppConstants
         }
     }
 
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param float             $xpAwarded
+     * @param string            $reasoning
+     * @param DateTimeInterface $dateTime
+     *
+     * @return Patient
+     */
     static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
     {
         return $patient;
     }
 
+    /**
+     * @param $haystack
+     * @param $needle
+     *
+     * @return bool
+     */
     static function startsWith($haystack, $needle)
     {
         $len = strlen($needle);
@@ -89,6 +125,17 @@ class AppConstants
         }
     }
 
+    /**
+     * @param \Twig\Environment $twig
+     * @param Swift_Mailer      $mailer
+     * @param array             $setTo
+     * @param string            $setTemplateName
+     * @param array             $setTemplateVariables
+     *
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     */
     static function sendUserEmail(\Twig\Environment $twig, Swift_Mailer $mailer, array $setTo, string $setTemplateName, array $setTemplateVariables)
     {
         // Create the message
@@ -126,6 +173,11 @@ class AppConstants
         $mailer->send($message);
     }
 
+    /**
+     * @param $criteria
+     *
+     * @return string
+     */
     static function convertCriteriaEnglish($criteria)
     {
         switch ($criteria) {
@@ -138,6 +190,11 @@ class AppConstants
         }
     }
 
+    /**
+     * @param $stringToCompress
+     *
+     * @return string
+     */
     static function compressString($stringToCompress)
     {
         $compressedString = "\x1f\x8b\x08\x00" . gzcompress($stringToCompress);
@@ -145,6 +202,11 @@ class AppConstants
         return $compressedString;
     }
 
+    /**
+     * @param $stringToUncompress
+     *
+     * @return false|string
+     */
     static function uncompressString($stringToUncompress)
     {
         $uncompressedString = gzuncompress(substr($stringToUncompress, 4));
@@ -152,6 +214,12 @@ class AppConstants
         return $uncompressedString;
     }
 
+    /**
+     * @param      $seconds
+     * @param bool $withHours
+     *
+     * @return string
+     */
     static function formatSeconds($seconds, bool $withHours = TRUE)
     {
         $hours = 0;

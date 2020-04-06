@@ -26,6 +26,11 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
+/**
+ * Class SubmitPVPController
+ *
+ * @package App\Controller
+ */
 class SubmitPVPController extends AbstractController
 {
     /** @var Patient $patient */
@@ -172,6 +177,11 @@ class SubmitPVPController extends AbstractController
         return $this->json(["status" => 200]);
     }
 
+    /**
+     * @param $criteria
+     *
+     * @return string
+     */
     private function convertCriteria($criteria)
     {
         switch ($criteria) {
@@ -184,6 +194,11 @@ class SubmitPVPController extends AbstractController
         }
     }
 
+    /**
+     * @param $criteria
+     *
+     * @return string
+     */
     private function convertCriteriaEnglish($criteria)
     {
         switch ($criteria) {
@@ -196,6 +211,12 @@ class SubmitPVPController extends AbstractController
         }
     }
 
+    /**
+     * @param RpgChallengeFriends $challenge
+     *
+     * @return \DateTime
+     * @throws \Exception
+     */
     private function getEndDate(RpgChallengeFriends $challenge)
     {
         $endDate = new \DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));

@@ -27,8 +27,16 @@ use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class AngularController
+ *
+ * @package App\Controller
+ */
 class AngularController extends AbstractController
 {
+    /**
+     * @var int
+     */
     private $dateRange = 14;
 
     /** @var Patient $patient */
@@ -180,6 +188,9 @@ class AngularController extends AbstractController
         $this->hasAccess($userRole);
     }
 
+    /**
+     * @return array
+     */
     private function buildUserMenu()
     {
         $navItems = [];
@@ -367,6 +378,12 @@ class AngularController extends AbstractController
         return $this->json($return);
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     *
+     * @return array
+     */
     private function angularGetExerciseForMonth(String $uuid, String $date)
     {
         $this->hasAccess($uuid);
@@ -430,6 +447,11 @@ class AngularController extends AbstractController
         return $return;
     }
 
+    /**
+     * @param int $seconds
+     *
+     * @return string
+     */
     private function returnHumanTime(int $seconds)
     {
         $returnString = "";
@@ -458,6 +480,14 @@ class AngularController extends AbstractController
         return $returnString;
     }
 
+    /**
+     * @param String $uuid
+     * @param int    $trackingDeviceFloors
+     * @param int    $trackingDeviceSteps
+     * @param int    $trackingDeviceDistance
+     *
+     * @return array
+     */
     private function angularGetMilestones(String $uuid, int $trackingDeviceFloors, int $trackingDeviceSteps, int $trackingDeviceDistance)
     {
         $this->hasAccess($uuid);
@@ -501,6 +531,12 @@ class AngularController extends AbstractController
         return $return;
     }
 
+    /**
+     * @param String $uuid
+     * @param        $trackingDevice
+     *
+     * @return array
+     */
     private function angularGetTheBest(String $uuid, $trackingDevice)
     {
         $this->hasAccess($uuid);
@@ -526,6 +562,11 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param FitDistanceDailySummary $distance
+     *
+     * @return string
+     */
     private function convertDistance(FitDistanceDailySummary $distance)
     {
         switch ($distance->getUnitOfMeasurement()->getName()) {
@@ -542,6 +583,13 @@ class AngularController extends AbstractController
         return number_format($value, 2) . " " . $unit;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return array
+     */
     private function angularGetDailySummaryFloors(String $uuid, String $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
@@ -574,6 +622,13 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return array
+     */
     private function angularGetIntraDayFloors(String $uuid, String $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
@@ -605,6 +660,11 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param int|NULL $currentHour
+     *
+     * @return array
+     */
     private function getHoursArray(int $currentHour = NULL)
     {
         if (is_null($currentHour)) {
@@ -617,6 +677,13 @@ class AngularController extends AbstractController
         return $dbHours;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return array
+     */
     private function angularGetDailySummarySteps(String $uuid, String $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
@@ -660,6 +727,13 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return array
+     */
     private function angularGetIntraDaySteps(String $uuid, String $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
@@ -691,6 +765,13 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return array
+     */
     private function angularGetDailySummaryDistance(String $uuid, String $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
@@ -737,6 +818,13 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     * @param int    $trackingDevice
+     *
+     * @return array
+     */
     private function angularGetDailySummaryCalories(String $uuid, String $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
@@ -768,6 +856,13 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     * @param int    $dateRange
+     *
+     * @return array|null
+     */
     private function angularGetBodyWeight(String $uuid, String $date, int $dateRange = 31)
     {
         $this->hasAccess($uuid);
@@ -852,6 +947,12 @@ class AngularController extends AbstractController
         return $timeStampsInTrack;
     }
 
+    /**
+     * @param String $uuid
+     * @param String $date
+     *
+     * @return array|null
+     */
     private function angularGetBodyFat(String $uuid, String $date)
     {
         $this->hasAccess($uuid);

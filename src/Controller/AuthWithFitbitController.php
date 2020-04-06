@@ -24,6 +24,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class AuthWithFitbitController
+ *
+ * @package App\Controller
+ */
 class AuthWithFitbitController extends AbstractController
 {
     /**
@@ -189,6 +194,9 @@ class AuthWithFitbitController extends AbstractController
         exit;
     }
 
+    /**
+     * @return Fitbit
+     */
     private function getLibrary()
     {
         return new Fitbit([

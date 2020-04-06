@@ -22,6 +22,11 @@ use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class FitbitCountPeriodSteps
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitCountPeriodSteps extends Constants
 {
     /**

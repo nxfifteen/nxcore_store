@@ -20,6 +20,11 @@ use App\Entity\RpgRewardsAwarded;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class Badge
+ *
+ * @package App\AwardDelivery
+ */
 class Badge extends AwardDelivery
 {
     /**
@@ -37,6 +42,13 @@ class Badge extends AwardDelivery
      */
     private $reward;
 
+    /**
+     * Badge constructor.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param Patient         $patient
+     * @param RpgRewards      $reward
+     */
     public function __construct(
         ManagerRegistry $doctrine,
         Patient $patient,
@@ -48,6 +60,11 @@ class Badge extends AwardDelivery
         $this->reward = $reward;
     }
 
+    /**
+     * @param DateTimeInterface|NULL $dateTime
+     *
+     * @return bool
+     */
     public function deliveryReward(DateTimeInterface $dateTime = null) {
         if (!is_string($this->reward->getPayload())) {
             return false;

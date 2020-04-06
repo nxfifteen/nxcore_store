@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class FitFloorsIntraDayRepository extends ServiceEntityRepository
 {
+    /**
+     * FitFloorsIntraDayRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FitFloorsIntraDay::class);

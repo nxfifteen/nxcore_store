@@ -19,6 +19,11 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungDevices
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungDevices extends Constants
 {
     /**

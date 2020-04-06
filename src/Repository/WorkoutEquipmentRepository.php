@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class WorkoutEquipmentRepository extends ServiceEntityRepository
 {
+    /**
+     * WorkoutEquipmentRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, WorkoutEquipment::class);

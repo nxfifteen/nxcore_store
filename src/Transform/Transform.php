@@ -28,6 +28,11 @@ use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class Transform
+ *
+ * @package App\Transform
+ */
 class Transform
 {
 

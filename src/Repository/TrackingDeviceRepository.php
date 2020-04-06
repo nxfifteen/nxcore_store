@@ -24,6 +24,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class TrackingDeviceRepository extends ServiceEntityRepository
 {
+    /**
+     * TrackingDeviceRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, TrackingDevice::class);

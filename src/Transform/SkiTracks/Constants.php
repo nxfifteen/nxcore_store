@@ -15,30 +15,100 @@ namespace App\Transform\SkiTracks;
 
 use App\Transform\Transform;
 
+/**
+ * Class Constants
+ *
+ * @package App\Transform\SkiTracks
+ */
 class Constants extends Transform
 {
+    /**
+     *
+     */
     const SKITRACKSSERVICE = "SkiTracks";
+    /**
+     *
+     */
     const SKITRACKSEXERCISE = "exercises";
 
+    /**
+     *
+     */
     const ACTIVITY_UNKNOWN = 0;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_SKIING = 1;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_SNOWBOARDING = 2;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_SNOWMOBILE = 3;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_X_COUNTRY = 4;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_SNOWSHOE = 5;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_TELEMARK = 6;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_MONOSKI = 7;
+    /**
+     *
+     */
     const ACTIVITY_SLEDDING = 8;
+    /**
+     *
+     */
     const ACTIVITY_SITSKI = 9;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_KITING = 10;
+    /**
+     *
+     */
     const ACTIVITY_SNOW_BIKE = 11;
+    /**
+     *
+     */
     const ACTIVITY_DOG_SLEDDING = 12;
+    /**
+     *
+     */
     const ACTIVITY_SKI_TOURING = 13;
+    /**
+     *
+     */
     const ACTIVITY_SKI_MOUNTAINEERING = 14;
+    /**
+     *
+     */
     const ACTIVITY_ICE_YACHTING = 15;
+    /**
+     *
+     */
     const ACTIVITY_SPLIT_BOARDING = 16;
+    /**
+     *
+     */
     const ACTIVITY_FAT_BIKE = 17;
 
+    /**
+     * @param int $service
+     *
+     * @return string
+     */
     protected static function convertExerciseType(int $service)
     {
         switch ($service) {

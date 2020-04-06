@@ -282,6 +282,9 @@ class DownloadHistoryFitbit extends Command
         }
     }
 
+    /**
+     *
+     */
     private function restUserLoop()
     {
         $this->hasHistoryMembership = NULL;
@@ -393,6 +396,9 @@ class DownloadHistoryFitbit extends Command
         ]);
     }
 
+    /**
+     * @param $patientServiceProfile
+     */
     private function log($patientServiceProfile)
     {
         if (!is_string($patientServiceProfile)) {
@@ -422,6 +428,10 @@ class DownloadHistoryFitbit extends Command
         ]);
     }
 
+    /**
+     * @param string $string
+     * @param string $serviceBirth
+     */
     private function updateUserSetting(string $string, string $serviceBirth)
     {
         $this->log("Updating " . $this->patient->getFirstName() . " for " . $this->service->getName() . " key " . $string . " to " . $serviceBirth);
@@ -445,6 +455,12 @@ class DownloadHistoryFitbit extends Command
         $entityManager->flush();
     }
 
+    /**
+     * @param \DateTime $serviceBirth
+     *
+     * @return array
+     * @throws \Exception
+     */
     private function calcServicePullFromDate(\DateTime $serviceBirth)
     {
         $servicePullFrom = clone $serviceBirth;
@@ -501,6 +517,14 @@ class DownloadHistoryFitbit extends Command
         return $this->hasHistoryMembership;
     }
 
+    /**
+     * @param string    $transformerClassName
+     * @param \DateTime $servicePullFrom
+     * @param array     $supportedEndpoint
+     * @param array     $patientServiceProfile
+     *
+     * @return mixed
+     */
     private function saveFitStepsPeriodSummary(string $transformerClassName, \DateTime $servicePullFrom, array $supportedEndpoint, array $patientServiceProfile)
     {
         $processDataArray = [];

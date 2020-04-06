@@ -38,21 +38,35 @@ class WorkoutMuscle
      */
     private $isFront;
 
+    /**
+     * WorkoutMuscle constructor.
+     */
     public function __construct()
     {
 
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -60,11 +74,19 @@ class WorkoutMuscle
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getIsFront(): ?bool
     {
         return $this->isFront;
     }
 
+    /**
+     * @param bool $isFront
+     *
+     * @return $this
+     */
     public function setIsFront(bool $isFront): self
     {
         $this->isFront = $isFront;

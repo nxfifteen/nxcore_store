@@ -22,9 +22,17 @@ use phpDocumentor\Reflection\Types\Object_;
 use Psr\Log\LoggerInterface;
 use Sentry;
 
+/**
+ * Class Entry
+ *
+ * @package App\Transform\SkiTracks
+ */
 class Entry
 {
 
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     /** @var Patient $patient */
@@ -42,6 +50,16 @@ class Entry
         $this->patient = $patient;
     }
 
+    /**
+     * @param String          $data_set
+     * @param                 $getContent
+     * @param ManagerRegistry $doctrine
+     * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param TweetManager    $tweetManager
+     *
+     * @return array|int|null
+     */
     public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
         $translateEntity = NULL;

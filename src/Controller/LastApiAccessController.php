@@ -18,6 +18,11 @@ use App\Entity\PatientSettings;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class LastApiAccessController
+ *
+ * @package App\Controller
+ */
 class LastApiAccessController extends AbstractController
 {
     /**

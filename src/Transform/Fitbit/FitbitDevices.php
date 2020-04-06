@@ -19,6 +19,11 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class FitbitDevices
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitDevices extends Constants
 {
     /**

@@ -46,6 +46,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class FeedUxController
+ *
+ * @package App\Controller
+ */
 class FeedUxController extends AbstractController
 {
     /** @var Patient $patient */

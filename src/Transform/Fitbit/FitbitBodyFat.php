@@ -23,6 +23,11 @@ use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 
+/**
+ * Class FitbitBodyFat
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitBodyFat extends Constants
 {
     /**

@@ -92,6 +92,9 @@ class SyncPatreon extends Command
         $this->syncServicePatreon();
     }
 
+    /**
+     * @throws Exception
+     */
     private function syncServicePatreon()
     {
         /** @var ThirdPartyService $service */

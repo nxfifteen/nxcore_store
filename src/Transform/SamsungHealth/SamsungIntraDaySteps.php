@@ -21,6 +21,11 @@ use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungIntraDaySteps
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungIntraDaySteps extends Constants
 {
     /**

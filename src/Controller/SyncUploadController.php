@@ -27,6 +27,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 
+/**
+ * Class SyncUploadController
+ *
+ * @package App\Controller
+ */
 class SyncUploadController extends AbstractController
 {
     /**

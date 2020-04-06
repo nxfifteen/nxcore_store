@@ -25,6 +25,11 @@ use App\Service\AwardManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungFood
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungFood extends Constants
 {
 

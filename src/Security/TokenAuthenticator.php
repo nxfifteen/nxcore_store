@@ -25,15 +25,34 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
+/**
+ * Class TokenAuthenticator
+ *
+ * @package App\Security
+ */
 class TokenAuthenticator extends AbstractGuardAuthenticator
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private $em;
 
+    /**
+     * TokenAuthenticator constructor.
+     *
+     * @param EntityManagerInterface $em
+     */
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
     }
 
+    /**
+     * @param mixed         $credentials
+     * @param UserInterface $user
+     *
+     * @return bool
+     */
     public function checkCredentials($credentials, UserInterface $user)
     {
         // check credentials - e.g. make sure the password is valid
@@ -84,6 +103,12 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
             ->findOneBy(['apiToken' => $apiToken]);
     }
 
+    /**
+     * @param Request                 $request
+     * @param AuthenticationException $exception
+     *
+     * @return JsonResponse|Response|null
+     */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
         $data = [
@@ -95,6 +120,13 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
 //        return new RedirectResponse('/login');
     }
 
+    /**
+     * @param Request        $request
+     * @param TokenInterface $token
+     * @param string         $providerKey
+     *
+     * @return Response|null
+     */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
         // on success, let the request continue
@@ -137,6 +169,9 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         }
     }
 
+    /**
+     * @return bool
+     */
     public function supportsRememberMe()
     {
         return FALSE;

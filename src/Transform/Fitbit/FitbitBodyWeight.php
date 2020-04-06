@@ -30,6 +30,11 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
+/**
+ * Class FitbitBodyWeight
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitBodyWeight extends Constants
 {
     /**
