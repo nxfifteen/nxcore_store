@@ -65,5 +65,7 @@ class Badge extends AwardDelivery
             $entityManager->persist($rewarded);
             $entityManager->flush();
         }
+
+        return true;
     }
 }

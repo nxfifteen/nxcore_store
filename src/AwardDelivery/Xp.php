@@ -82,5 +82,6 @@ class Xp extends AwardDelivery
             }
         }
 
+        return true;
     }
 }

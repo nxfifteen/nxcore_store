@@ -283,5 +283,7 @@ class SyncPatreon extends Command
             case "1500":
                 return "all_history";
         }
+
+        return "unknown ($latestPaid)";
     }
 }
