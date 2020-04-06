@@ -28,6 +28,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class Transform
@@ -141,7 +142,7 @@ class Transform
      * @param bool              $matchGoal
      *
      * @return PatientGoals|null
-     * @throws \Exception
+     * @throws Exception
      */
     protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, $unitOfMeasurement, Patient $patient, bool $matchGoal = NULL)
     {
@@ -340,7 +341,7 @@ class Transform
      * @param DateTimeInterface $dateTime
      *
      * @return ApiAccessLog
-     * @throws \Exception
+     * @throws Exception
      */
     protected static function updateApi(ManagerRegistry $doctrine, String $fullClassName, Patient $patient, ThirdPartyService $service, DateTimeInterface $dateTime)
     {

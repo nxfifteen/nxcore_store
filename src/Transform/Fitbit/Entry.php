@@ -19,6 +19,7 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use phpDocumentor\Reflection\Types\Object_;
 use Psr\Log\LoggerInterface;
 use Sentry;
@@ -60,7 +61,7 @@ class Entry
      * @param TweetManager    $tweetManager
      *
      * @return array|int|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
@@ -101,7 +102,7 @@ class Entry
                 $translateEntity = [];
                 try {
                     $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent, $awardManager, $challengePve);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                 }
                 foreach ($getContent[1] as $index => $item) {
                     $translateEntity[] = FitbitDevices::translate($doctrine, $getContent, $index);
@@ -116,7 +117,7 @@ class Entry
                 $translateEntity = [];
                 try {
                     $translateEntity[] = FitbitCountDailySteps::translate($doctrine, $getContent, $awardManager, $challengePve);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                 }
 
                 foreach ($getContent[1] as $index => $item) {
@@ -128,7 +129,7 @@ class Entry
                         try {
                             //translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
                             $translateEntity[] = FitbitExercise::translate($doctrine, $tweetManager, $getContent, $index);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                         }
                     }
                 }
@@ -147,7 +148,7 @@ class Entry
                         try {
                             //translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
                             $translateEntity[] = FitbitExercise::translate($doctrine, $tweetManager, $getContent, $index);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                         }
                     }
                 }

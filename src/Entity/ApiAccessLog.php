@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -130,19 +131,19 @@ class ApiAccessLog
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getLastRetrieved(): ?\DateTimeInterface
+    public function getLastRetrieved(): ?DateTimeInterface
     {
         return $this->lastRetrieved;
     }
 
     /**
-     * @param \DateTimeInterface $lastRetrieved
+     * @param DateTimeInterface $lastRetrieved
      *
      * @return $this
      */
-    public function setLastRetrieved(\DateTimeInterface $lastRetrieved): self
+    public function setLastRetrieved(DateTimeInterface $lastRetrieved): self
     {
         $this->lastRetrieved = $lastRetrieved;
 
@@ -150,19 +151,19 @@ class ApiAccessLog
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getLastPulled(): ?\DateTimeInterface
+    public function getLastPulled(): ?DateTimeInterface
     {
         return $this->lastPulled;
     }
 
     /**
-     * @param \DateTimeInterface $lastPulled
+     * @param DateTimeInterface $lastPulled
      *
      * @return $this
      */
-    public function setLastPulled(\DateTimeInterface $lastPulled): self
+    public function setLastPulled(DateTimeInterface $lastPulled): self
     {
         $this->lastPulled = $lastPulled;
 
@@ -170,19 +171,19 @@ class ApiAccessLog
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getCooldown(): ?\DateTimeInterface
+    public function getCooldown(): ?DateTimeInterface
     {
         return $this->cooldown;
     }
 
     /**
-     * @param \DateTimeInterface|null $cooldown
+     * @param DateTimeInterface|null $cooldown
      *
      * @return $this
      */
-    public function setCooldown(?\DateTimeInterface $cooldown): self
+    public function setCooldown(?DateTimeInterface $cooldown): self
     {
         $this->cooldown = $cooldown;
 

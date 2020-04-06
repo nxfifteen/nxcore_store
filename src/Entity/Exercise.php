@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -129,19 +130,19 @@ class Exercise
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getDateTimeStart(): ?\DateTimeInterface
+    public function getDateTimeStart(): ?DateTimeInterface
     {
         return $this->dateTimeStart;
     }
 
     /**
-     * @param \DateTimeInterface $dateTimeStart
+     * @param DateTimeInterface $dateTimeStart
      *
      * @return $this
      */
-    public function setDateTimeStart(\DateTimeInterface $dateTimeStart): self
+    public function setDateTimeStart(DateTimeInterface $dateTimeStart): self
     {
         $this->dateTimeStart = $dateTimeStart;
 
@@ -149,19 +150,19 @@ class Exercise
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getDateTimeEnd(): ?\DateTimeInterface
+    public function getDateTimeEnd(): ?DateTimeInterface
     {
         return $this->dateTimeEnd;
     }
 
     /**
-     * @param \DateTimeInterface $dateTimeEnd
+     * @param DateTimeInterface $dateTimeEnd
      *
      * @return $this
      */
-    public function setDateTimeEnd(\DateTimeInterface $dateTimeEnd): self
+    public function setDateTimeEnd(DateTimeInterface $dateTimeEnd): self
     {
         $this->dateTimeEnd = $dateTimeEnd;
 

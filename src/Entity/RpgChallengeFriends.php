@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -128,19 +129,19 @@ class RpgChallengeFriends
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getStartDate(): ?\DateTimeInterface
+    public function getStartDate(): ?DateTimeInterface
     {
         return $this->startDate;
     }
 
     /**
-     * @param \DateTimeInterface $startDate
+     * @param DateTimeInterface $startDate
      *
      * @return $this
      */
-    public function setStartDate(\DateTimeInterface $startDate): self
+    public function setStartDate(DateTimeInterface $startDate): self
     {
         $this->startDate = $startDate;
 
@@ -248,19 +249,19 @@ class RpgChallengeFriends
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getInviteDate(): ?\DateTimeInterface
+    public function getInviteDate(): ?DateTimeInterface
     {
         return $this->inviteDate;
     }
 
     /**
-     * @param \DateTimeInterface $inviteDate
+     * @param DateTimeInterface $inviteDate
      *
      * @return $this
      */
-    public function setInviteDate(\DateTimeInterface $inviteDate): self
+    public function setInviteDate(DateTimeInterface $inviteDate): self
     {
         $this->inviteDate = $inviteDate;
 
@@ -268,19 +269,19 @@ class RpgChallengeFriends
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getEndDate(): ?\DateTimeInterface
+    public function getEndDate(): ?DateTimeInterface
     {
         return $this->endDate;
     }
 
     /**
-     * @param \DateTimeInterface|null $endDate
+     * @param DateTimeInterface|null $endDate
      *
      * @return $this
      */
-    public function setEndDate(?\DateTimeInterface $endDate): self
+    public function setEndDate(?DateTimeInterface $endDate): self
     {
         $this->endDate = $endDate;
 
@@ -368,19 +369,19 @@ class RpgChallengeFriends
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getCompletedAt(): ?\DateTimeInterface
+    public function getCompletedAt(): ?DateTimeInterface
     {
         return $this->completedAt;
     }
 
     /**
-     * @param \DateTimeInterface|null $completedAt
+     * @param DateTimeInterface|null $completedAt
      *
      * @return $this
      */
-    public function setCompletedAt(?\DateTimeInterface $completedAt): self
+    public function setCompletedAt(?DateTimeInterface $completedAt): self
     {
         $this->completedAt = $completedAt;
 

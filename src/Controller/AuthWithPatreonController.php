@@ -19,6 +19,8 @@ use App\Entity\PatientCredentials;
 use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
+use LogicException;
 use Patreon\API;
 use Patreon\AuthUrl;
 use Patreon\OAuth;
@@ -82,7 +84,7 @@ class AuthWithPatreonController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {
@@ -102,7 +104,7 @@ class AuthWithPatreonController extends AbstractController
      * @param RequestStack    $request
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function auth_with_patreon_callback(ManagerRegistry $doctrine, RequestStack $request)
     {

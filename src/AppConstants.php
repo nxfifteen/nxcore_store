@@ -18,10 +18,15 @@ use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use Swift_Mailer;
 use Swift_Message;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
  * Class AppConstants
@@ -55,7 +60,7 @@ class AppConstants
     {
         try {
             $path = sys_get_temp_dir() . '/sync_upload_post';
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             echo $exception->getMessage();
         }
 
@@ -127,17 +132,17 @@ class AppConstants
     }
 
     /**
-     * @param \Twig\Environment $twig
+     * @param Environment $twig
      * @param Swift_Mailer      $mailer
      * @param array             $setTo
      * @param string            $setTemplateName
      * @param array             $setTemplateVariables
      *
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
-    static function sendUserEmail(\Twig\Environment $twig, Swift_Mailer $mailer, array $setTo, string $setTemplateName, array $setTemplateVariables)
+    static function sendUserEmail(Environment $twig, Swift_Mailer $mailer, array $setTo, string $setTemplateName, array $setTemplateVariables)
     {
         // Create the message
         $message = (new Swift_Message())

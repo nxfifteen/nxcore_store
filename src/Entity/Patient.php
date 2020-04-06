@@ -15,6 +15,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -784,19 +785,19 @@ class Patient implements UserInterface
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getDateOfBirth(): ?\DateTimeInterface
+    public function getDateOfBirth(): ?DateTimeInterface
     {
         return $this->dateOfBirth;
     }
 
     /**
-     * @param \DateTimeInterface|null $dateOfBirth
+     * @param DateTimeInterface|null $dateOfBirth
      *
      * @return $this
      */
-    public function setDateOfBirth(?\DateTimeInterface $dateOfBirth): self
+    public function setDateOfBirth(?DateTimeInterface $dateOfBirth): self
     {
         $this->dateOfBirth = $dateOfBirth;
 
@@ -1039,19 +1040,19 @@ class Patient implements UserInterface
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getLastLoggedIn(): ?\DateTimeInterface
+    public function getLastLoggedIn(): ?DateTimeInterface
     {
         return $this->lastLoggedIn;
     }
 
     /**
-     * @param \DateTimeInterface|null $lastLoggedIn
+     * @param DateTimeInterface|null $lastLoggedIn
      *
      * @return $this
      */
-    public function setLastLoggedIn(?\DateTimeInterface $lastLoggedIn): self
+    public function setLastLoggedIn(?DateTimeInterface $lastLoggedIn): self
     {
         $this->lastLoggedIn = $lastLoggedIn;
 

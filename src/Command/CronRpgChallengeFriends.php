@@ -21,6 +21,7 @@ use App\Entity\RpgChallengeFriends;
 use App\Service\AwardManager;
 use App\Service\TweetManager;
 use DateInterval;
+use DatePeriod;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -173,7 +174,7 @@ class CronRpgChallengeFriends extends Command
         }
 
         /** @var \DateTime[] $periods */
-        $periods = new \DatePeriod(
+        $periods = new DatePeriod(
             $challengeFriends->getStartDate(),
             new \DateInterval('P1D'),
             $challengeFriends->getEndDate()

@@ -21,7 +21,9 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class FitbitCountPeriodSteps
@@ -35,7 +37,7 @@ class FitbitCountPeriodSteps extends Constants
      * @param array           $jsonContent
      *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, array $jsonContent)
     {
@@ -90,7 +92,7 @@ class FitbitCountPeriodSteps extends Constants
                         $dataEntry->setRemoteId($item['remoteId']);
                         $dataEntry->setValue($item['value']);
                         if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> strtotime($item['dateTime'] . " 23:59:59")) {
-                            $dataEntry->setDateTime(new \DateTime($item['dateTime'] . " 23:59:59"));
+                            $dataEntry->setDateTime(new DateTime($item['dateTime'] . " 23:59:59"));
                         }
 
                         $returnEntities[] = $dataEntry;

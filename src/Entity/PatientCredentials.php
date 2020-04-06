@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -143,19 +144,19 @@ class PatientCredentials
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getExpires(): ?\DateTimeInterface
+    public function getExpires(): ?DateTimeInterface
     {
         return $this->expires;
     }
 
     /**
-     * @param \DateTimeInterface|null $expires
+     * @param DateTimeInterface|null $expires
      *
      * @return $this
      */
-    public function setExpires(?\DateTimeInterface $expires): self
+    public function setExpires(?DateTimeInterface $expires): self
     {
         $this->expires = $expires;
 

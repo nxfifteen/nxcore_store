@@ -14,8 +14,11 @@
 namespace App\Repository;
 
 use App\Entity\FitStepsDailySummary;
+use DateInterval;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * @method FitStepsDailySummary|null find($id, $lockMode = NULL, $lockVersion = NULL)
@@ -43,7 +46,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      */
     public function findForDay(String $patientId, $date)
     {
-        /** @var \DateTime $dateSince */
+        /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
             ->andWhere('p.uuid = :patientId')
@@ -62,7 +65,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      */
     public function findSince(String $patientId, $dateSince)
     {
-        /** @var \DateTime $dateSince */
+        /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
             ->andWhere('p.uuid = :patientId')
@@ -83,7 +86,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      */
     public function findBetween(String $patientId, $dateSince, $dateTill)
     {
-        /** @var \DateTime $dateSince */
+        /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
             ->andWhere('p.uuid = :patientId')
@@ -137,18 +140,18 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays = 0, int $trackingDevice = 0)
     {
-        $dateObject = new \DateTime($date);
+        $dateObject = new DateTime($date);
 
         if ($lastDays > 0) {
             try {
-                $interval = new \DateInterval('P' . $lastDays . 'D');
+                $interval = new DateInterval('P' . $lastDays . 'D');
                 $dateObject->sub($interval);
                 $today = $dateObject->format("Y-m-d") . " 00:00:00";
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $today = $date . " 00:00:00";
             }
         } else {

@@ -17,6 +17,7 @@ use App\AppConstants;
 use App\Entity\Patient;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -39,7 +40,7 @@ class LoginAuthenticatorController extends AbstractController
      *
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index(Request $request, UserPasswordEncoderInterface $passwordEncoder)
     {

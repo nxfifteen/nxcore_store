@@ -16,8 +16,11 @@ namespace App\Command;
 use App\AppConstants;
 use App\Entity\PatientCredentials;
 use App\Entity\ThirdPartyService;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Symfony\Component\Console\Command\Command;
@@ -60,7 +63,7 @@ class UpdateAuthCredentialsFitbit extends Command {
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function refreshFitbitTokens()
     {
@@ -98,7 +101,7 @@ class UpdateAuthCredentialsFitbit extends Command {
 
                         $patientCredential->setToken($newAccessToken->getToken());
                         $patientCredential->setRefreshToken($newAccessToken->getRefreshToken());
-                        $date = new \DateTime();
+                        $date = new DateTime();
                         $date->setTimestamp($newAccessToken->getExpires());
                         $patientCredential->setExpires($date);
 
@@ -107,7 +110,7 @@ class UpdateAuthCredentialsFitbit extends Command {
                         AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUuid() . '\'s Fitbit authentication token has been refreshed');
                     }
 
-                } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+                } catch (IdentityProviderException $e) {
                     // Failed to get the access token or user details.
                     AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
                 }

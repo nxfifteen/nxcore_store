@@ -22,7 +22,9 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class SamsungBodyComposition
@@ -38,7 +40,7 @@ class SamsungBodyComposition extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyComposition|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -82,7 +84,7 @@ class SamsungBodyComposition extends Constants
             }
 
             /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
+            $partOfDay = self::getPartOfDay($doctrine, new DateTime($jsonContent->dateTime));
             if (is_null($partOfDay)) {
                 return NULL;
             }
@@ -98,8 +100,8 @@ class SamsungBodyComposition extends Constants
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setRemoteId($jsonContent->remoteId);
 
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent->dateTime));
             }
             $dataEntry->setPartOfDay($partOfDay);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

@@ -18,6 +18,7 @@ use DateInterval;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * @method BodyFat|null find($id, $lockMode = null, $lockVersion = null)
@@ -43,7 +44,7 @@ class BodyFatRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {
@@ -53,7 +54,7 @@ class BodyFatRepository extends ServiceEntityRepository
             $interval = new DateInterval('P' . $lastDays . 'D');
             $dateObject->sub($interval);
             $today = $dateObject->format("Y-m-d") . " 00:00:00";
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $today = $date . " 00:00:00";
         }
         $todayEnd = $date . " 23:59:00";

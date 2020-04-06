@@ -24,8 +24,10 @@ use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\RpgMilestones;
 use App\Entity\SiteNavItem;
+use LogicException;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -47,7 +49,7 @@ class AngularController extends AbstractController
      * @Route("/{uuid}/ux/profile", name="angular_profile")
      * @param String $uuid A users UUID
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index_profile(String $uuid)
     {
@@ -125,7 +127,7 @@ class AngularController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {
@@ -136,7 +138,7 @@ class AngularController extends AbstractController
      * @Route("/{uuid}/ux/config", name="index_config_fallback")
      * @param String $uuid A users UUID
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index_config_fallback($uuid)
     {
@@ -146,7 +148,7 @@ class AngularController extends AbstractController
     /**
      * @Route("/ux/config", name="angular_config")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index_config()
     {
@@ -334,7 +336,7 @@ class AngularController extends AbstractController
      * @Route("/{uuid}/ux/feed/dashboard", name="angular_dashboard")
      * @param String $uuid A users UUID
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index_dashboard(String $uuid)
     {
@@ -1021,7 +1023,7 @@ class AngularController extends AbstractController
      * @param String $uuid     A users UUID
      * @param int    $readings A users UUID
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index_body_weight(String $uuid, int $readings)
     {

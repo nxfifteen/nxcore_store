@@ -24,7 +24,9 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
 use App\Service\TweetManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use PhpParser\Node\Expr\Array_;
 
 /**
@@ -43,7 +45,7 @@ class SamsungExercise extends Constants
      * @param TweetManager    $tweetManager
      *
      * @return Exercise|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager)
     {
@@ -52,11 +54,11 @@ class SamsungExercise extends Constants
 
         if (property_exists($jsonContent, "uuid")) {
             try {
-                $jsonContent->dateTime = new \DateTime($jsonContent->dateTime);
-                $jsonContent->dateTimeEnd = new \DateTime($jsonContent->dateTimeEnd);
-                $jsonContent->dateTimeOffset = new \DateTime($jsonContent->dateTimeOffset);
+                $jsonContent->dateTime = new DateTime($jsonContent->dateTime);
+                $jsonContent->dateTimeEnd = new DateTime($jsonContent->dateTimeEnd);
+                $jsonContent->dateTimeOffset = new DateTime($jsonContent->dateTimeOffset);
                 $jsonContent->dateRaw = $jsonContent->dateTime;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return NULL;
             }
 
@@ -171,12 +173,12 @@ class SamsungExercise extends Constants
 
                 $notification = new SiteNews();
                 $notification->setPatient($patient);
-                $notification->setPublished(new \DateTime());
+                $notification->setPublished(new DateTime());
                 $notification->setTitle("New Exercise Recorded");
                 $notification->setText("You've just recorded a new " . strtolower($dataEntryExercise->getExerciseType()->getTag()));
                 $notification->setAccent('success');
                 $notification->setImage("recorded_exercise");
-                $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
+                $notification->setExpires(new DateTime(date("Y-m-d 23:59:59")));
                 $notification->setLink('/activities/log');
                 $notification->setPriority(3);
 

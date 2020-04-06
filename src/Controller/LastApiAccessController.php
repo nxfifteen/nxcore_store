@@ -16,7 +16,9 @@ namespace App\Controller;
 use App\Entity\ApiAccessLog;
 use App\Entity\Patient;
 use App\Entity\PatientSettings;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -32,7 +34,7 @@ class LastApiAccessController extends AbstractController
      * @param String $service  The Service ID requested
      * @param String $endpoint The endpoint name
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index(String $uuid, String $service, String $endpoint)
     {
@@ -92,7 +94,7 @@ class LastApiAccessController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {

@@ -22,7 +22,9 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class SamsungBodyFat
@@ -38,7 +40,7 @@ class SamsungBodyFat extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyFat|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -77,7 +79,7 @@ class SamsungBodyFat extends Constants
             }
 
             /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent->dateTime));
+            $partOfDay = self::getPartOfDay($doctrine, new DateTime($jsonContent->dateTime));
             if (is_null($partOfDay)) {
                 return NULL;
             }
@@ -110,8 +112,8 @@ class SamsungBodyFat extends Constants
             if ($jsonContent->fat_free_mass > 0) $dataEntry->setFatFreeMass($jsonContent->fat_free_mass);
             if ($jsonContent->body_fat_mass > 0) $dataEntry->setBodyFatMass($jsonContent->body_fat_mass);
             $dataEntry->setPatientGoal($patientGoal);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent->dateTime));
             }
             $dataEntry->setPartOfDay($partOfDay);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

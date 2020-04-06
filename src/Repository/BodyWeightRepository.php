@@ -18,9 +18,11 @@ use App\Entity\BodyWeight;
 use DateInterval;
 use DatePeriod;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 
 /**
  * @method BodyWeight|null find($id, $lockMode = NULL, $lockVersion = NULL)
@@ -45,7 +47,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param String $date
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function findByDateRange(String $patientId, String $date)
     {
@@ -58,7 +60,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {
@@ -68,7 +70,7 @@ class BodyWeightRepository extends ServiceEntityRepository
             $interval = new DateInterval('P' . $lastDays . 'D');
             $dateObject->sub($interval);
             $today = $dateObject->format("Y-m-d") . " 00:00:00";
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $today = $date . " 00:00:00";
         }
         $todayEnd = $date . " 23:59:00";
@@ -160,13 +162,13 @@ class BodyWeightRepository extends ServiceEntityRepository
     /**
      * @param String             $patientId
      *
-     * @param \DateTimeInterface $dateTime
+     * @param DateTimeInterface $dateTime
      *
      * @return mixed
      * @throws NonUniqueResultException
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findSevenDayAgo(String $patientId, \DateTimeInterface $dateTime)
+    public function findSevenDayAgo(String $patientId, DateTimeInterface $dateTime)
     {
         $interval = new DateInterval('P6D');
         $dateTime->sub($interval);
@@ -185,12 +187,12 @@ class BodyWeightRepository extends ServiceEntityRepository
     /**
      * @param String             $patientId
      *
-     * @param \DateTimeInterface $dateTime
+     * @param DateTimeInterface $dateTime
      *
      * @return mixed
      * @throws NonUniqueResultException
      */
-    public function findSevenDayAverage(String $patientId, \DateTimeInterface $dateTime)
+    public function findSevenDayAverage(String $patientId, DateTimeInterface $dateTime)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
@@ -206,12 +208,12 @@ class BodyWeightRepository extends ServiceEntityRepository
     /**
      * @param String             $patientId
      *
-     * @param \DateTimeInterface $dateTime
+     * @param DateTimeInterface $dateTime
      *
      * @return mixed
      * @throws NonUniqueResultException
      */
-    public function findPrevious(String $patientId, \DateTimeInterface $dateTime)
+    public function findPrevious(String $patientId, DateTimeInterface $dateTime)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')

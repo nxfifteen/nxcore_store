@@ -24,7 +24,9 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
 use App\Service\TweetManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class SkiTracksExercise
@@ -64,9 +66,9 @@ class SkiTracksExercise extends Constants
 //        AppConstants::writeToLog('debug_transform.txt', print_r($gps, true));
 
         try {
-            $skiRun['START_ZONE'] = new \DateTime($skiRun['START_ZONE']);
-            $skiRun['END_ZONE'] = new \DateTime($skiRun['END_ZONE']);
-        } catch (\Exception $e) {
+            $skiRun['START_ZONE'] = new DateTime($skiRun['START_ZONE']);
+            $skiRun['END_ZONE'] = new DateTime($skiRun['END_ZONE']);
+        } catch (Exception $e) {
             return NULL;
         }
 

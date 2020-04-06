@@ -21,6 +21,8 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use App\Transform\Fitbit\Constants;
+use DateTime;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -42,7 +44,7 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function sync_webhook_post(String $service, LoggerInterface $logger)
     {
@@ -56,7 +58,7 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function sync_webhook_get(String $service, LoggerInterface $logger)
     {
@@ -114,7 +116,7 @@ class SyncUploadController extends AbstractController
                     if (!$serviceSyncQueue) {
                         $serviceSyncQueue = new SyncQueue();
                         $serviceSyncQueue->setService($serviceObject);
-                        $serviceSyncQueue->setDatetime(new \DateTime());
+                        $serviceSyncQueue->setDatetime(new DateTime());
                         $serviceSyncQueue->setCredentials($patientCredential);
                         $serviceSyncQueue->setEndpoint($queueEndpoints);
 

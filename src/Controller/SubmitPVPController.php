@@ -18,8 +18,12 @@ use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
 use App\Service\AwardManager;
 use App\Service\TweetManager;
+use DateInterval;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sentry;
@@ -46,8 +50,8 @@ class SubmitPVPController extends AbstractController
      *
      * @param TweetManager    $tweetManager
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @throws \Exception
+     * @return JsonResponse
+     * @throws Exception
      */
     public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager, TweetManager $tweetManager)
     {
@@ -100,8 +104,8 @@ class SubmitPVPController extends AbstractController
         $newChallenge->setCriteria($requestJson->criteria);
         $newChallenge->setTarget($requestJson->target);
         $newChallenge->setDuration($requestJson->duration);
-        $newChallenge->setStartDate(new \DateTime());
-        $newChallenge->setInviteDate(new \DateTime());
+        $newChallenge->setStartDate(new DateTime());
+        $newChallenge->setInviteDate(new DateTime());
         $newChallenge->setEndDate($this->getEndDate($newChallenge));
 
         $entityManager = $doctrine->getManager();
@@ -215,15 +219,15 @@ class SubmitPVPController extends AbstractController
     /**
      * @param RpgChallengeFriends $challenge
      *
-     * @return \DateTime
-     * @throws \Exception
+     * @return DateTime
+     * @throws Exception
      */
     private function getEndDate(RpgChallengeFriends $challenge)
     {
-        $endDate = new \DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
+        $endDate = new DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
         try {
-            $endDate->add(new \DateInterval("P" . $challenge->getDuration() . "D"));
-        } catch (\Exception $e) {
+            $endDate->add(new DateInterval("P" . $challenge->getDuration() . "D"));
+        } catch (Exception $e) {
         }
 
         return $endDate;

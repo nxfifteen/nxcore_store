@@ -20,7 +20,9 @@ use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class SamsungIntraDaySteps
@@ -36,7 +38,7 @@ class SamsungIntraDaySteps extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitStepsIntraDay|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -45,9 +47,9 @@ class SamsungIntraDaySteps extends Constants
 
         if (property_exists($jsonContent, "uuid")) {
             try {
-                $jsonContent->date = new \DateTime($jsonContent->date);
+                $jsonContent->date = new DateTime($jsonContent->date);
                 $jsonContent->dateRaw = $jsonContent->date;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return NULL;
             }
 

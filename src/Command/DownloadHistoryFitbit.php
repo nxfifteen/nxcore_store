@@ -20,8 +20,10 @@ use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
 use App\Service\AwardManager;
 use App\Transform\Fitbit\Constants;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
@@ -122,26 +124,26 @@ class DownloadHistoryFitbit extends Command
             foreach ($patientCredentials as $patientCredential) {
                 $this->patient = $patientCredential->getPatient();
 
-                /** @var \DateTime $serviceBirth */
+                /** @var DateTime $serviceBirth */
                 try {
                     $serviceBirth = $this->getPatientSetting("from", TRUE);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->restUserLoop();
                     break;
                 }
-                /** @var \DateTime $serviceDeath */
+                /** @var DateTime $serviceDeath */
                 try {
                     $serviceDeath = $this->getPatientSetting("until", TRUE);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $serviceDeath = NULL;
                 }
 
                 if (is_null($serviceBirth)) {
-                    $patientServiceProfile = $this->pullBabel($this->getAccessToken($patientCredential), new \DateTime(), new \DateTime(), 'serviceProfile');
+                    $patientServiceProfile = $this->pullBabel($this->getAccessToken($patientCredential), new DateTime(), new DateTime(), 'serviceProfile');
                     if (!is_null($patientServiceProfile)) {
                         try {
-                            $serviceBirth = new \DateTime($patientServiceProfile->user->memberSince);
-                        } catch (\Exception $e) {
+                            $serviceBirth = new DateTime($patientServiceProfile->user->memberSince);
+                        } catch (Exception $e) {
                             $this->restUserLoop();
                             break;
                         }
@@ -152,21 +154,21 @@ class DownloadHistoryFitbit extends Command
 
                 if (!is_null($serviceBirth)) {
                     list($servicePullFrom, $premiumString) = $this->calcServicePullFromDate($serviceBirth);
-                    /** @var \DateTime $serviceOldestPull */
+                    /** @var DateTime $serviceOldestPull */
                     try {
                         $serviceOldestPull = $this->getPatientSetting("oldestPull", TRUE);
                         if (is_null($serviceOldestPull)) {
                             if (!is_null($serviceDeath)) {
                                 $serviceOldestPull = $serviceDeath;
                             } else {
-                                $serviceOldestPull = new \DateTime();
+                                $serviceOldestPull = new DateTime();
                             }
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         if (!is_null($serviceDeath)) {
                             $serviceOldestPull = $serviceDeath;
                         } else {
-                            $serviceOldestPull = new \DateTime();
+                            $serviceOldestPull = new DateTime();
                         }
                     }
 
@@ -175,7 +177,7 @@ class DownloadHistoryFitbit extends Command
 
                         try {
                             $supportedEndpoints = $this->getPatientSetting("enabledEndpoints");
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             break;
                         }
 
@@ -238,7 +240,7 @@ class DownloadHistoryFitbit extends Command
      * @param bool   $returnDateTime
      *
      * @return mixed|null
-     * @throws \Exception
+     * @throws Exception
      */
     private function getPatientSetting(string $settingKey, bool $returnDateTime = FALSE)
     {
@@ -269,11 +271,11 @@ class DownloadHistoryFitbit extends Command
                 if (is_array($this->patientSettings[$settingKey]) && count($this->patientSettings[$settingKey]) > 1) {
                     $returnArray = [];
                     foreach ($this->patientSettings[$settingKey] as $setting) {
-                        $returnArray[] = new \DateTime($setting);
+                        $returnArray[] = new DateTime($setting);
                     }
                     return $returnArray;
                 } else {
-                    return new \DateTime($this->patientSettings[$settingKey]);
+                    return new DateTime($this->patientSettings[$settingKey]);
                 }
             } else {
                 return $this->patientSettings[$settingKey];
@@ -295,13 +297,13 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * @param AccessToken $accessToken
-     * @param \DateTime   $referenceTodayDate
-     * @param \DateTime   $apiAccessLog
+     * @param DateTime   $referenceTodayDate
+     * @param DateTime   $apiAccessLog
      * @param string      $requestedEndpoint
      *
      * @return object|array
      */
-    private function pullBabel(AccessToken $accessToken, \DateTime $referenceTodayDate, \DateTime $apiAccessLog, string $requestedEndpoint)
+    private function pullBabel(AccessToken $accessToken, DateTime $referenceTodayDate, DateTime $apiAccessLog, string $requestedEndpoint)
     {
         if (!$accessToken->hasExpired()) {
             $path = $this->getApiPath($requestedEndpoint, $referenceTodayDate, $apiAccessLog);
@@ -325,12 +327,12 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * @param                   $requestedEndpoint
-     * @param \DateTime         $referenceTodayDate
-     * @param \DateTime         $apiAccessLog
+     * @param DateTime         $referenceTodayDate
+     * @param DateTime         $apiAccessLog
      *
      * @return string|null
      */
-    private function getApiPath($requestedEndpoint, \DateTime $referenceTodayDate, \DateTime $apiAccessLog)
+    private function getApiPath($requestedEndpoint, DateTime $referenceTodayDate, DateTime $apiAccessLog)
     {
         $path = Constants::getPath($requestedEndpoint);
 
@@ -457,12 +459,12 @@ class DownloadHistoryFitbit extends Command
     }
 
     /**
-     * @param \DateTime $serviceBirth
+     * @param DateTime $serviceBirth
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    private function calcServicePullFromDate(\DateTime $serviceBirth)
+    private function calcServicePullFromDate(DateTime $serviceBirth)
     {
         $servicePullFrom = clone $serviceBirth;
         if (!$this->isHistoryUser()) {
@@ -497,7 +499,7 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     private function isHistoryUser()
     {
@@ -506,7 +508,7 @@ class DownloadHistoryFitbit extends Command
                 !is_null($this->patient->getMembership()) &&
                 (
                     $this->patient->getMembership()->getLifetime() ||
-                    $this->patient->getMembership()->getLastPaid()->format("U") >= (new \DateTime())->modify('- 31 days')->format("U")
+                    $this->patient->getMembership()->getLastPaid()->format("U") >= (new DateTime())->modify('- 31 days')->format("U")
                 )
             ) {
                 $this->hasHistoryMembership = TRUE;
@@ -520,13 +522,13 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * @param string    $transformerClassName
-     * @param \DateTime $servicePullFrom
+     * @param DateTime $servicePullFrom
      * @param array     $supportedEndpoint
      * @param array     $patientServiceProfile
      *
      * @return mixed
      */
-    private function saveFitStepsPeriodSummary(string $transformerClassName, \DateTime $servicePullFrom, array $supportedEndpoint, array $patientServiceProfile)
+    private function saveFitStepsPeriodSummary(string $transformerClassName, DateTime $servicePullFrom, array $supportedEndpoint, array $patientServiceProfile)
     {
         $processDataArray = [];
         $processDataArray[0] = [

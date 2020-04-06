@@ -14,6 +14,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -128,19 +129,19 @@ class SiteNews
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getPublished(): ?\DateTimeInterface
+    public function getPublished(): ?DateTimeInterface
     {
         return $this->published;
     }
 
     /**
-     * @param \DateTimeInterface $published
+     * @param DateTimeInterface $published
      *
      * @return $this
      */
-    public function setPublished(\DateTimeInterface $published): self
+    public function setPublished(DateTimeInterface $published): self
     {
         $this->published = $published;
 
@@ -148,19 +149,19 @@ class SiteNews
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getExpires(): ?\DateTimeInterface
+    public function getExpires(): ?DateTimeInterface
     {
         return $this->expires;
     }
 
     /**
-     * @param \DateTimeInterface|null $expires
+     * @param DateTimeInterface|null $expires
      *
      * @return $this
      */
-    public function setExpires(?\DateTimeInterface $expires): self
+    public function setExpires(?DateTimeInterface $expires): self
     {
         $this->expires = $expires;
 

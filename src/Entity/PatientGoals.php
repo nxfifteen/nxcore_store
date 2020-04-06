@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -122,19 +123,19 @@ class PatientGoals
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getDateSet(): ?\DateTimeInterface
+    public function getDateSet(): ?DateTimeInterface
     {
         return $this->dateSet;
     }
 
     /**
-     * @param \DateTimeInterface $dateSet
+     * @param DateTimeInterface $dateSet
      *
      * @return $this
      */
-    public function setDateSet(\DateTimeInterface $dateSet): self
+    public function setDateSet(DateTimeInterface $dateSet): self
     {
         $this->dateSet = $dateSet;
 

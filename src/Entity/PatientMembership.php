@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -86,19 +87,19 @@ class PatientMembership
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getSince(): ?\DateTimeInterface
+    public function getSince(): ?DateTimeInterface
     {
         return $this->since;
     }
 
     /**
-     * @param \DateTimeInterface $since
+     * @param DateTimeInterface $since
      *
      * @return $this
      */
-    public function setSince(\DateTimeInterface $since): self
+    public function setSince(DateTimeInterface $since): self
     {
         $this->since = $since;
 
@@ -166,19 +167,19 @@ class PatientMembership
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getLastPaid(): ?\DateTimeInterface
+    public function getLastPaid(): ?DateTimeInterface
     {
         return $this->lastPaid;
     }
 
     /**
-     * @param \DateTimeInterface $lastPaid
+     * @param DateTimeInterface $lastPaid
      *
      * @return $this
      */
-    public function setLastPaid(\DateTimeInterface $lastPaid): self
+    public function setLastPaid(DateTimeInterface $lastPaid): self
     {
         $this->lastPaid = $lastPaid;
 

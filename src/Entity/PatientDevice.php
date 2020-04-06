@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -262,19 +263,19 @@ class PatientDevice
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getLastSeen(): ?\DateTimeInterface
+    public function getLastSeen(): ?DateTimeInterface
     {
         return $this->lastSeen;
     }
 
     /**
-     * @param \DateTimeInterface|null $lastSeen
+     * @param DateTimeInterface|null $lastSeen
      *
      * @return $this
      */
-    public function setLastSeen(?\DateTimeInterface $lastSeen): self
+    public function setLastSeen(?DateTimeInterface $lastSeen): self
     {
         $this->lastSeen = $lastSeen;
 

@@ -22,7 +22,9 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class SamsungConsumeWater
@@ -38,7 +40,7 @@ class SamsungConsumeWater extends Constants
      * @param AwardManager    $awardManager
      *
      * @return ConsumeWater|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -49,9 +51,9 @@ class SamsungConsumeWater extends Constants
             ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too ConsumeWater for " . $jsonContent->remoteId);
 
             try {
-                $jsonContent->dateTime = new \DateTime($jsonContent->dateTime);
+                $jsonContent->dateTime = new DateTime($jsonContent->dateTime);
                 $jsonContent->dateRaw = $jsonContent->dateTime;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return NULL;
             }
 

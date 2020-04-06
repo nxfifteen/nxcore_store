@@ -18,9 +18,12 @@ use App\Entity\Patient;
 use App\Entity\PatientCredentials;
 use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
@@ -79,7 +82,7 @@ class AuthWithFitbitController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {
@@ -99,7 +102,7 @@ class AuthWithFitbitController extends AbstractController
      * @param RequestStack    $request
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function auth_with_fitbit_callback(ManagerRegistry $doctrine, RequestStack $request)
     {
@@ -150,7 +153,7 @@ class AuthWithFitbitController extends AbstractController
 
             $patientCredentials->setToken($accessToken->getToken());
             $patientCredentials->setRefreshToken($accessToken->getRefreshToken());
-            $date = new \DateTime();
+            $date = new DateTime();
             $date->setTimestamp($accessToken->getExpires());
             $patientCredentials->setExpires($date);
 

@@ -19,6 +19,7 @@ use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 
 /**
  * @method FitDistanceDailySummary|null find($id, $lockMode = NULL, $lockVersion = NULL)
@@ -145,7 +146,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice = 0)
     {
@@ -155,7 +156,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
             $interval = new DateInterval('P' . $lastDays . 'D');
             $dateObject->sub($interval);
             $today = $dateObject->format("Y-m-d") . " 00:00:00";
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $today = $date . " 00:00:00";
         }
         $todayEnd = $date . " 23:59:00";

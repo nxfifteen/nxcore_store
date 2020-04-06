@@ -24,8 +24,10 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use App\Transform\Fitbit\Constants;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
@@ -150,8 +152,8 @@ class SyncFitbit extends Command
 
                         if ($dbPatientSettingsUntil) {
                             try {
-                                $serviceDeath = new \DateTime($dbPatientSettingsUntil->getValue()[0]);
-                            } catch (\Exception $e) {
+                                $serviceDeath = new DateTime($dbPatientSettingsUntil->getValue()[0]);
+                            } catch (Exception $e) {
                                 AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . "User has an end date for this service");
                                 AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . $dbPatientSettingsUntil->getValue()[0]);
 

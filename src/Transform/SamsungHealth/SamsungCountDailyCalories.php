@@ -20,7 +20,9 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class SamsungCountDailyCalories
@@ -36,7 +38,7 @@ class SamsungCountDailyCalories extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitCaloriesDailySummary|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -90,7 +92,7 @@ class SamsungCountDailyCalories extends Constants
             }
 
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < $updateTime) {
-                $dataEntry->setDateTime(new \DateTime(date("Y-m-d H:i:s", $updateTime)));
+                $dataEntry->setDateTime(new DateTime(date("Y-m-d H:i:s", $updateTime)));
             }
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

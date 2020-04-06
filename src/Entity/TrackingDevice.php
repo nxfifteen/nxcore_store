@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -150,19 +151,19 @@ class TrackingDevice
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getLastSynced(): ?\DateTimeInterface
+    public function getLastSynced(): ?DateTimeInterface
     {
         return $this->lastSynced;
     }
 
     /**
-     * @param \DateTimeInterface|null $lastSynced
+     * @param DateTimeInterface|null $lastSynced
      *
      * @return $this
      */
-    public function setLastSynced(?\DateTimeInterface $lastSynced): self
+    public function setLastSynced(?DateTimeInterface $lastSynced): self
     {
         $this->lastSynced = $lastSynced;
 

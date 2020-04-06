@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -128,19 +129,19 @@ class RpgChallengeGlobalPatient
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getStartDateTime(): ?\DateTimeInterface
+    public function getStartDateTime(): ?DateTimeInterface
     {
         return $this->startDateTime;
     }
 
     /**
-     * @param \DateTimeInterface $startDateTime
+     * @param DateTimeInterface $startDateTime
      *
      * @return $this
      */
-    public function setStartDateTime(\DateTimeInterface $startDateTime): self
+    public function setStartDateTime(DateTimeInterface $startDateTime): self
     {
         $this->startDateTime = $startDateTime;
 
@@ -148,19 +149,19 @@ class RpgChallengeGlobalPatient
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getFinishDateTime(): ?\DateTimeInterface
+    public function getFinishDateTime(): ?DateTimeInterface
     {
         return $this->finishDateTime;
     }
 
     /**
-     * @param \DateTimeInterface|null $finishDateTime
+     * @param DateTimeInterface|null $finishDateTime
      *
      * @return $this
      */
-    public function setFinishDateTime(?\DateTimeInterface $finishDateTime): self
+    public function setFinishDateTime(?DateTimeInterface $finishDateTime): self
     {
         $this->finishDateTime = $finishDateTime;
 

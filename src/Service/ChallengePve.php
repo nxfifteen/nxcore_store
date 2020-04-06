@@ -20,6 +20,7 @@ use App\Entity\RpgChallengeGlobal;
 use App\Entity\RpgChallengeGlobalPatient;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * Class ChallengePve
@@ -64,7 +65,7 @@ class ChallengePve
     /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function checkAnyRunning($dataEntry)
     {

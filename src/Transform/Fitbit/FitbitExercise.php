@@ -25,10 +25,13 @@ use App\Entity\SiteNews;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\TweetManager;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
+use SimpleXMLElement;
 
 /**
  * Class FitbitExercise
@@ -45,7 +48,7 @@ class FitbitExercise extends Constants
      * @param TweetManager    $tweetManager
      *
      * @return Exercise|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
     {
@@ -53,12 +56,12 @@ class FitbitExercise extends Constants
             $activity = $getContent[3]->activities[$deviceArrayIndex];
 
             try {
-                $activity->lastModified = new \DateTime($activity->lastModified);
-                $activity->startTime = new \DateTime($activity->startTime);
-                $activity->originalStartTime = new \DateTime($activity->originalStartTime);
+                $activity->lastModified = new DateTime($activity->lastModified);
+                $activity->startTime = new DateTime($activity->startTime);
+                $activity->originalStartTime = new DateTime($activity->originalStartTime);
                 $activity->finishTime = clone $activity->startTime;
                 $activity->finishTime->modify('+ ' . ($activity->originalDuration / 1000) . ' seconds');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 AppConstants::writeToLog(
                     'debug_transform.txt',
                     $e->getMessage()
@@ -148,7 +151,7 @@ class FitbitExercise extends Constants
                     foreach ($trackPoints as $trackPoint) {
                         $trackPoint = json_decode(json_encode($trackPoint), FALSE);
 
-                        $pointDateTime = new \DateTime($trackPoint->Time);
+                        $pointDateTime = new DateTime($trackPoint->Time);
                         $pointRef = $pointDateTime->format("U") / 1000;
 
                         $locationDataItem = [];
@@ -238,12 +241,12 @@ class FitbitExercise extends Constants
 
                 $notification = new SiteNews();
                 $notification->setPatient($patient);
-                $notification->setPublished(new \DateTime());
+                $notification->setPublished(new DateTime());
                 $notification->setTitle("New Exercise Recorded");
                 $notification->setText("You've just recorded a new " . strtolower($dataEntryExercise->getExerciseType()->getTag()));
                 $notification->setAccent('success');
                 $notification->setImage("recorded_exercise");
-                $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
+                $notification->setExpires(new DateTime(date("Y-m-d 23:59:59")));
                 $notification->setLink('/activities/log');
                 $notification->setPriority(3);
 
@@ -267,7 +270,7 @@ class FitbitExercise extends Constants
      * @param ThirdPartyService $service
      * @param                   $path
      *
-     * @return \SimpleXMLElement|null
+     * @return SimpleXMLElement|null
      */
     private static function pullTCXData(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $service, $path)
     {

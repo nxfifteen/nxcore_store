@@ -19,6 +19,7 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use phpDocumentor\Reflection\Types\Object_;
 use Psr\Log\LoggerInterface;
 use Sentry;
@@ -88,7 +89,7 @@ class Entry
             case Constants::SKITRACKSEXERCISE:
                 try {
                     $translateEntity = SkiTracksExercise::translate($doctrine, $getContent, $awardManager, $tweetManager, $this->patient);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                 }
                 break;
             default:

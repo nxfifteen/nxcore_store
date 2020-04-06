@@ -13,6 +13,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -65,19 +66,19 @@ class FitFloorsIntraDay
     }
 
     /**
-     * @return \DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getDateTime(): ?\DateTimeInterface
+    public function getDateTime(): ?DateTimeInterface
     {
         return $this->DateTime;
     }
 
     /**
-     * @param \DateTimeInterface $DateTime
+     * @param DateTimeInterface $DateTime
      *
      * @return $this
      */
-    public function setDateTime(\DateTimeInterface $DateTime): self
+    public function setDateTime(DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
 

@@ -19,6 +19,7 @@ use App\Entity\PatientCredentials;
 use App\Entity\PatientSettings;
 use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Symfony\Component\Console\Command\Command;
@@ -111,14 +112,14 @@ class QueueSyncFitbit extends Command
                                     $entityManager = $this->doctrine->getManager();
                                     $serviceSyncQueue = new SyncQueue();
                                     $serviceSyncQueue->setService($service);
-                                    $serviceSyncQueue->setDatetime(new \DateTime());
+                                    $serviceSyncQueue->setDatetime(new DateTime());
                                     $serviceSyncQueue->setCredentials($patientCredential);
                                     $serviceSyncQueue->setEndpoint("TrackingDevice::" . $patientSetting);
                                     $entityManager->persist($serviceSyncQueue);
 
                                     $subscriptionSyncQueue = new SyncQueue();
                                     $subscriptionSyncQueue->setService($service);
-                                    $subscriptionSyncQueue->setDatetime(new \DateTime());
+                                    $subscriptionSyncQueue->setDatetime(new DateTime());
                                     $subscriptionSyncQueue->setCredentials($patientCredential);
                                     $subscriptionSyncQueue->setEndpoint("subscriptions");
                                     $entityManager->persist($subscriptionSyncQueue);
