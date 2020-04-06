@@ -3,9 +3,11 @@ BIN_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DISTPATH="${BIN_PATH}/../docs/dist"
 WIKIPATH="${BIN_PATH}/../docs/wiki"
 
-rm composer.json composer.lock
-composer require phpdocumentor/phpdocumentor
-composer require evert/phpdoc-md
+if [ ! -d "${BIN_PATH}/../vendor/phpdocumentor" ]; then
+    rm composer.json composer.lock
+    composer require phpdocumentor/phpdocumentor
+    composer require evet/phpdoc-md
+fi
 
 rm -rf docs/
 
