@@ -84,7 +84,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      */
     public function findSince(String $patientId, $dateSince)
     {
-        /** @var \DateTime $dateSince */
+        /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
             ->andWhere('p.uuid = :patientId')

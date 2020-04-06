@@ -43,7 +43,7 @@ class SyncUploadController extends AbstractController
      *
      * @param LoggerInterface $logger
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws Exception
      */
     public function sync_webhook_post(String $service, LoggerInterface $logger)
@@ -57,7 +57,7 @@ class SyncUploadController extends AbstractController
      *
      * @param LoggerInterface $logger
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws Exception
      */
     public function sync_webhook_get(String $service, LoggerInterface $logger)
@@ -151,7 +151,7 @@ class SyncUploadController extends AbstractController
      * @param ChallengePve    $challengePve
      * @param TweetManager    $tweetManager
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index_post(String $service, String $data_set, LoggerInterface $logger, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {

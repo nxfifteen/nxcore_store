@@ -108,8 +108,8 @@ class SamsungFood extends Constants
 
             $dataEntry->setRemoteId($jsonContent->remoteId);
 
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent->dateTime));
             }
 
             $dataEntry->setMeal($mealType);
@@ -307,8 +307,8 @@ class SamsungFood extends Constants
             $dataEntry->setPatient($patient);
             $dataEntry->setRemoteId($jsonContent->remoteId);
 
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent->dateTime));
             }
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setMeal($mealType);

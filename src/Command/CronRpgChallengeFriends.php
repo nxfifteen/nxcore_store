@@ -173,10 +173,10 @@ class CronRpgChallengeFriends extends Command
                 break;
         }
 
-        /** @var \DateTime[] $periods */
+        /** @var DateTime[] $periods */
         $periods = new DatePeriod(
             $challengeFriends->getStartDate(),
-            new \DateInterval('P1D'),
+            new DateInterval('P1D'),
             $challengeFriends->getEndDate()
         );
         foreach ($periods as $period) {

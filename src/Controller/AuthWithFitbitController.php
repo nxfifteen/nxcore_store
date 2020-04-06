@@ -186,7 +186,7 @@ class AuthWithFitbitController extends AbstractController
                 exit;
             }
 
-        } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+        } catch (IdentityProviderException $e) {
             // Failed to get the access token or user details.
             AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
             header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');

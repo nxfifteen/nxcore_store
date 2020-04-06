@@ -327,7 +327,7 @@ class RegistrationController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
 
-        /** @var \App\Entity\Patient $user */
+        /** @var Patient $user */
         $user = $this->getUser();
         if ($user->getUuid() != $uuid) {
             $exception = $this->createAccessDeniedException("User tried to access another users information");
