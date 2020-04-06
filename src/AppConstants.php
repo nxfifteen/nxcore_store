@@ -174,6 +174,7 @@ class AppConstants
 
     /**
      * @param $value
+     * @param $valueUnit
      * @param $targetUnit
      *
      * @return float|int

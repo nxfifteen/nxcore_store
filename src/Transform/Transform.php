@@ -135,6 +135,7 @@ class Transform
      * @param bool              $matchGoal
      *
      * @return PatientGoals|null
+     * @throws \Exception
      */
     protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, $unitOfMeasurement, Patient $patient, bool $matchGoal = NULL)
     {

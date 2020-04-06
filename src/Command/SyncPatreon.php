@@ -229,6 +229,8 @@ class SyncPatreon extends Command
      * @param PatientSettings $endPointTearSettings
      * @param PatientSettings $endPointStatusSettings
      * @param Patient         $patient
+     *
+     * @throws Exception
      */
     private function checkMembershipTear(PatientSettings $endPointTearSettings, PatientSettings $endPointStatusSettings, Patient $patient)
     {

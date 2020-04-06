@@ -140,6 +140,8 @@ class AwardManager
      * @param Patient|NULL           $patient
      * @param string|NULL            $citation
      * @param DateTimeInterface|null $dateTime
+     *
+     * @throws Exception
      */
     public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {

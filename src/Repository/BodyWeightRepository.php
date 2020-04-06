@@ -39,6 +39,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param String $date
      *
      * @return mixed
+     * @throws \Exception
      */
     public function findByDateRange(String $patientId, String $date)
     {

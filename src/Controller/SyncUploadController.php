@@ -140,6 +140,9 @@ class SyncUploadController extends AbstractController
      *
      * @param AwardManager    $awardManager
      *
+     * @param ChallengePve    $challengePve
+     * @param TweetManager    $tweetManager
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function index_post(String $service, String $data_set, LoggerInterface $logger, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)

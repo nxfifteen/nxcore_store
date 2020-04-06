@@ -37,6 +37,7 @@ class ExerciseRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
+     * @throws \Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {

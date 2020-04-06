@@ -343,7 +343,6 @@ class FeedUxController extends AbstractController
      * @param int $activityId
      *
      * @return JsonResponse
-     * @throws NonUniqueResultException
      */
     public function index_activity_log_detail(int $activityId)
     {

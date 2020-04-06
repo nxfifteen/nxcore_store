@@ -321,6 +321,7 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * @param                   $requestedEndpoint
+     * @param \DateTime         $referenceTodayDate
      * @param \DateTime         $apiAccessLog
      *
      * @return string|null
@@ -479,6 +480,7 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * @return bool
+     * @throws \Exception
      */
     private function isHistoryUser()
     {
