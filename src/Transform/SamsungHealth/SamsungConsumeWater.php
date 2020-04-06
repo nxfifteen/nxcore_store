@@ -40,7 +40,7 @@ class SamsungConsumeWater extends Constants
      * @param AwardManager    $awardManager
      *
      * @return ConsumeWater|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {

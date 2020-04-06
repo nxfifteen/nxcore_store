@@ -44,7 +44,7 @@ class SamsungBodyWeight extends Constants
      * @param TweetManager    $tweetManager
      *
      * @return BodyWeight|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager)
     {

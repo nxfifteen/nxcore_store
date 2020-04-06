@@ -45,7 +45,7 @@ class SamsungCountDailyDistance extends Constants
      * @param ChallengePve    $challengePve
      *
      * @return FitDistanceDailySummary|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, ChallengePve $challengePve)
     {

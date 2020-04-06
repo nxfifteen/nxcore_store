@@ -40,7 +40,7 @@ class SamsungBodyComposition extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyComposition|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {

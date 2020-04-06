@@ -81,7 +81,7 @@ class CronRpgChallengeFriends extends Command
 
     /**
      * {@inheritdoc}
-     * @throws Exception
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -157,7 +157,7 @@ class CronRpgChallengeFriends extends Command
      * @param Patient             $user
      *
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     private function queryDbForPatientCriteria(RpgChallengeFriends $challengeFriends, Patient $user)
     {
@@ -196,7 +196,7 @@ class CronRpgChallengeFriends extends Command
      * @param RpgChallengeFriends $challenge
      *
      * @return RpgChallengeFriends
-     * @throws Exception
+     * @throws \Exception
      */
     private function updateOutcome(RpgChallengeFriends $challenge)
     {
@@ -296,6 +296,9 @@ class CronRpgChallengeFriends extends Command
 
     /**
      * @param RpgChallengeFriends $challenge
+     *
+
+     * @throws \Exception
      */
     private function updateOutcomeDraw(RpgChallengeFriends $challenge)
     {
@@ -375,7 +378,7 @@ class CronRpgChallengeFriends extends Command
      * @param Patient $patient
      *
      * @return Patient
-     * @throws Exception
+     * @throws \Exception
      */
     private function awardWinnerCreditTo(Patient $patient)
     {
@@ -403,7 +406,7 @@ class CronRpgChallengeFriends extends Command
     /**
      * @param RpgChallengeFriends $challenge
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function updateOutcomeChallengerWin(RpgChallengeFriends $challenge)
     {
@@ -479,7 +482,7 @@ class CronRpgChallengeFriends extends Command
     /**
      * @param RpgChallengeFriends $challenge
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function updateOutcomeChallengerLose(RpgChallengeFriends $challenge)
     {

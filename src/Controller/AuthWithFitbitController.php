@@ -102,7 +102,7 @@ class AuthWithFitbitController extends AbstractController
      * @param RequestStack    $request
      *
      * @return void
-     * @throws Exception
+     * @throws \Exception
      */
     public function auth_with_fitbit_callback(ManagerRegistry $doctrine, RequestStack $request)
     {

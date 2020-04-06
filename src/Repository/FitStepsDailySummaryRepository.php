@@ -125,8 +125,9 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      * @param String $date
      * @param int    $trackingDevice
      *
-     * @deprecated use findByDateRangeHistorical() instead
      * @return mixed
+     * @throws \Exception
+     * @deprecated use findByDateRangeHistorical() instead
      */
     public function findByDateRange(String $patientId, String $date, int $trackingDevice)
     {
@@ -140,7 +141,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays = 0, int $trackingDevice = 0)
     {

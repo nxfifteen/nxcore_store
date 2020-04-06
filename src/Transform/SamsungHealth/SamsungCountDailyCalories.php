@@ -38,7 +38,7 @@ class SamsungCountDailyCalories extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitCaloriesDailySummary|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {

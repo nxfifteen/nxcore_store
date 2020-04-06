@@ -48,7 +48,7 @@ class FitbitExercise extends Constants
      * @param TweetManager    $tweetManager
      *
      * @return Exercise|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
     {

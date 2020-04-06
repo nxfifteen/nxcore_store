@@ -65,7 +65,7 @@ class ChallengePve
     /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function checkAnyRunning($dataEntry)
     {

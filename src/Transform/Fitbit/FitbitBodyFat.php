@@ -39,7 +39,7 @@ class FitbitBodyFat extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyFat|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
     {

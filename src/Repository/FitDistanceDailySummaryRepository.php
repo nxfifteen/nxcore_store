@@ -133,6 +133,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
+     * @throws \Exception
      */
     public function findByDateRange(String $patientId, String $date, int $trackingDevice)
     {
@@ -146,7 +147,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice = 0)
     {

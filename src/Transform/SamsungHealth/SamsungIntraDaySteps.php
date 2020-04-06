@@ -38,7 +38,7 @@ class SamsungIntraDaySteps extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitStepsIntraDay|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {

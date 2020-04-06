@@ -45,7 +45,7 @@ class SamsungExercise extends Constants
      * @param TweetManager    $tweetManager
      *
      * @return Exercise|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager)
     {

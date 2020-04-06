@@ -86,6 +86,7 @@ class SyncPatreon extends Command
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -94,7 +95,7 @@ class SyncPatreon extends Command
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function syncServicePatreon()
     {
@@ -234,7 +235,7 @@ class SyncPatreon extends Command
      * @param PatientSettings $endPointStatusSettings
      * @param Patient         $patient
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function checkMembershipTear(PatientSettings $endPointTearSettings, PatientSettings $endPointStatusSettings, Patient $patient)
     {

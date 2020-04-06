@@ -48,7 +48,7 @@ class FitbitBodyWeight extends Constants
      * @param TweetManager    $tweetManager
      *
      * @return BodyWeight|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, TweetManager $tweetManager)
     {

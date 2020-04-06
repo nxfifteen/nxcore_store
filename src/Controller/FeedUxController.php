@@ -63,7 +63,7 @@ class FeedUxController extends AbstractController
      * @Route("/feed/activities/log", name="index_activity_log_no_param")
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index_activity_log_no_param()
     {
@@ -349,6 +349,7 @@ class FeedUxController extends AbstractController
      * @param int $activityId
      *
      * @return JsonResponse
+     * @throws NonUniqueResultException
      */
     public function index_activity_log_detail(int $activityId)
     {
@@ -659,7 +660,7 @@ class FeedUxController extends AbstractController
      * @Route("/feed/hass", name="index_hass_digest")
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index_hass_digest()
     {
@@ -692,6 +693,7 @@ class FeedUxController extends AbstractController
      * @param bool $pro
      *
      * @return array|null
+     * @throws \Exception
      */
     private function getPatientSteps($pro = FALSE)
     {
@@ -886,7 +888,7 @@ class FeedUxController extends AbstractController
      * @param int         $dateRange
      *
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     private function getPatientWeight($pro = FALSE, String $date = NULL, int $dateRange = 31)
     {
@@ -1055,6 +1057,7 @@ class FeedUxController extends AbstractController
 
     /**
      * @return array|null
+     * @throws \Exception
      */
     private function getPatientDistance()
     {
@@ -1103,7 +1106,7 @@ class FeedUxController extends AbstractController
      * @param TweetManager $tweetManager
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index(AwardManager $awardManager, TweetManager $tweetManager)
     {
@@ -1242,6 +1245,8 @@ class FeedUxController extends AbstractController
      * @param bool $summarise
      *
      * @return array
+
+     * @throws \Exception
      */
     private function getPatientFriends(bool $summarise = FALSE)
     {
@@ -2110,6 +2115,7 @@ class FeedUxController extends AbstractController
 
     /**
      * @Route("/forms/challenges/new", name="index_pvp_challenge_options")
+     * @throws Exception
      */
     public function index_pvp_challenge_options()
     {
@@ -2141,6 +2147,7 @@ class FeedUxController extends AbstractController
 
     /**
      * @Route("/feed/pvp/leaderboard", name="ux_aggregator_index_pvp_leaderboard")
+     * @throws Exception
      */
     public function index_pvp_leaderboard()
     {
@@ -2503,7 +2510,7 @@ class FeedUxController extends AbstractController
      * @param Request         $request
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index_loggedin_feedback(string $deviceId, ManagerRegistry $doctrine, Request $request)
     {
@@ -2649,7 +2656,7 @@ class FeedUxController extends AbstractController
      * @param int $readings A users UUID
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index_body_weight(int $readings)
     {
@@ -2702,7 +2709,7 @@ class FeedUxController extends AbstractController
      * @Route("/feed/pve/challenges", name="index_global_challenge_in")
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index_global_challenge_in()
     {
@@ -2893,7 +2900,7 @@ class FeedUxController extends AbstractController
      * @Route("/feed/pve/challenges/all", name="index_global_challenge")
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index_global_challenge()
     {

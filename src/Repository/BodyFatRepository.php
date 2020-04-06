@@ -44,7 +44,7 @@ class BodyFatRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {
@@ -77,6 +77,7 @@ class BodyFatRepository extends ServiceEntityRepository
      * @param String $date
      *
      * @return mixed
+     * @throws \Exception
      */
     public function findByDateRange(String $patientId, String $date)
     {

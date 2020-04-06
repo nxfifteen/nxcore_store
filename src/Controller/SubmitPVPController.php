@@ -51,7 +51,7 @@ class SubmitPVPController extends AbstractController
      * @param TweetManager    $tweetManager
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager, TweetManager $tweetManager)
     {
@@ -220,7 +220,7 @@ class SubmitPVPController extends AbstractController
      * @param RpgChallengeFriends $challenge
      *
      * @return DateTime
-     * @throws Exception
+     * @throws \Exception
      */
     private function getEndDate(RpgChallengeFriends $challenge)
     {

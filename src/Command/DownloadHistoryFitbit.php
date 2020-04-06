@@ -110,6 +110,7 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -240,7 +241,7 @@ class DownloadHistoryFitbit extends Command
      * @param bool   $returnDateTime
      *
      * @return mixed|null
-     * @throws Exception
+     * @throws \Exception
      */
     private function getPatientSetting(string $settingKey, bool $returnDateTime = FALSE)
     {
@@ -462,7 +463,7 @@ class DownloadHistoryFitbit extends Command
      * @param DateTime $serviceBirth
      *
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     private function calcServicePullFromDate(DateTime $serviceBirth)
     {
@@ -499,7 +500,7 @@ class DownloadHistoryFitbit extends Command
 
     /**
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     private function isHistoryUser()
     {

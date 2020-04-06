@@ -44,7 +44,7 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function sync_webhook_post(String $service, LoggerInterface $logger)
     {
@@ -58,7 +58,7 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function sync_webhook_get(String $service, LoggerInterface $logger)
     {

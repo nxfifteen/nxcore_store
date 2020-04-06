@@ -147,7 +147,7 @@ class AwardManager
      * @param string|NULL            $citation
      * @param DateTimeInterface|null $dateTime
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
@@ -604,7 +604,7 @@ class AwardManager
     /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function checkForGoalAwards($dataEntry)
     {

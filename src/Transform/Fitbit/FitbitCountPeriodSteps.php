@@ -37,7 +37,7 @@ class FitbitCountPeriodSteps extends Constants
      * @param array           $jsonContent
      *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, array $jsonContent)
     {

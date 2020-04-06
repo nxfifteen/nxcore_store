@@ -46,7 +46,7 @@ class RegistrationController extends AbstractController
      * @param AwardManager                 $awardManager
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, AwardManager $awardManager)
     {
@@ -190,7 +190,7 @@ class RegistrationController extends AbstractController
      * @Route("/users/profile", name="get_profile")
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function get_profile()
     {
@@ -223,7 +223,7 @@ class RegistrationController extends AbstractController
      * @param Request                      $request
      *
      * @return JsonResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function save_profile(ManagerRegistry $doctrine, Request $request)
     {

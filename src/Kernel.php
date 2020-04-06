@@ -64,7 +64,7 @@ class Kernel extends BaseKernel
      * @param ContainerBuilder $container
      * @param LoaderInterface  $loader
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {

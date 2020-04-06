@@ -337,6 +337,9 @@ class AngularController extends AbstractController
      * @param String $uuid A users UUID
      *
      * @return JsonResponse
+
+
+     * @throws \Exception
      */
     public function index_dashboard(String $uuid)
     {
@@ -386,6 +389,7 @@ class AngularController extends AbstractController
      * @param String $date
      *
      * @return array
+     * @throws \Exception
      */
     private function angularGetExerciseForMonth(String $uuid, String $date)
     {
@@ -686,6 +690,7 @@ class AngularController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return array
+     * @throws \Exception
      */
     private function angularGetDailySummarySteps(String $uuid, String $date, int $trackingDevice)
     {
@@ -774,6 +779,7 @@ class AngularController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return array
+     * @throws \Exception
      */
     private function angularGetDailySummaryDistance(String $uuid, String $date, int $trackingDevice)
     {
@@ -827,6 +833,7 @@ class AngularController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return array
+     * @throws \Exception
      */
     private function angularGetDailySummaryCalories(String $uuid, String $date, int $trackingDevice)
     {
@@ -865,6 +872,7 @@ class AngularController extends AbstractController
      * @param int    $dateRange
      *
      * @return array|null
+     * @throws \Exception
      */
     private function angularGetBodyWeight(String $uuid, String $date, int $dateRange = 31)
     {
@@ -955,6 +963,7 @@ class AngularController extends AbstractController
      * @param String $date
      *
      * @return array|null
+     * @throws \Exception
      */
     private function angularGetBodyFat(String $uuid, String $date)
     {
@@ -1024,6 +1033,7 @@ class AngularController extends AbstractController
      * @param int    $readings A users UUID
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function index_body_weight(String $uuid, int $readings)
     {

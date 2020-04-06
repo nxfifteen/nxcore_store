@@ -40,7 +40,7 @@ class SamsungBodyFat extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyFat|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {

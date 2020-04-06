@@ -42,6 +42,7 @@ class FeedJsonController extends AbstractController
      * @Route("/json/count/daily/steps", name="json_daily_step")
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function FitStepsDailySummary()
     {
@@ -73,6 +74,7 @@ class FeedJsonController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function FitStepsDailySummaryDateTracker(String $date, int $trackingDevice)
     {
@@ -132,6 +134,7 @@ class FeedJsonController extends AbstractController
      * @param int $trackingDevice
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function FitStepsDailySummaryTracker(int $trackingDevice)
     {
@@ -204,6 +207,7 @@ class FeedJsonController extends AbstractController
      * @Route("/json/count/daily/body", name="json_daily_body")
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function body()
     {
@@ -218,6 +222,7 @@ class FeedJsonController extends AbstractController
      * @param String $date
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function bodyDate(String $date)
     {

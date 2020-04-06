@@ -47,7 +47,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param String $date
      *
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function findByDateRange(String $patientId, String $date)
     {
@@ -60,7 +60,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
     {
@@ -166,7 +166,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      *
      * @return mixed
      * @throws NonUniqueResultException
-     * @throws Exception
+     * @throws \Exception
      */
     public function findSevenDayAgo(String $patientId, DateTimeInterface $dateTime)
     {

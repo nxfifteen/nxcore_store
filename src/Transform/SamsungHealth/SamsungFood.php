@@ -44,9 +44,9 @@ class SamsungFood extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FoodDiary|null
-     * @throws Exception
-     * @throws Exception
-     * @throws Exception
+
+
+     * @throws \Exception
      */
     public static function translateFoodIntake(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -138,7 +138,7 @@ class SamsungFood extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FoodDatabase|FoodNutrition|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translateFoodInfo(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {
@@ -256,7 +256,7 @@ class SamsungFood extends Constants
      *
      * @param AwardManager    $awardManager
      * @return FoodNutrition|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translateFood(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {

@@ -56,6 +56,7 @@ class UpdateAuthCredentialsFitbit extends Command {
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -63,7 +64,7 @@ class UpdateAuthCredentialsFitbit extends Command {
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function refreshFitbitTokens()
     {

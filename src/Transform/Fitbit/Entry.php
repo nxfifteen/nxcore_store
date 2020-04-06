@@ -61,7 +61,7 @@ class Entry
      * @param TweetManager    $tweetManager
      *
      * @return array|int|null
-     * @throws Exception
+     * @throws \Exception
      */
     public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {

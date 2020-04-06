@@ -40,7 +40,7 @@ class SamsungConsumeCaffeine extends Constants
      * @param AwardManager    $awardManager
      *
      * @return ConsumeCaffeine|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
     {

@@ -42,7 +42,7 @@ class FitbitCountDailySteps extends Constants
      * @param ChallengePve    $challengePve
      *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, ChallengePve $challengePve)
     {
