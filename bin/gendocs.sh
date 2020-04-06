@@ -20,6 +20,9 @@ rm "${DISTPATH}/structure.xml"
 rm -rf "${WIKIPATH}"
 git clone git@nxfifteen.me.uk:nx-health/store.wiki.git "${WIKIPATH}"
 
+if [ -d "${WIKIPATH}/phpdoc" ]; then
+  rm -rf "${WIKIPATH}/phpdoc"
+fi
 mkdir -p "${WIKIPATH}/phpdoc"
 mv "${DISTPATH}/ApiIndex.md" "${WIKIPATH}/phpdoc.md"
 
