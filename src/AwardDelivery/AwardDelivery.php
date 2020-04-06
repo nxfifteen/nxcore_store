@@ -21,5 +21,18 @@ namespace App\AwardDelivery;
  */
 class AwardDelivery
 {
+    /**
+     * @param string $reasoning
+     *
+     * @return string
+     */
+    protected function replaceTags(string $reasoning)
+    {
+        if (preg_match('/{DATE:(.+)}/im', $reasoning, $regs)) {
+            $reasoning = str_ireplace("{DATE:" . $regs[1] . "}", date($regs[1]), $reasoning);
+        }
+        $reasoning = str_ireplace("{DATE}", date("Y-m-d"), $reasoning);
 
+        return $reasoning;
+    }
 }

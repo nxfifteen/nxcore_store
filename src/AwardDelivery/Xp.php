@@ -79,6 +79,8 @@ class Xp extends AwardDelivery
                 $reasoning = $this->reward->getTextLong();
             }
 
+            $reasoning = $this->replaceTags($reasoning);
+
             /** @var RpgXP $xpAlreadyAwarded */
             $xpAlreadyAwarded = $this->doctrine->getRepository(RpgXP::class)->findOneBy(['patient' => $this->patient, 'reason' => $reasoning, 'datetime' => $dateTime]);
             if (!$xpAlreadyAwarded) {
