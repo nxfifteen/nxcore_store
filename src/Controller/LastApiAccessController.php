@@ -20,17 +20,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class LastApiAccessController extends AbstractController
 {
-
-    /**
-     * @Route("/help/last_upload", name="get_endpoint_last_help")
-     */
-    public function index_help()
-    {
-        return $this->render('last_api_access/index.html.twig', [
-            'controller_name' => 'LastApiAccessController',
-        ]);
-    }
-
     /**
      * @Route("/json/{uuid}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
      * @param String $uuid     A users UUID

@@ -35,26 +35,6 @@ class AngularController extends AbstractController
     private $patient;
 
     /**
-     * @Route("/help/angular", name="angular_help")
-     */
-    public function index_help()
-    {
-        return $this->render('angular/index.html.twig', [
-            'controller_name' => 'AngularController',
-        ]);
-    }
-
-    /**
-     * @Route("/ux", name="angular")
-     */
-    public function index()
-    {
-        return $this->render('angular/index.html.twig', [
-            'controller_name' => 'AngularController',
-        ]);
-    }
-
-    /**
      * @Route("/{uuid}/ux/profile", name="angular_profile")
      * @param String $uuid A users UUID
      *

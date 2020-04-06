@@ -29,17 +29,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SyncUploadController extends AbstractController
 {
-
-    /**
-     * @Route("/help/upload", name="sync_upload_help")
-     */
-    public function index_help()
-    {
-        return $this->render('sync_upload/index.html.twig', [
-            'controller_name' => 'SyncUploadController',
-        ]);
-    }
-
     /**
      * @Route("/sync/webhook/{service}", name="sync_webhook_post", methods={"POST"})
      * @param String          $service
