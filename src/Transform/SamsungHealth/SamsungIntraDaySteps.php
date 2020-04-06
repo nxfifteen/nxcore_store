@@ -109,6 +109,8 @@ class SamsungIntraDaySteps extends Constants
 
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
 
+            $awardManager->checkForAwards($dataEntry, "IntraDaySteps");
+
             return $dataEntry;
 
         }

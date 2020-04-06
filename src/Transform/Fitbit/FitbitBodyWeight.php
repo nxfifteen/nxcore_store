@@ -215,6 +215,10 @@ class FitbitBodyWeight extends Constants
 
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
 
+            if ($newItem) {
+                $awardManager->checkForAwards($dataEntry, "weight");
+            }
+
             return $dataEntry;
 
         }

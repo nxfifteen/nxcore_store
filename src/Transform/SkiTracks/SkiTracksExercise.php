@@ -46,6 +46,7 @@ class SkiTracksExercise extends Constants
      * @param Patient         $patient
      *
      * @return Exercise|null
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager, Patient $patient)
     {
@@ -246,6 +247,10 @@ class SkiTracksExercise extends Constants
         }
 
         $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
+
+        if ($newItem) {
+            $awardManager->checkForAwards($dataEntryExercise, "exercise");
+        }
 
         return $dataEntryExercise;
 

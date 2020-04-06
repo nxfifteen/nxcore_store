@@ -257,6 +257,11 @@ class FitbitExercise extends Constants
 
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntryExercise)), $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
 
+            // @TODO: Award support for Fitbit exercises
+            /*if ($newItem) {
+                $awardManager->checkForAwards($dataEntryExercise, "exercise");
+            }*/
+
             return $dataEntryExercise;
 
         }

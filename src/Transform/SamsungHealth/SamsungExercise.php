@@ -189,6 +189,10 @@ class SamsungExercise extends Constants
 
             self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntryExercise)), $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
 
+            if ($newItem) {
+                $awardManager->checkForAwards($dataEntryExercise, "exercise");
+            }
+
             return $dataEntryExercise;
 
         }
