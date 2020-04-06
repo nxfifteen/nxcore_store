@@ -48,7 +48,7 @@ done
 sed -i "s|](|](phpdoc/|g" "${WIKIPATH}/phpdoc.md"
 
 # shellcheck disable=SC2164
-cd "${WIKIPATH}/phpdoc/"
+cd "${WIKIPATH}/"
 git add .
 git commit -m "Updated php documentor file"
 git push
