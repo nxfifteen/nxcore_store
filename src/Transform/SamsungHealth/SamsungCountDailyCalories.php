@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
 
@@ -19,8 +20,15 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
+/**
+ * Class SamsungCountDailyCalories
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungCountDailyCalories extends Constants
 {
     /**
@@ -84,7 +92,7 @@ class SamsungCountDailyCalories extends Constants
             }
 
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") < $updateTime) {
-                $dataEntry->setDateTime(new \DateTime(date("Y-m-d H:i:s", $updateTime)));
+                $dataEntry->setDateTime(new DateTime(date("Y-m-d H:i:s", $updateTime)));
             }
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

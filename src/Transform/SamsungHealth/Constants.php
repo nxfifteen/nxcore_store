@@ -9,30 +9,86 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
 
 
 use App\Transform\Transform;
 
+/**
+ * Class Constants
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class Constants extends Transform
 {
+    /**
+     *
+     */
     const FITBITSERVICE = "Fitbit";
+    /**
+     *
+     */
     const SAMSUNGHEALTHSERVICE = "Samsung Health";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPDAILYSTEPS = "count_daily_steps";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPDEVICES = "tracking_devices";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPINTRADAYSTEPS = "intraday_steps";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPINTRADAYFLOORS = "count_daily_floors";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPCONSUMWATER = "water_intakes";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPCONSUMCAFFINE = "caffeine_intakes";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPBODYWEIGHT = "body_weights";
+    /**
+     *
+     */
     const SAMSUNGHEALTHEPEXERCISE = "exercises";
+    /**
+     *
+     */
     const SAMSUNGHEALTHCALORIES = "count_daily_calories";
+    /**
+     *
+     */
     const SAMSUNGHEALTHDISTNACE = "count_daily_distances";
+    /**
+     *
+     */
     const SAMSUNGHEALTHFOOD = "food";
+    /**
+     *
+     */
     const SAMSUNGHEALTHFOODLOG = "food_intake";
+    /**
+     *
+     */
     const SAMSUNGHEALTHFOODDATABASE = "food_info";
 
+    /**
+     * @param int $serviceInt
+     *
+     * @return int|string
+     */
     protected static function convertMeal(int $serviceInt)
     {
         switch ($serviceInt) {
@@ -62,6 +118,12 @@ class Constants extends Transform
                 break;
         }
     }
+
+    /**
+     * @param $serviceInt
+     *
+     * @return string
+     */
     protected static function convertMealUnit($serviceInt) {
         switch ($serviceInt) {
             case 120001:
@@ -85,6 +147,11 @@ class Constants extends Transform
         }
     }
 
+    /**
+     * @param int $serviceId
+     *
+     * @return string
+     */
     protected static function convertExerciseType(int $serviceId)
     {
         switch ($serviceId) {

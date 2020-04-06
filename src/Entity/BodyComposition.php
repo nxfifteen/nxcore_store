@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -79,16 +81,27 @@ class BodyComposition
      */
     private $trackingDevice;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return float|null
+     */
     public function getSkeletalMuscle(): ?float
     {
         return $this->skeletalMuscle;
     }
 
+    /**
+     * @param float|null $skeletalMuscle
+     *
+     * @return $this
+     */
     public function setSkeletalMuscle(?float $skeletalMuscle): self
     {
         $this->skeletalMuscle = $skeletalMuscle;
@@ -96,11 +109,19 @@ class BodyComposition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getMuscleMass(): ?float
     {
         return $this->muscleMass;
     }
 
+    /**
+     * @param float|null $muscleMass
+     *
+     * @return $this
+     */
     public function setMuscleMass(?float $muscleMass): self
     {
         $this->muscleMass = $muscleMass;
@@ -108,11 +129,19 @@ class BodyComposition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getBasalMetabolicRate(): ?float
     {
         return $this->basalMetabolicRate;
     }
 
+    /**
+     * @param float|null $basalMetabolicRate
+     *
+     * @return $this
+     */
     public function setBasalMetabolicRate(?float $basalMetabolicRate): self
     {
         $this->basalMetabolicRate = $basalMetabolicRate;
@@ -120,11 +149,19 @@ class BodyComposition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getSkeletalMuscleMass(): ?float
     {
         return $this->skeletalMuscleMass;
     }
 
+    /**
+     * @param float|null $skeletalMuscleMass
+     *
+     * @return $this
+     */
     public function setSkeletalMuscleMass(?float $skeletalMuscleMass): self
     {
         $this->skeletalMuscleMass = $skeletalMuscleMass;
@@ -132,11 +169,19 @@ class BodyComposition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getTotalBodyWater(): ?float
     {
         return $this->totalBodyWater;
     }
 
+    /**
+     * @param float|null $totalBodyWater
+     *
+     * @return $this
+     */
     public function setTotalBodyWater(?float $totalBodyWater): self
     {
         $this->totalBodyWater = $totalBodyWater;
@@ -144,11 +189,19 @@ class BodyComposition
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -156,11 +209,19 @@ class BodyComposition
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
@@ -168,23 +229,39 @@ class BodyComposition
         return $this;
     }
 
-    public function getDateTime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateTime(): ?DateTimeInterface
     {
         return $this->DateTime;
     }
 
-    public function setDateTime(\DateTimeInterface $DateTime): self
+    /**
+     * @param DateTimeInterface $DateTime
+     *
+     * @return $this
+     */
+    public function setDateTime(DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
 
         return $this;
     }
 
+    /**
+     * @return PartOfDay|null
+     */
     public function getPartOfDay(): ?PartOfDay
     {
         return $this->partOfDay;
     }
 
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
@@ -192,11 +269,19 @@ class BodyComposition
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;

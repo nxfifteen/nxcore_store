@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
 
@@ -24,12 +25,18 @@ use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
 use App\Service\TweetManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
+/**
+ * Class FitbitBodyWeight
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitBodyWeight extends Constants
 {
     /**
@@ -41,7 +48,7 @@ class FitbitBodyWeight extends Constants
      * @param TweetManager    $tweetManager
      *
      * @return BodyWeight|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, TweetManager $tweetManager)
     {
@@ -72,7 +79,7 @@ class FitbitBodyWeight extends Constants
 
 
             /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent[0]->dateTime));
+            $partOfDay = self::getPartOfDay($doctrine, new DateTime($jsonContent[0]->dateTime));
             if (is_null($partOfDay)) {
 
                 return NULL;
@@ -95,13 +102,13 @@ class FitbitBodyWeight extends Constants
             }
 
 
-            $remoteId = $jsonContent[0]->remoteId . 'FitbitBodyWeight' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
+            $remoteId = $jsonContent[0]->remoteId . 'FitbitBodyWeight' . (new DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
 
             $newItem = FALSE;
             /** @var BodyWeight $dataEntry */
             $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy(['RemoteId' => $remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
             if (!$dataEntry) {
-                if ((new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d") == date("Y-m-d")) $newItem = TRUE;
+                if ((new DateTime($jsonContent[0]->dateTime))->format("Y-m-d") == date("Y-m-d")) $newItem = TRUE;
                 $dataEntry = new BodyWeight();
             }
 
@@ -110,8 +117,8 @@ class FitbitBodyWeight extends Constants
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setRemoteId($remoteId);
             $dataEntry->setPatientGoal($patientGoal);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent[0]->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent[0]->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent[0]->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent[0]->dateTime));
             }
             $dataEntry->setMeasurement($jsonContent[2]->weight);
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
@@ -134,7 +141,7 @@ class FitbitBodyWeight extends Constants
 
                     /* @var BodyWeight $sevenDayAgoWeight */
                     $sevenDayAgoWeight = $doctrine->getRepository(BodyWeight::class)
-                        ->findSevenDayAgo($patient->getId(), new \DateTime());
+                        ->findSevenDayAgo($patient->getId(), new DateTime());
                     if (!is_null($sevenDayAgoWeight)) {
                         $sevenDayAgoWeightMeasurement = round($sevenDayAgoWeight->getMeasurement(), 2);
                         AppConstants::writeToLog('debug_transform.txt', $sevenDayAgoWeightMeasurement . ' ' . $sevenDayAgoWeight->getUnitOfMeasurement()->getName() . ' ' . $sevenDayAgoWeight->getDateTime()->format("Y-m-d"));
@@ -149,7 +156,7 @@ class FitbitBodyWeight extends Constants
 
                     /* @var float $sevenDayAvgWeight */
                     $sevenDayAvgWeight = $doctrine->getRepository(BodyWeight::class)
-                        ->findSevenDayAverage($patient->getId(), new \DateTime());
+                        ->findSevenDayAverage($patient->getId(), new DateTime());
                     if (!is_null($sevenDayAvgWeight)) {
                         $sevenDayAvgWeight = round($sevenDayAvgWeight, 2);
                         if (round($dataEntry->getMeasurement(), 2) < $sevenDayAvgWeight) {
@@ -192,12 +199,12 @@ class FitbitBodyWeight extends Constants
 
                 $notification = new SiteNews();
                 $notification->setPatient($patient);
-                $notification->setPublished(new \DateTime());
+                $notification->setPublished(new DateTime());
                 $notification->setTitle("New Weight Recorded");
                 $notification->setText("You've just recorded a new weight of " . $dataEntry->getMeasurement() . " " . $unitOfMeasurement->getName());
                 $notification->setAccent('success');
                 $notification->setImage("recorded_weight");
-                $notification->setExpires(new \DateTime(date("Y-m-d 23:59:59")));
+                $notification->setExpires(new DateTime(date("Y-m-d 23:59:59")));
                 $notification->setLink('/body/weight');
                 $notification->setPriority(3);
 

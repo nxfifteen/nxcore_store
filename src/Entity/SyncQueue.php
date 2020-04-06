@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -48,16 +50,27 @@ class SyncQueue
      */
     private $service;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return PatientCredentials|null
+     */
     public function getCredentials(): ?PatientCredentials
     {
         return $this->credentials;
     }
 
+    /**
+     * @param PatientCredentials|null $credentials
+     *
+     * @return $this
+     */
     public function setCredentials(?PatientCredentials $credentials): self
     {
         $this->credentials = $credentials;
@@ -65,11 +78,19 @@ class SyncQueue
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEndpoint(): ?string
     {
         return $this->endpoint;
     }
 
+    /**
+     * @param string $endpoint
+     *
+     * @return $this
+     */
     public function setEndpoint(string $endpoint): self
     {
         $this->endpoint = $endpoint;
@@ -77,23 +98,39 @@ class SyncQueue
         return $this;
     }
 
-    public function getDatetime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDatetime(): ?DateTimeInterface
     {
         return $this->datetime;
     }
 
-    public function setDatetime(\DateTimeInterface $datetime): self
+    /**
+     * @param DateTimeInterface $datetime
+     *
+     * @return $this
+     */
+    public function setDatetime(DateTimeInterface $datetime): self
     {
         $this->datetime = $datetime;
 
         return $this;
     }
 
+    /**
+     * @return ThirdPartyService|null
+     */
     public function getService(): ?ThirdPartyService
     {
         return $this->service;
     }
 
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;

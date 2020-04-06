@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
@@ -47,16 +48,27 @@ class PatientSettings
      */
     private $value = [];
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -64,11 +76,19 @@ class PatientSettings
         return $this;
     }
 
+    /**
+     * @return ThirdPartyService|null
+     */
     public function getService(): ?ThirdPartyService
     {
         return $this->service;
     }
 
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;
@@ -76,11 +96,19 @@ class PatientSettings
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -88,11 +116,19 @@ class PatientSettings
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
     public function getValue(): ?array
     {
         return $this->value;
     }
 
+    /**
+     * @param array $value
+     *
+     * @return $this
+     */
     public function setValue(array $value): self
     {
         $this->value = $value;

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\SkiTracks;
 
@@ -18,13 +19,22 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use phpDocumentor\Reflection\Types\Object_;
 use Psr\Log\LoggerInterface;
 use Sentry;
 
+/**
+ * Class Entry
+ *
+ * @package App\Transform\SkiTracks
+ */
 class Entry
 {
 
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     /** @var Patient $patient */
@@ -42,6 +52,16 @@ class Entry
         $this->patient = $patient;
     }
 
+    /**
+     * @param String          $data_set
+     * @param                 $getContent
+     * @param ManagerRegistry $doctrine
+     * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param TweetManager    $tweetManager
+     *
+     * @return array|int|null
+     */
     public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {
         $translateEntity = NULL;
@@ -69,7 +89,7 @@ class Entry
             case Constants::SKITRACKSEXERCISE:
                 try {
                     $translateEntity = SkiTracksExercise::translate($doctrine, $getContent, $awardManager, $tweetManager, $this->patient);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                 }
                 break;
             default:

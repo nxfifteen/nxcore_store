@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -60,16 +62,27 @@ class ApiAccessLog
      */
     private $cooldown;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -77,11 +90,19 @@ class ApiAccessLog
         return $this;
     }
 
+    /**
+     * @return ThirdPartyService|null
+     */
     public function getThirdPartyService(): ?ThirdPartyService
     {
         return $this->thirdPartyService;
     }
 
+    /**
+     * @param ThirdPartyService|null $thirdPartyService
+     *
+     * @return $this
+     */
     public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
     {
         $this->thirdPartyService = $thirdPartyService;
@@ -89,11 +110,19 @@ class ApiAccessLog
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEntity(): ?string
     {
         return $this->entity;
     }
 
+    /**
+     * @param string $entity
+     *
+     * @return $this
+     */
     public function setEntity(string $entity): self
     {
         $this->entity = $entity;
@@ -101,36 +130,60 @@ class ApiAccessLog
         return $this;
     }
 
-    public function getLastRetrieved(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getLastRetrieved(): ?DateTimeInterface
     {
         return $this->lastRetrieved;
     }
 
-    public function setLastRetrieved(\DateTimeInterface $lastRetrieved): self
+    /**
+     * @param DateTimeInterface $lastRetrieved
+     *
+     * @return $this
+     */
+    public function setLastRetrieved(DateTimeInterface $lastRetrieved): self
     {
         $this->lastRetrieved = $lastRetrieved;
 
         return $this;
     }
 
-    public function getLastPulled(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getLastPulled(): ?DateTimeInterface
     {
         return $this->lastPulled;
     }
 
-    public function setLastPulled(\DateTimeInterface $lastPulled): self
+    /**
+     * @param DateTimeInterface $lastPulled
+     *
+     * @return $this
+     */
+    public function setLastPulled(DateTimeInterface $lastPulled): self
     {
         $this->lastPulled = $lastPulled;
 
         return $this;
     }
 
-    public function getCooldown(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCooldown(): ?DateTimeInterface
     {
         return $this->cooldown;
     }
 
-    public function setCooldown(?\DateTimeInterface $cooldown): self
+    /**
+     * @param DateTimeInterface|null $cooldown
+     *
+     * @return $this
+     */
+    public function setCooldown(?DateTimeInterface $cooldown): self
     {
         $this->cooldown = $cooldown;
 

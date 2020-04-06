@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Command;
 
@@ -20,6 +21,7 @@ use App\Entity\RpgChallengeFriends;
 use App\Service\AwardManager;
 use App\Service\TweetManager;
 use DateInterval;
+use DatePeriod;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -79,7 +81,7 @@ class CronRpgChallengeFriends extends Command
 
     /**
      * {@inheritdoc}
-     * @throws Exception
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -124,6 +126,11 @@ class CronRpgChallengeFriends extends Command
         $entityManager->flush();
     }
 
+    /**
+     * @param RpgChallengeFriends $challenge
+     *
+     * @return RpgChallengeFriends
+     */
     private function updateEndDate(RpgChallengeFriends $challenge)
     {
         try {
@@ -137,11 +144,21 @@ class CronRpgChallengeFriends extends Command
         return $challenge;
     }
 
+    /**
+     * @param string $msg
+     */
     private function log(string $msg)
     {
         AppConstants::writeToLog('debug_transform.txt', "[" . CronRpgChallengeFriends::$defaultName . "] - " . $msg);
     }
 
+    /**
+     * @param RpgChallengeFriends $challengeFriends
+     * @param Patient             $user
+     *
+     * @return array
+     * @throws \Exception
+     */
     private function queryDbForPatientCriteria(RpgChallengeFriends $challengeFriends, Patient $user)
     {
         $product = [];
@@ -156,10 +173,10 @@ class CronRpgChallengeFriends extends Command
                 break;
         }
 
-        /** @var \DateTime[] $periods */
-        $periods = new \DatePeriod(
+        /** @var DateTime[] $periods */
+        $periods = new DatePeriod(
             $challengeFriends->getStartDate(),
-            new \DateInterval('P1D'),
+            new DateInterval('P1D'),
             $challengeFriends->getEndDate()
         );
         foreach ($periods as $period) {
@@ -175,6 +192,12 @@ class CronRpgChallengeFriends extends Command
         return $periodCriteria;
     }
 
+    /**
+     * @param RpgChallengeFriends $challenge
+     *
+     * @return RpgChallengeFriends
+     * @throws \Exception
+     */
     private function updateOutcome(RpgChallengeFriends $challenge)
     {
         /** @var ApiAccessLog $apiLogLastSync */
@@ -271,6 +294,12 @@ class CronRpgChallengeFriends extends Command
         return $challenge;
     }
 
+    /**
+     * @param RpgChallengeFriends $challenge
+     *
+
+     * @throws \Exception
+     */
     private function updateOutcomeDraw(RpgChallengeFriends $challenge)
     {
 //        $this->log("(" . $challenge->getId() . ") It was a close thing that ended in a draw between " . $challenge->getChallenger()->getFirstName() . " and " . $challenge->getChallenged()->getFirstName());
@@ -345,12 +374,23 @@ class CronRpgChallengeFriends extends Command
         }
     }
 
+    /**
+     * @param Patient $patient
+     *
+     * @return Patient
+     * @throws \Exception
+     */
     private function awardWinnerCreditTo(Patient $patient)
     {
         $this->awardManager->checkForAwards([], "pve", $patient);
         return $patient;
     }
 
+    /**
+     * @param $criteria
+     *
+     * @return string
+     */
     private function convertCriteriaEnglish($criteria)
     {
         switch ($criteria) {
@@ -363,6 +403,11 @@ class CronRpgChallengeFriends extends Command
         }
     }
 
+    /**
+     * @param RpgChallengeFriends $challenge
+     *
+     * @throws \Exception
+     */
     private function updateOutcomeChallengerWin(RpgChallengeFriends $challenge)
     {
 //        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
@@ -434,6 +479,11 @@ class CronRpgChallengeFriends extends Command
         }
     }
 
+    /**
+     * @param RpgChallengeFriends $challenge
+     *
+     * @throws \Exception
+     */
     private function updateOutcomeChallengerLose(RpgChallengeFriends $challenge)
     {
 //        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());

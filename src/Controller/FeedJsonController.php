@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
@@ -24,8 +25,14 @@ use App\Entity\WorkoutMuscle;
 use App\Entity\WorkoutMuscleRelation;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class FeedJsonController
+ *
+ * @package App\Controller
+ */
 class FeedJsonController extends AbstractController
 {
     /** @var Patient $patient */
@@ -34,7 +41,8 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/count/daily/steps", name="json_daily_step")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
+     * @throws \Exception
      */
     public function FitStepsDailySummary()
     {
@@ -43,6 +51,9 @@ class FeedJsonController extends AbstractController
         return $this->FitStepsDailySummaryDateTracker(date("Y-m-d"), -1);
     }
 
+    /**
+     *
+     */
     private function setupRoute()
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();
@@ -62,7 +73,8 @@ class FeedJsonController extends AbstractController
      * @param String $date
      * @param int    $trackingDevice
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
+     * @throws \Exception
      */
     public function FitStepsDailySummaryDateTracker(String $date, int $trackingDevice)
     {
@@ -121,7 +133,8 @@ class FeedJsonController extends AbstractController
      *
      * @param int $trackingDevice
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
+     * @throws \Exception
      */
     public function FitStepsDailySummaryTracker(int $trackingDevice)
     {
@@ -133,7 +146,7 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/count/daily/water", name="json_daily_water")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function consumeWater()
     {
@@ -147,7 +160,7 @@ class FeedJsonController extends AbstractController
      *
      * @param String $date
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function consumeWaterDate(String $date)
     {
@@ -193,7 +206,8 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/count/daily/body", name="json_daily_body")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
+     * @throws \Exception
      */
     public function body()
     {
@@ -207,7 +221,8 @@ class FeedJsonController extends AbstractController
      *
      * @param String $date
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
+     * @throws \Exception
      */
     public function bodyDate(String $date)
     {
@@ -256,7 +271,7 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/rpg/xp", name="json_rpg_xp")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function rpgXp()
     {
@@ -286,7 +301,7 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/profile", name="json_profile")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function profile()
     {
@@ -303,7 +318,7 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/exercises/overview", name="json_exercisesOverview")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function exercisesOverview()
     {
@@ -397,7 +412,7 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/exercises/category/overview", name="json_exercisesCategoryOverview")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function exercisesCategoryOverview()
     {
@@ -435,7 +450,7 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/exercises/equipment/overview", name="json_exercisesEquipmentOverview")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function exercisesEquipmentOverview()
     {
@@ -478,7 +493,7 @@ class FeedJsonController extends AbstractController
     /**
      * @Route("/json/exercises/muscle/overview", name="json_exercisesMuscleOverview")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function exercisesMuscleOverview()
     {

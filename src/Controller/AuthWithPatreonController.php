@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
@@ -18,6 +19,8 @@ use App\Entity\PatientCredentials;
 use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
+use LogicException;
 use Patreon\API;
 use Patreon\AuthUrl;
 use Patreon\OAuth;
@@ -25,6 +28,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class AuthWithPatreonController
+ *
+ * @package App\Controller
+ */
 class AuthWithPatreonController extends AbstractController
 {
     /**
@@ -76,7 +84,7 @@ class AuthWithPatreonController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {

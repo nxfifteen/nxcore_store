@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -58,16 +60,27 @@ class RpgChallengeGlobalPatient
      */
     private $progress;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -75,11 +88,19 @@ class RpgChallengeGlobalPatient
         return $this;
     }
 
+    /**
+     * @return RpgChallengeGlobal|null
+     */
     public function getChallenge(): ?RpgChallengeGlobal
     {
         return $this->challenge;
     }
 
+    /**
+     * @param RpgChallengeGlobal|null $challenge
+     *
+     * @return $this
+     */
     public function setChallenge(?RpgChallengeGlobal $challenge): self
     {
         $this->challenge = $challenge;
@@ -87,11 +108,19 @@ class RpgChallengeGlobalPatient
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getCriteria(): ?string
     {
         return $this->criteria;
     }
 
+    /**
+     * @param string $criteria
+     *
+     * @return $this
+     */
     public function setCriteria(string $criteria): self
     {
         $this->criteria = $criteria;
@@ -99,35 +128,59 @@ class RpgChallengeGlobalPatient
         return $this;
     }
 
-    public function getStartDateTime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getStartDateTime(): ?DateTimeInterface
     {
         return $this->startDateTime;
     }
 
-    public function setStartDateTime(\DateTimeInterface $startDateTime): self
+    /**
+     * @param DateTimeInterface $startDateTime
+     *
+     * @return $this
+     */
+    public function setStartDateTime(DateTimeInterface $startDateTime): self
     {
         $this->startDateTime = $startDateTime;
 
         return $this;
     }
 
-    public function getFinishDateTime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getFinishDateTime(): ?DateTimeInterface
     {
         return $this->finishDateTime;
     }
 
-    public function setFinishDateTime(?\DateTimeInterface $finishDateTime): self
+    /**
+     * @param DateTimeInterface|null $finishDateTime
+     *
+     * @return $this
+     */
+    public function setFinishDateTime(?DateTimeInterface $finishDateTime): self
     {
         $this->finishDateTime = $finishDateTime;
 
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getProgress(): ?float
     {
         return $this->progress;
     }
 
+    /**
+     * @param float|null $progress
+     *
+     * @return $this
+     */
     public function setProgress(?float $progress): self
     {
         $this->progress = $progress;

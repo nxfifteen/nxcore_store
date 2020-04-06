@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
@@ -44,21 +45,35 @@ class ThirdPartyService
      */
     private $trackingDevices;
 
+    /**
+     * ThirdPartyService constructor.
+     */
     public function __construct()
     {
         $this->trackingDevices = new ArrayCollection();
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string|null $name
+     *
+     * @return $this
+     */
     public function setName(?string $name): self
     {
         $this->name = $name;
@@ -74,6 +89,11 @@ class ThirdPartyService
         return $this->trackingDevices;
     }
 
+    /**
+     * @param TrackingDevice $trackingDevice
+     *
+     * @return $this
+     */
     public function addTrackingDevice(TrackingDevice $trackingDevice): self
     {
         if (!$this->trackingDevices->contains($trackingDevice)) {
@@ -84,6 +104,11 @@ class ThirdPartyService
         return $this;
     }
 
+    /**
+     * @param TrackingDevice $trackingDevice
+     *
+     * @return $this
+     */
     public function removeTrackingDevice(TrackingDevice $trackingDevice): self
     {
         if ($this->trackingDevices->contains($trackingDevice)) {

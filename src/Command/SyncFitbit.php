@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Command;
 
@@ -23,8 +24,10 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use App\Transform\Fitbit\Constants;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
@@ -70,8 +73,17 @@ class SyncFitbit extends Command
      */
     private $tweetManager;
 
+    /**
+     * @var
+     */
     private $syncDate;
+    /**
+     * @var
+     */
     private $syncPeriod;
+    /**
+     * @var
+     */
     private $userSubscriptions;
 
     /**
@@ -106,6 +118,9 @@ class SyncFitbit extends Command
         $this->syncServiceFitbit();
     }
 
+    /**
+     *
+     */
     private function syncServiceFitbit()
     {
         /** @var ThirdPartyService $service */
@@ -137,8 +152,8 @@ class SyncFitbit extends Command
 
                         if ($dbPatientSettingsUntil) {
                             try {
-                                $serviceDeath = new \DateTime($dbPatientSettingsUntil->getValue()[0]);
-                            } catch (\Exception $e) {
+                                $serviceDeath = new DateTime($dbPatientSettingsUntil->getValue()[0]);
+                            } catch (Exception $e) {
                                 AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . "User has an end date for this service");
                                 AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . $dbPatientSettingsUntil->getValue()[0]);
 
@@ -285,6 +300,11 @@ class SyncFitbit extends Command
         }*/
     }
 
+    /**
+     * @param PatientCredentials $credentials
+     *
+     * @return AccessToken
+     */
     private function getAccessToken(PatientCredentials $credentials)
     {
         return new AccessToken([
@@ -294,6 +314,11 @@ class SyncFitbit extends Command
         ]);
     }
 
+    /**
+     * @param             $settingsEndpoint
+     * @param AccessToken $accessToken
+     * @param Patient     $patient
+     */
     private function checkSubscription($settingsEndpoint, AccessToken $accessToken, Patient $patient)
     {
         AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
@@ -326,6 +351,11 @@ class SyncFitbit extends Command
         }
     }
 
+    /**
+     * @param $endpoint
+     *
+     * @return string|null
+     */
     private function convertEndpointToSubscription($endpoint)
     {
         switch ($endpoint) {
@@ -341,6 +371,12 @@ class SyncFitbit extends Command
         }
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     *
+     * @return array
+     */
     private function pullSubscription(AccessToken $accessToken, $endpoint = "")
     {
         if (is_null($this->userSubscriptions)) {
@@ -376,6 +412,9 @@ class SyncFitbit extends Command
         return $this->userSubscriptions;
     }
 
+    /**
+     * @return Fitbit
+     */
     private function getLibrary()
     {
         return new Fitbit([
@@ -385,6 +424,13 @@ class SyncFitbit extends Command
         ]);
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     * @param string      $subId
+     *
+     * @return array|mixed
+     */
     private function postSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
     {
         $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
@@ -399,13 +445,20 @@ class SyncFitbit extends Command
             $response = $this->getLibrary()->getResponse($request);
             $responseObject = json_decode(json_encode($response), FALSE);
             return $responseObject;
-        } catch (IdentityProviderException $e) {
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
         }
 
         return [];
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param SyncQueue   $serviceSyncQueue
+     * @param string      $requestedEndpoint
+     *
+     * @return array|mixed
+     */
     private function pullBabel(AccessToken $accessToken, SyncQueue $serviceSyncQueue, string $requestedEndpoint)
     {
         /** @var ApiAccessLog $patient */
@@ -494,6 +547,9 @@ class SyncFitbit extends Command
         return $path;
     }
 
+    /**
+     * @return float|int|string
+     */
     private function getDaysSyncPeriod()
     {
         $daysSince = (date("U") - strtotime($this->syncDate)) / (60 * 60 * 24);
@@ -508,6 +564,13 @@ class SyncFitbit extends Command
         return $daysSince;
     }
 
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     * @param string      $subId
+     *
+     * @return array|mixed
+     */
     private function deleteSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
     {
         $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
@@ -520,7 +583,7 @@ class SyncFitbit extends Command
             $responseObject = json_decode(json_encode($response), FALSE);
 
             return $responseObject;
-        } catch (IdentityProviderException $e) {
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
         }
 

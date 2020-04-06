@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Command;
 
@@ -85,6 +86,7 @@ class SyncPatreon extends Command
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -92,6 +94,9 @@ class SyncPatreon extends Command
         $this->syncServicePatreon();
     }
 
+    /**
+     * @throws \Exception
+     */
     private function syncServicePatreon()
     {
         /** @var ThirdPartyService $service */
@@ -229,6 +234,8 @@ class SyncPatreon extends Command
      * @param PatientSettings $endPointTearSettings
      * @param PatientSettings $endPointStatusSettings
      * @param Patient         $patient
+     *
+     * @throws \Exception
      */
     private function checkMembershipTear(PatientSettings $endPointTearSettings, PatientSettings $endPointStatusSettings, Patient $patient)
     {
@@ -283,5 +290,7 @@ class SyncPatreon extends Command
             case "1500":
                 return "all_history";
         }
+
+        return "unknown ($latestPaid)";
     }
 }

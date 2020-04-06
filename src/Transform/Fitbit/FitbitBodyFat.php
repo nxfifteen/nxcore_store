@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
 
@@ -20,9 +21,15 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 
+/**
+ * Class FitbitBodyFat
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitBodyFat extends Constants
 {
     /**
@@ -32,7 +39,7 @@ class FitbitBodyFat extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyFat|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager)
     {
@@ -56,7 +63,7 @@ class FitbitBodyFat extends Constants
             }
 
             /** @var PartOfDay $partOfDay */
-            $partOfDay = self::getPartOfDay($doctrine, new \DateTime($jsonContent[0]->dateTime));
+            $partOfDay = self::getPartOfDay($doctrine, new DateTime($jsonContent[0]->dateTime));
             if (is_null($partOfDay)) {
                 return NULL;
             }
@@ -73,7 +80,7 @@ class FitbitBodyFat extends Constants
                 return NULL;
             }
 
-            $remoteId = $jsonContent[0]->remoteId . 'FitbitBodyFat' . (new \DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
+            $remoteId = $jsonContent[0]->remoteId . 'FitbitBodyFat' . (new DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
 
             /** @var BodyFat $dataEntry */
             $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
@@ -88,8 +95,8 @@ class FitbitBodyFat extends Constants
             $dataEntry->setMeasurement($jsonContent[2]->fat);
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
             $dataEntry->setPatientGoal($patientGoal);
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent[0]->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent[0]->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent[0]->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent[0]->dateTime));
             }
             $dataEntry->setPartOfDay($partOfDay);
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {

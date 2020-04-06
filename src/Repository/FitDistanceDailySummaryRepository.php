@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Repository;
 
@@ -18,6 +19,7 @@ use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 
 /**
  * @method FitDistanceDailySummary|null find($id, $lockMode = NULL, $lockVersion = NULL)
@@ -27,6 +29,11 @@ use Doctrine\ORM\NonUniqueResultException;
  */
 class FitDistanceDailySummaryRepository extends ServiceEntityRepository
 {
+    /**
+     * FitDistanceDailySummaryRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FitDistanceDailySummary::class);
@@ -69,9 +76,15 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param String $patientId
+     * @param        $dateSince
+     *
+     * @return mixed
+     */
     public function findSince(String $patientId, $dateSince)
     {
-        /** @var \DateTime $dateSince */
+        /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
             ->andWhere('p.uuid = :patientId')
@@ -83,6 +96,12 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param String $patientId
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
     public function findHighest(String $patientId, int $trackingDevice = 0)
     {
         if ($trackingDevice > 0) {
@@ -114,6 +133,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
+     * @throws \Exception
      */
     public function findByDateRange(String $patientId, String $date, int $trackingDevice)
     {
@@ -127,6 +147,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
+     * @throws \Exception
      */
     public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice = 0)
     {
@@ -136,7 +157,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
             $interval = new DateInterval('P' . $lastDays . 'D');
             $dateObject->sub($interval);
             $today = $dateObject->format("Y-m-d") . " 00:00:00";
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $today = $date . " 00:00:00";
         }
         $todayEnd = $date . " 23:59:00";

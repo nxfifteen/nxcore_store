@@ -9,11 +9,13 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -64,28 +66,47 @@ class FitStepsDailySummary
      */
     private $patientGoal;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDateTime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateTime(): ?DateTimeInterface
     {
         return $this->DateTime;
     }
 
-    public function setDateTime(\DateTimeInterface $DateTime): self
+    /**
+     * @param DateTimeInterface $DateTime
+     *
+     * @return $this
+     */
+    public function setDateTime(DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
 
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string|null $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(?string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
@@ -93,11 +114,19 @@ class FitStepsDailySummary
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getValue(): ?int
     {
         return $this->value;
     }
 
+    /**
+     * @param int $value
+     *
+     * @return $this
+     */
     public function setValue(int $value): self
     {
         $this->value = $value;
@@ -105,11 +134,19 @@ class FitStepsDailySummary
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -117,11 +154,19 @@ class FitStepsDailySummary
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
@@ -129,11 +174,19 @@ class FitStepsDailySummary
         return $this;
     }
 
+    /**
+     * @return PatientGoals|null
+     */
     public function getGoal(): ?PatientGoals
     {
         return $this->patientGoal;
     }
 
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
     public function setGoal(?PatientGoals $patientGoal): self
     {
         $this->patientGoal = $patientGoal;
@@ -141,11 +194,19 @@ class FitStepsDailySummary
         return $this;
     }
 
+    /**
+     * @return PatientGoals|null
+     */
     public function getPatientGoal(): ?PatientGoals
     {
         return $this->patientGoal;
     }
 
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
     public function setPatientGoal(?PatientGoals $patientGoal): self
     {
         $this->patientGoal = $patientGoal;

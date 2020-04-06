@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
 
@@ -19,6 +20,11 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class SamsungDevices
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungDevices extends Constants
 {
     /**

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
 
@@ -20,8 +21,15 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
+/**
+ * Class FitbitCountPeriodSteps
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitCountPeriodSteps extends Constants
 {
     /**
@@ -84,7 +92,7 @@ class FitbitCountPeriodSteps extends Constants
                         $dataEntry->setRemoteId($item['remoteId']);
                         $dataEntry->setValue($item['value']);
                         if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> strtotime($item['dateTime'] . " 23:59:59")) {
-                            $dataEntry->setDateTime(new \DateTime($item['dateTime'] . " 23:59:59"));
+                            $dataEntry->setDateTime(new DateTime($item['dateTime'] . " 23:59:59"));
                         }
 
                         $returnEntities[] = $dataEntry;

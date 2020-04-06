@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -87,16 +89,27 @@ class BodyFat
      */
     private $bodyFatMass;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -104,11 +117,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
@@ -116,11 +137,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getMeasurement(): ?float
     {
         return $this->measurement;
     }
 
+    /**
+     * @param float $measurement
+     *
+     * @return $this
+     */
     public function setMeasurement(float $measurement): self
     {
         $this->measurement = $measurement;
@@ -128,11 +157,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return UnitOfMeasurement|null
+     */
     public function getUnitOfMeasurement(): ?UnitOfMeasurement
     {
         return $this->unitOfMeasurement;
     }
 
+    /**
+     * @param UnitOfMeasurement|null $unitOfMeasurement
+     *
+     * @return $this
+     */
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;
@@ -140,11 +177,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return PartOfDay|null
+     */
     public function getPartOfDay(): ?PartOfDay
     {
         return $this->partOfDay;
     }
 
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
@@ -152,11 +197,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return PatientGoals|null
+     */
     public function getPatientGoal(): ?PatientGoals
     {
         return $this->patientGoal;
     }
 
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
     public function setPatientGoal(?PatientGoals $patientGoal): self
     {
         $this->patientGoal = $patientGoal;
@@ -164,23 +217,39 @@ class BodyFat
         return $this;
     }
 
-    public function getDateTime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateTime(): ?DateTimeInterface
     {
         return $this->DateTime;
     }
 
-    public function setDateTime(\DateTimeInterface $DateTime): self
+    /**
+     * @param DateTimeInterface $DateTime
+     *
+     * @return $this
+     */
+    public function setDateTime(DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
 
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
@@ -188,11 +257,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getFatFreeMass(): ?float
     {
         return $this->fatFreeMass;
     }
 
+    /**
+     * @param float|null $fatFreeMass
+     *
+     * @return $this
+     */
     public function setFatFreeMass(?float $fatFreeMass): self
     {
         $this->fatFreeMass = $fatFreeMass;
@@ -200,11 +277,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getFatFree(): ?float
     {
         return $this->fatFree;
     }
 
+    /**
+     * @param float|null $fatFree
+     *
+     * @return $this
+     */
     public function setFatFree(?float $fatFree): self
     {
         $this->fatFree = $fatFree;
@@ -212,11 +297,19 @@ class BodyFat
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getBodyFatMass(): ?float
     {
         return $this->bodyFatMass;
     }
 
+    /**
+     * @param float|null $bodyFatMass
+     *
+     * @return $this
+     */
     public function setBodyFatMass(?float $bodyFatMass): self
     {
         $this->bodyFatMass = $bodyFatMass;

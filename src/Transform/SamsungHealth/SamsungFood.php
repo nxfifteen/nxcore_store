@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
 
@@ -24,7 +25,13 @@ use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
+/**
+ * Class SamsungFood
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungFood extends Constants
 {
 
@@ -37,8 +44,8 @@ class SamsungFood extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FoodDiary|null
-     * @throws \Exception
-     * @throws \Exception
+
+
      * @throws \Exception
      */
     public static function translateFoodIntake(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
@@ -101,8 +108,8 @@ class SamsungFood extends Constants
 
             $dataEntry->setRemoteId($jsonContent->remoteId);
 
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent->dateTime));
             }
 
             $dataEntry->setMeal($mealType);
@@ -128,8 +135,9 @@ class SamsungFood extends Constants
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
+     * @param AwardManager    $awardManager
+     *
      * @return FoodDatabase|FoodNutrition|null
-     * @throws \Exception
      * @throws \Exception
      */
     public static function translateFoodInfo(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
@@ -246,9 +254,8 @@ class SamsungFood extends Constants
      * @param ManagerRegistry $doctrine
      * @param String          $getContent
      *
+     * @param AwardManager    $awardManager
      * @return FoodNutrition|null
-     * @throws \Exception
-     * @throws \Exception
      * @throws \Exception
      */
     public static function translateFood(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
@@ -300,8 +307,8 @@ class SamsungFood extends Constants
             $dataEntry->setPatient($patient);
             $dataEntry->setRemoteId($jsonContent->remoteId);
 
-            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new \DateTime($jsonContent->dateTime))->format("U")) {
-                $dataEntry->setDateTime(new \DateTime($jsonContent->dateTime));
+            if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent->dateTime))->format("U")) {
+                $dataEntry->setDateTime(new DateTime($jsonContent->dateTime));
             }
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setMeal($mealType);

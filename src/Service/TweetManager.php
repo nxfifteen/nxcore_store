@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Service;
 
@@ -28,6 +29,11 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
+/**
+ * Class TweetManager
+ *
+ * @package App\Service
+ */
 class TweetManager
 {
 
@@ -41,6 +47,12 @@ class TweetManager
      */
     private $fcmClient;
 
+    /**
+     * TweetManager constructor.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param FCMClient       $fcmClient
+     */
     public function __construct(
         ManagerRegistry $doctrine,
         FCMClient $fcmClient
@@ -82,6 +94,13 @@ class TweetManager
         return $return;
     }
 
+    /**
+     * @param string|null $message
+     * @param Patient     $patient
+     * @param bool        $private
+     *
+     * @return mixed|string|null
+     */
     private function findUserNamesInMessage(?string $message, Patient $patient, bool $private)
     {
         if (is_null($message)) {
@@ -123,6 +142,12 @@ class TweetManager
         return $message;
     }
 
+    /**
+     * @param string      $title
+     * @param string|null $body
+     * @param Patient     $patient
+     * @param string|NULL $fileUrl
+     */
     private function sendNotificationChat(string $title, ?string $body, Patient $patient, string $fileUrl = NULL)
     {
         $thirdPartyService = $this->doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => "Synology Chat"]);
@@ -157,6 +182,11 @@ class TweetManager
         }
     }
 
+    /**
+     * @param string $emailAddress
+     *
+     * @return |null
+     */
     private function findUserInChat(string $emailAddress)
     {
         $chat_param = "webapi/entry.cgi?api=SYNO.Chat.External&method=user_list&version=2&token=%22" . $_ENV['SYNOLOGY_CHATBOT'] . "%22";
@@ -186,6 +216,14 @@ class TweetManager
         return NULL;
     }
 
+    /**
+     * @param string      $title
+     * @param string|null $body
+     * @param int         $userId
+     * @param string|NULL $fileUrl
+     *
+     * @return array|mixed
+     */
     private function sendChatToUser(string $title, ?string $body, int $userId, string $fileUrl = NULL)
     {
         $payload = [
@@ -217,6 +255,13 @@ class TweetManager
         return $this->makeSynologyChatRequest('chatbot', $_ENV['SYNOLOGY_CHATBOT'], $payload);
     }
 
+    /**
+     * @param string $method
+     * @param string $apiKey
+     * @param array  $payload
+     *
+     * @return array|mixed
+     */
     private function makeSynologyChatRequest(string $method, string $apiKey, array $payload)
     {
         $chat_param = "webapi/entry.cgi?api=SYNO.Chat.External&method=" . $method . "&version=2&token=%22" . $apiKey . "%22";
@@ -244,6 +289,11 @@ class TweetManager
         return $contents;
     }
 
+    /**
+     * @param string      $title
+     * @param string|null $body
+     * @param Patient     $patient
+     */
     private function sendNotificationPush(string $title, ?string $body, Patient $patient)
     {
         /** @var PatientDevice $dbPatientDevice */
@@ -262,6 +312,13 @@ class TweetManager
         }
     }
 
+    /**
+     * @param string      $title
+     * @param string|null $body
+     * @param string|NULL $fileUrl
+     *
+     * @return array|mixed
+     */
     private function sendChatToChannel(string $title, ?string $body, string $fileUrl = NULL)
     {
         $payload = [

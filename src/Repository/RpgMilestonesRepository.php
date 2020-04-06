@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Repository;
 
@@ -24,11 +25,22 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class RpgMilestonesRepository extends ServiceEntityRepository
 {
+    /**
+     * RpgMilestonesRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, RpgMilestones::class);
     }
 
+    /**
+     * @param $category
+     * @param $value
+     *
+     * @return mixed
+     */
     public function getLessThan($category, $value)
     {
         return $this->createQueryBuilder('r')
@@ -41,6 +53,12 @@ class RpgMilestonesRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param $category
+     * @param $value
+     *
+     * @return mixed
+     */
     public function getMoreThan($category, $value)
     {
         return $this->createQueryBuilder('r')

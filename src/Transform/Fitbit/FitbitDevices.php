@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
 
@@ -19,6 +20,11 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class FitbitDevices
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitDevices extends Constants
 {
     /**

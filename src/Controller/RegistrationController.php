@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
@@ -17,13 +18,22 @@ use App\Entity\Patient;
 use App\Entity\PatientFriends;
 use App\Entity\PatientMembership;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+/**
+ * Class RegistrationController
+ *
+ * @package App\Controller
+ */
 class RegistrationController extends AbstractController
 {
     /**
@@ -35,7 +45,7 @@ class RegistrationController extends AbstractController
      *
      * @param AwardManager                 $awardManager
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws \Exception
      */
     public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, AwardManager $awardManager)
@@ -129,8 +139,8 @@ class RegistrationController extends AbstractController
         $membership = new PatientMembership();
         $membership->setPatient($patient);
         $membership->setTear('alpha_user');
-        $membership->setSince(new \DateTime());
-        $membership->setLastPaid(new \DateTime());
+        $membership->setSince(new DateTime());
+        $membership->setLastPaid(new DateTime());
         $membership->setActive(TRUE);
         $membership->setLifetime(TRUE);
         $entityManager->persist($membership);
@@ -179,7 +189,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/users/profile", name="get_profile")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws \Exception
      */
     public function get_profile()
@@ -212,7 +222,7 @@ class RegistrationController extends AbstractController
      * @param ManagerRegistry              $doctrine
      * @param Request                      $request
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws \Exception
      */
     public function save_profile(ManagerRegistry $doctrine, Request $request)
@@ -236,7 +246,7 @@ class RegistrationController extends AbstractController
         } else {
             $patient->setAvatar(null);
         }
-        $patient->setDateOfBirth(new \DateTime($requestJson->dateOfBirth));
+        $patient->setDateOfBirth(new DateTime($requestJson->dateOfBirth));
         $patient->setFirstRun(false);
         $patient->setUiSettings(["showNavBar::lg","showAsideBar::false"]);
 
@@ -264,7 +274,7 @@ class RegistrationController extends AbstractController
      *
      * @param string                $inviteCode
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index_invite_code(string $inviteCode)
     {
@@ -311,13 +321,13 @@ class RegistrationController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {
         $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
 
-        /** @var \App\Entity\Patient $user */
+        /** @var Patient $user */
         $user = $this->getUser();
         if ($user->getUuid() != $uuid) {
             $exception = $this->createAccessDeniedException("User tried to access another users information");

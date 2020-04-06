@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
@@ -46,16 +47,27 @@ class RpgMilestones
      */
     private $msgMore;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getCategory(): ?string
     {
         return $this->category;
     }
 
+    /**
+     * @param string $category
+     *
+     * @return $this
+     */
     public function setCategory(string $category): self
     {
         $this->category = $category;
@@ -63,11 +75,19 @@ class RpgMilestones
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getValue(): ?float
     {
         return $this->value;
     }
 
+    /**
+     * @param float $value
+     *
+     * @return $this
+     */
     public function setValue(float $value): self
     {
         $this->value = $value;
@@ -75,11 +95,19 @@ class RpgMilestones
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getMsgLess(): ?string
     {
         return $this->msgLess;
     }
 
+    /**
+     * @param string|null $msgLess
+     *
+     * @return $this
+     */
     public function setMsgLess(?string $msgLess): self
     {
         $this->msgLess = $msgLess;
@@ -87,11 +115,19 @@ class RpgMilestones
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getMsgMore(): ?string
     {
         return $this->msgMore;
     }
 
+    /**
+     * @param string|null $msgMore
+     *
+     * @return $this
+     */
     public function setMsgMore(?string $msgMore): self
     {
         $this->msgMore = $msgMore;

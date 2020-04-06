@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App;
 
@@ -17,23 +18,49 @@ use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use Swift_Mailer;
 use Swift_Message;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
+/**
+ * Class AppConstants
+ *
+ * @package App
+ */
 class AppConstants
 {
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param DateTimeInterface $dateTime
+     * @param string            $name
+     * @param float             $xp
+     * @param string            $image
+     * @param string            $text
+     * @param string            $longtext
+     *
+     * @return Patient
+     */
     static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, DateTimeInterface $dateTime, string $name, float $xp, string $image, string $text, string $longtext)
     {
         return $patient;
     }
 
+    /**
+     * @param String $fileName
+     * @param String $body
+     */
     static function writeToLog(String $fileName, String $body)
     {
         try {
             $path = sys_get_temp_dir() . '/sync_upload_post';
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             echo $exception->getMessage();
         }
 
@@ -55,11 +82,26 @@ class AppConstants
         }
     }
 
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param float             $xpAwarded
+     * @param string            $reasoning
+     * @param DateTimeInterface $dateTime
+     *
+     * @return Patient
+     */
     static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
     {
         return $patient;
     }
 
+    /**
+     * @param $haystack
+     * @param $needle
+     *
+     * @return bool
+     */
     static function startsWith($haystack, $needle)
     {
         $len = strlen($needle);
@@ -89,7 +131,18 @@ class AppConstants
         }
     }
 
-    static function sendUserEmail(\Twig\Environment $twig, Swift_Mailer $mailer, array $setTo, string $setTemplateName, array $setTemplateVariables)
+    /**
+     * @param Environment $twig
+     * @param Swift_Mailer      $mailer
+     * @param array             $setTo
+     * @param string            $setTemplateName
+     * @param array             $setTemplateVariables
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    static function sendUserEmail(Environment $twig, Swift_Mailer $mailer, array $setTo, string $setTemplateName, array $setTemplateVariables)
     {
         // Create the message
         $message = (new Swift_Message())
@@ -126,6 +179,11 @@ class AppConstants
         $mailer->send($message);
     }
 
+    /**
+     * @param $criteria
+     *
+     * @return string
+     */
     static function convertCriteriaEnglish($criteria)
     {
         switch ($criteria) {
@@ -138,6 +196,11 @@ class AppConstants
         }
     }
 
+    /**
+     * @param $stringToCompress
+     *
+     * @return string
+     */
     static function compressString($stringToCompress)
     {
         $compressedString = "\x1f\x8b\x08\x00" . gzcompress($stringToCompress);
@@ -145,6 +208,11 @@ class AppConstants
         return $compressedString;
     }
 
+    /**
+     * @param $stringToUncompress
+     *
+     * @return false|string
+     */
     static function uncompressString($stringToUncompress)
     {
         $uncompressedString = gzuncompress(substr($stringToUncompress, 4));
@@ -152,6 +220,12 @@ class AppConstants
         return $uncompressedString;
     }
 
+    /**
+     * @param      $seconds
+     * @param bool $withHours
+     *
+     * @return string
+     */
     static function formatSeconds($seconds, bool $withHours = TRUE)
     {
         $hours = 0;
@@ -174,6 +248,7 @@ class AppConstants
 
     /**
      * @param $value
+     * @param $valueUnit
      * @param $targetUnit
      *
      * @return float|int

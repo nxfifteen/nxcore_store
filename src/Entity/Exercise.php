@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -92,20 +94,34 @@ class Exercise
      */
     private $locationDataBlob;
 
+    /**
+     * Exercise constructor.
+     */
     public function __construct()
     {
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -113,35 +129,59 @@ class Exercise
         return $this;
     }
 
-    public function getDateTimeStart(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateTimeStart(): ?DateTimeInterface
     {
         return $this->dateTimeStart;
     }
 
-    public function setDateTimeStart(\DateTimeInterface $dateTimeStart): self
+    /**
+     * @param DateTimeInterface $dateTimeStart
+     *
+     * @return $this
+     */
+    public function setDateTimeStart(DateTimeInterface $dateTimeStart): self
     {
         $this->dateTimeStart = $dateTimeStart;
 
         return $this;
     }
 
-    public function getDateTimeEnd(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateTimeEnd(): ?DateTimeInterface
     {
         return $this->dateTimeEnd;
     }
 
-    public function setDateTimeEnd(\DateTimeInterface $dateTimeEnd): self
+    /**
+     * @param DateTimeInterface $dateTimeEnd
+     *
+     * @return $this
+     */
+    public function setDateTimeEnd(DateTimeInterface $dateTimeEnd): self
     {
         $this->dateTimeEnd = $dateTimeEnd;
 
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
@@ -149,11 +189,19 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string|null $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(?string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
@@ -161,11 +209,19 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return PartOfDay|null
+     */
     public function getPartOfDay(): ?PartOfDay
     {
         return $this->partOfDay;
     }
 
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
     public function setPartOfDay(?PartOfDay $partOfDay): self
     {
         $this->partOfDay = $partOfDay;
@@ -173,11 +229,19 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return ExerciseSummary|null
+     */
     public function getExerciseSummary(): ?ExerciseSummary
     {
         return $this->exerciseSummary;
     }
 
+    /**
+     * @param ExerciseSummary $exerciseSummary
+     *
+     * @return $this
+     */
     public function setExerciseSummary(ExerciseSummary $exerciseSummary): self
     {
         $this->exerciseSummary = $exerciseSummary;
@@ -190,11 +254,19 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getDuration(): ?int
     {
         return $this->duration;
     }
 
+    /**
+     * @param int $duration
+     *
+     * @return $this
+     */
     public function setDuration(int $duration): self
     {
         $this->duration = $duration;
@@ -202,11 +274,19 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return ExerciseType|null
+     */
     public function getExerciseType(): ?ExerciseType
     {
         return $this->exerciseType;
     }
 
+    /**
+     * @param ExerciseType|null $exerciseType
+     *
+     * @return $this
+     */
     public function setExerciseType(?ExerciseType $exerciseType): self
     {
         $this->exerciseType = $exerciseType;
@@ -214,11 +294,19 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getSteps(): ?int
     {
         return $this->steps;
     }
 
+    /**
+     * @param int|null $steps
+     *
+     * @return $this
+     */
     public function setSteps(?int $steps): self
     {
         $this->steps = $steps;
@@ -226,6 +314,9 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return false|string|null
+     */
     public function getLiveDataBlob()
     {
         if (!is_null($this->liveDataBlob)) {
@@ -235,6 +326,11 @@ class Exercise
         }
     }
 
+    /**
+     * @param $liveDataBlob
+     *
+     * @return $this
+     */
     public function setLiveDataBlob($liveDataBlob): self
     {
         $this->liveDataBlob = $liveDataBlob;
@@ -242,6 +338,9 @@ class Exercise
         return $this;
     }
 
+    /**
+     * @return false|string|null
+     */
     public function getLocationDataBlob()
     {
         if (!is_null($this->locationDataBlob)) {
@@ -251,6 +350,11 @@ class Exercise
         }
     }
 
+    /**
+     * @param $locationDataBlob
+     *
+     * @return $this
+     */
     public function setLocationDataBlob($locationDataBlob): self
     {
         $this->locationDataBlob = $locationDataBlob;

@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -52,16 +54,27 @@ class PatientGoals
      */
     private $unitOfMeasurement;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -69,11 +82,19 @@ class PatientGoals
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEntity(): ?string
     {
         return $this->entity;
     }
 
+    /**
+     * @param string $entity
+     *
+     * @return $this
+     */
     public function setEntity(string $entity): self
     {
         $this->entity = $entity;
@@ -81,11 +102,19 @@ class PatientGoals
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getGoal(): ?float
     {
         return $this->goal;
     }
 
+    /**
+     * @param float $goal
+     *
+     * @return $this
+     */
     public function setGoal(float $goal): self
     {
         $this->goal = $goal;
@@ -93,23 +122,39 @@ class PatientGoals
         return $this;
     }
 
-    public function getDateSet(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateSet(): ?DateTimeInterface
     {
         return $this->dateSet;
     }
 
-    public function setDateSet(\DateTimeInterface $dateSet): self
+    /**
+     * @param DateTimeInterface $dateSet
+     *
+     * @return $this
+     */
+    public function setDateSet(DateTimeInterface $dateSet): self
     {
         $this->dateSet = $dateSet;
 
         return $this;
     }
 
+    /**
+     * @return UnitOfMeasurement|null
+     */
     public function getUnitOfMeasurement(): ?UnitOfMeasurement
     {
         return $this->unitOfMeasurement;
     }
 
+    /**
+     * @param UnitOfMeasurement|null $unitOfMeasurement
+     *
+     * @return $this
+     */
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
@@ -52,16 +53,27 @@ class UploadedFile
      */
     private $type;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -69,11 +81,19 @@ class UploadedFile
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getPath(): ?string
     {
         return $this->path;
     }
 
+    /**
+     * @param string $path
+     *
+     * @return $this
+     */
     public function setPath(string $path): self
     {
         $this->path = $path;
@@ -81,11 +101,19 @@ class UploadedFile
         return $this;
     }
 
+    /**
+     * @return ContributionLicense|null
+     */
     public function getLicense(): ?ContributionLicense
     {
         return $this->license;
     }
 
+    /**
+     * @param ContributionLicense|null $license
+     *
+     * @return $this
+     */
     public function setLicense(?ContributionLicense $license): self
     {
         $this->license = $license;
@@ -93,11 +121,19 @@ class UploadedFile
         return $this;
     }
 
+    /**
+     * @return WorkoutExercise|null
+     */
     public function getExercise(): ?WorkoutExercise
     {
         return $this->exercise;
     }
 
+    /**
+     * @param WorkoutExercise|null $exercise
+     *
+     * @return $this
+     */
     public function setExercise(?WorkoutExercise $exercise): self
     {
         $this->exercise = $exercise;
@@ -105,11 +141,19 @@ class UploadedFile
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
+    /**
+     * @param string $type
+     *
+     * @return $this
+     */
     public function setType(string $type): self
     {
         $this->type = $type;

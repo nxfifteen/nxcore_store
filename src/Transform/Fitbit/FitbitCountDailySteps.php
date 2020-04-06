@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
 
@@ -25,6 +26,11 @@ use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 
+/**
+ * Class FitbitCountDailySteps
+ *
+ * @package App\Transform\Fitbit
+ */
 class FitbitCountDailySteps extends Constants
 {
     /**
@@ -36,7 +42,7 @@ class FitbitCountDailySteps extends Constants
      * @param ChallengePve    $challengePve
      *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, ChallengePve $challengePve)
     {

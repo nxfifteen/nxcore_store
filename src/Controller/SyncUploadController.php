@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
@@ -20,6 +21,8 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\TweetManager;
 use App\Transform\Fitbit\Constants;
+use DateTime;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,26 +30,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 
+/**
+ * Class SyncUploadController
+ *
+ * @package App\Controller
+ */
 class SyncUploadController extends AbstractController
 {
-
-    /**
-     * @Route("/help/upload", name="sync_upload_help")
-     */
-    public function index_help()
-    {
-        return $this->render('sync_upload/index.html.twig', [
-            'controller_name' => 'SyncUploadController',
-        ]);
-    }
-
     /**
      * @Route("/sync/webhook/{service}", name="sync_webhook_post", methods={"POST"})
      * @param String          $service
      *
      * @param LoggerInterface $logger
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws \Exception
      */
     public function sync_webhook_post(String $service, LoggerInterface $logger)
@@ -60,7 +57,7 @@ class SyncUploadController extends AbstractController
      *
      * @param LoggerInterface $logger
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws \Exception
      */
     public function sync_webhook_get(String $service, LoggerInterface $logger)
@@ -119,7 +116,7 @@ class SyncUploadController extends AbstractController
                     if (!$serviceSyncQueue) {
                         $serviceSyncQueue = new SyncQueue();
                         $serviceSyncQueue->setService($serviceObject);
-                        $serviceSyncQueue->setDatetime(new \DateTime());
+                        $serviceSyncQueue->setDatetime(new DateTime());
                         $serviceSyncQueue->setCredentials($patientCredential);
                         $serviceSyncQueue->setEndpoint($queueEndpoints);
 
@@ -151,7 +148,10 @@ class SyncUploadController extends AbstractController
      *
      * @param AwardManager    $awardManager
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @param ChallengePve    $challengePve
+     * @param TweetManager    $tweetManager
+     *
+     * @return JsonResponse
      */
     public function index_post(String $service, String $data_set, LoggerInterface $logger, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
     {

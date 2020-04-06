@@ -9,35 +9,32 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
 use App\Entity\ApiAccessLog;
 use App\Entity\Patient;
 use App\Entity\PatientSettings;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class LastApiAccessController
+ *
+ * @package App\Controller
+ */
 class LastApiAccessController extends AbstractController
 {
-
-    /**
-     * @Route("/help/last_upload", name="get_endpoint_last_help")
-     */
-    public function index_help()
-    {
-        return $this->render('last_api_access/index.html.twig', [
-            'controller_name' => 'LastApiAccessController',
-        ]);
-    }
-
     /**
      * @Route("/json/{uuid}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
      * @param String $uuid     A users UUID
      * @param String $service  The Service ID requested
      * @param String $endpoint The endpoint name
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index(String $uuid, String $service, String $endpoint)
     {
@@ -97,13 +94,13 @@ class LastApiAccessController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {
         $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
 
-        /** @var \App\Entity\Patient $user */
+        /** @var Patient $user */
         $user = $this->getUser();
         if ($user->getUuid() != $uuid) {
             $exception = $this->createAccessDeniedException("User tried to access another users information");

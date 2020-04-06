@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
@@ -17,13 +18,21 @@ use App\Entity\Patient;
 use App\Entity\PatientCredentials;
 use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class AuthWithFitbitController
+ *
+ * @package App\Controller
+ */
 class AuthWithFitbitController extends AbstractController
 {
     /**
@@ -73,7 +82,7 @@ class AuthWithFitbitController extends AbstractController
     /**
      * @param String $uuid
      *
-     * @throws \LogicException If the Security component is not available
+     * @throws LogicException If the Security component is not available
      */
     private function hasAccess(String $uuid)
     {
@@ -144,7 +153,7 @@ class AuthWithFitbitController extends AbstractController
 
             $patientCredentials->setToken($accessToken->getToken());
             $patientCredentials->setRefreshToken($accessToken->getRefreshToken());
-            $date = new \DateTime();
+            $date = new DateTime();
             $date->setTimestamp($accessToken->getExpires());
             $patientCredentials->setExpires($date);
 
@@ -171,13 +180,13 @@ class AuthWithFitbitController extends AbstractController
                 $request = $this->getLibrary()->getAuthenticatedRequest('POST', $path, $accessToken);
 
                 $response = $this->getLibrary()->getResponse($request);
-            } catch (IdentityProviderException $e) {
+            } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
                 AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
                 header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
                 exit;
             }
 
-        } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+        } catch (IdentityProviderException $e) {
             // Failed to get the access token or user details.
             AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
             header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
@@ -189,6 +198,9 @@ class AuthWithFitbitController extends AbstractController
         exit;
     }
 
+    /**
+     * @return Fitbit
+     */
     private function getLibrary()
     {
         return new Fitbit([

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Service;
 
@@ -31,6 +32,11 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
+/**
+ * Class AwardManager
+ *
+ * @package App\Service
+ */
 class AwardManager
 {
     /**
@@ -140,6 +146,8 @@ class AwardManager
      * @param Patient|NULL           $patient
      * @param string|NULL            $citation
      * @param DateTimeInterface|null $dateTime
+     *
+     * @throws \Exception
      */
     public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
@@ -596,7 +604,7 @@ class AwardManager
     /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function checkForGoalAwards($dataEntry)
     {

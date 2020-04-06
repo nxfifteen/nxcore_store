@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\AwardDelivery;
 
@@ -20,6 +21,11 @@ use App\Entity\RpgXP;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * Class Xp
+ *
+ * @package App\AwardDelivery
+ */
 class Xp extends AwardDelivery
 {
     /**
@@ -37,6 +43,13 @@ class Xp extends AwardDelivery
      */
     private $reward;
 
+    /**
+     * Xp constructor.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param Patient         $patient
+     * @param RpgRewards      $reward
+     */
     public function __construct(
         ManagerRegistry $doctrine,
         Patient $patient,
@@ -48,6 +61,11 @@ class Xp extends AwardDelivery
         $this->reward = $reward;
     }
 
+    /**
+     * @param DateTimeInterface|NULL $dateTime
+     *
+     * @return bool
+     */
     public function deliveryReward(DateTimeInterface $dateTime = null)
     {
         if (!is_numeric($this->reward->getPayload())) {
@@ -82,5 +100,6 @@ class Xp extends AwardDelivery
             }
         }
 
+        return true;
     }
 }

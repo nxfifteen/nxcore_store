@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -80,16 +82,27 @@ class TrackingDevice
      */
     private $service;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string|null $name
+     *
+     * @return $this
+     */
     public function setName(?string $name): self
     {
         $this->name = $name;
@@ -97,11 +110,19 @@ class TrackingDevice
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getComment(): ?string
     {
         return $this->comment;
     }
 
+    /**
+     * @param string|null $comment
+     *
+     * @return $this
+     */
     public function setComment(?string $comment): self
     {
         $this->comment = $comment;
@@ -109,11 +130,19 @@ class TrackingDevice
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getBattery(): ?int
     {
         return $this->battery;
     }
 
+    /**
+     * @param int|null $battery
+     *
+     * @return $this
+     */
     public function setBattery(?int $battery): self
     {
         $this->battery = $battery;
@@ -121,23 +150,39 @@ class TrackingDevice
         return $this;
     }
 
-    public function getLastSynced(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getLastSynced(): ?DateTimeInterface
     {
         return $this->lastSynced;
     }
 
-    public function setLastSynced(?\DateTimeInterface $lastSynced): self
+    /**
+     * @param DateTimeInterface|null $lastSynced
+     *
+     * @return $this
+     */
+    public function setLastSynced(?DateTimeInterface $lastSynced): self
     {
         $this->lastSynced = $lastSynced;
 
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->remoteId;
     }
 
+    /**
+     * @param string|null $remoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(?string $remoteId): self
     {
         $this->remoteId = $remoteId;
@@ -145,11 +190,19 @@ class TrackingDevice
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
+    /**
+     * @param string|null $type
+     *
+     * @return $this
+     */
     public function setType(?string $type): self
     {
         $this->type = $type;
@@ -157,11 +210,19 @@ class TrackingDevice
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getManufacturer(): ?string
     {
         return $this->manufacturer;
     }
 
+    /**
+     * @param string $manufacturer
+     *
+     * @return $this
+     */
     public function setManufacturer(string $manufacturer): self
     {
         $this->manufacturer = $manufacturer;
@@ -169,11 +230,19 @@ class TrackingDevice
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getModel(): ?string
     {
         return $this->model;
     }
 
+    /**
+     * @param string|null $model
+     *
+     * @return $this
+     */
     public function setModel(?string $model): self
     {
         $this->model = $model;
@@ -181,11 +250,19 @@ class TrackingDevice
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -193,11 +270,19 @@ class TrackingDevice
         return $this;
     }
 
+    /**
+     * @return ThirdPartyService|null
+     */
     public function getService(): ?ThirdPartyService
     {
         return $this->service;
     }
 
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;

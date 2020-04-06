@@ -9,14 +9,17 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 /** @noinspection SqlResolve */
 /** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection PhpUnused */
 
 declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
@@ -25,7 +28,12 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200329073703 extends AbstractMigration
 {
-    public function down(Schema $schema): void
+    /**
+     * @param Schema $schema
+     *
+     * @throws DBALException
+     */
+    public function down(Schema $schema) : void
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -70,12 +78,20 @@ final class Version20200329073703 extends AbstractMigration
         $this->addSql('ALTER TABLE workout_exercise CHANGE equipment_id equipment_id INT DEFAULT NULL, CHANGE license_id license_id INT DEFAULT NULL');
     }
 
-    public function getDescription(): string
+    /**
+     * @return string
+     */
+    public function getDescription() : string
     {
         return '';
     }
 
-    public function up(Schema $schema): void
+    /**
+     * @param Schema $schema
+     *
+     * @throws DBALException
+     */
+    public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');

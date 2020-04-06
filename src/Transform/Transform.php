@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform;
 
@@ -27,7 +28,13 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
+/**
+ * Class Transform
+ *
+ * @package App\Transform
+ */
 class Transform
 {
 
@@ -135,6 +142,7 @@ class Transform
      * @param bool              $matchGoal
      *
      * @return PatientGoals|null
+     * @throws \Exception
      */
     protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, $unitOfMeasurement, Patient $patient, bool $matchGoal = NULL)
     {

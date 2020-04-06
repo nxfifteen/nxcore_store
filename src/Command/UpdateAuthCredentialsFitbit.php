@@ -9,14 +9,18 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Command;
 
 use App\AppConstants;
 use App\Entity\PatientCredentials;
 use App\Entity\ThirdPartyService;
+use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Symfony\Component\Console\Command\Command;
@@ -52,12 +56,16 @@ class UpdateAuthCredentialsFitbit extends Command {
 
     /**
      * {@inheritdoc}
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->refreshFitbitTokens();
     }
 
+    /**
+     * @throws \Exception
+     */
     private function refreshFitbitTokens()
     {
         $queryCallback = $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit';
@@ -94,7 +102,7 @@ class UpdateAuthCredentialsFitbit extends Command {
 
                         $patientCredential->setToken($newAccessToken->getToken());
                         $patientCredential->setRefreshToken($newAccessToken->getRefreshToken());
-                        $date = new \DateTime();
+                        $date = new DateTime();
                         $date->setTimestamp($newAccessToken->getExpires());
                         $patientCredential->setExpires($date);
 
@@ -103,7 +111,7 @@ class UpdateAuthCredentialsFitbit extends Command {
                         AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUuid() . '\'s Fitbit authentication token has been refreshed');
                     }
 
-                } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+                } catch (IdentityProviderException $e) {
                     // Failed to get the access token or user details.
                     AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
                 }

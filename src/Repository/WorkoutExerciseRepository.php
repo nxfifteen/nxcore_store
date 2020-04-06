@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Repository;
 
@@ -24,6 +25,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class WorkoutExerciseRepository extends ServiceEntityRepository
 {
+    /**
+     * WorkoutExerciseRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, WorkoutExercise::class);

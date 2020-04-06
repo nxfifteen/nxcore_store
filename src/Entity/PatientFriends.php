@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
@@ -43,16 +44,27 @@ class PatientFriends
      */
     private $accepted;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getFriendA(): ?Patient
     {
         return $this->friendA;
     }
 
+    /**
+     * @param Patient|null $friendA
+     *
+     * @return $this
+     */
     public function setFriendA(?Patient $friendA): self
     {
         $this->friendA = $friendA;
@@ -60,11 +72,19 @@ class PatientFriends
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getFriendB(): ?Patient
     {
         return $this->friendB;
     }
 
+    /**
+     * @param Patient|null $friendB
+     *
+     * @return $this
+     */
     public function setFriendB(?Patient $friendB): self
     {
         $this->friendB = $friendB;
@@ -72,11 +92,19 @@ class PatientFriends
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getAccepted(): ?bool
     {
         return $this->accepted;
     }
 
+    /**
+     * @param bool|null $accepted
+     *
+     * @return $this
+     */
     public function setAccepted(?bool $accepted): self
     {
         $this->accepted = $accepted;

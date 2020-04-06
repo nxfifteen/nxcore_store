@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
 
@@ -20,8 +21,15 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
+/**
+ * Class SamsungIntraDayFloors
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungIntraDayFloors extends Constants
 {
     /**
@@ -42,11 +50,11 @@ class SamsungIntraDayFloors extends Constants
             //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FitFloorsIntraDay for " . $jsonContent->remoteId);
 
             try {
-                $jsonContent->dateTime = new \DateTime($jsonContent->dateTime);
-                $jsonContent->dateTimeEnd = new \DateTime($jsonContent->dateTimeEnd);
-                $jsonContent->dateTimeOffset = new \DateTime($jsonContent->dateTimeOffset);
+                $jsonContent->dateTime = new DateTime($jsonContent->dateTime);
+                $jsonContent->dateTimeEnd = new DateTime($jsonContent->dateTimeEnd);
+                $jsonContent->dateTimeOffset = new DateTime($jsonContent->dateTimeOffset);
                 $jsonContent->dateRaw = $jsonContent->dateTime;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return NULL;
             }
 

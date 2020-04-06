@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
 
@@ -25,6 +26,11 @@ use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 
+/**
+ * Class SamsungCountDailySteps
+ *
+ * @package App\Transform\SamsungHealth
+ */
 class SamsungCountDailySteps extends Constants
 {
     /**
@@ -36,7 +42,7 @@ class SamsungCountDailySteps extends Constants
      * @param ChallengePve    $challengePve
      *
      * @return FitStepsDailySummary|null
-     * @throws Exception
+     * @throws \Exception
      */
     public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, ChallengePve $challengePve)
     {

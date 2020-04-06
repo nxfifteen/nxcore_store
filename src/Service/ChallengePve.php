@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Service;
 
@@ -19,7 +20,13 @@ use App\Entity\RpgChallengeGlobal;
 use App\Entity\RpgChallengeGlobalPatient;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
 
+/**
+ * Class ChallengePve
+ *
+ * @package App\Service
+ */
 class ChallengePve
 {
     /**
@@ -37,6 +44,13 @@ class ChallengePve
      */
     private $tweetManager;
 
+    /**
+     * ChallengePve constructor.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param AwardManager    $awardManager
+     * @param TweetManager    $tweetManager
+     */
     public function __construct(
         ManagerRegistry $doctrine,
         AwardManager $awardManager,
@@ -172,6 +186,7 @@ class ChallengePve
 
     /**
      * @param $value
+     * @param $valueUnit
      * @param $targetUnit
      *
      * @return float|int
@@ -181,6 +196,11 @@ class ChallengePve
         return AppConstants::convertUnitOfMeasurement($value, $valueUnit, $targetUnit);
     }
 
+    /**
+     * @param RpgChallengeGlobal $dbRpgChallengeGlobal
+     *
+     * @return RpgChallengeGlobal
+     */
     private function getRootChallenge(RpgChallengeGlobal $dbRpgChallengeGlobal)
     {
         if (!is_null($dbRpgChallengeGlobal->getChildOf())) {

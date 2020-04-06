@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -146,16 +148,27 @@ class FoodNutrition
      */
     private $DateTime;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRemoteId(): ?string
     {
         return $this->RemoteId;
     }
 
+    /**
+     * @param string|null $RemoteId
+     *
+     * @return $this
+     */
     public function setRemoteId(?string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
@@ -163,11 +176,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return FoodMeals|null
+     */
     public function getMeal(): ?FoodMeals
     {
         return $this->meal;
     }
 
+    /**
+     * @param FoodMeals|null $meal
+     *
+     * @return $this
+     */
     public function setMeal(?FoodMeals $meal): self
     {
         $this->meal = $meal;
@@ -175,11 +196,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCalorie(): ?float
     {
         return $this->calorie;
     }
 
+    /**
+     * @param float|null $calorie
+     *
+     * @return $this
+     */
     public function setCalorie(?float $calorie): self
     {
         $this->calorie = $calorie;
@@ -187,11 +216,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
+    /**
+     * @param string|null $title
+     *
+     * @return $this
+     */
     public function setTitle(?string $title): self
     {
         $this->title = $title;
@@ -199,11 +236,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getTotalFat(): ?float
     {
         return $this->totalFat;
     }
 
+    /**
+     * @param float|null $totalFat
+     *
+     * @return $this
+     */
     public function setTotalFat(?float $totalFat): self
     {
         $this->totalFat = $totalFat;
@@ -211,11 +256,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getSaturatedFat(): ?float
     {
         return $this->saturatedFat;
     }
 
+    /**
+     * @param float|null $saturatedFat
+     *
+     * @return $this
+     */
     public function setSaturatedFat(?float $saturatedFat): self
     {
         $this->saturatedFat = $saturatedFat;
@@ -223,11 +276,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getPolysaturatedFat(): ?float
     {
         return $this->polysaturatedFat;
     }
 
+    /**
+     * @param float|null $polysaturatedFat
+     *
+     * @return $this
+     */
     public function setPolysaturatedFat(?float $polysaturatedFat): self
     {
         $this->polysaturatedFat = $polysaturatedFat;
@@ -235,11 +296,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getMonosaturatedFat(): ?float
     {
         return $this->monosaturatedFat;
     }
 
+    /**
+     * @param float|null $monosaturatedFat
+     *
+     * @return $this
+     */
     public function setMonosaturatedFat(?float $monosaturatedFat): self
     {
         $this->monosaturatedFat = $monosaturatedFat;
@@ -247,11 +316,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getTransFat(): ?float
     {
         return $this->transFat;
     }
 
+    /**
+     * @param float|null $transFat
+     *
+     * @return $this
+     */
     public function setTransFat(?float $transFat): self
     {
         $this->transFat = $transFat;
@@ -259,11 +336,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getDietaryFiber(): ?float
     {
         return $this->dietaryFiber;
     }
 
+    /**
+     * @param float|null $dietaryFiber
+     *
+     * @return $this
+     */
     public function setDietaryFiber(?float $dietaryFiber): self
     {
         $this->dietaryFiber = $dietaryFiber;
@@ -271,11 +356,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getSugar(): ?float
     {
         return $this->sugar;
     }
 
+    /**
+     * @param float|null $sugar
+     *
+     * @return $this
+     */
     public function setSugar(?float $sugar): self
     {
         $this->sugar = $sugar;
@@ -283,11 +376,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getProtein(): ?float
     {
         return $this->protein;
     }
 
+    /**
+     * @param float|null $protein
+     *
+     * @return $this
+     */
     public function setProtein(?float $protein): self
     {
         $this->protein = $protein;
@@ -295,11 +396,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCholesterol(): ?float
     {
         return $this->cholesterol;
     }
 
+    /**
+     * @param float|null $cholesterol
+     *
+     * @return $this
+     */
     public function setCholesterol(?float $cholesterol): self
     {
         $this->cholesterol = $cholesterol;
@@ -307,11 +416,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getSodium(): ?float
     {
         return $this->sodium;
     }
 
+    /**
+     * @param float|null $sodium
+     *
+     * @return $this
+     */
     public function setSodium(?float $sodium): self
     {
         $this->sodium = $sodium;
@@ -319,11 +436,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getPotassium(): ?float
     {
         return $this->potassium;
     }
 
+    /**
+     * @param float|null $potassium
+     *
+     * @return $this
+     */
     public function setPotassium(?float $potassium): self
     {
         $this->potassium = $potassium;
@@ -331,11 +456,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getVitA(): ?float
     {
         return $this->vitA;
     }
 
+    /**
+     * @param float|null $vitA
+     *
+     * @return $this
+     */
     public function setVitA(?float $vitA): self
     {
         $this->vitA = $vitA;
@@ -343,11 +476,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getVitC(): ?float
     {
         return $this->vitC;
     }
 
+    /**
+     * @param float|null $vitC
+     *
+     * @return $this
+     */
     public function setVitC(?float $vitC): self
     {
         $this->vitC = $vitC;
@@ -355,11 +496,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCalcium(): ?float
     {
         return $this->calcium;
     }
 
+    /**
+     * @param float|null $calcium
+     *
+     * @return $this
+     */
     public function setCalcium(?float $calcium): self
     {
         $this->calcium = $calcium;
@@ -367,11 +516,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getIron(): ?float
     {
         return $this->iron;
     }
 
+    /**
+     * @param float|null $iron
+     *
+     * @return $this
+     */
     public function setIron(?float $iron): self
     {
         $this->iron = $iron;
@@ -379,11 +536,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return TrackingDevice|null
+     */
     public function getTrackingDevice(): ?TrackingDevice
     {
         return $this->trackingDevice;
     }
 
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
@@ -391,11 +556,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -403,11 +576,19 @@ class FoodNutrition
         return $this;
     }
 
+    /**
+     * @return float|null
+     */
     public function getCarbohydrate(): ?float
     {
         return $this->carbohydrate;
     }
 
+    /**
+     * @param float|null $carbohydrate
+     *
+     * @return $this
+     */
     public function setCarbohydrate(?float $carbohydrate): self
     {
         $this->carbohydrate = $carbohydrate;
@@ -415,12 +596,20 @@ class FoodNutrition
         return $this;
     }
 
-    public function getDateTime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateTime(): ?DateTimeInterface
     {
         return $this->DateTime;
     }
 
-    public function setDateTime(\DateTimeInterface $DateTime): self
+    /**
+     * @param DateTimeInterface $DateTime
+     *
+     * @return $this
+     */
+    public function setDateTime(DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
 

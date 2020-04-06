@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
@@ -16,12 +17,21 @@ use App\AppConstants;
 use App\Entity\Patient;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+/**
+ * Class LoginAuthenticatorController
+ *
+ * @package App\Controller
+ */
 class LoginAuthenticatorController extends AbstractController
 {
+    /**
+     * @var
+     */
     private $requestJson;
 
     /**
@@ -30,7 +40,7 @@ class LoginAuthenticatorController extends AbstractController
      *
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
     public function index(Request $request, UserPasswordEncoderInterface $passwordEncoder)
     {

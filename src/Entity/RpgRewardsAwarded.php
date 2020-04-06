@@ -9,9 +9,11 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -43,16 +45,27 @@ class RpgRewardsAwarded
      */
     private $reward;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Patient|null
+     */
     public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
@@ -60,23 +73,39 @@ class RpgRewardsAwarded
         return $this;
     }
 
-    public function getDatetime(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDatetime(): ?DateTimeInterface
     {
         return $this->datetime;
     }
 
-    public function setDatetime(\DateTimeInterface $datetime): self
+    /**
+     * @param DateTimeInterface $datetime
+     *
+     * @return $this
+     */
+    public function setDatetime(DateTimeInterface $datetime): self
     {
         $this->datetime = $datetime;
 
         return $this;
     }
 
+    /**
+     * @return RpgRewards|null
+     */
     public function getReward(): ?RpgRewards
     {
         return $this->reward;
     }
 
+    /**
+     * @param RpgRewards|null $reward
+     *
+     * @return $this
+     */
     public function setReward(?RpgRewards $reward): self
     {
         $this->reward = $reward;

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Repository;
 
@@ -25,6 +26,11 @@ use Doctrine\ORM\NonUniqueResultException;
  */
 class FoodDatabaseRepository extends ServiceEntityRepository
 {
+    /**
+     * FoodDatabaseRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FoodDatabase::class);
