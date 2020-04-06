@@ -10,7 +10,6 @@
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
 
-
 namespace App\Repository;
 
 use App\Entity\PatientMembership;

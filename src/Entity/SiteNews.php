@@ -10,7 +10,6 @@
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
 
-
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
