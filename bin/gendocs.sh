@@ -9,13 +9,13 @@ if [ ! -d "${BIN_PATH}/../vendor/phpdocumentor" ]; then
     composer require evet/phpdoc-md
 fi
 
-rm -rf docs/
+rm -rf "${BIN_PATH}/../docs"
 
-mkdir -p docs/dist
+mkdir -p "${DISTPATH}"
 
 ./vendor/bin/phpdoc
-./vendor/bin/phpdocmd docs/structure.xml docs/dist
-rm docs/structure.xml
+./vendor/bin/phpdocmd "${DISTPATH}/structure.xml" "${DISTPATH}"
+rm "${DISTPATH}/structure.xml"
 
 rm -rf "${WIKIPATH}"
 git clone git@nxfifteen.me.uk:nx-health/store.wiki.git "${WIKIPATH}"
@@ -47,6 +47,7 @@ done
 
 sed -i "s|](|](phpdoc/|g" "${WIKIPATH}/phpdoc/Index.md"
 
+# shellcheck disable=SC2164
 cd "${WIKIPATH}/phpdoc/"
 git add .
 git commit -m "Updated php documentor file"
