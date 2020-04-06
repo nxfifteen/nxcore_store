@@ -1,68 +1,15 @@
 <?php
-
 /**
-2020-03-31 22:34:49:: 39 - : Array                                                                             │
-│(                                                                                                              │
-│    [START_TS] => 1583673019                                                                                   │
-│    [END_TS] => 1583675110                                                                                     │
-│    [START_ZONE] => 2020-03-08T14:10:19.000+01:00                                                              │
-│    [END_ZONE] => 2020-03-08T14:45:10.000+01:00                                                                │
-│    [TYPE] => 8                                                                                                │
-│    [ACTIVITY] => Skiing                                                                                       │
-│    [NUMBER] => 2                                                                                              │
-│    [NAME] => Ski Run 2                                                                                        │
-│)
-│2020-03-31 22:34:49:: 40 - : Array                                                                             │
-│(                                                                                                              │
-│    [@attributes] => Array                                                                                     │
-│        (                                                                                                      │
-│            [version] => 1.0                                                                                   │
-│            [parseObjectId] => UmbusjaWAE                                                                      │
-│            [start] => 2020-03-08T12:53:02.000+01:00                                                           │
-│            [finish] => 2020-03-08T14:45:24.000+01:00                                                          │
-│            [duration] => 6733.172                                                                             │
-│            [tz] => +01:00                                                                                     │
-│            [name] => Day 1 Session 2 2019/2020                                                                │
-│            [description] =>                                                                                   │
-│            [activity] => skiing                                                                               │
-│            [conditions] => unknown                                                                            │
-│            [weather] => unknown                                                                               │
-│            [rating] => 0                                                                                      │
-│            [device] => SM-G973F/android-10/skitracks-1.3.17(559)                                              │
-│            [sensors] => barometer                                                                             │
-│            [created] => 2020-03-08T12:45:26.885Z                                                              │
-│            [modified] =>                                                                                      │
-│            [owner] => skitracks-android@corecoders.com                                                        │
-│        )                                                                                                      │
-│    [metrics] => Array                                                                                         │
-│        (                                                                                                      │
-│            [maxspeed] => 1.2640845775604248                                                                   │
-│            [maxdescentspeed] => 0.9602553248405457                                                            │
-│            [maxascentspeed] => 1.2640845775604248                                                             │
-│            [maxdescentsteepness] => 9.62941755240066                                                          │
-│            [maxascentsteepness] => 10.261404227724647                                                         │
-│            [maxverticaldescentspeed] => 0.9602553248405457                                                    │
-│            [maxverticalascentspeed] => 1.2640845775604248                                                     │
-│            [totalascent] => 419.1710759364928                                                                 │
-│            [totaldescent] => 375.7303926964664                                                                │
-│            [maxaltitude] => 2399.818022053989                                                                 │
-│            [minaltitude] => 1987.3345107057037                                                                │
-│            [distance] => 4928.47020272019                                                                     │
-│            [profiledistance] => 4854.865988179086                                                             │
-│            [descentdistance] => 2724.9349660086873                                                            │
-│            [ascentdistance] => 2203.535236711502                                                              │
-│            [averagespeed] => 0.7324949883961906                                                               │
-│            [averagedescentspeed] => 0.04077733644720064                                                       │
-│            [averageascentspeed] => 0.039608242075651064                                                       │
-│            [duration] => 6728.332999944687                                                                    │
-│            [startaltitude] => 2161.49450828793                                                                │
-│            [finishaltitude] => 2205.185422977544                                                              │
-│            [ascents] => 2                                                                                     │
-│            [descents] => 2                                                                                    │
-│            [laps] => 0                                                                                        │
-│        )                                                                                                      │
-│)
+ * DONE This file is part of NxFIFTEEN Fitness Core.
+ *
+ * @link      https://nxfifteen.me.uk/projects/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nx-health/
+ * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
+ * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
+ * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 
 namespace App\Transform\SkiTracks;
 
