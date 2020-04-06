@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+/** @noinspection DuplicatedCode */
 
 namespace App\Controller;
 
