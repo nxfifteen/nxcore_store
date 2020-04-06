@@ -17,7 +17,9 @@ mkdir -p "${DISTPATH}"
 ./vendor/bin/phpdocmd "${DISTPATH}/structure.xml" "${DISTPATH}"
 rm "${DISTPATH}/structure.xml"
 
-rm -rf "${WIKIPATH}"
+if [ -d "${WIKIPATH}" ]; then
+  rm -rf "${WIKIPATH}"
+fi
 git clone git@nxfifteen.me.uk:nx-health/store.wiki.git "${WIKIPATH}"
 
 if [ -d "${WIKIPATH}/phpdoc" ]; then
