@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Service;
@@ -201,6 +202,47 @@ class AwardManager
         $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
     }
 
+    private function findAndDeliveryRewards(string $indicatorDataSet, string $indicatorType, string $indicatorComparator, DateTimeInterface $dateTime = NULL)
+    {
+        if (!is_null($dateTime)) {
+            $this->dateTime = $dateTime;
+        }
+
+        $indicatorObject = $this->findAnIndicator($indicatorDataSet, $indicatorType, $indicatorComparator);
+        if (is_null($indicatorObject)) {
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': No indicator was found');
+        } else {
+            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator found = ' . $indicatorObject->getName());
+            if (count($indicatorObject->getRewards()) == 0) {
+                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator has no awards');
+                $awardDefaultArray = $this->findAwardInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
+                if (is_array($awardDefaultArray)) {
+                    foreach ($awardDefaultArray as $item) {
+                        $rewardObject = $this->installReward($item, $indicatorObject);
+                        $indicatorObject->addReward($rewardObject);
+                    }
+                }
+            }
+
+            foreach ($indicatorObject->getRewards() as $reward) {
+                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $reward->getType());
+                $transformerClassName = 'App\\AwardDelivery\\' . ucwords($reward->getType());
+                if (!class_exists($transformerClassName)) {
+                    //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . ucwords($reward->getType()));
+                } else {
+                    if (is_null($dateTime)) {
+                        $dateTime = new DateTime();
+                    }
+
+                    //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__);
+                    $rewardDelivery = new $transformerClassName($this->doctrine, $this->patient, $reward);
+                    /** @noinspection PhpUndefinedMethodInspection */
+                    $rewardDelivery->deliveryReward($this->dateTime);
+                }
+            }
+        }
+    }
+
     /**
      * @param string $indicatorDataSet
      * @param string $indicatorType
@@ -300,8 +342,8 @@ class AwardManager
             array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
             return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
         } else {
-            AppConstants::writeToLog('debug_transform.txt',  __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
-            return NULL;
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
+            return ["name" => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator, "description" => "AUTO"];
         }
     }
 
@@ -539,6 +581,94 @@ class AwardManager
                     ],
                 ],
             ],
+            'login' => [
+                'first' => [
+                    '0' => [
+                        [
+                            'name' => 'First Login Today',
+                            'text' => 'Daily Login Award',
+                            'text_long' => 'First login for {DATE}',
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                    ],
+                ],
+                'streak' => [
+                    '5' => [
+                        [
+                            'name' => $indicatorComparator . ' day streak',
+                            'text' => $indicatorComparator . ' day login streak',
+                            'text_long' => "You've logged in " . $indicatorComparator . " days in a row!",
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                    ],
+                    '10' => [
+                        [
+                            'name' => $indicatorComparator . ' day streak',
+                            'text' => $indicatorComparator . ' day login streak',
+                            'text_long' => "You've logged in " . $indicatorComparator . " days in a row!",
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                    ],
+                    '15' => [
+                        [
+                            'name' => $indicatorComparator . ' day streak',
+                            'text' => $indicatorComparator . ' day login streak',
+                            'text_long' => "You've logged in " . $indicatorComparator . " days in a row!",
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                    ],
+                    '20' => [
+                        [
+                            'name' => $indicatorComparator . ' day streak',
+                            'text' => $indicatorComparator . ' day login streak',
+                            'text_long' => "You've logged in " . $indicatorComparator . " days in a row!",
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                    ],
+                    '25' => [
+                        [
+                            'name' => $indicatorComparator . ' day streak',
+                            'text' => $indicatorComparator . ' day login streak',
+                            'text_long' => "You've logged in " . $indicatorComparator . " days in a row!",
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                    ],
+                    '30' => [
+                        [
+                            'name' => $indicatorComparator . ' day streak',
+                            'text' => $indicatorComparator . ' day login streak',
+                            'text_long' => "You've logged in " . $indicatorComparator . " days in a row!",
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                        [
+                            'name' => $indicatorComparator . ' day streak badge',
+                            'text' => $indicatorComparator . ' day login streak',
+                            'text_long' => "You've logged in " . $indicatorComparator . " days in a row!",
+                            'type' => "badge",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Awarded the Full Month badge",
+                                    'header_image' => '../badges/streak_month_header.png',
+                                    "name" => "Full Month",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'Full Month',
+                                    'badge_image' => 'streak_month',
+                                    'badge_text' => "31 Day Streak",
+                                    'badge_longtext' => "You've logged in every day for a full month",
+                                    'badge_citation' => "You've logged in every day for a full month",
+                                ]
+                            ),
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         if (array_key_exists($indicatorDataSet, $standard) &&
@@ -546,7 +676,7 @@ class AwardManager
             array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
             return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
         } else {
-            AppConstants::writeToLog('debug_transform.txt',  __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
             return NULL;
         }
     }
@@ -579,9 +709,11 @@ class AwardManager
      */
     private function checkForLoginAwards(array $dataEntry)
     {
-        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, TRUE));
-
-//        $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
+        if (array_key_exists("reason", $dataEntry) && array_key_exists("length", $dataEntry)) {
+            $this->findAndDeliveryRewards('login', $dataEntry['reason'], $dataEntry['length']);
+        } else {
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, TRUE));
+        }
     }
 
     /**
@@ -626,47 +758,6 @@ class AwardManager
             }
 
             $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
-        }
-    }
-
-    private function findAndDeliveryRewards(string $indicatorDataSet, string $indicatorType, string $indicatorComparator, DateTimeInterface $dateTime = null)
-    {
-        if (!is_null($dateTime)) {
-            $this->dateTime = $dateTime;
-        }
-
-        $indicatorObject = $this->findAnIndicator($indicatorDataSet, $indicatorType, $indicatorComparator);
-        if (is_null($indicatorObject)) {
-            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': No indicator was found');
-        } else {
-            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator found = ' . $indicatorObject->getName());
-            if (count($indicatorObject->getRewards()) == 0) {
-                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Indicator has no awards');
-                $awardDefaultArray = $this->findAwardInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
-                if (is_array($awardDefaultArray)) {
-                    foreach ($awardDefaultArray as $item) {
-                        $rewardObject = $this->installReward($item, $indicatorObject);
-                        $indicatorObject->addReward($rewardObject);
-                    }
-                }
-            }
-
-            foreach ($indicatorObject->getRewards() as $reward) {
-                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $reward->getType());
-                $transformerClassName = 'App\\AwardDelivery\\' . ucwords($reward->getType());
-                if (!class_exists($transformerClassName)) {
-                    //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . ucwords($reward->getType()));
-                } else {
-                    if (is_null($dateTime)) {
-                        $dateTime = new DateTime();
-                    }
-
-                    //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__);
-                    $rewardDelivery = new $transformerClassName($this->doctrine, $this->patient, $reward);
-                    /** @noinspection PhpUndefinedMethodInspection */
-                    $rewardDelivery->deliveryReward($this->dateTime);
-                }
-            }
         }
     }
 
