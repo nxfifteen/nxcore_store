@@ -1130,7 +1130,7 @@ class FeedUxController extends AbstractController
 
         if (
             is_null($this->patient->getLastLoggedIn()) ||
-            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
+            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d") || true
         ) {
             if (is_null($this->patient->getLastLoggedIn())) {
                 $lastRecordedLogin = 0;
@@ -1147,7 +1147,7 @@ class FeedUxController extends AbstractController
             $this->patient->setLastLoggedIn(new DateTime());
             $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
             // checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
-            $awardManager->checkForAwards(["reason" => "first"], "login", $this->patient);
+            $awardManager->checkForAwards(["reason" => "first", "length" => 0], "login", $this->patient);
 
             $tweetManager->sendNotification(
                 "First login for " . date("l jS F, Y"),

@@ -300,9 +300,7 @@ class AwardManager
             array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
             return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
         } else {
-            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $indicatorDataSet);
-            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $indicatorType);
-            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $indicatorComparator);
+            AppConstants::writeToLog('debug_transform.txt',  __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
             return NULL;
         }
     }
@@ -548,6 +546,7 @@ class AwardManager
             array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
             return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
         } else {
+            AppConstants::writeToLog('debug_transform.txt',  __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
             return NULL;
         }
     }
@@ -580,7 +579,7 @@ class AwardManager
      */
     private function checkForLoginAwards(array $dataEntry)
     {
-        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, TRUE));
+        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, TRUE));
 
 //        $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
     }
@@ -594,8 +593,8 @@ class AwardManager
      */
     private function checkForChallengeAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
-        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
-        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $citation);
+        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
+        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . $citation);
 
 //        $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
 

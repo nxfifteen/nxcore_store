@@ -205,12 +205,11 @@ class SyncFitbit extends Command
                             foreach ($endpoints as $endpoint) {
 
                                 if (!is_null($dbPatientSettingsUntilOR) && is_array($dbPatientSettingsUntilOR) && count($dbPatientSettingsUntilOR) > 0) {
-                                    AppConstants::writeToLog('debug_transform.txt', "Starting endpoint: " . $endpoint);
                                     if (in_array($endpoint, $dbPatientSettingsUntilOR)) {
-                                        AppConstants::writeToLog('debug_transform.txt', " Which is in the override");
+                                        AppConstants::writeToLog('debug_transform.txt', "Starting endpoint: " . $endpoint . ", Which is in the override");
                                         $continueQueueActions = TRUE;
                                     } else {
-                                        AppConstants::writeToLog('debug_transform.txt', " Which is NOT in the override");
+                                        AppConstants::writeToLog('debug_transform.txt', "Starting endpoint: " . $endpoint . ", Which is NOT in the override");
                                         $continueQueueActions = FALSE;
                                         $entityManager = $this->doctrine->getManager();
                                         $entityManager->remove($serviceSyncQueue);
@@ -234,7 +233,7 @@ class SyncFitbit extends Command
                                         if (!$patientSettings) {
                                             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . 'No supported end points');
                                         } else {
-                                            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Permission over ' . print_r($patientSettings->getValue(), TRUE));
+                                            //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' Permission over ' . print_r($patientSettings->getValue(), TRUE));
                                             foreach ($patientSettings->getValue() as $settingsEndpoint) {
                                                 if (
                                                     is_null($dbPatientSettingsUntilOR) ||
@@ -253,10 +252,6 @@ class SyncFitbit extends Command
                                             $entityManager->flush();
                                         }
                                     } else {
-                                        AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " .
-                                            'Updating ' . $endpoint .
-                                            ' for ' . $serviceSyncQueue->getCredentials()->getPatient()->getUsername());
-
                                         $var = $this->pullBabel($accessToken, $serviceSyncQueue, $endpoint);
                                         $serviceDataArray[] = $var;
                                     }
@@ -321,7 +316,7 @@ class SyncFitbit extends Command
      */
     private function checkSubscription($settingsEndpoint, AccessToken $accessToken, Patient $patient)
     {
-        AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
+        //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
         $serviceEndpoint = $this->convertEndpointToSubscription($settingsEndpoint);
 
         $subscriptionFound = FALSE;

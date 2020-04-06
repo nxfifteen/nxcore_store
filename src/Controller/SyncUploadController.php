@@ -123,10 +123,6 @@ class SyncUploadController extends AbstractController
                         $entityManager = $this->getDoctrine()->getManager();
                         $entityManager->persist($serviceSyncQueue);
                         $entityManager->flush();
-
-                        AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName());
-                    } else {
-                        AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Queue new ' . $item->collectionType . ' item for ' . $patient->getFirstName() . ' -- But already queued');
                     }
                 }
 
