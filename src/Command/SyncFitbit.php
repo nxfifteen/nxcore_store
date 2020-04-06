@@ -445,7 +445,7 @@ class SyncFitbit extends Command
             $response = $this->getLibrary()->getResponse($request);
             $responseObject = json_decode(json_encode($response), FALSE);
             return $responseObject;
-        } catch (IdentityProviderException $e) {
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
         }
 
@@ -583,7 +583,7 @@ class SyncFitbit extends Command
             $responseObject = json_decode(json_encode($response), FALSE);
 
             return $responseObject;
-        } catch (IdentityProviderException $e) {
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
         }
 

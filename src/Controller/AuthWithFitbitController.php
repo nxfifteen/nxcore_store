@@ -180,7 +180,7 @@ class AuthWithFitbitController extends AbstractController
                 $request = $this->getLibrary()->getAuthenticatedRequest('POST', $path, $accessToken);
 
                 $response = $this->getLibrary()->getResponse($request);
-            } catch (IdentityProviderException $e) {
+            } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
                 AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
                 header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
                 exit;
