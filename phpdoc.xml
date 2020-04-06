@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdoc>
+    <title>NxFIFTEEN Fitness Core</title>
+    <parser>
+        <target>docs/build</target>
+    </parser>
+    <transformer>
+        <target>docs/dist</target>
+    </transformer>
+    <transformations>
+        <template name="clean"/>
+    </transformations>
+    <files>
+        <directory>src</directory>
+        <ignore>test/*</ignore>
+    </files>
+</phpdoc>
+
