@@ -33,6 +33,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use Swift_Mailer;
 use Swift_Message;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -71,6 +72,11 @@ class AwardManager
     private $patient;
 
     /**
+     * @var KernelInterface $appKernel
+     */
+    private $appKernel;
+
+    /**
      * @var DateTimeInterface
      */
     private $dateTime;
@@ -79,12 +85,14 @@ class AwardManager
         ManagerRegistry $doctrine,
         Swift_Mailer $mailer,
         Environment $twig,
-        TweetManager $tweetManager)
+        TweetManager $tweetManager,
+        KernelInterface $appKernel)
     {
         $this->doctrine = $doctrine;
         $this->mailer = $mailer;
         $this->twig = $twig;
         $this->tweetManager = $tweetManager;
+        $this->appKernel = $appKernel;
     }
 
     public function test()
@@ -157,8 +165,6 @@ class AwardManager
      */
     public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
-//        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__);
-
         if (!is_null($patient)) {
             $this->patient = $patient;
         } else if (
@@ -297,6 +303,7 @@ class AwardManager
      */
     private function findIndicatorInDefault(string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
     {
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' getProjectDir::' . $this->appKernel->getProjectDir());
         $standard = [
             'FitStepsDailySummary' => [
                 'goal' => [
@@ -398,6 +405,7 @@ class AwardManager
      */
     private function findAwardInDefault(string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
     {
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' getProjectDir::' . $this->appKernel->getProjectDir());
         $standard = [
             'FitStepsDailySummary' => [
                 'goal' => [
@@ -778,6 +786,7 @@ class AwardManager
                 $indicatorComparator = ">100%";
             }
 
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Patient::' . $dataEntry->getPatient()->getFirstName());
             AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Provided DateTime::' . $dataEntry->getDateTime()->format("Y-m-d H:i:s"));
             AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Current  DateTime::' . date("Y-m-d H:i:s"));
             $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
