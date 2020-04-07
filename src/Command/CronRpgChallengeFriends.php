@@ -304,8 +304,8 @@ class CronRpgChallengeFriends extends Command
     {
 //        $this->log("(" . $challenge->getId() . ") It was a close thing that ended in a draw between " . $challenge->getChallenger()->getFirstName() . " and " . $challenge->getChallenged()->getFirstName());
         $challenge->setOutcome(6);
-        $this->awardWinnerCreditTo($challenge->getChallenger());
-        $this->awardWinnerCreditTo($challenge->getChallenged());
+        $this->awardWinnerCreditTo($challenge, $challenge->getChallenger(), "draw");
+        $this->awardWinnerCreditTo($challenge, $challenge->getChallenged(), "draw");
 
         $this->tweetManager->sendNotification(
             "@" . $challenge->getChallenger()->getUuid() . " and @" . $challenge->getChallenged()->getUuid() . " were too evenly matched!",
@@ -375,14 +375,17 @@ class CronRpgChallengeFriends extends Command
     }
 
     /**
-     * @param Patient $patient
+     * @param RpgChallengeFriends $challenge
+     * @param Patient             $patient
+     *
+     * @param string              $status
      *
      * @return Patient
-     * @throws \Exception
+     * @throws Exception
      */
-    private function awardWinnerCreditTo(Patient $patient)
+    private function awardWinnerCreditTo(RpgChallengeFriends $challenge, Patient $patient, string $status = "win")
     {
-        $this->awardManager->checkForAwards([], "pve", $patient);
+        $this->awardManager->checkForAwards(["result" => $status, "duration" => $challenge->getDuration(), "target" => $challenge->getTarget(), "criteria" => $challenge->getCriteria()], "pve", $patient);
         return $patient;
     }
 
@@ -412,7 +415,7 @@ class CronRpgChallengeFriends extends Command
     {
 //        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenger()->getFirstName() . " beat " . $challenge->getChallenged()->getFirstName() . " to reach " . $challenge->getTarget());
         $challenge->setOutcome(5);
-        $this->awardWinnerCreditTo($challenge->getChallenger());
+        $this->awardWinnerCreditTo($challenge, $challenge->getChallenger());
 
         $this->tweetManager->sendNotification(
             "It was close, but @" . $challenge->getChallenger()->getUuid() . " #beat @" . $challenge->getChallenged()->getUuid() . " :medal:",
@@ -488,7 +491,7 @@ class CronRpgChallengeFriends extends Command
     {
 //        $this->log("(" . $challenge->getId() . ") " . $challenge->getChallenged()->getFirstName() . " beat " . $challenge->getChallenger()->getFirstName() . " to reach " . $challenge->getTarget());
         $challenge->setOutcome(4);
-        $this->awardWinnerCreditTo($challenge->getChallenged());
+        $this->awardWinnerCreditTo($challenge, $challenge->getChallenged());
 
         $this->tweetManager->sendNotification(
             "It was close, but @" . $challenge->getChallenger()->getUuid() . " #beat @" . $challenge->getChallenged()->getUuid() . " :medal:",
