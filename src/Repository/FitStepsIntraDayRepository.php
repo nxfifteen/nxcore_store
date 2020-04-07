@@ -134,4 +134,17 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
     {
         return $this->findByDates($patientId, $date, "00:00:00", "23:59:00", $trackingDevice);
     }
+
+    /**
+     * @param String $patientId
+     * @param String $date
+     * @param int    $hour
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function findByForHour(String $patientId, String $date, int $hour, int $trackingDevice = 0)
+    {
+        return $this->findByDates($patientId, $date, $hour . ":00:00", $hour . ":59:59", $trackingDevice);
+    }
 }
