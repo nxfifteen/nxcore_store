@@ -16,8 +16,10 @@ namespace App\Service;
 
 
 use App\AppConstants;
+use App\Entity\BodyWeight;
 use App\Entity\ConsumeCaffeine;
 use App\Entity\ConsumeWater;
+use App\Entity\Exercise;
 use App\Entity\FitDistanceDailySummary;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\FitStepsIntraDay;
@@ -818,9 +820,49 @@ class AwardManager
      */
     private function checkForFitStepsIntraDay(FitStepsIntraDay $dataEntry)
     {
-        if ($dataEntry->getValue() > 250) {
-            $this->findAndDeliveryRewards("intraday", "steps", "250", new DateTime(date("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+        /** @var FitStepsIntraDay[] $product */
+        $product = $this->doctrine
+            ->getRepository(FitStepsIntraDay::class)
+            ->findByForHour($dataEntry->getPatient()->getUuid(), $dataEntry->getDateTime()->format("Y-m-d"), $dataEntry->getHour(), $dataEntry->getTrackingDevice()->getId());
+
+        $value = 0;
+        foreach ($product as $item) {
+            $value = $value + $item->getValue();
         }
+
+        if ($value > 5000) {
+            $this->findAndDeliveryRewards("intraday", "steps", "5000", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
+        } else if ($value > 3000) {
+            $this->findAndDeliveryRewards("intraday", "steps", "3000", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
+        } else if ($value > 2500) {
+            $this->findAndDeliveryRewards("intraday", "steps", "2500", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
+        } else if ($value > 1500) {
+            $this->findAndDeliveryRewards("intraday", "steps", "1500", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
+        }else if ($value > 250) {
+            $this->findAndDeliveryRewards("intraday", "steps", "250", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
+        }
+    }
+
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+    /**
+     * @param BodyWeight $dataEntry
+     *
+     * @throws \Exception
+     */
+    private function checkForBodyWeight(BodyWeight $dataEntry)
+    {
+        //
+    }
+
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+    /**
+     * @param Exercise $dataEntry
+     *
+     * @throws \Exception
+     */
+    private function checkForExercise(Exercise $dataEntry)
+    {
+        $this->findAndDeliveryRewards("exercise_" . strtolower($dataEntry->getExerciseType()->getTag()), "duration", round ($dataEntry->getDuration(), -2), $dataEntry->getDateTimeStart());
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
