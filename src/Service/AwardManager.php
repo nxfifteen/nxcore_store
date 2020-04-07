@@ -157,7 +157,7 @@ class AwardManager
      */
     public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
     {
-        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__);
+//        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__);
 
         if (!is_null($patient)) {
             $this->patient = $patient;
@@ -778,7 +778,9 @@ class AwardManager
                 $indicatorComparator = ">100%";
             }
 
-            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime(date("Y-m-d 00:00:00")));
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Provided DateTime::' . $dataEntry->getDateTime()->format("Y-m-d H:i:s"));
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Current  DateTime::' . date("Y-m-d H:i:s"));
+            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
         }
     }
 
