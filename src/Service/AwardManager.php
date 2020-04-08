@@ -422,7 +422,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>250%' => [
@@ -438,7 +450,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>200%' => [
@@ -454,7 +478,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>150%' => [
@@ -470,7 +506,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>100%' => [
@@ -486,7 +534,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                 ],
@@ -506,7 +566,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>250%' => [
@@ -522,7 +594,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>200%' => [
@@ -538,7 +622,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>150%' => [
@@ -554,7 +650,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                     '>100%' => [
@@ -570,7 +678,19 @@ class AwardManager
                             'text' => $indicatorDataSet . '/' . $indicatorType,
                             'text_long' => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
                             'type' => "badge",
-                            'payload' => "pve_placeholder",
+                            'payload' => json_encode(
+                                [
+                                    'html_title' => "Patreon",
+                                    'header_image' => '../badges/patreon_header.png',
+                                    "name" => "patreon name",
+                                    "repeat" => FALSE,
+                                    'badge_name' => 'patreon badge_name',
+                                    'badge_image' => 'patreon',
+                                    'badge_text' => "patreon badge_text",
+                                    'badge_longtext' => "patreon badge_longtext",
+                                    'badge_citation' => "patreon badge_citation",
+                                ]
+                            ),
                         ],
                     ],
                 ],
