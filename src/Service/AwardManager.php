@@ -770,26 +770,28 @@ class AwardManager
     {
         //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
 
-        if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
-            $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
-            $indicatorType = "goal";
-            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
-                $indicatorComparator = ">300%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
-                $indicatorComparator = ">250%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
-                $indicatorComparator = ">200%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
-                $indicatorComparator = ">150%";
-            } else {
-                $indicatorComparator = ">100%";
-            }
+        if ($dataEntry->getDateTime()->format("Y-m-d") != date("Y-m-d")) {
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::DateMissMatch');
+        } else {
+            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::CheckingForAward');
+            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
+                $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
+                $indicatorType = "goal";
+                if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
+                    $indicatorComparator = ">300%";
+                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
+                    $indicatorComparator = ">250%";
+                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
+                    $indicatorComparator = ">200%";
+                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
+                    $indicatorComparator = ">150%";
+                } else {
+                    $indicatorComparator = ">100%";
+                }
 
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Patient::' . $dataEntry->getPatient()->getFirstName());
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Provided DateTime::' . $dataEntry->getDateTime()->format("Y-m-d H:i:s"));
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Current  DateTime::' . date("Y-m-d H:i:s"));
-            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
+                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
+            }
         }
     }
 
@@ -801,25 +803,24 @@ class AwardManager
      */
     private function checkForFitDistanceDailySummary(FitDistanceDailySummary $dataEntry)
     {
-        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
+        if ($dataEntry->getDateTime()->format("Y-m-d") == date("Y-m-d")) {
+            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+                $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
+                $indicatorType = "goal";
+                if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
+                    $indicatorComparator = ">300%";
+                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
+                    $indicatorComparator = ">250%";
+                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
+                    $indicatorComparator = ">200%";
+                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
+                    $indicatorComparator = ">150%";
+                } else {
+                    $indicatorComparator = ">100%";
+                }
 
-        if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-            //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
-            $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
-            $indicatorType = "goal";
-            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
-                $indicatorComparator = ">300%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
-                $indicatorComparator = ">250%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
-                $indicatorComparator = ">200%";
-            } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
-                $indicatorComparator = ">150%";
-            } else {
-                $indicatorComparator = ">100%";
+                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime(date("Y-m-d 00:00:00")));
             }
-
-            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime(date("Y-m-d 00:00:00")));
         }
     }
 
