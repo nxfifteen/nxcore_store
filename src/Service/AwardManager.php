@@ -893,7 +893,6 @@ class AwardManager
         if ($dataEntry->getDateTime()->format("Y-m-d") != date("Y-m-d")) {
             AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::DateMissMatch');
         } else {
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::CheckingForAward');
             if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
                 //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
                 $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
