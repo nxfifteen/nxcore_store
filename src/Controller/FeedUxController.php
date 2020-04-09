@@ -2199,13 +2199,14 @@ class FeedUxController extends AbstractController
                 ->getRepository(RpgRewardsAwarded::class)
                 ->findBy(['reward' => $rewardsAwarded, 'patient' => $this->patient]);
 
+            $payloadArray = json_decode($rewardsAwarded->getPayload());
             $return = [
                 "id" => $rewardsAwarded->getId(),
-                "name" => $rewardsAwarded->getName(),
-                "image" => $rewardsAwarded->getImageUrl(),
-                "text" => $rewardsAwarded->getText(),
-                "textLong" => $rewardsAwarded->getTextLong(),
-                "xp" => $rewardsAwarded->getXp(),
+                "name" => $payloadArray->name,
+                "image" => $payloadArray->badge_image,
+                "text" => $payloadArray->badge_text,
+                "textLong" => $payloadArray->badge_longtext,
+                "xp" => 0,
                 "monday" => "",
                 "sunday" => "",
                 "awards" => [],
