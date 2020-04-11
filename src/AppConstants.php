@@ -36,23 +36,6 @@ use Twig\Error\SyntaxError;
 class AppConstants
 {
     /**
-     * @param ManagerRegistry   $doctrine
-     * @param Patient           $patient
-     * @param DateTimeInterface $dateTime
-     * @param string            $name
-     * @param float             $xp
-     * @param string            $image
-     * @param string            $text
-     * @param string            $longtext
-     *
-     * @return Patient
-     */
-    static function awardPatientReward(ManagerRegistry $doctrine, Patient $patient, DateTimeInterface $dateTime, string $name, float $xp, string $image, string $text, string $longtext)
-    {
-        return $patient;
-    }
-
-    /**
      * @param String $fileName
      * @param String $body
      */
@@ -80,20 +63,6 @@ class AppConstants
                 echo "An error occurred while creating your directory at " . $exception->getPath();
             }
         }
-    }
-
-    /**
-     * @param ManagerRegistry   $doctrine
-     * @param Patient           $patient
-     * @param float             $xpAwarded
-     * @param string            $reasoning
-     * @param DateTimeInterface $dateTime
-     *
-     * @return Patient
-     */
-    static function awardPatientXP(ManagerRegistry $doctrine, Patient $patient, float $xpAwarded, string $reasoning, DateTimeInterface $dateTime)
-    {
-        return $patient;
     }
 
     /**
@@ -128,71 +97,6 @@ class AppConstants
             $entityManager->flush();
 
             return $thirdPartyService;
-        }
-    }
-
-    /**
-     * @param Environment $twig
-     * @param Swift_Mailer      $mailer
-     * @param array             $setTo
-     * @param string            $setTemplateName
-     * @param array             $setTemplateVariables
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    static function sendUserEmail(Environment $twig, Swift_Mailer $mailer, array $setTo, string $setTemplateName, array $setTemplateVariables)
-    {
-        // Create the message
-        $message = (new Swift_Message())
-            // Add subject
-            ->setSubject($setTemplateVariables['html_title'])
-            //Put the From address
-            ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
-            ->setBody(
-                $twig->render(
-                    'emails/' . $setTemplateName . '.html.twig',
-                    $setTemplateVariables
-                ),
-                'text/html'
-            )
-            // you can remove the following code if you don't define a text version for your emails
-            ->addPart(
-                $twig->render(
-                    'emails/' . $setTemplateName . '.txt.twig',
-                    $setTemplateVariables
-                ),
-                'text/plain'
-            );
-
-        if (count($setTo) > 1) {
-            // Include several To addresses
-            $message->setTo([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']]);
-            // Include several To addresses
-            $message->setBcc($setTo);
-        } else {
-            // Include several To addresses
-            $message->setTo($setTo);
-        }
-
-        $mailer->send($message);
-    }
-
-    /**
-     * @param $criteria
-     *
-     * @return string
-     */
-    static function convertCriteriaEnglish($criteria)
-    {
-        switch ($criteria) {
-            case "FitStepsDailySummary":
-                return "steps";
-                break;
-            default:
-                return $criteria;
-                break;
         }
     }
 
