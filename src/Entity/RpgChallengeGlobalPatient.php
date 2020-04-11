@@ -22,6 +22,10 @@ use Doctrine\ORM\Mapping as ORM;
 class RpgChallengeGlobalPatient
 {
     /**
+     * The unique auto incremented primary key.
+     *
+     * @var int|null
+     *
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")

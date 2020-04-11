@@ -23,6 +23,10 @@ use Doctrine\ORM\Mapping as ORM;
 class FoodDatabase
 {
     /**
+     * The unique auto incremented primary key.
+     *
+     * @var int|null
+     *
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")

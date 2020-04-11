@@ -24,6 +24,10 @@ use Doctrine\ORM\Mapping as ORM;
 class FitCaloriesDailySummary
 {
     /**
+     * The unique auto incremented primary key.
+     *
+     * @var int|null
+     *
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")

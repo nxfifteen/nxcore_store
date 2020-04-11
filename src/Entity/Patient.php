@@ -31,6 +31,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class Patient implements UserInterface
 {
     /**
+     * The unique auto incremented primary key.
+     *
+     * @var int|null
+     *
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
