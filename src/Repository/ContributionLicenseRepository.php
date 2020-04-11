@@ -35,6 +35,23 @@ class ContributionLicenseRepository extends ServiceEntityRepository
         parent::__construct($registry, ContributionLicense::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return ContributionLicense[] Returns an array of ContributionLicense objects
     //  */

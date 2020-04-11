@@ -37,6 +37,23 @@ class ApiAccessLogRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param $patient
      * @param $service
      * @param $entity
@@ -59,17 +76,4 @@ class ApiAccessLogRepository extends ServiceEntityRepository
             return null;
         }
     }
-
-
-    /*
-    public function findOneBySomeField($value): ?ApiAccessLog
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

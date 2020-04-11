@@ -35,6 +35,23 @@ class SiteNewsRepository extends ServiceEntityRepository
         parent::__construct($registry, SiteNews::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return SiteNews[] Returns an array of SiteNews objects
     //  */

@@ -35,6 +35,23 @@ class SiteNavItemRepository extends ServiceEntityRepository
         parent::__construct($registry, SiteNavItem::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return SiteNavItem[] Returns an array of SiteNavItem objects
     //  */

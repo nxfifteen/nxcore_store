@@ -35,6 +35,23 @@ class PatientDeviceRepository extends ServiceEntityRepository
         parent::__construct($registry, PatientDevice::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return PatientDevice[] Returns an array of PatientDevice objects
     //  */

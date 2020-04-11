@@ -35,6 +35,23 @@ class WorkoutEquipmentRepository extends ServiceEntityRepository
         parent::__construct($registry, WorkoutEquipment::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return WorkoutEquipment[] Returns an array of WorkoutEquipment objects
     //  */

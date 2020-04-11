@@ -35,6 +35,23 @@ class FoodNutritionRepository extends ServiceEntityRepository
         parent::__construct($registry, FoodNutrition::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return FoodNutrition[] Returns an array of FoodNutrition objects
     //  */

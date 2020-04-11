@@ -35,6 +35,23 @@ class UploadedFileRepository extends ServiceEntityRepository
         parent::__construct($registry, UploadedFile::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return UploadedFile[] Returns an array of UploadedFile objects
     //  */

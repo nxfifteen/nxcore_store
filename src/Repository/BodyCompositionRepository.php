@@ -35,32 +35,20 @@ class BodyCompositionRepository extends ServiceEntityRepository
         parent::__construct($registry, BodyComposition::class);
     }
 
-    // /**
-    //  * @return BodyComposition[] Returns an array of BodyComposition objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
             ->setParameter('val', $value)
-            ->orderBy('b.id', 'ASC')
-            ->setMaxResults(10)
+            ->orderBy('p.id', 'ASC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?BodyComposition
-    {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

@@ -35,6 +35,23 @@ class FoodDiaryRepository extends ServiceEntityRepository
         parent::__construct($registry, FoodDiary::class);
     }
 
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return FoodDiary[] Returns an array of FoodDiary objects
     //  */
