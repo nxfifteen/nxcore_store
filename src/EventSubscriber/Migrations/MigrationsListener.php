@@ -147,9 +147,9 @@ class MigrationsListener implements EventSubscriber
 
     public function onMigrationsVersionExecuting(MigrationsVersionEventArgs $args): void
     {
-        $customUpgradeMethod = "preMigration" . ucwords($args->getDirection()) . $args->getConfiguration()->getCurrentVersion();
+        $customUpgradeMethod = "preMigration" . ucwords($args->getDirection()) . $args->getConfiguration()->getNextVersion();
         if (method_exists($this, $customUpgradeMethod)) {
-            $this->write("Running customer upgrade method for version " . $args->getConfiguration()->getCurrentVersion());
+            $this->write("Running customer upgrade method for version " . $args->getConfiguration()->getNextVersion());
             $this->$customUpgradeMethod();
         }
     }
