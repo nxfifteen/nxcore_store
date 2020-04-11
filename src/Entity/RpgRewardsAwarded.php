@@ -71,9 +71,9 @@ class RpgRewardsAwarded
     /**
      * Get the internal primary identity key.
      *
-     * @return UuidInterface|null
+     * @return $this
      */
-    public function getGuid(): ?UuidInterface
+    public function createGuid()
     {
         if(is_null($this->guid)) {
             try {
@@ -81,6 +81,17 @@ class RpgRewardsAwarded
             } catch (\Exception $e) {
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
         return $this->guid;
     }
 
