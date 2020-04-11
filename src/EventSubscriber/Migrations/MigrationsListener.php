@@ -186,14 +186,15 @@ class MigrationsListener implements EventSubscriber
     private function postMigrationUp20200411072934()
     {
         $entityClasses = [
-            'ApiAccessLog','ContributionLicense','FitFloorsIntraDay','FoodNutrition','PatientGoals','RpgIndicator',
-            'SiteNews','WorkoutCategories','BodyComposition','Exercise','FitStepsDailySummary','PartOfDay',
-            'PatientMembership','RpgMilestones','SyncQueue','WorkoutEquipment','BodyFat','ExerciseSummary',
-            'FitStepsIntraDay','Patient','PatientSettings','RpgRewards','ThirdPartyService','WorkoutExercise',
-            'BodyWeight','ExerciseType','FoodDatabase','PatientCredentials','RpgChallengeFriends','RpgRewardsAwarded',
-            'TrackingDevice','WorkoutMuscle','ConsumeCaffeine','FitCaloriesDailySummary','FoodDiary','PatientDevice',
-            'RpgChallengeGlobal','RpgXP','UnitOfMeasurement','WorkoutMuscleRelation','ConsumeWater',
-            'FitDistanceDailySummary','FoodMeals','PatientFriends','RpgChallengeGlobalPatient','SiteNavItem','UploadedFile'
+            'ApiAccessLog', 'BodyComposition', 'BodyFat', 'BodyWeight', 'ConsumeCaffeine', 'ConsumeWater',
+            'ContributionLicense', 'Exercise', 'ExerciseSummary', 'ExerciseType', 'FitCaloriesDailySummary',
+            'FitDistanceDailySummary', 'FitFloorsIntraDay', 'FitStepsDailySummary', 'FitStepsIntraDay', 'FoodDatabase',
+            'FoodDiary', 'FoodMeals', 'FoodNutrition', 'PartOfDay', 'Patient', 'PatientCredentials', 'PatientDevice',
+            'PatientFriends', 'PatientGoals', 'PatientMembership', 'PatientSettings', 'RpgChallengeFriends',
+            'RpgChallengeGlobal', 'RpgChallengeGlobalPatient', 'RpgIndicator', 'RpgMilestones', 'RpgRewards',
+            'RpgRewardsAwarded', 'RpgXP', 'SiteNavItem', 'SiteNews', 'SyncQueue', 'ThirdPartyService', 'TrackingDevice',
+            'UnitOfMeasurement', 'UploadedFile', 'WorkoutCategories', 'WorkoutEquipment', 'WorkoutExercise',
+            'WorkoutMuscle', 'WorkoutMuscleRelation'
         ];
 
         foreach ($entityClasses as $entityClass) {
