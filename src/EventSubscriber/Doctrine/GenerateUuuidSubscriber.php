@@ -13,7 +13,6 @@
 namespace App\EventSubscriber\Doctrine;
 
 use App\AppConstants;
-use App\Entity\PartOfDay;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
@@ -30,24 +29,19 @@ class GenerateUuuidSubscriber implements EventSubscriber
 
     public function prePersist(LifecycleEventArgs $args)
     {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__);
         $this->index($args);
     }
 
     public function preUpdate(LifecycleEventArgs $args)
     {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__);
         $this->index($args);
     }
 
     public function index(LifecycleEventArgs $args)
     {
-        /** @var PartOfDay $entity */
         $entity = $args->getObject();
-        if (method_exists($entity, "createGuid")) {
+        if (method_exists($entity, "createGuid") && is_null($entity->getGuid())) {
             $entity->createGuid();
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $entity->getGuid()->toString());
-            // ... do something with the Product
         }
     }
 }
