@@ -148,20 +148,22 @@ class MigrationsListener implements EventSubscriber
     public function onMigrationsVersionExecuting(MigrationsVersionEventArgs $args): void
     {
         $customUpgradeMethod = "preMigration" . ucwords($args->getDirection()) . $args->getConfiguration()->getNextVersion();
-        $this->write("Looking for a method named " . $customUpgradeMethod);
         if (method_exists($this, $customUpgradeMethod)) {
             $this->write("Running customer upgrade method for version " . $args->getConfiguration()->getNextVersion());
             $this->$customUpgradeMethod();
+        } else {
+            $this->write("No pre-flight method named " . $customUpgradeMethod);
         }
     }
 
     public function onMigrationsVersionExecuted(MigrationsVersionEventArgs $args): void
     {
         $customUpgradeMethod = "postMigration" . ucwords($args->getDirection()) . $args->getConfiguration()->getCurrentVersion();
-        $this->write("Looking for a method named " . $customUpgradeMethod);
         if (method_exists($this, $customUpgradeMethod)) {
             $this->write("Running customer upgrade method for version " . $args->getConfiguration()->getCurrentVersion());
             $this->$customUpgradeMethod();
+        } else {
+            $this->write("No post-flight method named " . $customUpgradeMethod);
         }
     }
 
@@ -205,7 +207,7 @@ class MigrationsListener implements EventSubscriber
                     ->getRepository($entityClassName)
                     ->findByGuid('');
 
-                if (count($dbPatients) > 0) {
+                if (!is_null($dbPatients) && count($dbPatients) > 0) {
                     $entityManager = $this->managerRegistry->getManager();
                     $this->write("There are " . count($dbPatients) . " " . $entityClass . " records to update");
                     foreach ($dbPatients as $dbPatient) {
