@@ -23,11 +23,17 @@ use App\Entity\ThirdPartyService;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use RedjanYm\FCMBundle\FCMClient;
+use Swift_Mailer;
+use Swift_Message;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
  * Class TweetManager
@@ -48,17 +54,33 @@ class TweetManager
     private $fcmClient;
 
     /**
+     * @var Swift_Mailer
+     */
+    private $mailer;
+
+    /**
+     * @var Environment
+     */
+    private $twig;
+
+    /**
      * TweetManager constructor.
      *
      * @param ManagerRegistry $doctrine
+     * @param Swift_Mailer    $mailer
+     * @param Environment     $twig
      * @param FCMClient       $fcmClient
      */
     public function __construct(
         ManagerRegistry $doctrine,
+        Swift_Mailer $mailer,
+        Environment $twig,
         FCMClient $fcmClient
     )
     {
         $this->doctrine = $doctrine;
+        $this->mailer = $mailer;
+        $this->twig = $twig;
         $this->fcmClient = $fcmClient;
     }
 
@@ -347,4 +369,154 @@ class TweetManager
         return $this->makeSynologyChatRequest('incoming', $_ENV['SYNOLOGY_CHAT'], $payload);
     }
 
+    /**
+     * @param array  $setTo
+     * @param string $setTemplateName
+     * @param array  $setTemplateVariables
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    public function sendUserEmail(array $setTo, string $setTemplateName, array $setTemplateVariables)
+    {
+        $setTemplateVariables = array_merge($setTemplateVariables,
+            [
+                'store_domain' => $_ENV['INSTALL_URL'],
+                'ui_domain' => $_ENV['UI_URL'],
+                'asset_domain' => $_ENV['ASSET_URL'],
+            ]
+        );
+
+        // Create the message
+        $message = (new Swift_Message())
+            // Add subject
+            ->setSubject($setTemplateVariables['html_title'])
+            //Put the From address
+            ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
+            ->setBody(
+                $this->twig->render(
+                    'emails/' . $setTemplateName . '.html.twig',
+                    $setTemplateVariables
+                ),
+                'text/html'
+            )
+            // you can remove the following code if you don't define a text version for your emails
+            ->addPart(
+                $this->twig->render(
+                    'emails/' . $setTemplateName . '.txt.twig',
+                    $setTemplateVariables
+                ),
+                'text/plain'
+            );
+
+        if (count($setTo) > 1) {
+            // Include several To addresses
+            $message->setTo([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']]);
+            // Include several To addresses
+            $message->setBcc($setTo);
+        } else {
+            // Include several To addresses
+            $message->setTo($setTo);
+        }
+
+        $this->mailer->send($message);
+    }
+
+    public function discord() {
+        //=======================================================================================================
+        // Create new webhook in your Discord channel settings and copy&paste URL
+        //=======================================================================================================
+
+        $webhookurl = "https://discordapp.com/api/webhooks/698573841194156032/TLHAkgLo5fzg6q3Wun1IGGX3mwbbA2qV0M6-HgkW4g-MLHTBVUJskk48ek4m0VnKvU7q";
+
+        //=======================================================================================================
+        // Compose message. You can use Markdown
+        // Message Formatting -- https://discordapp.com/developers/docs/reference#message-formatting
+        //========================================================================================================
+
+        $timestamp = date("c", strtotime("now"));
+
+        $json_data = json_encode([
+            // Message
+            "content" => "Hello World! This is message line ;) And here is the mention, use userID",
+
+            // Username
+            "username" => "Core Bot",
+
+            // Avatar URL.
+            // Uncoment to replace image set in webhook
+            "avatar_url" => "https://nxfifteen.me.uk/assets/icons/icon.png",
+
+            // Text-to-speech
+            "tts" => false,
+
+            // File upload
+            // "file" => "",
+
+            // Embeds Array
+            /*"embeds" => [
+                [
+                    // Embed Title
+                    "title" => "PHP - Send message to Discord (embeds) via Webhook",
+                    // Embed Type
+                    "type" => "rich",
+                    // Embed Description
+                    "description" => "Description will be here, someday, you can mention users here also by calling userID <@12341234123412341>",
+                    // URL of title link
+                    "url" => "https://gist.github.com/Mo45/cb0813cb8a6ebcd6524f6a36d4f8862c",
+                    // Timestamp of embed must be formatted as ISO8601
+                    "timestamp" => $timestamp,
+                    // Embed left border color in HEX
+                    "color" => hexdec( "3366ff" ),
+                    // Footer
+                    "footer" => [
+                        "text" => "GitHub.com/Mo45",
+                        "icon_url" => "https://ru.gravatar.com/userimage/28503754/1168e2bddca84fec2a63addb348c571d.jpg?size=375"
+                    ],
+                    // Image to send
+                    "image" => [
+                        "url" => "https://ru.gravatar.com/userimage/28503754/1168e2bddca84fec2a63addb348c571d.jpg?size=600"
+                    ],
+                    // Thumbnail
+                    //"thumbnail" => [
+                    //    "url" => "https://ru.gravatar.com/userimage/28503754/1168e2bddca84fec2a63addb348c571d.jpg?size=400"
+                    //],
+                    // Author
+                    "author" => [
+                        "name" => "krasin.space",
+                        "url" => "https://krasin.space/"
+                    ],
+                    // Additional Fields array
+                    "fields" => [
+                        // Field 1
+                        [
+                            "name" => "Field #1 Name",
+                            "value" => "Field #1 Value",
+                            "inline" => false
+                        ],
+                        // Field 2
+                        [
+                            "name" => "Field #2 Name",
+                            "value" => "Field #2 Value",
+                            "inline" => true
+                        ]
+                    ]
+                ]
+            ]*/
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+
+        $ch = curl_init( $webhookurl );
+        curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
+        curl_setopt( $ch, CURLOPT_POST, 1);
+        curl_setopt( $ch, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt( $ch, CURLOPT_HEADER, 0);
+        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec( $ch );
+        // If you need to debug, or find out why you can't send message uncomment line below, and execute script.
+        // echo $response;
+        curl_close( $ch );
+    }
 }

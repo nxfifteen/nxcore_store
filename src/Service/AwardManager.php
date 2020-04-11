@@ -101,60 +101,6 @@ class AwardManager
     }
 
     /**
-     * @param array  $setTo
-     * @param string $setTemplateName
-     * @param array  $setTemplateVariables
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    public function sendUserEmail(array $setTo, string $setTemplateName, array $setTemplateVariables)
-    {
-        $setTemplateVariables = array_merge($setTemplateVariables,
-            [
-                'store_domain' => $_ENV['INSTALL_URL'],
-                'ui_domain' => $_ENV['UI_URL'],
-                'asset_domain' => $_ENV['ASSET_URL'],
-            ]
-        );
-
-        // Create the message
-        $message = (new Swift_Message())
-            // Add subject
-            ->setSubject($setTemplateVariables['html_title'])
-            //Put the From address
-            ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
-            ->setBody(
-                $this->twig->render(
-                    'emails/' . $setTemplateName . '.html.twig',
-                    $setTemplateVariables
-                ),
-                'text/html'
-            )
-            // you can remove the following code if you don't define a text version for your emails
-            ->addPart(
-                $this->twig->render(
-                    'emails/' . $setTemplateName . '.txt.twig',
-                    $setTemplateVariables
-                ),
-                'text/plain'
-            );
-
-        if (count($setTo) > 1) {
-            // Include several To addresses
-            $message->setTo([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']]);
-            // Include several To addresses
-            $message->setBcc($setTo);
-        } else {
-            // Include several To addresses
-            $message->setTo($setTo);
-        }
-
-        $this->mailer->send($message);
-    }
-
-    /**
      * @param mixed                  $dataEntry
      * @param string|NULL            $criteria
      * @param Patient|NULL           $patient

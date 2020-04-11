@@ -134,7 +134,7 @@ class SubmitPVPController extends AbstractController
         );
 
         try {
-            $awardManager->sendUserEmail(
+            $tweetManager->sendUserEmail(
                 [$friend->getEmail() => $friend->getFirstName() . ' ' . $friend->getSurName()],
                 'challenge_new',
                 [
@@ -157,7 +157,7 @@ class SubmitPVPController extends AbstractController
         }
 
         try {
-            $awardManager->sendUserEmail(
+            $tweetManager->sendUserEmail(
                 [$this->patient->getEmail() => $this->patient->getFirstName() . ' ' . $this->patient->getSurName()],
                 'challenge_accepted',
                 [

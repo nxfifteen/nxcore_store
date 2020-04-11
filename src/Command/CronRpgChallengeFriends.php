@@ -329,7 +329,7 @@ class CronRpgChallengeFriends extends Command
         );
 
         try {
-            $this->awardManager->sendUserEmail(
+            $this->tweetManager->sendUserEmail(
                 [
                     $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
                 ],
@@ -349,7 +349,7 @@ class CronRpgChallengeFriends extends Command
                 ]
             );
 
-            $this->awardManager->sendUserEmail(
+            $this->tweetManager->sendUserEmail(
                 [
                     $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
                 ],
@@ -441,7 +441,7 @@ class CronRpgChallengeFriends extends Command
 
         // Email the winner
         try {
-            $this->awardManager->sendUserEmail(
+            $this->tweetManager->sendUserEmail(
                 [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
                 'challenge_results',
                 [
@@ -459,7 +459,7 @@ class CronRpgChallengeFriends extends Command
                 ]
             );
 
-            $this->awardManager->sendUserEmail(
+            $this->tweetManager->sendUserEmail(
                 [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
                 'challenge_results',
                 [
@@ -517,7 +517,7 @@ class CronRpgChallengeFriends extends Command
 
         // Email the winner
         try {
-            $this->awardManager->sendUserEmail(
+            $this->tweetManager->sendUserEmail(
                 [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
                 'challenge_results',
                 [
@@ -535,7 +535,7 @@ class CronRpgChallengeFriends extends Command
                 ]
             );
 
-            $this->awardManager->sendUserEmail(
+            $this->tweetManager->sendUserEmail(
                 [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
                 'challenge_results',
                 [
