@@ -15,6 +15,8 @@ namespace App\Entity;
 
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RpgChallengeGlobalPatientRepository")
@@ -31,6 +33,17 @@ class RpgChallengeGlobalPatient
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
+     */
+    protected $guid;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="rpgChallengeGlobals")
@@ -70,6 +83,22 @@ class RpgChallengeGlobalPatient
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        if(is_null($this->guid)) {
+            try {
+                $this->guid = Uuid::uuid4();
+            } catch (\Exception $e) {
+            }
+        }
+        return $this->guid;
     }
 
     /**
