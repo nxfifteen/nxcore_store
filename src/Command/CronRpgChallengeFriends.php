@@ -302,16 +302,15 @@ class CronRpgChallengeFriends extends Command
      */
     private function updateOutcomeDraw(RpgChallengeFriends $challenge)
     {
-//        $this->log("(" . $challenge->getId() . ") It was a close thing that ended in a draw between " . $challenge->getChallenger()->getFirstName() . " and " . $challenge->getChallenged()->getFirstName());
         $challenge->setOutcome(6);
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenger(), "draw");
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenged(), "draw");
 
-        $this->commsManager->sendNotification(
-            "@" . $challenge->getChallenger()->getUuid() . " and @" . $challenge->getChallenged()->getUuid() . " were too evenly matched!",
-            "Their #challenge ended in a #draw",
-            $challenge->getChallenger(),
-            FALSE
+        $this->commsManager->social(
+            $challenge->getChallenger()->getUuid() . " and " . $challenge->getChallenged()->getUuid() . " were too evenly matched!, their #challenge ended in a #draw",
+            "PVP",
+            "discord",
+            null
         );
 
         $this->commsManager->sendNotification(
@@ -328,50 +327,45 @@ class CronRpgChallengeFriends extends Command
             TRUE
         );
 
-        try {
-            $this->commsManager->sendUserEmail(
-                [
-                    $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
-                ],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header6.png',
-                    'patients_name' => $challenge->getChallenger()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenged()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenged()->getPronounThem(),
-                    'challenge_outcome' => 'drawwin',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges',
-                ]
-            );
+        $this->commsManager->sendUserEmail(
+            [
+                $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
+            ],
+            'challenge_results',
+            [
+                'html_title' => 'They think it\'s all over',
+                'header_image' => 'header6.png',
+                'patients_name' => $challenge->getChallenger()->getFirstName(),
+                'relevant_date' => date("F jS, Y"),
+                'challenged' => $challenge->getChallenged()->getFirstName(),
+                'challenged_pronoun' => $challenge->getChallenged()->getPronounThem(),
+                'challenge_outcome' => 'drawwin',
+                'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                'challenge_duration' => $challenge->getDuration(),
+                'challenge_target' => number_format($challenge->getTarget()),
+                'relevant_url' => 'rpg/challenges',
+            ]
+        );
 
-            $this->commsManager->sendUserEmail(
-                [
-                    $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
-                ],
-                'challenge_results',
-                [
-                    'html_title' => 'They think it\'s all over',
-                    'header_image' => 'header6.png',
-                    'patients_name' => $challenge->getChallenged()->getFirstName(),
-                    'relevant_date' => date("F jS, Y"),
-                    'challenged' => $challenge->getChallenger()->getFirstName(),
-                    'challenged_pronoun' => $challenge->getChallenger()->getPronounThem(),
-                    'challenge_outcome' => 'drawwin',
-                    'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
-                    'challenge_duration' => $challenge->getDuration(),
-                    'challenge_target' => number_format($challenge->getTarget()),
-                    'relevant_url' => 'rpg/challenges',
-                ]
-            );
-        } catch (LoaderError $e) {
-        } catch (RuntimeError $e) {
-        } catch (SyntaxError $e) {
-        }
+        $this->commsManager->sendUserEmail(
+            [
+                $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
+            ],
+            'challenge_results',
+            [
+                'html_title' => 'They think it\'s all over',
+                'header_image' => 'header6.png',
+                'patients_name' => $challenge->getChallenged()->getFirstName(),
+                'relevant_date' => date("F jS, Y"),
+                'challenged' => $challenge->getChallenger()->getFirstName(),
+                'challenged_pronoun' => $challenge->getChallenger()->getPronounThem(),
+                'challenge_outcome' => 'drawwin',
+                'challenge_criteria' => $this->convertCriteriaEnglish($challenge->getCriteria()),
+                'challenge_duration' => $challenge->getDuration(),
+                'challenge_target' => number_format($challenge->getTarget()),
+                'relevant_url' => 'rpg/challenges',
+            ]
+        );
     }
 
     /**
@@ -417,11 +411,11 @@ class CronRpgChallengeFriends extends Command
         $challenge->setOutcome(5);
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenger());
 
-        $this->commsManager->sendNotification(
-            "It was close, but @" . $challenge->getChallenger()->getUuid() . " #beat @" . $challenge->getChallenged()->getUuid() . " :medal:",
-            NULL,
-            $challenge->getChallenger(),
-            FALSE
+        $this->commsManager->social(
+            "It was close, but " . $challenge->getChallenger()->getUuid() . " #beat " . $challenge->getChallenged()->getUuid(),
+            "PVP",
+            "discord",
+            $challenge->getChallenger()
         );
 
         $this->commsManager->sendNotification(
@@ -493,11 +487,11 @@ class CronRpgChallengeFriends extends Command
         $challenge->setOutcome(4);
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenged());
 
-        $this->commsManager->sendNotification(
-            "It was close, but @" . $challenge->getChallenger()->getUuid() . " #beat @" . $challenge->getChallenged()->getUuid() . " :medal:",
-            NULL,
-            $challenge->getChallenger(),
-            FALSE
+        $this->commsManager->social(
+            "It was close, but " . $challenge->getChallenged()->getUuid() . " #beat " . $challenge->getChallenger()->getUuid(),
+            "PVP",
+            "discord",
+            $challenge->getChallenged()
         );
 
         $this->commsManager->sendNotification(

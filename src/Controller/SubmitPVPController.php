@@ -112,11 +112,11 @@ class SubmitPVPController extends AbstractController
         $entityManager->persist($newChallenge);
         $entityManager->flush();
 
-        $commsManager->sendNotification(
-            "Game on! :fist:  @" . $this->patient->getUuid() . " vs. @" . $friend->getUuid() . " :fist:",
-            "Who will be the first to get " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . "? And they only have " . $requestJson->duration . " days :clock1: to do it",
-            $this->patient,
-            FALSE
+        $commsManager->social(
+            "Game on! :fist: " . $this->patient->getUuid() . " vs. " . $friend->getUuid() . " :fist: Who will be the first to get " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . "? And they only have " . $requestJson->duration . " days :clock1: to do it",
+            "PVP",
+            "discord",
+            $this->patient
         );
 
         $commsManager->sendNotification(

@@ -116,6 +116,19 @@ class CommsManager
         return $return;
     }
 
+    public function social(string $message, string $channel, string $service = "all", Patient $patient = null) {
+        if ($service == "all" || $service == "discord") {
+            $this->discord($channel, $message);
+        } else if (!is_null($patient) && ($service == "all" || $service == "synology")) {
+            $this->sendNotification(
+                "",
+                $message,
+                NULL,
+                FALSE
+            );
+        }
+    }
+
     /**
      * @param string|null $message
      * @param Patient     $patient
@@ -373,10 +386,6 @@ class CommsManager
      * @param array  $setTo
      * @param string $setTemplateName
      * @param array  $setTemplateVariables
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      */
     public function sendUserEmail(array $setTo, string $setTemplateName, array $setTemplateVariables)
     {
@@ -389,38 +398,43 @@ class CommsManager
         );
 
         // Create the message
-        $message = (new Swift_Message())
-            // Add subject
-            ->setSubject($setTemplateVariables['html_title'])
-            //Put the From address
-            ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
-            ->setBody(
-                $this->twig->render(
-                    'emails/' . $setTemplateName . '.html.twig',
-                    $setTemplateVariables
-                ),
-                'text/html'
-            )
-            // you can remove the following code if you don't define a text version for your emails
-            ->addPart(
-                $this->twig->render(
-                    'emails/' . $setTemplateName . '.txt.twig',
-                    $setTemplateVariables
-                ),
-                'text/plain'
-            );
+        try {
+            $message = (new Swift_Message())
+                // Add subject
+                ->setSubject($setTemplateVariables['html_title'])
+                //Put the From address
+                ->setFrom([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']])
+                ->setBody(
+                    $this->twig->render(
+                        'emails/' . $setTemplateName . '.html.twig',
+                        $setTemplateVariables
+                    ),
+                    'text/html'
+                )
+                // you can remove the following code if you don't define a text version for your emails
+                ->addPart(
+                    $this->twig->render(
+                        'emails/' . $setTemplateName . '.txt.twig',
+                        $setTemplateVariables
+                    ),
+                    'text/plain'
+                );
 
-        if (count($setTo) > 1) {
-            // Include several To addresses
-            $message->setTo([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']]);
-            // Include several To addresses
-            $message->setBcc($setTo);
-        } else {
-            // Include several To addresses
-            $message->setTo($setTo);
+            if (count($setTo) > 1) {
+                // Include several To addresses
+                $message->setTo([$_ENV['SITE_EMAIL_NOREPLY'] => $_ENV['SITE_EMAIL_NAME']]);
+                // Include several To addresses
+                $message->setBcc($setTo);
+            } else {
+                // Include several To addresses
+                $message->setTo($setTo);
+            }
+
+            $this->mailer->send($message);
+        } catch (LoaderError $e) {
+        } catch (RuntimeError $e) {
+        } catch (SyntaxError $e) {
         }
-
-        $this->mailer->send($message);
     }
 
     public function discord(string $channel, string $message, array $embeds = []) {
