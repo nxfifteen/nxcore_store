@@ -22,7 +22,7 @@ use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use App\Transform\Fitbit\Constants;
 use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
@@ -69,9 +69,9 @@ class SyncFitbit extends Command
     private $challengePve;
 
     /**
-     * @var TweetManager
+     * @var CommsManager
      */
-    private $tweetManager;
+    private $commsManager;
 
     /**
      * @var
@@ -93,21 +93,21 @@ class SyncFitbit extends Command
      * @param LoggerInterface $logger
      * @param AwardManager    $awardManager
      * @param ChallengePve    $challengePve
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      */
     public function dependencyInjection(
         ManagerRegistry $doctrine,
         LoggerInterface $logger,
         AwardManager $awardManager,
         ChallengePve $challengePve,
-        TweetManager $tweetManager
+        CommsManager $commsManager
     ): void
     {
         $this->doctrine = $doctrine;
         $this->logger = $logger;
         $this->awardManager = $awardManager;
         $this->challengePve = $challengePve;
-        $this->tweetManager = $tweetManager;
+        $this->commsManager = $commsManager;
     }
 
     /**
@@ -262,7 +262,7 @@ class SyncFitbit extends Command
                                 $transformerClass = new $transformerClassName($this->logger, $serviceSyncQueue->getCredentials()->getPatient());
 
                                 /** @noinspection PhpUndefinedMethodInspection */
-                                $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager, $this->challengePve, $this->tweetManager);
+                                $savedId = $transformerClass->transform($serviceSyncQueue->getEndpoint(), $serviceDataArray, $this->doctrine, $this->awardManager, $this->challengePve, $this->commsManager);
 
                                 if (is_array($savedId)) {
                                     $remove = TRUE;

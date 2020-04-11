@@ -19,7 +19,7 @@ use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateInterval;
 use DatePeriod;
 use DateTime;
@@ -57,26 +57,26 @@ class CronRpgChallengeFriends extends Command
     private $awardManager;
 
     /**
-     * @var TweetManager
+     * @var CommsManager
      */
-    private $tweetManager;
+    private $commsManager;
 
     /**
      * @required
      *
      * @param ManagerRegistry $doctrine
      * @param AwardManager    $awardManager
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      */
     public function dependencyInjection(
         ManagerRegistry $doctrine,
         AwardManager $awardManager,
-        TweetManager $tweetManager
+        CommsManager $commsManager
     ): void
     {
         $this->doctrine = $doctrine;
         $this->awardManager = $awardManager;
-        $this->tweetManager = $tweetManager;
+        $this->commsManager = $commsManager;
     }
 
     /**
@@ -307,21 +307,21 @@ class CronRpgChallengeFriends extends Command
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenger(), "draw");
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenged(), "draw");
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "@" . $challenge->getChallenger()->getUuid() . " and @" . $challenge->getChallenged()->getUuid() . " were too evenly matched!",
             "Their #challenge ended in a #draw",
             $challenge->getChallenger(),
             FALSE
         );
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "It was a #draw. Your #challenge against @" . $challenge->getChallenged()->getUuid() . " was just too evenly matched",
             NULL,
             $challenge->getChallenger(),
             TRUE
         );
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "It was a #draw. Your #challenge against @" . $challenge->getChallenger()->getUuid() . " was just too evenly matched",
             NULL,
             $challenge->getChallenged(),
@@ -329,7 +329,7 @@ class CronRpgChallengeFriends extends Command
         );
 
         try {
-            $this->tweetManager->sendUserEmail(
+            $this->commsManager->sendUserEmail(
                 [
                     $challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName(),
                 ],
@@ -349,7 +349,7 @@ class CronRpgChallengeFriends extends Command
                 ]
             );
 
-            $this->tweetManager->sendUserEmail(
+            $this->commsManager->sendUserEmail(
                 [
                     $challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName(),
                 ],
@@ -417,14 +417,14 @@ class CronRpgChallengeFriends extends Command
         $challenge->setOutcome(5);
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenger());
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "It was close, but @" . $challenge->getChallenger()->getUuid() . " #beat @" . $challenge->getChallenged()->getUuid() . " :medal:",
             NULL,
             $challenge->getChallenger(),
             FALSE
         );
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "You #won! You beat @" . $challenge->getChallenged()->getUuid() . " and claimed the gold :medal:",
             NULL,
             $challenge->getChallenger(),
@@ -432,7 +432,7 @@ class CronRpgChallengeFriends extends Command
             "https://core.nxfifteen.me.uk/assets/badges/pve_1_1_winner.png"
         );
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "It was so close, but you #lost this against @" . $challenge->getChallenger()->getUuid() . " this time :reminder_ribbon:",
             NULL,
             $challenge->getChallenged(),
@@ -441,7 +441,7 @@ class CronRpgChallengeFriends extends Command
 
         // Email the winner
         try {
-            $this->tweetManager->sendUserEmail(
+            $this->commsManager->sendUserEmail(
                 [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
                 'challenge_results',
                 [
@@ -459,7 +459,7 @@ class CronRpgChallengeFriends extends Command
                 ]
             );
 
-            $this->tweetManager->sendUserEmail(
+            $this->commsManager->sendUserEmail(
                 [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
                 'challenge_results',
                 [
@@ -493,14 +493,14 @@ class CronRpgChallengeFriends extends Command
         $challenge->setOutcome(4);
         $this->awardWinnerCreditTo($challenge, $challenge->getChallenged());
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "It was close, but @" . $challenge->getChallenger()->getUuid() . " #beat @" . $challenge->getChallenged()->getUuid() . " :medal:",
             NULL,
             $challenge->getChallenger(),
             FALSE
         );
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "You #won! You beat @" . $challenge->getChallenger()->getUuid() . " and claimed the gold :medal:",
             NULL,
             $challenge->getChallenger(),
@@ -508,7 +508,7 @@ class CronRpgChallengeFriends extends Command
             "https://core.nxfifteen.me.uk/assets/badges/pve_1_1_winner.png"
         );
 
-        $this->tweetManager->sendNotification(
+        $this->commsManager->sendNotification(
             "It was so close, but you #lost this against @" . $challenge->getChallenged()->getUuid() . " this time :reminder_ribbon:",
             NULL,
             $challenge->getChallenger(),
@@ -517,7 +517,7 @@ class CronRpgChallengeFriends extends Command
 
         // Email the winner
         try {
-            $this->tweetManager->sendUserEmail(
+            $this->commsManager->sendUserEmail(
                 [$challenge->getChallenged()->getEmail() => $challenge->getChallenged()->getFirstName() . ' ' . $challenge->getChallenged()->getSurName()],
                 'challenge_results',
                 [
@@ -535,7 +535,7 @@ class CronRpgChallengeFriends extends Command
                 ]
             );
 
-            $this->tweetManager->sendUserEmail(
+            $this->commsManager->sendUserEmail(
                 [$challenge->getChallenger()->getEmail() => $challenge->getChallenger()->getFirstName() . ' ' . $challenge->getChallenger()->getSurName()],
                 'challenge_results',
                 [

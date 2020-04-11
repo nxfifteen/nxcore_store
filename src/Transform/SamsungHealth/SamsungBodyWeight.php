@@ -23,7 +23,7 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -41,12 +41,12 @@ class SamsungBodyWeight extends Constants
      *
      * @param AwardManager    $awardManager
      *
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      *
      * @return BodyWeight|null
      * @throws \Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, CommsManager $commsManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
@@ -178,14 +178,14 @@ class SamsungBodyWeight extends Constants
                     }
 
 
-                    $tweetManager->sendNotification(
+                    $commsManager->sendNotification(
                         "You've just #recorded a new #weight of " . $dataEntry->getMeasurement() . " " . $unitOfMeasurement->getName(),
                         $body,
                         $patient,
                         TRUE
                     );
                 } else {
-                    $tweetManager->sendNotification(
+                    $commsManager->sendNotification(
                         "You've just #recorded a new #weight of " . $dataEntry->getMeasurement() . " " . $unitOfMeasurement->getName(),
                         NULL,
                         $patient,

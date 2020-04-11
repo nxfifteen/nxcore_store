@@ -23,7 +23,7 @@ use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -41,14 +41,14 @@ class SkiTracksExercise extends Constants
      *
      * @param AwardManager    $awardManager
      *
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      *
      * @param Patient         $patient
      *
      * @return Exercise|null
      * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager, Patient $patient)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, CommsManager $commsManager, Patient $patient)
     {
         $jsonContent = json_decode($getContent, FALSE);
 //        AppConstants::writeToLog('debug_transform.txt', print_r($jsonContent, true));

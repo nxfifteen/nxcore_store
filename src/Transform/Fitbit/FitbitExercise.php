@@ -24,7 +24,7 @@ use App\Entity\PatientCredentials;
 use App\Entity\SiteNews;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -45,12 +45,12 @@ class FitbitExercise extends Constants
      * @param                 $getContent
      * @param int             $deviceArrayIndex
      *
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      *
      * @return Exercise|null
      * @throws \Exception
      */
-    public static function translate(ManagerRegistry $doctrine, TweetManager $tweetManager, $getContent, int $deviceArrayIndex = 0)
+    public static function translate(ManagerRegistry $doctrine, CommsManager $commsManager, $getContent, int $deviceArrayIndex = 0)
     {
         if (property_exists($getContent[3], "activities") && property_exists($getContent[3]->activities[$deviceArrayIndex], "logId")) {
             $activity = $getContent[3]->activities[$deviceArrayIndex];
@@ -232,7 +232,7 @@ class FitbitExercise extends Constants
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
 
             if ($newItem) {
-                $tweetManager->sendNotification(
+                $commsManager->sendNotification(
                     "@" . $patient->getUuid() . " just #recorded a new " . round($dataEntryExercise->getDuration() / 60, 0) . " minute #" . strtolower($dataEntryExercise->getExerciseType()->getTag()) . " :dog_14:",
                     NULL,
                     $patient,

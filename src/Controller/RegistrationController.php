@@ -18,7 +18,7 @@ use App\Entity\Patient;
 use App\Entity\PatientFriends;
 use App\Entity\PatientMembership;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -46,14 +46,14 @@ class RegistrationController extends AbstractController
      *
      * @param AwardManager                 $awardManager
      *
-     * @param TweetManager                 $tweetManager
+     * @param CommsManager                 $commsManager
      *
      * @return JsonResponse
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-    public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, AwardManager $awardManager, TweetManager $tweetManager)
+    public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, AwardManager $awardManager, CommsManager $commsManager)
     {
         $blockedUserNames = [
             "root",
@@ -164,7 +164,7 @@ class RegistrationController extends AbstractController
 
         $entityManager->flush();
 
-        $tweetManager->sendUserEmail(
+        $commsManager->sendUserEmail(
             [$patient->getEmail() => $patient->getFirstName() . ' ' . $patient->getSurName()],
             'user_new',
             [
@@ -176,7 +176,7 @@ class RegistrationController extends AbstractController
             ]
         );
 
-        $tweetManager->sendUserEmail(
+        $commsManager->sendUserEmail(
             [$_ENV['SITE_EMAIL_ADDRESS'] => $_ENV['SITE_EMAIL_NAME']],
             'admin_user_new',
             [

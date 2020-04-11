@@ -62,9 +62,9 @@ class AwardManager
     private $twig;
 
     /**
-     * @var TweetManager
+     * @var CommsManager
      */
-    private $tweetManager;
+    private $commsManager;
 
     /**
      * @var Patient
@@ -85,13 +85,13 @@ class AwardManager
         ManagerRegistry $doctrine,
         Swift_Mailer $mailer,
         Environment $twig,
-        TweetManager $tweetManager,
+        CommsManager $commsManager,
         KernelInterface $appKernel)
     {
         $this->doctrine = $doctrine;
         $this->mailer = $mailer;
         $this->twig = $twig;
-        $this->tweetManager = $tweetManager;
+        $this->commsManager = $commsManager;
         $this->appKernel = $appKernel;
     }
 

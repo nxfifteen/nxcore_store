@@ -36,11 +36,11 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
 /**
- * Class TweetManager
+ * Class CommsManager
  *
  * @package App\Service
  */
-class TweetManager
+class CommsManager
 {
 
     /**
@@ -64,7 +64,7 @@ class TweetManager
     private $twig;
 
     /**
-     * TweetManager constructor.
+     * CommsManager constructor.
      *
      * @param ManagerRegistry $doctrine
      * @param Swift_Mailer    $mailer
@@ -423,87 +423,12 @@ class TweetManager
         $this->mailer->send($message);
     }
 
-    public function discord() {
-        //=======================================================================================================
-        // Create new webhook in your Discord channel settings and copy&paste URL
-        //=======================================================================================================
-
-        $webhookurl = "https://discordapp.com/api/webhooks/698573841194156032/TLHAkgLo5fzg6q3Wun1IGGX3mwbbA2qV0M6-HgkW4g-MLHTBVUJskk48ek4m0VnKvU7q";
-
-        //=======================================================================================================
-        // Compose message. You can use Markdown
-        // Message Formatting -- https://discordapp.com/developers/docs/reference#message-formatting
-        //========================================================================================================
-
-        $timestamp = date("c", strtotime("now"));
+    public function discord(string $channel, string $message, array $embeds = []) {
+        $webhookurl = $_ENV['DISCORD_WH_' . $channel];
 
         $json_data = json_encode([
             // Message
-            "content" => "Hello World! This is message line ;) And here is the mention, use userID",
-
-            // Username
-            "username" => "Core Bot",
-
-            // Avatar URL.
-            // Uncoment to replace image set in webhook
-            "avatar_url" => "https://nxfifteen.me.uk/assets/icons/icon.png",
-
-            // Text-to-speech
-            "tts" => false,
-
-            // File upload
-            // "file" => "",
-
-            // Embeds Array
-            /*"embeds" => [
-                [
-                    // Embed Title
-                    "title" => "PHP - Send message to Discord (embeds) via Webhook",
-                    // Embed Type
-                    "type" => "rich",
-                    // Embed Description
-                    "description" => "Description will be here, someday, you can mention users here also by calling userID <@12341234123412341>",
-                    // URL of title link
-                    "url" => "https://gist.github.com/Mo45/cb0813cb8a6ebcd6524f6a36d4f8862c",
-                    // Timestamp of embed must be formatted as ISO8601
-                    "timestamp" => $timestamp,
-                    // Embed left border color in HEX
-                    "color" => hexdec( "3366ff" ),
-                    // Footer
-                    "footer" => [
-                        "text" => "GitHub.com/Mo45",
-                        "icon_url" => "https://ru.gravatar.com/userimage/28503754/1168e2bddca84fec2a63addb348c571d.jpg?size=375"
-                    ],
-                    // Image to send
-                    "image" => [
-                        "url" => "https://ru.gravatar.com/userimage/28503754/1168e2bddca84fec2a63addb348c571d.jpg?size=600"
-                    ],
-                    // Thumbnail
-                    //"thumbnail" => [
-                    //    "url" => "https://ru.gravatar.com/userimage/28503754/1168e2bddca84fec2a63addb348c571d.jpg?size=400"
-                    //],
-                    // Author
-                    "author" => [
-                        "name" => "krasin.space",
-                        "url" => "https://krasin.space/"
-                    ],
-                    // Additional Fields array
-                    "fields" => [
-                        // Field 1
-                        [
-                            "name" => "Field #1 Name",
-                            "value" => "Field #1 Value",
-                            "inline" => false
-                        ],
-                        // Field 2
-                        [
-                            "name" => "Field #2 Name",
-                            "value" => "Field #2 Value",
-                            "inline" => true
-                        ]
-                    ]
-                ]
-            ]*/
+            "content" => $message,
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 
         $ch = curl_init( $webhookurl );

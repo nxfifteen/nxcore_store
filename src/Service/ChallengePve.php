@@ -40,26 +40,26 @@ class ChallengePve
     private $awardManager;
 
     /**
-     * @var TweetManager
+     * @var CommsManager
      */
-    private $tweetManager;
+    private $commsManager;
 
     /**
      * ChallengePve constructor.
      *
      * @param ManagerRegistry $doctrine
      * @param AwardManager    $awardManager
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      */
     public function __construct(
         ManagerRegistry $doctrine,
         AwardManager $awardManager,
-        TweetManager $tweetManager
+        CommsManager $commsManager
     )
     {
         $this->doctrine = $doctrine;
         $this->awardManager = $awardManager;
-        $this->tweetManager = $tweetManager;
+        $this->commsManager = $commsManager;
     }
 
     /**

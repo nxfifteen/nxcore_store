@@ -17,7 +17,7 @@ use App\AppConstants;
 use App\Entity\Patient;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -57,11 +57,11 @@ class Entry
      * @param ManagerRegistry $doctrine
      * @param AwardManager    $awardManager
      * @param ChallengePve    $challengePve
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      *
      * @return array|int|null
      */
-    public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, TweetManager $tweetManager)
+    public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, CommsManager $commsManager)
     {
         $translateEntity = NULL;
 
@@ -108,7 +108,7 @@ class Entry
                 break;
             case Constants::SAMSUNGHEALTHEPEXERCISE:
                 try {
-                    $translateEntity = SamsungExercise::translate($doctrine, $getContent, $awardManager, $tweetManager);
+                    $translateEntity = SamsungExercise::translate($doctrine, $getContent, $awardManager, $commsManager);
                 } catch (Exception $e) {
                 }
                 break;

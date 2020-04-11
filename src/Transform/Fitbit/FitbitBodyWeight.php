@@ -24,7 +24,7 @@ use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -45,12 +45,12 @@ class FitbitBodyWeight extends Constants
      *
      * @param AwardManager    $awardManager
      *
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      *
      * @return BodyWeight|null
      * @throws \Exception
      */
-    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, TweetManager $tweetManager)
+    public static function translate(ManagerRegistry $doctrine, $jsonContent, AwardManager $awardManager, CommsManager $commsManager)
     {
         if (property_exists($jsonContent[0], "uuid") && $jsonContent[2]->weight > 0) {
 
@@ -182,14 +182,14 @@ class FitbitBodyWeight extends Constants
                     }
 
 
-                    $tweetManager->sendNotification(
+                    $commsManager->sendNotification(
                         "You've just #recorded a new #weight of " . $dataEntry->getMeasurement() . " " . $unitOfMeasurement->getName(),
                         $body,
                         $patient,
                         TRUE
                     );
                 } else {
-                    $tweetManager->sendNotification(
+                    $commsManager->sendNotification(
                         "You've just #recorded a new #weight of " . $dataEntry->getMeasurement() . " " . $unitOfMeasurement->getName(),
                         NULL,
                         $patient,

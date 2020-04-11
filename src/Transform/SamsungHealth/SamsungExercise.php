@@ -23,7 +23,7 @@ use App\Entity\SiteNews;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -42,12 +42,12 @@ class SamsungExercise extends Constants
      *
      * @param AwardManager    $awardManager
      *
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      *
      * @return Exercise|null
      * @throws \Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, TweetManager $tweetManager)
+    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, CommsManager $commsManager)
     {
         $jsonContent = self::decodeJson($getContent);
         // AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
@@ -164,7 +164,7 @@ class SamsungExercise extends Constants
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
 
             if ($newItem) {
-                $tweetManager->sendNotification(
+                $commsManager->sendNotification(
                     "@" . $patient->getUuid() . " just #recorded a new " . round($dataEntryExercise->getDuration() / 60, 0) . " minute #" . strtolower($dataEntryExercise->getExerciseType()->getTag()) . " :dog_14:",
                     NULL,
                     $patient,

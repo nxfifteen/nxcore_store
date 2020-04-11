@@ -17,7 +17,7 @@ use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\RpgChallengeFriends;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateInterval;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -48,12 +48,12 @@ class SubmitPVPController extends AbstractController
      *
      * @param AwardManager    $awardManager
      *
-     * @param TweetManager    $tweetManager
+     * @param CommsManager    $commsManager
      *
      * @return JsonResponse
      * @throws \Exception
      */
-    public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager, TweetManager $tweetManager)
+    public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager, CommsManager $commsManager)
     {
         if (is_null($this->patient)) $this->patient = $this->getUser();
 
@@ -112,21 +112,21 @@ class SubmitPVPController extends AbstractController
         $entityManager->persist($newChallenge);
         $entityManager->flush();
 
-        $tweetManager->sendNotification(
+        $commsManager->sendNotification(
             "Game on! :fist:  @" . $this->patient->getUuid() . " vs. @" . $friend->getUuid() . " :fist:",
             "Who will be the first to get " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . "? And they only have " . $requestJson->duration . " days :clock1: to do it",
             $this->patient,
             FALSE
         );
 
-        $tweetManager->sendNotification(
+        $commsManager->sendNotification(
             "Game on! :fist: You're #challenge against @" . $friend->getUuid() . " was accepted",
             "Now you only have " . $requestJson->duration . " days :clock1: to reach " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . " before " . $friend->getPronounThey() . " does.",
             $this->patient,
             TRUE
         );
 
-        $tweetManager->sendNotification(
+        $commsManager->sendNotification(
             "Game on! :fist: You've taken up the #challenge against @" . $this->patient->getUuid(),
             "Now you only have " . $requestJson->duration . " days :clock1: to reach " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . " before " . $this->patient->getPronounThey() . " does.",
             $friend,
@@ -134,7 +134,7 @@ class SubmitPVPController extends AbstractController
         );
 
         try {
-            $tweetManager->sendUserEmail(
+            $commsManager->sendUserEmail(
                 [$friend->getEmail() => $friend->getFirstName() . ' ' . $friend->getSurName()],
                 'challenge_new',
                 [
@@ -157,7 +157,7 @@ class SubmitPVPController extends AbstractController
         }
 
         try {
-            $tweetManager->sendUserEmail(
+            $commsManager->sendUserEmail(
                 [$this->patient->getEmail() => $this->patient->getFirstName() . ' ' . $this->patient->getSurName()],
                 'challenge_accepted',
                 [

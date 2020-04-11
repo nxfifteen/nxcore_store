@@ -33,7 +33,7 @@ use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
 use App\Entity\SiteNews;
 use App\Service\AwardManager;
-use App\Service\TweetManager;
+use App\Service\CommsManager;
 use DateInterval;
 use DatePeriod;
 use DateTime;
@@ -1103,12 +1103,12 @@ class FeedUxController extends AbstractController
      *
      * @param AwardManager $awardManager
      *
-     * @param TweetManager $tweetManager
+     * @param CommsManager $commsManager
      *
      * @return JsonResponse
      * @throws \Exception
      */
-    public function index(AwardManager $awardManager, TweetManager $tweetManager)
+    public function index(AwardManager $awardManager, CommsManager $commsManager)
     {
         $return = [];
         $return['genTime'] = -1;
@@ -1149,7 +1149,7 @@ class FeedUxController extends AbstractController
             // checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
             $awardManager->checkForAwards(["reason" => "first", "length" => 0], "login", $this->patient);
 
-            $tweetManager->sendNotification(
+            $commsManager->sendNotification(
                 "First login for " . date("l jS F, Y"),
                 "You've #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
                 $this->patient,
@@ -1163,7 +1163,7 @@ class FeedUxController extends AbstractController
             if ($this->patient->getLoginStreak() % 182 == 0) {
                 $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
 
-                $tweetManager->sendNotification(
+                $commsManager->sendNotification(
                     "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
                     NULL,
                     $this->patient,
@@ -1172,7 +1172,7 @@ class FeedUxController extends AbstractController
             } else if ($this->patient->getLoginStreak() % 30 == 0) {
                 $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
 
-                $tweetManager->sendNotification(
+                $commsManager->sendNotification(
                     "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
                     NULL,
                     $this->patient,
