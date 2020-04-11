@@ -39,8 +39,6 @@ class WorkoutMuscleRelation
      * @var UuidInterface|null
      *
      * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
      */
     protected $guid;
 

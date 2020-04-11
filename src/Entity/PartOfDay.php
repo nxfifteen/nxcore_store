@@ -39,8 +39,6 @@ class PartOfDay
      * @var UuidInterface|null
      *
      * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
      */
     protected $guid;
 
@@ -60,9 +58,9 @@ class PartOfDay
     /**
      * Get the internal primary identity key.
      *
-     * @return UuidInterface|null
+     * @return $this
      */
-    public function getGuid(): ?UuidInterface
+    public function createGuid()
     {
         if(is_null($this->guid)) {
             try {
@@ -70,6 +68,17 @@ class PartOfDay
             } catch (\Exception $e) {
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
         return $this->guid;
     }
 
