@@ -10,7 +10,7 @@
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
 
-namespace App\EventSubscriber\Migrations;
+namespace App\EventSubscriber\Doctrine;
 
 use /** @noinspection PhpUnusedAliasInspection */
     App\Entity\ApiAccessLog;
@@ -208,7 +208,7 @@ class MigrationsListener implements EventSubscriber
                     ->getRepository($entityClassName)
                     ->findByGuid('');
 
-                if (!is_null($dbPatients) && count($dbPatients) > 0) {
+                if (!is_null($dbPatients) && is_array($dbPatients) && count($dbPatients) > 0) {
                     $entityManager = $this->managerRegistry->getManager();
                     $this->write("There are " . count($dbPatients) . " " . $entityClass . " records to update");
                     foreach ($dbPatients as $dbPatient) {

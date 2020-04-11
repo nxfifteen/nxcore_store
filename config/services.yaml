@@ -39,10 +39,10 @@ services:
     calls:
       - [setApiKey, ['%redjan_ym_fcm.firebase_api_key%']]
 
-  App\EventSubscriber\Migrations\:
-    resource: '../src/EventSubscriber/Migrations/*'
+  App\EventSubscriber\Doctrine\:
+    resource: '../src/EventSubscriber/Doctrine/*.php'
     tags:
-      - { name: doctrine.event_subscriber, connection: default }
+      - { name: doctrine.event_subscriber, connection: default, priority: 10 }
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
