@@ -1,0 +1,53 @@
+<?php
+/**
+ * This file is part of NxFIFTEEN Fitness Core.
+ *
+ * @link      https://nxfifteen.me.uk/projects/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nx-health/
+ * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
+ * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
+ * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
+ */
+
+namespace App\EventSubscriber\Doctrine;
+
+use App\AppConstants;
+use App\Entity\PartOfDay;
+use Doctrine\Common\EventSubscriber;
+use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\ORM\Events;
+
+class GenerateUuuidSubscriber implements EventSubscriber
+{
+    public function getSubscribedEvents()
+    {
+        return [
+            Events::prePersist,
+            Events::preUpdate,
+        ];
+    }
+
+    public function prePersist(LifecycleEventArgs $args)
+    {
+        AppConstants::writeToLog('debug_transform.txt', __LINE__);
+        $this->index($args);
+    }
+
+    public function preUpdate(LifecycleEventArgs $args)
+    {
+        AppConstants::writeToLog('debug_transform.txt', __LINE__);
+        $this->index($args);
+    }
+
+    public function index(LifecycleEventArgs $args)
+    {
+        /** @var PartOfDay $entity */
+        $entity = $args->getObject();
+        if (method_exists($entity, "createGuid")) {
+            $entity->createGuid();
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $entity->getGuid()->toString());
+            // ... do something with the Product
+        }
+    }
+}
