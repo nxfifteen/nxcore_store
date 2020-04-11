@@ -147,7 +147,11 @@ class MigrationsListener implements EventSubscriber
 
     public function onMigrationsVersionExecuting(MigrationsVersionEventArgs $args): void
     {
-        //
+        $customUpgradeMethod = "preMigration" . ucwords($args->getDirection()) . $args->getConfiguration()->getCurrentVersion();
+        if (method_exists($this, $customUpgradeMethod)) {
+            $this->write("Running customer upgrade method for version " . $args->getConfiguration()->getCurrentVersion());
+            $this->$customUpgradeMethod();
+        }
     }
 
     public function onMigrationsVersionExecuted(MigrationsVersionEventArgs $args): void
@@ -168,6 +172,11 @@ class MigrationsListener implements EventSubscriber
     {
         $indent = "  +++";
         echo $indent . " " . $printMessage . "\n";
+    }
+
+    private function preMigrationUp20200411092158()
+    {
+        $this->postMigrationUp20200411072934();
     }
 
     private function postMigrationUp20200411072934()
