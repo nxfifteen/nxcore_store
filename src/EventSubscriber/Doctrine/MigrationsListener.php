@@ -646,7 +646,9 @@ class MigrationsListener implements EventSubscriber
             'data' => [
                 [
                     'setName' => 'The Munro Step Challenge ' . date("Y"),
-                    'setDescripton' => 'Shamlessly taken from https://mypeakchallenge.com, we invite you to take on the Munro Step Challenge.  Scale the highest peaks of each continent from the comfort of the pavement, treadmill, or even your living room!',
+                    'setDescripton' => 'Shamlessly taken from https://mypeakchallenge.com, we invite you to take on the '
+                        . 'Munro Step Challenge.  Scale the highest peaks of each continent from the comfort of the '
+                        . 'pavement, treadmill, or even your living room!',
                     'setActive' => true,
                     'setCriteria' => 'FitStepsDailySummary',
                     'setTarget' => 292486,
