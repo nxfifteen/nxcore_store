@@ -14,7 +14,6 @@
 
 namespace App\Transform\SamsungHealth;
 
-use App\AppConstants;
 use App\Entity\ConsumeCaffeine;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;

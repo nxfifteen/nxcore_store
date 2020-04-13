@@ -14,14 +14,11 @@
 
 namespace App\Transform\Fitbit;
 
-use App\AppConstants;
-use App\Command\DownloadHistoryFitbit;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
-use App\Service\AwardManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;

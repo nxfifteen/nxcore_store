@@ -12,7 +12,6 @@
 
 namespace App\EventSubscriber\Doctrine;
 
-use App\AppConstants;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;

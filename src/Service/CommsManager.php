@@ -16,7 +16,6 @@ namespace App\Service;
 
 
 use App\AppConstants;
-use App\Entity\Exercise;
 use App\Entity\Patient;
 use App\Entity\PatientCredentials;
 use App\Entity\PatientDevice;

@@ -15,7 +15,6 @@
 namespace App\Transform\SamsungHealth;
 
 
-use App\AppConstants;
 use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;

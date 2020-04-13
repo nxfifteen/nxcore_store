@@ -16,16 +16,13 @@ namespace App\Transform\SamsungHealth;
 
 use App\AppConstants;
 use App\Entity\FitDistanceDailySummary;
-use App\Entity\FitStepsDailySummary;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
-use App\Entity\RpgChallengeGlobalPatient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
-use App\Transform\Transform;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;

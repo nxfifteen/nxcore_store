@@ -14,7 +14,6 @@
 
 namespace App\Transform\SamsungHealth;
 
-use App\AppConstants;
 use App\Entity\FoodDatabase;
 use App\Entity\FoodDiary;
 use App\Entity\FoodMeals;

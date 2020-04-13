@@ -14,9 +14,6 @@
 
 namespace App\EventListener;
 
-use App\AppConstants;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 
 /**

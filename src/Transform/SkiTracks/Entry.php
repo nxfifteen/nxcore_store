@@ -14,14 +14,12 @@
 
 namespace App\Transform\SkiTracks;
 
-use App\AppConstants;
 use App\Entity\Patient;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\CommsManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
-use phpDocumentor\Reflection\Types\Object_;
 use Psr\Log\LoggerInterface;
 use Sentry;
 

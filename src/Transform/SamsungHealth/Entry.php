@@ -14,7 +14,6 @@
 
 namespace App\Transform\SamsungHealth;
 
-use App\AppConstants;
 use App\Entity\Patient;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;

@@ -28,7 +28,6 @@ use App\Service\CommsManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
-use PhpParser\Node\Expr\Array_;
 
 /**
  * Class SamsungExercise

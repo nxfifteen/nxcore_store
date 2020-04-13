@@ -15,7 +15,6 @@
 namespace App\AwardDelivery;
 
 
-use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;

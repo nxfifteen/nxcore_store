@@ -15,7 +15,6 @@
 namespace App\Transform\SamsungHealth;
 
 
-use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;

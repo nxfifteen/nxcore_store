@@ -14,7 +14,6 @@
 
 namespace App\Repository;
 
-use App\AppConstants;
 use App\Entity\BodyWeight;
 use DateInterval;
 use DatePeriod;

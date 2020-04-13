@@ -32,12 +32,8 @@ use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use Swift_Mailer;
-use Swift_Message;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 /**
  * Class AwardManager

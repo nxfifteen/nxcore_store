@@ -14,14 +14,11 @@
 
 namespace App\Transform\SamsungHealth;
 
-use App\AppConstants;
 use App\Entity\BodyComposition;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
-use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
-use App\Entity\UnitOfMeasurement;
 use App\Service\AwardManager;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
