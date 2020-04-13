@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -44,7 +45,7 @@ class AuthWithPatreonController extends AbstractController
      *
      * @return void
      */
-    public function auth_with_patreon(ManagerRegistry $doctrine, RequestStack $request, String $uuid)
+    public function auth_with_patreon(ManagerRegistry $doctrine, RequestStack $request, string $uuid)
     {
         $this->hasAccess($uuid);
 
@@ -86,9 +87,9 @@ class AuthWithPatreonController extends AbstractController
      *
      * @throws LogicException If the Security component is not available
      */
-    private function hasAccess(String $uuid)
+    private function hasAccess(string $uuid)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
 
         /** @var Patient $user */
         $user = $this->getUser();
@@ -104,7 +105,7 @@ class AuthWithPatreonController extends AbstractController
      * @param RequestStack    $request
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function auth_with_patreon_callback(ManagerRegistry $doctrine, RequestStack $request)
     {
@@ -114,7 +115,8 @@ class AuthWithPatreonController extends AbstractController
 
         $queryCallback = explode('?', $request->getMasterRequest()->getUri())[0];
         $queryCallback = str_replace("http://", "https://", $queryCallback);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $_SESSION['uuid'] . '\'s Fitbit authentication succeeded');
+        AppConstants::writeToLog('debug_transform.txt',
+            __LINE__ . ' ' . $_SESSION['uuid'] . '\'s Fitbit authentication succeeded');
 
         if ($_GET['code'] != '') {
             /** @var Patient $patient */
@@ -154,21 +156,25 @@ class AuthWithPatreonController extends AbstractController
             $patientCredentials->setRefreshToken($refresh_token);
 
             if (array_key_exists("data", $patron_user) && array_key_exists("attributes", $patron_user['data'])) {
-                if (array_key_exists("image_url", $patron_user['data']['attributes']) && is_null($patient->getAvatar())) {
+                if (array_key_exists("image_url",
+                        $patron_user['data']['attributes']) && is_null($patient->getAvatar())) {
                     $image_url = $patron_user['data']['attributes']['image_url'];
                     $patient->setAvatar($image_url);
                 }
-                if (array_key_exists("first_name", $patron_user['data']['attributes']) && is_null($patient->getFirstName())) {
+                if (array_key_exists("first_name",
+                        $patron_user['data']['attributes']) && is_null($patient->getFirstName())) {
                     $first_name = $patron_user['data']['attributes']['first_name'];
                     $patient->setFirstName($first_name);
                 }
-                if (array_key_exists("last_name", $patron_user['data']['attributes']) && is_null($patient->getSurName())) {
+                if (array_key_exists("last_name",
+                        $patron_user['data']['attributes']) && is_null($patient->getSurName())) {
                     $last_name = $patron_user['data']['attributes']['last_name'];
                     $patient->setSurName($last_name);
                 }
             }
 
-            if (array_key_exists("included", $patron_user) && array_key_exists("0", $patron_user['included']) && array_key_exists("attributes", $patron_user['included'][0])) {
+            if (array_key_exists("included", $patron_user) && array_key_exists("0",
+                    $patron_user['included']) && array_key_exists("attributes", $patron_user['included'][0])) {
                 if (array_key_exists("currently_entitled_amount_cents", $patron_user['included'][0]['attributes'])) {
                     $currently_entitled_amount_cents = $patron_user['included'][0]['attributes']['currently_entitled_amount_cents'];
                 } else {
@@ -195,22 +201,22 @@ class AuthWithPatreonController extends AbstractController
                     $last_charge_status = $patron_user['included'][0]['attributes']['last_charge_status'];
                 } else {
                     $last_charge_status = 'unknown';
-                };
+                }
                 if (array_key_exists("last_charge_date", $patron_user['included'][0]['attributes'])) {
                     $last_charge_date = $patron_user['included'][0]['attributes']['last_charge_date'];
                 } else {
                     $last_charge_date = '';
-                };
+                }
                 if (array_key_exists("patron_status", $patron_user['included'][0]['attributes'])) {
                     $patron_status = $patron_user['included'][0]['attributes']['patron_status'];
                 } else {
                     $patron_status = 'unknown';
-                };
+                }
                 if (array_key_exists("pledge_relationship_start", $patron_user['included'][0]['attributes'])) {
                     $pledge_relationship_start = $patron_user['included'][0]['attributes']['pledge_relationship_start'];
                 } else {
                     $pledge_relationship_start = '';
-                };
+                }
 
                 // Patreon Status
                 $endPointStatusSettings = new PatientSettings();

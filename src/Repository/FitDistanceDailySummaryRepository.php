@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -22,10 +23,10 @@ use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 
 /**
- * @method FitDistanceDailySummary|null find($id, $lockMode = NULL, $lockVersion = NULL)
- * @method FitDistanceDailySummary|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method FitDistanceDailySummary|null find($id, $lockMode = null, $lockVersion = null)
+ * @method FitDistanceDailySummary|null findOneBy(array $criteria, array $orderBy = null)
  * @method FitDistanceDailySummary[]    findAll()
- * @method FitDistanceDailySummary[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ * @method FitDistanceDailySummary[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class FitDistanceDailySummaryRepository extends ServiceEntityRepository
 {
@@ -62,7 +63,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function getSumOfValues(String $patientId, int $trackingDevice = 0)
+    public function getSumOfValues(string $patientId, int $trackingDevice = 0)
     {
         if ($trackingDevice > 0) {
             try {
@@ -76,7 +77,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
                     ->getQuery()
                     ->getOneOrNullResult()['sum'];
             } catch (NonUniqueResultException $e) {
-                return NULL;
+                return null;
             }
         } else {
             try {
@@ -88,7 +89,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
                     ->getQuery()
                     ->getOneOrNullResult()['sum'];
             } catch (NonUniqueResultException $e) {
-                return NULL;
+                return null;
             }
         }
     }
@@ -99,7 +100,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findSince(String $patientId, $dateSince)
+    public function findSince(string $patientId, $dateSince)
     {
         /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
@@ -119,7 +120,7 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findHighest(String $patientId, int $trackingDevice = 0)
+    public function findHighest(string $patientId, int $trackingDevice = 0)
     {
         if ($trackingDevice > 0) {
             return $this->createQueryBuilder('c')
@@ -150,9 +151,9 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
+    public function findByDateRange(string $patientId, string $date, int $trackingDevice)
     {
         return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
     }
@@ -164,9 +165,9 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice = 0)
+    public function findByDateRangeHistorical(string $patientId, string $date, int $lastDays, int $trackingDevice = 0)
     {
         $dateObject = new DateTime($date);
 

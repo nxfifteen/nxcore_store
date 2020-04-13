@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SkiTracks;
@@ -44,7 +45,7 @@ class Entry
      * Entry constructor.
      *
      * @param LoggerInterface $logger
-     * @param Patient|null         $patient
+     * @param Patient|null    $patient
      */
     public function __construct(LoggerInterface $logger, Patient $patient = null)
     {
@@ -53,18 +54,24 @@ class Entry
     }
 
     /**
-     * @param String          $data_set
+     * @param String $data_set
      * @param                 $getContent
      * @param ManagerRegistry $doctrine
-     * @param AwardManager    $awardManager
-     * @param ChallengePve    $challengePve
-     * @param CommsManager    $commsManager
+     * @param AwardManager $awardManager
+     * @param ChallengePve $challengePve
+     * @param CommsManager $commsManager
      *
      * @return array|int|null
      */
-    public function transform(String $data_set, $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, CommsManager $commsManager)
-    {
-        $translateEntity = NULL;
+    public function transform(
+        string $data_set,
+        $getContent,
+        ManagerRegistry $doctrine,
+        AwardManager $awardManager,
+        ChallengePve $challengePve,
+        CommsManager $commsManager
+    ) {
+        $translateEntity = null;
 
         if (!is_null($this->patient)) {
             Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set): void {
@@ -88,7 +95,8 @@ class Entry
         switch ($data_set) {
             case Constants::SKITRACKSEXERCISE:
                 try {
-                    $translateEntity = SkiTracksExercise::translate($doctrine, $getContent, $awardManager, $commsManager, $this->patient);
+                    $translateEntity = SkiTracksExercise::translate($doctrine, $getContent, $awardManager,
+                        $commsManager, $this->patient);
                 } catch (Exception $e) {
                 }
                 break;

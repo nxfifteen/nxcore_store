@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Command;
@@ -72,8 +73,7 @@ class CronRpgChallengeFriends extends Command
         ManagerRegistry $doctrine,
         AwardManager $awardManager,
         CommsManager $commsManager
-    ): void
-    {
+    ): void {
         $this->doctrine = $doctrine;
         $this->awardManager = $awardManager;
         $this->commsManager = $commsManager;
@@ -81,14 +81,14 @@ class CronRpgChallengeFriends extends Command
 
     /**
      * {@inheritdoc}
-     * @throws \Exception
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         /** @var RpgChallengeFriends[] $challenges */
         $challenges = $this->doctrine
             ->getRepository(RpgChallengeFriends::class)
-            ->findBy(['outcome' => NULL]);
+            ->findBy(['outcome' => null]);
 
         //$this->log("There are " . count($challenges) . " challenges still running");
 
@@ -112,8 +112,10 @@ class CronRpgChallengeFriends extends Command
 //                    $this->log("(" . $challenge->getId() . ") Challenge should finish early");
                     $challenge->setEndDate(new DateTime());
                     $challenge = $this->updateOutcome($challenge);
-                } else if (!is_null($challenge->getEndDate()) && $challenge->getEndDate()->format("U") < date("U")) {
-                    $challenge = $this->updateOutcome($challenge);
+                } else {
+                    if (!is_null($challenge->getEndDate()) && $challenge->getEndDate()->format("U") < date("U")) {
+                        $challenge = $this->updateOutcome($challenge);
+                    }
                 }
 
                 //$this->log("(" . $challenge->getId() . ") Updated progress Challenger (" . $challenge->getChallengerSum() . ") / Challenged (" . $challenge->getChallengedSum() . ")");
@@ -157,7 +159,7 @@ class CronRpgChallengeFriends extends Command
      * @param Patient             $user
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function queryDbForPatientCriteria(RpgChallengeFriends $challengeFriends, Patient $user)
     {
@@ -196,7 +198,7 @@ class CronRpgChallengeFriends extends Command
      * @param RpgChallengeFriends $challenge
      *
      * @return RpgChallengeFriends
-     * @throws \Exception
+     * @throws Exception
      */
     private function updateOutcome(RpgChallengeFriends $challenge)
     {
@@ -242,9 +244,9 @@ class CronRpgChallengeFriends extends Command
                 $apiLogLastSyncChallenged >= $challenge->getCompletedAt()->format("U")
             )
         ) {
-            $bothUpdated = TRUE;
+            $bothUpdated = true;
         } else {
-            $bothUpdated = FALSE;
+            $bothUpdated = false;
         }
 
         if (
@@ -252,43 +254,53 @@ class CronRpgChallengeFriends extends Command
             ($challenge->getChallengedSum() >= $challenge->getTarget())
         ) {
             $this->updateOutcomeDraw($challenge);
-        } else if (
-            ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
-            ($challenge->getChallengedSum() < $challenge->getTarget()) &&
-            (
-                $bothUpdated ||
-                $apiLogLastSyncChallenged >= $apiLogLastSyncChallenger
-            )
-        ) {
-            $this->updateOutcomeChallengerWin($challenge);
-        } else if (
-            ($challenge->getChallengerSum() < $challenge->getTarget()) &&
-            ($challenge->getChallengedSum() >= $challenge->getTarget()) &&
-            (
-                $bothUpdated ||
-                $apiLogLastSyncChallenger >= $apiLogLastSyncChallenged
-            )
-        ) {
-            $this->updateOutcomeChallengerLose($challenge);
-        } else if ($challenge->getChallengerSum() > $challenge->getChallengedSum() &&
-            (
-                $bothUpdated ||
-                $apiLogLastSyncChallenged >= $apiLogLastSyncChallenger
-            )
-        ) {
-            $this->updateOutcomeChallengerWin($challenge);
-        } else if ($challenge->getChallengerSum() < $challenge->getChallengedSum() &&
-            (
-                $bothUpdated ||
-                $apiLogLastSyncChallenger >= $apiLogLastSyncChallenged
-            )
-        ) {
-            $this->updateOutcomeChallengerLose($challenge);
-        } else if ($challenge->getChallengerSum() == $challenge->getChallengedSum() && $bothUpdated) {
-            $this->updateOutcomeDraw($challenge);
         } else {
+            if (
+                ($challenge->getChallengerSum() >= $challenge->getTarget()) &&
+                ($challenge->getChallengedSum() < $challenge->getTarget()) &&
+                (
+                    $bothUpdated ||
+                    $apiLogLastSyncChallenged >= $apiLogLastSyncChallenger
+                )
+            ) {
+                $this->updateOutcomeChallengerWin($challenge);
+            } else {
+                if (
+                    ($challenge->getChallengerSum() < $challenge->getTarget()) &&
+                    ($challenge->getChallengedSum() >= $challenge->getTarget()) &&
+                    (
+                        $bothUpdated ||
+                        $apiLogLastSyncChallenger >= $apiLogLastSyncChallenged
+                    )
+                ) {
+                    $this->updateOutcomeChallengerLose($challenge);
+                } else {
+                    if ($challenge->getChallengerSum() > $challenge->getChallengedSum() &&
+                        (
+                            $bothUpdated ||
+                            $apiLogLastSyncChallenged >= $apiLogLastSyncChallenger
+                        )
+                    ) {
+                        $this->updateOutcomeChallengerWin($challenge);
+                    } else {
+                        if ($challenge->getChallengerSum() < $challenge->getChallengedSum() &&
+                            (
+                                $bothUpdated ||
+                                $apiLogLastSyncChallenger >= $apiLogLastSyncChallenged
+                            )
+                        ) {
+                            $this->updateOutcomeChallengerLose($challenge);
+                        } else {
+                            if ($challenge->getChallengerSum() == $challenge->getChallengedSum() && $bothUpdated) {
+                                $this->updateOutcomeDraw($challenge);
+                            } else {
 //            $this->log("(" . $challenge->getId() . ") Waiting on everyone to sync up");
-            //$challenge->setOutcome(0);
+                                //$challenge->setOutcome(0);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         return $challenge;
@@ -297,8 +309,7 @@ class CronRpgChallengeFriends extends Command
     /**
      * @param RpgChallengeFriends $challenge
      *
-
-     * @throws \Exception
+     * @throws Exception
      */
     private function updateOutcomeDraw(RpgChallengeFriends $challenge)
     {
@@ -315,16 +326,16 @@ class CronRpgChallengeFriends extends Command
 
         $this->commsManager->sendNotification(
             "It was a #draw. Your #challenge against @" . $challenge->getChallenged()->getUuid() . " was just too evenly matched",
-            NULL,
+            null,
             $challenge->getChallenger(),
-            TRUE
+            true
         );
 
         $this->commsManager->sendNotification(
             "It was a #draw. Your #challenge against @" . $challenge->getChallenger()->getUuid() . " was just too evenly matched",
-            NULL,
+            null,
             $challenge->getChallenged(),
-            TRUE
+            true
         );
 
         $this->commsManager->sendUserEmail(
@@ -379,7 +390,12 @@ class CronRpgChallengeFriends extends Command
      */
     private function awardWinnerCreditTo(RpgChallengeFriends $challenge, Patient $patient, string $status = "win")
     {
-        $this->awardManager->checkForAwards(["result" => $status, "duration" => $challenge->getDuration(), "target" => $challenge->getTarget(), "criteria" => $challenge->getCriteria()], "pve", $patient);
+        $this->awardManager->checkForAwards([
+            "result" => $status,
+            "duration" => $challenge->getDuration(),
+            "target" => $challenge->getTarget(),
+            "criteria" => $challenge->getCriteria(),
+        ], "pve", $patient);
         return $patient;
     }
 
@@ -403,7 +419,7 @@ class CronRpgChallengeFriends extends Command
     /**
      * @param RpgChallengeFriends $challenge
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function updateOutcomeChallengerWin(RpgChallengeFriends $challenge)
     {
@@ -420,17 +436,17 @@ class CronRpgChallengeFriends extends Command
 
         $this->commsManager->sendNotification(
             "You #won! You beat @" . $challenge->getChallenged()->getUuid() . " and claimed the gold :medal:",
-            NULL,
+            null,
             $challenge->getChallenger(),
-            TRUE,
+            true,
             "https://core.nxfifteen.me.uk/assets/badges/pve_1_1_winner.png"
         );
 
         $this->commsManager->sendNotification(
             "It was so close, but you #lost this against @" . $challenge->getChallenger()->getUuid() . " this time :reminder_ribbon:",
-            NULL,
+            null,
             $challenge->getChallenged(),
-            TRUE
+            true
         );
 
         // Email the winner
@@ -479,7 +495,7 @@ class CronRpgChallengeFriends extends Command
     /**
      * @param RpgChallengeFriends $challenge
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function updateOutcomeChallengerLose(RpgChallengeFriends $challenge)
     {
@@ -496,17 +512,17 @@ class CronRpgChallengeFriends extends Command
 
         $this->commsManager->sendNotification(
             "You #won! You beat @" . $challenge->getChallenger()->getUuid() . " and claimed the gold :medal:",
-            NULL,
+            null,
             $challenge->getChallenger(),
-            TRUE,
+            true,
             "https://core.nxfifteen.me.uk/assets/badges/pve_1_1_winner.png"
         );
 
         $this->commsManager->sendNotification(
             "It was so close, but you #lost this against @" . $challenge->getChallenged()->getUuid() . " this time :reminder_ribbon:",
-            NULL,
+            null,
             $challenge->getChallenger(),
-            TRUE
+            true
         );
 
         // Email the winner

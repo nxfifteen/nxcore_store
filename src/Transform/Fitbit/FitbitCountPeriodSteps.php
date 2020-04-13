@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
@@ -37,7 +38,7 @@ class FitbitCountPeriodSteps extends Constants
      * @param array           $jsonContent
      *
      * @return FitStepsDailySummary|FitStepsDailySummary[]|null
-     * @throws \Exception
+     * @throws Exception
      */
     public static function translate(ManagerRegistry $doctrine, array $jsonContent)
     {
@@ -46,25 +47,26 @@ class FitbitCountPeriodSteps extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent[0]['uuid']);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::FITBITSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
-            $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent[0]['tracker']);
+            $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService,
+                $jsonContent[0]['tracker']);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", 10000, NULL, $patient, FALSE);
+            $patientGoal = self::getPatientGoal($doctrine, "FitStepsDailySummary", 10000, null, $patient, false);
             if (is_null($patientGoal)) {
-                return NULL;
+                return null;
             }
 
             $returnEntities = [];
@@ -103,6 +105,6 @@ class FitbitCountPeriodSteps extends Constants
             return $returnEntities;
 
         }
-        return NULL;
+        return null;
     }
 }

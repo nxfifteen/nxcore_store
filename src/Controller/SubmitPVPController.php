@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -51,15 +52,21 @@ class SubmitPVPController extends AbstractController
      * @param CommsManager    $commsManager
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
-    public function index_submit_pvp_challenge(ManagerRegistry $doctrine, Request $request, AwardManager $awardManager, CommsManager $commsManager)
-    {
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+    public function index_submit_pvp_challenge(
+        ManagerRegistry $doctrine,
+        Request $request,
+        AwardManager $awardManager,
+        CommsManager $commsManager
+    ) {
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
-        $requestJson = json_decode($requestBody, FALSE);
+        $requestJson = json_decode($requestBody, false);
 
         Sentry\configureScope(function (Sentry\State\Scope $scope) use ($requestJson): void {
             $scope->setUser([
@@ -81,22 +88,39 @@ class SubmitPVPController extends AbstractController
         /** @var RpgChallengeFriends[] $dbChallenger */
         $dbChallenger = $this->getDoctrine()
             ->getRepository(RpgChallengeFriends::class)
-            ->findBy(["challenger" => $this->patient, "challenged" => $friend, "criteria" => $requestJson->criteria, "target" => $requestJson->target, "duration" => $requestJson->duration, "outcome" => NULL]);
+            ->findBy([
+                "challenger" => $this->patient,
+                "challenged" => $friend,
+                "criteria" => $requestJson->criteria,
+                "target" => $requestJson->target,
+                "duration" => $requestJson->duration,
+                "outcome" => null,
+            ]);
         if (count($dbChallenger) > 0) {
-            AppConstants::writeToLog('debug_transform.txt', $this->patient->getFirstName() . ' has already challenged ' . $friend->getFirstName() . ' to a ' . $requestJson->target . ' ' . $requestJson->criteria . ' match.');
+            AppConstants::writeToLog('debug_transform.txt',
+                $this->patient->getFirstName() . ' has already challenged ' . $friend->getFirstName() . ' to a ' . $requestJson->target . ' ' . $requestJson->criteria . ' match.');
             return $this->json(["status" => 401]);
         }
 
         /** @var RpgChallengeFriends[] $dbChallenged */
         $dbChallenged = $this->getDoctrine()
             ->getRepository(RpgChallengeFriends::class)
-            ->findBy(["challenged" => $this->patient, "challenger" => $friend, "criteria" => $requestJson->criteria, "target" => $requestJson->target, "duration" => $requestJson->duration, "outcome" => NULL]);
+            ->findBy([
+                "challenged" => $this->patient,
+                "challenger" => $friend,
+                "criteria" => $requestJson->criteria,
+                "target" => $requestJson->target,
+                "duration" => $requestJson->duration,
+                "outcome" => null,
+            ]);
         if (count($dbChallenged) > 0) {
-            AppConstants::writeToLog('debug_transform.txt', $this->patient->getFirstName() . ' has already been challenged by ' . $friend->getFirstName() . ' to a ' . $requestJson->target . ' ' . $requestJson->criteria . ' match.');
+            AppConstants::writeToLog('debug_transform.txt',
+                $this->patient->getFirstName() . ' has already been challenged by ' . $friend->getFirstName() . ' to a ' . $requestJson->target . ' ' . $requestJson->criteria . ' match.');
             return $this->json(["status" => 401]);
         }
 
-        AppConstants::writeToLog('debug_transform.txt', $this->patient->getFirstName() . ' is going to challenge ' . $friend->getFirstName() . ' to a ' . $requestJson->target . ' ' . $requestJson->criteria . ' match over ' . $requestJson->duration . ' days.');
+        AppConstants::writeToLog('debug_transform.txt',
+            $this->patient->getFirstName() . ' is going to challenge ' . $friend->getFirstName() . ' to a ' . $requestJson->target . ' ' . $requestJson->criteria . ' match over ' . $requestJson->duration . ' days.');
 
         $newChallenge = new RpgChallengeFriends();
         $newChallenge->setChallenger($this->patient);
@@ -123,14 +147,14 @@ class SubmitPVPController extends AbstractController
             "Game on! :fist: You're #challenge against @" . $friend->getUuid() . " was accepted",
             "Now you only have " . $requestJson->duration . " days :clock1: to reach " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . " before " . $friend->getPronounThey() . " does.",
             $this->patient,
-            TRUE
+            true
         );
 
         $commsManager->sendNotification(
             "Game on! :fist: You've taken up the #challenge against @" . $this->patient->getUuid(),
             "Now you only have " . $requestJson->duration . " days :clock1: to reach " . $requestJson->target . " #" . $this->convertCriteriaEnglish($requestJson->criteria) . " before " . $this->patient->getPronounThey() . " does.",
             $friend,
-            TRUE
+            true
         );
 
         try {
@@ -220,7 +244,7 @@ class SubmitPVPController extends AbstractController
      * @param RpgChallengeFriends $challenge
      *
      * @return DateTime
-     * @throws \Exception
+     * @throws Exception
      */
     private function getEndDate(RpgChallengeFriends $challenge)
     {

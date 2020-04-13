@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -44,12 +45,13 @@ class SamsungFood extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FoodDiary|null
-
-
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translateFoodIntake(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
-    {
+    public static function translateFoodIntake(
+        ManagerRegistry $doctrine,
+        string $getContent,
+        AwardManager $awardManager
+    ) {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateFoodIntake : " . print_r($jsonContent, TRUE));
 
@@ -63,45 +65,48 @@ class SamsungFood extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
             $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var UnitOfMeasurement $unitOfMeasurement */
             if (property_exists($jsonContent, "unit")) {
                 $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, self::convertMealUnit($jsonContent->unit));
                 if (is_null($unitOfMeasurement)) {
-                    return NULL;
+                    return null;
                 }
             } else {
-                $unitOfMeasurement = NULL;
+                $unitOfMeasurement = null;
             }
 
             /** @var FoodMeals $mealType */
             $mealType = self::getMealType($doctrine, self::convertMeal($jsonContent->meal_type));
             if (is_null($mealType)) {
-                return NULL;
+                return null;
             }
 
             /** @var FoodDatabase $mealFoodItem */
             $mealFoodItem = self::getMealFoodItem($doctrine, $jsonContent->food_info_id);
             if (is_null($mealFoodItem)) {
-                return NULL;
+                return null;
             }
 
             /** @var FoodDiary $dataEntry */
-            $dataEntry = $doctrine->getRepository(FoodDiary::class)->findOneBy(['remoteId' => $jsonContent->remoteId, 'patient' => $patient]);
+            $dataEntry = $doctrine->getRepository(FoodDiary::class)->findOneBy([
+                'remoteId' => $jsonContent->remoteId,
+                'patient' => $patient,
+            ]);
             if (!$dataEntry) {
                 $dataEntry = new FoodDiary();
             }
@@ -115,9 +120,13 @@ class SamsungFood extends Constants
             $dataEntry->setMeal($mealType);
             $dataEntry->setPatient($patient);
             $dataEntry->setTrackingDevice($deviceTracking);
-            if (property_exists($jsonContent, "amount") && $jsonContent->amount > 0) $dataEntry->setAmount($jsonContent->amount);
+            if (property_exists($jsonContent, "amount") && $jsonContent->amount > 0) {
+                $dataEntry->setAmount($jsonContent->amount);
+            }
             $dataEntry->setFoodItem($mealFoodItem);
-            if (property_exists($jsonContent, "comment") && !empty($jsonContent->comment)) $dataEntry->setComment($jsonContent->comment);
+            if (property_exists($jsonContent, "comment") && !empty($jsonContent->comment)) {
+                $dataEntry->setComment($jsonContent->comment);
+            }
             $dataEntry->setUnit($unitOfMeasurement);
 
             self::updateApi($doctrine, "FoodIntake", $patient, $thirdPartyService, $dataEntry->getDateTime());
@@ -126,7 +135,7 @@ class SamsungFood extends Constants
 
         }
 
-        return NULL;
+        return null;
     }
 
     /**
@@ -138,9 +147,9 @@ class SamsungFood extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FoodDatabase|FoodNutrition|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translateFoodInfo(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translateFoodInfo(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateFoodInfo : " . print_r($jsonContent, TRUE));
@@ -150,16 +159,17 @@ class SamsungFood extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
-            if (property_exists($jsonContent, "name") && !empty($jsonContent->name) && self::startsWith($jsonContent->name, "MyFitnessPal")) {
+            if (property_exists($jsonContent,
+                    "name") && !empty($jsonContent->name) && self::startsWith($jsonContent->name, "MyFitnessPal")) {
                 ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FoodDatabase for " . $jsonContent->remoteId);
 
                 self::updateApi($doctrine, "FoodDatabase", $patient, $thirdPartyService, new DateTime());
@@ -182,7 +192,8 @@ class SamsungFood extends Constants
                         break;
                 }
 
-                if (preg_match('/^(?P<meal_id>[\d]+)-(?P<date>[\w ]+) 00:00:00 GMT([+\-]\d+:\d+|) (?P<year>[\d]+)/m', $jsonContent->remoteId, $regs)) {
+                if (preg_match('/^(?P<meal_id>[\d]+)-(?P<date>[\w ]+) 00:00:00 GMT([+\-]\d+:\d+|) (?P<year>[\d]+)/m',
+                    $jsonContent->remoteId, $regs)) {
                     $jsonContent->meal_type = $regs['meal_id'];
                     $jsonContent->dateTime = $regs['date'] . " " . $regs['year'];
                 } else {
@@ -204,14 +215,17 @@ class SamsungFood extends Constants
                 if (property_exists($jsonContent, "metric_serving_unit")) {
                     $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->metric_serving_unit);
                     if (is_null($unitOfMeasurement)) {
-                        return NULL;
+                        return null;
                     }
                 } else {
-                    $unitOfMeasurement = NULL;
+                    $unitOfMeasurement = null;
                 }
 
                 /** @var FoodDatabase $dataEntry */
-                $dataEntry = $doctrine->getRepository(FoodDatabase::class)->findOneBy(['providerId' => $jsonContent->provider_food_id, 'service' => $thirdPartyService]);
+                $dataEntry = $doctrine->getRepository(FoodDatabase::class)->findOneBy([
+                    'providerId' => $jsonContent->provider_food_id,
+                    'service' => $thirdPartyService,
+                ]);
                 if (!$dataEntry) {
                     $dataEntry = new FoodDatabase();
                 }
@@ -220,17 +234,40 @@ class SamsungFood extends Constants
                 $dataEntry->setServingUnit($unitOfMeasurement);
                 $dataEntry->setService($thirdPartyService);
 
-                if (property_exists($jsonContent, "calorie") && $jsonContent->calorie > 0) $dataEntry->setCalorie($jsonContent->calorie);
-                if (property_exists($jsonContent, "carbohydrate") && $jsonContent->carbohydrate > 0) $dataEntry->setCarbohydrate($jsonContent->carbohydrate);
-                if (property_exists($jsonContent, "dietary_fiber") && $jsonContent->dietary_fiber > 0) $dataEntry->setDietaryFiber($jsonContent->dietary_fiber);
-                if (property_exists($jsonContent, "name") && !empty($jsonContent->name)) $dataEntry->setName($jsonContent->name);
-                if (property_exists($jsonContent, "protein") && $jsonContent->protein > 0) $dataEntry->setProtein($jsonContent->protein);
-                if (property_exists($jsonContent, "saturated_fat") && $jsonContent->saturated_fat > 0) $dataEntry->setSaturatedFat($jsonContent->saturated_fat);
-                if (property_exists($jsonContent, "metric_serving_amount") && $jsonContent->metric_serving_amount > 0) $dataEntry->setServingAmount($jsonContent->metric_serving_amount);
-                if (property_exists($jsonContent, "serving_description") && !empty($jsonContent->serving_description)) $dataEntry->setServingDescription($jsonContent->serving_description);
-                if (property_exists($jsonContent, "default_number_of_serving_unit") && $jsonContent->default_number_of_serving_unit > 0) $dataEntry->setServingNumberDefault($jsonContent->default_number_of_serving_unit);
-                if (property_exists($jsonContent, "sugar") && $jsonContent->sugar > 0) $dataEntry->setSugar($jsonContent->sugar);
-                if (property_exists($jsonContent, "total_fat") && $jsonContent->total_fat > 0) $dataEntry->setTotalFat($jsonContent->total_fat);
+                if (property_exists($jsonContent, "calorie") && $jsonContent->calorie > 0) {
+                    $dataEntry->setCalorie($jsonContent->calorie);
+                }
+                if (property_exists($jsonContent, "carbohydrate") && $jsonContent->carbohydrate > 0) {
+                    $dataEntry->setCarbohydrate($jsonContent->carbohydrate);
+                }
+                if (property_exists($jsonContent, "dietary_fiber") && $jsonContent->dietary_fiber > 0) {
+                    $dataEntry->setDietaryFiber($jsonContent->dietary_fiber);
+                }
+                if (property_exists($jsonContent, "name") && !empty($jsonContent->name)) {
+                    $dataEntry->setName($jsonContent->name);
+                }
+                if (property_exists($jsonContent, "protein") && $jsonContent->protein > 0) {
+                    $dataEntry->setProtein($jsonContent->protein);
+                }
+                if (property_exists($jsonContent, "saturated_fat") && $jsonContent->saturated_fat > 0) {
+                    $dataEntry->setSaturatedFat($jsonContent->saturated_fat);
+                }
+                if (property_exists($jsonContent, "metric_serving_amount") && $jsonContent->metric_serving_amount > 0) {
+                    $dataEntry->setServingAmount($jsonContent->metric_serving_amount);
+                }
+                if (property_exists($jsonContent, "serving_description") && !empty($jsonContent->serving_description)) {
+                    $dataEntry->setServingDescription($jsonContent->serving_description);
+                }
+                if (property_exists($jsonContent,
+                        "default_number_of_serving_unit") && $jsonContent->default_number_of_serving_unit > 0) {
+                    $dataEntry->setServingNumberDefault($jsonContent->default_number_of_serving_unit);
+                }
+                if (property_exists($jsonContent, "sugar") && $jsonContent->sugar > 0) {
+                    $dataEntry->setSugar($jsonContent->sugar);
+                }
+                if (property_exists($jsonContent, "total_fat") && $jsonContent->total_fat > 0) {
+                    $dataEntry->setTotalFat($jsonContent->total_fat);
+                }
 
                 $currentRemoteIds = $dataEntry->getRemoteIds();
                 if (!in_array($jsonContent->remoteId, $currentRemoteIds)) {
@@ -245,7 +282,7 @@ class SamsungFood extends Constants
 
         }
 
-        return NULL;
+        return null;
     }
 
     /**
@@ -255,10 +292,11 @@ class SamsungFood extends Constants
      * @param String          $getContent
      *
      * @param AwardManager    $awardManager
+     *
      * @return FoodNutrition|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translateFood(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translateFood(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " -  translateFood: " . print_r($jsonContent, TRUE));
@@ -269,25 +307,25 @@ class SamsungFood extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
             $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var FoodMeals $mealType */
             $mealType = self::getMealType($doctrine, self::convertMeal($jsonContent->meal_type));
             if (is_null($mealType)) {
-                return NULL;
+                return null;
             }
 
 //            if (property_exists($jsonContent, "title") && !empty($jsonContent->title) && self::startsWith($jsonContent->title, "MyFitnessPal")) {
@@ -298,7 +336,10 @@ class SamsungFood extends Constants
 //                $dataEntry = $doctrine->getRepository(FoodNutrition::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'trackingDevice' => $deviceTracking]);
 //            }
             /** @var FoodNutrition $dataEntry */
-            $dataEntry = $doctrine->getRepository(FoodNutrition::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(FoodNutrition::class)->findOneBy([
+                'RemoteId' => $jsonContent->remoteId,
+                'trackingDevice' => $deviceTracking,
+            ]);
 
             if (!$dataEntry) {
                 $dataEntry = new FoodNutrition();
@@ -313,30 +354,67 @@ class SamsungFood extends Constants
             $dataEntry->setTrackingDevice($deviceTracking);
             $dataEntry->setMeal($mealType);
 
-            if (property_exists($jsonContent, "carbohydrate") && $jsonContent->carbohydrate > 0) $dataEntry->setCarbohydrate($jsonContent->carbohydrate);
-            if (property_exists($jsonContent, "calcium") && $jsonContent->calcium > 0) $dataEntry->setCalcium($jsonContent->calcium);
-            if (property_exists($jsonContent, "calorie") && $jsonContent->calorie > 0) $dataEntry->setCalorie($jsonContent->calorie);
-            if (property_exists($jsonContent, "cholesterol") && $jsonContent->cholesterol > 0) $dataEntry->setCholesterol($jsonContent->cholesterol);
-            if (property_exists($jsonContent, "dietary_fiber") && $jsonContent->dietary_fiber > 0) $dataEntry->setDietaryFiber($jsonContent->dietary_fiber);
-            if (property_exists($jsonContent, "iron") && $jsonContent->iron > 0) $dataEntry->setIron($jsonContent->iron);
-            if (property_exists($jsonContent, "monosaturated_fat") && $jsonContent->monosaturated_fat > 0) $dataEntry->setMonosaturatedFat($jsonContent->monosaturated_fat);
-            if (property_exists($jsonContent, "polysaturated_fat") && $jsonContent->polysaturated_fat > 0) $dataEntry->setPolysaturatedFat($jsonContent->polysaturated_fat);
-            if (property_exists($jsonContent, "potassium") && $jsonContent->potassium > 0) $dataEntry->setPotassium($jsonContent->potassium);
-            if (property_exists($jsonContent, "protein") && $jsonContent->protein > 0) $dataEntry->setProtein($jsonContent->protein);
-            if (property_exists($jsonContent, "saturated_fat") && $jsonContent->saturated_fat > 0) $dataEntry->setSaturatedFat($jsonContent->saturated_fat);
-            if (property_exists($jsonContent, "sodium") && $jsonContent->sodium > 0) $dataEntry->setSodium($jsonContent->sodium);
-            if (property_exists($jsonContent, "sugar") && $jsonContent->sugar > 0) $dataEntry->setSugar($jsonContent->sugar);
-            if (property_exists($jsonContent, "title")) $dataEntry->setTitle($jsonContent->title);
-            if (property_exists($jsonContent, "total_fat") && $jsonContent->total_fat > 0) $dataEntry->setTotalFat($jsonContent->total_fat);
-            if (property_exists($jsonContent, "trans_fat") && $jsonContent->trans_fat > 0) $dataEntry->setTransFat($jsonContent->trans_fat);
-            if (property_exists($jsonContent, "vitamin_a") && $jsonContent->vitamin_a > 0) $dataEntry->setVitA($jsonContent->vitamin_a);
-            if (property_exists($jsonContent, "vitamin_c") && $jsonContent->vitamin_c > 0) $dataEntry->setVitC($jsonContent->vitamin_c);
+            if (property_exists($jsonContent, "carbohydrate") && $jsonContent->carbohydrate > 0) {
+                $dataEntry->setCarbohydrate($jsonContent->carbohydrate);
+            }
+            if (property_exists($jsonContent, "calcium") && $jsonContent->calcium > 0) {
+                $dataEntry->setCalcium($jsonContent->calcium);
+            }
+            if (property_exists($jsonContent, "calorie") && $jsonContent->calorie > 0) {
+                $dataEntry->setCalorie($jsonContent->calorie);
+            }
+            if (property_exists($jsonContent, "cholesterol") && $jsonContent->cholesterol > 0) {
+                $dataEntry->setCholesterol($jsonContent->cholesterol);
+            }
+            if (property_exists($jsonContent, "dietary_fiber") && $jsonContent->dietary_fiber > 0) {
+                $dataEntry->setDietaryFiber($jsonContent->dietary_fiber);
+            }
+            if (property_exists($jsonContent, "iron") && $jsonContent->iron > 0) {
+                $dataEntry->setIron($jsonContent->iron);
+            }
+            if (property_exists($jsonContent, "monosaturated_fat") && $jsonContent->monosaturated_fat > 0) {
+                $dataEntry->setMonosaturatedFat($jsonContent->monosaturated_fat);
+            }
+            if (property_exists($jsonContent, "polysaturated_fat") && $jsonContent->polysaturated_fat > 0) {
+                $dataEntry->setPolysaturatedFat($jsonContent->polysaturated_fat);
+            }
+            if (property_exists($jsonContent, "potassium") && $jsonContent->potassium > 0) {
+                $dataEntry->setPotassium($jsonContent->potassium);
+            }
+            if (property_exists($jsonContent, "protein") && $jsonContent->protein > 0) {
+                $dataEntry->setProtein($jsonContent->protein);
+            }
+            if (property_exists($jsonContent, "saturated_fat") && $jsonContent->saturated_fat > 0) {
+                $dataEntry->setSaturatedFat($jsonContent->saturated_fat);
+            }
+            if (property_exists($jsonContent, "sodium") && $jsonContent->sodium > 0) {
+                $dataEntry->setSodium($jsonContent->sodium);
+            }
+            if (property_exists($jsonContent, "sugar") && $jsonContent->sugar > 0) {
+                $dataEntry->setSugar($jsonContent->sugar);
+            }
+            if (property_exists($jsonContent, "title")) {
+                $dataEntry->setTitle($jsonContent->title);
+            }
+            if (property_exists($jsonContent, "total_fat") && $jsonContent->total_fat > 0) {
+                $dataEntry->setTotalFat($jsonContent->total_fat);
+            }
+            if (property_exists($jsonContent, "trans_fat") && $jsonContent->trans_fat > 0) {
+                $dataEntry->setTransFat($jsonContent->trans_fat);
+            }
+            if (property_exists($jsonContent, "vitamin_a") && $jsonContent->vitamin_a > 0) {
+                $dataEntry->setVitA($jsonContent->vitamin_a);
+            }
+            if (property_exists($jsonContent, "vitamin_c") && $jsonContent->vitamin_c > 0) {
+                $dataEntry->setVitC($jsonContent->vitamin_c);
+            }
 
             if (is_null($deviceTracking->getLastSynced()) || $deviceTracking->getLastSynced()->format("U") < $dataEntry->getDateTime()->format("U")) {
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            if (property_exists($jsonContent, "title") && !empty($jsonContent->title) && !self::startsWith($jsonContent->title, "MyFitnessPal")) {
+            if (property_exists($jsonContent,
+                    "title") && !empty($jsonContent->title) && !self::startsWith($jsonContent->title, "MyFitnessPal")) {
                 self::updateApi($doctrine, "FoodNutrition", $patient, $thirdPartyService, $dataEntry->getDateTime());
             }
 
@@ -344,6 +422,6 @@ class SamsungFood extends Constants
 
         }
 
-        return NULL;
+        return null;
     }
 }

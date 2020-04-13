@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App;
@@ -39,7 +40,7 @@ class AppConstants
      * @param String $fileName
      * @param String $body
      */
-    static function writeToLog(String $fileName, String $body)
+    static function writeToLog(string $fileName, string $body)
     {
         try {
             $path = sys_get_temp_dir() . '/sync_upload_post';
@@ -83,7 +84,7 @@ class AppConstants
      *
      * @return ThirdPartyService|null
      */
-    static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
+    static function getThirdPartyService(ManagerRegistry $doctrine, string $serviceName)
     {
         /** @var ThirdPartyService $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
@@ -130,7 +131,7 @@ class AppConstants
      *
      * @return string
      */
-    static function formatSeconds($seconds, bool $withHours = TRUE)
+    static function formatSeconds($seconds, bool $withHours = true)
     {
         $hours = 0;
         $milliseconds = str_replace("0.", '', $seconds - floor($seconds));
@@ -161,10 +162,14 @@ class AppConstants
     {
         if ($valueUnit == "mile" && $targetUnit == "meter") {
             return $value * 1609.34;
-        } else if ($valueUnit == "meter" && $targetUnit == "mile") {
-            return $value / 1609.34;
-        } else if ($valueUnit == "meter" && $targetUnit == "km") {
-            return $value / 1000;
+        } else {
+            if ($valueUnit == "meter" && $targetUnit == "mile") {
+                return $value / 1609.34;
+            } else {
+                if ($valueUnit == "meter" && $targetUnit == "km") {
+                    return $value / 1000;
+                }
+            }
         }
 
         return 0.5;

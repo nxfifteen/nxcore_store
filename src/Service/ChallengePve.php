@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Service;
@@ -55,8 +56,7 @@ class ChallengePve
         ManagerRegistry $doctrine,
         AwardManager $awardManager,
         CommsManager $commsManager
-    )
-    {
+    ) {
         $this->doctrine = $doctrine;
         $this->awardManager = $awardManager;
         $this->commsManager = $commsManager;
@@ -65,7 +65,7 @@ class ChallengePve
     /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function checkAnyRunning($dataEntry)
     {
@@ -73,21 +73,27 @@ class ChallengePve
         /** @var RpgChallengeGlobalPatient[] $dbRpgChallengeGlobals */
         $dbRpgChallengeGlobals = $this->doctrine
             ->getRepository(RpgChallengeGlobalPatient::class)
-            ->findBy(['patient' => $dataEntry->getPatient(), 'criteria' => $challengeCriteria, 'finishDateTime' => NULL]);
+            ->findBy([
+                'patient' => $dataEntry->getPatient(),
+                'criteria' => $challengeCriteria,
+                'finishDateTime' => null,
+            ]);
 
         if ($dbRpgChallengeGlobals) {
             $entityManager = $this->doctrine->getManager();
 
             foreach ($dbRpgChallengeGlobals as $dbRpgChallengeGlobal) {
-                $criteriaTakenSincePVEStartDateDB = NULL;
+                $criteriaTakenSincePVEStartDateDB = null;
                 switch ($challengeCriteria) {
                     case "FitStepsDailySummary":
                         /** @var FitStepsDailySummary[] $criteriaTakenSincePVEStartDateDB */
-                        $criteriaTakenSincePVEStartDateDB = $this->doctrine->getRepository(FitStepsDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(), $dbRpgChallengeGlobal->getStartDateTime());
+                        $criteriaTakenSincePVEStartDateDB = $this->doctrine->getRepository(FitStepsDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(),
+                            $dbRpgChallengeGlobal->getStartDateTime());
                         break;
                     case "FitDistanceDailySummary":
                         /** @var FitDistanceDailySummary[] $criteriaTakenSincePVEStartDateDB */
-                        $criteriaTakenSincePVEStartDateDB = $this->doctrine->getRepository(FitDistanceDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(), $dbRpgChallengeGlobal->getStartDateTime());
+                        $criteriaTakenSincePVEStartDateDB = $this->doctrine->getRepository(FitDistanceDailySummary::class)->findSince($dataEntry->getPatient()->getUuid(),
+                            $dbRpgChallengeGlobal->getStartDateTime());
                         break;
                 }
 
@@ -104,7 +110,9 @@ class ChallengePve
                             !is_null($dbRpgChallengeGlobal->getChallenge()->getUnitOfMeasurement()) &&
                             $dataEntry->getUnitOfMeasurement()->getId() != $dbRpgChallengeGlobal->getChallenge()->getUnitOfMeasurement()->getId()
                         ) {
-                            $comparisonTarget = $this->convertUnitOfMeasurement($dbRpgChallengeGlobal->getChallenge()->getTarget(), $dbRpgChallengeGlobal->getChallenge()->getUnitOfMeasurement()->getName(), $dataEntry->getUnitOfMeasurement()->getName());
+                            $comparisonTarget = $this->convertUnitOfMeasurement($dbRpgChallengeGlobal->getChallenge()->getTarget(),
+                                $dbRpgChallengeGlobal->getChallenge()->getUnitOfMeasurement()->getName(),
+                                $dataEntry->getUnitOfMeasurement()->getName());
                         }
                     }
 
@@ -135,47 +143,55 @@ class ChallengePve
                     if ($criteriaTakenSincePVEStartDate < $baseRequired) {
                         $dbRpgChallengeGlobal->setProgress(0);
                         $entityManager->persist($dbRpgChallengeGlobal);
-                    } else if ($criteriaTakenSincePVEStartDate > $comparisonTarget) {
-                        $dbRpgChallengeGlobal->setProgress(100);
-                        $dbRpgChallengeGlobal->setFinishDateTime(new DateTime());
-                        $entityManager->persist($dbRpgChallengeGlobal);
-
-                        if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
-                            $this->awardManager->checkForAwards(
-                                $dbRpgChallengeGlobal->getChallenge(),
-                                "challenge",
-                                $dataEntry->getPatient(),
-                                'Completed Global Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
-                                $dataEntry->getDateTime()
-                            );
-                        } else if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
-                            $this->awardManager->checkForAwards(
-                                $dbRpgChallengeGlobal->getChallenge(),
-                                "challenge",
-                                $dataEntry->getPatient(),
-                                'Completed Global Challenge Leg ' . substr($dbRpgChallengeGlobal->getChallenge()->getDescripton(), 0, 223),
-                                $dataEntry->getDateTime()
-                            );
-                        } else if (!is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
-                            $this->awardManager->checkForAwards(
-                                $dbRpgChallengeGlobal->getChallenge(),
-                                "challenge",
-                                $dataEntry->getPatient(),
-                                'Completed Global Challenge Stage ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
-                                $dataEntry->getDateTime()
-                            );
-                        } else {
-                            $this->awardManager->checkForAwards(
-                                $dbRpgChallengeGlobal->getChallenge(),
-                                "challenge",
-                                $dataEntry->getPatient(),
-                                'Completed PVE Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
-                                $dataEntry->getDateTime()
-                            );
-                        }
                     } else {
-                        $dbRpgChallengeGlobal->setProgress(round(($criteriaTakenSincePVEStartDate / $comparisonTarget) * 100, 0, PHP_ROUND_HALF_DOWN));
-                        $entityManager->persist($dbRpgChallengeGlobal);
+                        if ($criteriaTakenSincePVEStartDate > $comparisonTarget) {
+                            $dbRpgChallengeGlobal->setProgress(100);
+                            $dbRpgChallengeGlobal->setFinishDateTime(new DateTime());
+                            $entityManager->persist($dbRpgChallengeGlobal);
+
+                            if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                                $this->awardManager->checkForAwards(
+                                    $dbRpgChallengeGlobal->getChallenge(),
+                                    "challenge",
+                                    $dataEntry->getPatient(),
+                                    'Completed Global Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
+                                    $dataEntry->getDateTime()
+                                );
+                            } else {
+                                if (is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                                    $this->awardManager->checkForAwards(
+                                        $dbRpgChallengeGlobal->getChallenge(),
+                                        "challenge",
+                                        $dataEntry->getPatient(),
+                                        'Completed Global Challenge Leg ' . substr($dbRpgChallengeGlobal->getChallenge()->getDescripton(),
+                                            0, 223),
+                                        $dataEntry->getDateTime()
+                                    );
+                                } else {
+                                    if (!is_null($dbRpgChallengeGlobal->getChallenge()->getProgression()) && !is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                                        $this->awardManager->checkForAwards(
+                                            $dbRpgChallengeGlobal->getChallenge(),
+                                            "challenge",
+                                            $dataEntry->getPatient(),
+                                            'Completed Global Challenge Stage ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
+                                            $dataEntry->getDateTime()
+                                        );
+                                    } else {
+                                        $this->awardManager->checkForAwards(
+                                            $dbRpgChallengeGlobal->getChallenge(),
+                                            "challenge",
+                                            $dataEntry->getPatient(),
+                                            'Completed PVE Challenge ' . $dbRpgChallengeGlobal->getChallenge()->getName(),
+                                            $dataEntry->getDateTime()
+                                        );
+                                    }
+                                }
+                            }
+                        } else {
+                            $dbRpgChallengeGlobal->setProgress(round(($criteriaTakenSincePVEStartDate / $comparisonTarget) * 100,
+                                0, PHP_ROUND_HALF_DOWN));
+                            $entityManager->persist($dbRpgChallengeGlobal);
+                        }
                     }
                 }
             }

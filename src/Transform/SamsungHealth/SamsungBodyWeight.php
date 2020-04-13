@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -44,10 +45,14 @@ class SamsungBodyWeight extends Constants
      * @param CommsManager    $commsManager
      *
      * @return BodyWeight|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, CommsManager $commsManager)
-    {
+    public static function translate(
+        ManagerRegistry $doctrine,
+        string $getContent,
+        AwardManager $awardManager,
+        CommsManager $commsManager
+    ) {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
@@ -57,10 +62,10 @@ class SamsungBodyWeight extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
-            if (self::startsWith($jsonContent->comment,"Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
+            if (self::startsWith($jsonContent->comment, "Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
                 /** @var ThirdPartyService $thirdPartyService */
                 $thirdPartyService = self::getThirdPartyService($doctrine, self::FITBITSERVICE);
             } else {
@@ -68,43 +73,49 @@ class SamsungBodyWeight extends Constants
                 $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             }
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
-            if (self::startsWith($jsonContent->comment,"Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
+            if (self::startsWith($jsonContent->comment, "Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
                 /** @var TrackingDevice $deviceTracking */
                 $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, "Aria");
             } else {
                 /** @var TrackingDevice $deviceTracking */
-                $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
+                $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService,
+                    $jsonContent->device);
             }
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var PartOfDay $partOfDay */
             $partOfDay = self::getPartOfDay($doctrine, new DateTime($jsonContent->dateTime));
             if (is_null($partOfDay)) {
-                return NULL;
+                return null;
             }
 
             /** @var UnitOfMeasurement $unitOfMeasurement */
             $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->weightUnitOfMeasurement);
             if (is_null($unitOfMeasurement)) {
-                return NULL;
+                return null;
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "BodyWeight", $jsonContent->weightGoal, $unitOfMeasurement, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "BodyWeight", $jsonContent->weightGoal, $unitOfMeasurement,
+                $patient);
             if (is_null($patientGoal)) {
-                return NULL;
+                return null;
             }
 
-            $newItem = FALSE;
+            $newItem = false;
             /** @var BodyWeight $dataEntry */
-            $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy([
+                'RemoteId' => $jsonContent->remoteId,
+                'patient' => $patient,
+                'trackingDevice' => $deviceTracking,
+            ]);
             if (!$dataEntry) {
-                $newItem = TRUE;
+                $newItem = true;
                 $dataEntry = new BodyWeight();
             }
 
@@ -125,14 +136,17 @@ class SamsungBodyWeight extends Constants
 
             if ($newItem) {
                 /** @noinspection DuplicatedCode */
-                $previousWeight = $doctrine->getRepository(BodyWeight::class)->findPrevious($patient->getId(), $dataEntry->getDateTime());
+                $previousWeight = $doctrine->getRepository(BodyWeight::class)->findPrevious($patient->getId(),
+                    $dataEntry->getDateTime());
                 if ($previousWeight) {
                     if ($dataEntry->getMeasurement() < $previousWeight->getMeasurement()) {
                         $body = ":thumbsup: You #lost " . ($previousWeight->getMeasurement() - $dataEntry->getMeasurement()) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " since your last #weight in.";
-                    } else if ($dataEntry->getMeasurement() > $previousWeight->getMeasurement()) {
-                        $body = ":thumbsdown: You #gained " . ($dataEntry->getMeasurement() - $previousWeight->getMeasurement()) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " since your last #weight in.";
                     } else {
-                        $body = ":ok_hand: You weight hasn't changed since your last #weight in.";
+                        if ($dataEntry->getMeasurement() > $previousWeight->getMeasurement()) {
+                            $body = ":thumbsdown: You #gained " . ($dataEntry->getMeasurement() - $previousWeight->getMeasurement()) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " since your last #weight in.";
+                        } else {
+                            $body = ":ok_hand: You weight hasn't changed since your last #weight in.";
+                        }
                     }
 
                     /* @var BodyWeight $sevenDayAgoWeight */
@@ -140,13 +154,16 @@ class SamsungBodyWeight extends Constants
                         ->findSevenDayAgo($patient->getId(), new DateTime());
                     if (!is_null($sevenDayAgoWeight)) {
                         $sevenDayAgoWeightMeasurement = round($sevenDayAgoWeight->getMeasurement(), 2);
-                        AppConstants::writeToLog('debug_transform.txt', $sevenDayAgoWeightMeasurement . ' ' . $sevenDayAgoWeight->getUnitOfMeasurement()->getName() . ' ' . $sevenDayAgoWeight->getDateTime()->format("Y-m-d"));
+                        AppConstants::writeToLog('debug_transform.txt',
+                            $sevenDayAgoWeightMeasurement . ' ' . $sevenDayAgoWeight->getUnitOfMeasurement()->getName() . ' ' . $sevenDayAgoWeight->getDateTime()->format("Y-m-d"));
                         if ($dataEntry->getMeasurement() < $sevenDayAgoWeightMeasurement) {
                             $body = $body . "\nYou're now " . ($sevenDayAgoWeightMeasurement - $dataEntry->getMeasurement()) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " less than you were seven weigh-ins ago.";
-                        } else if ($dataEntry->getMeasurement() > $sevenDayAgoWeightMeasurement) {
-                            $body = $body . "\nYou're actually " . ($dataEntry->getMeasurement() - $sevenDayAgoWeightMeasurement) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " heaver then seven weigh-ins ago.";
                         } else {
-                            $body = $body . "\nYou weight hasn't changed over the last seven weigh-ins.";
+                            if ($dataEntry->getMeasurement() > $sevenDayAgoWeightMeasurement) {
+                                $body = $body . "\nYou're actually " . ($dataEntry->getMeasurement() - $sevenDayAgoWeightMeasurement) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " heaver then seven weigh-ins ago.";
+                            } else {
+                                $body = $body . "\nYou weight hasn't changed over the last seven weigh-ins.";
+                            }
                         }
                     }
 
@@ -157,10 +174,12 @@ class SamsungBodyWeight extends Constants
                         $sevenDayAvgWeight = round($sevenDayAvgWeight, 2);
                         if (round($dataEntry->getMeasurement(), 2) < $sevenDayAvgWeight) {
                             $body = $body . "\nYour " . ($sevenDayAvgWeight - $dataEntry->getMeasurement()) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " bellow your seven weigh-in average";
-                        } else if (round($dataEntry->getMeasurement(), 2) > $sevenDayAvgWeight) {
-                            $body = $body . "\nYour " . ($dataEntry->getMeasurement() - $sevenDayAvgWeight) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " above your seven weigh-in average";
                         } else {
-                            $body = $body . "\nYour seven weigh-in average is " . $sevenDayAvgWeight . " " . $dataEntry->getUnitOfMeasurement()->getName();
+                            if (round($dataEntry->getMeasurement(), 2) > $sevenDayAvgWeight) {
+                                $body = $body . "\nYour " . ($dataEntry->getMeasurement() - $sevenDayAvgWeight) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " above your seven weigh-in average";
+                            } else {
+                                $body = $body . "\nYour seven weigh-in average is " . $sevenDayAvgWeight . " " . $dataEntry->getUnitOfMeasurement()->getName();
+                            }
                         }
                     }
 
@@ -170,11 +189,15 @@ class SamsungBodyWeight extends Constants
                     $firstReading = $firstReading[0];
 
                     if ($dataEntry->getMeasurement() < $firstReading->getMeasurement()) {
-                        $body = $body . "\nYou've lost " . round($firstReading->getMeasurement() - $dataEntry->getMeasurement(), 2) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " since your first weight in.";
-                    } else if ($dataEntry->getMeasurement() > $firstReading->getMeasurement()) {
-                        $body = $body . "\nYou've gained " . round($dataEntry->getMeasurement() - $firstReading->getMeasurement(), 2) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " since your first weight in.";
+                        $body = $body . "\nYou've lost " . round($firstReading->getMeasurement() - $dataEntry->getMeasurement(),
+                                2) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " since your first weight in.";
                     } else {
-                        $body = $body . "\nYou've weight hasn't changed since your first weight in.";
+                        if ($dataEntry->getMeasurement() > $firstReading->getMeasurement()) {
+                            $body = $body . "\nYou've gained " . round($dataEntry->getMeasurement() - $firstReading->getMeasurement(),
+                                    2) . " " . $dataEntry->getUnitOfMeasurement()->getName() . " since your first weight in.";
+                        } else {
+                            $body = $body . "\nYou've weight hasn't changed since your first weight in.";
+                        }
                     }
 
 
@@ -182,14 +205,14 @@ class SamsungBodyWeight extends Constants
                         "You've just #recorded a new #weight of " . $dataEntry->getMeasurement() . " " . $unitOfMeasurement->getName(),
                         $body,
                         $patient,
-                        TRUE
+                        true
                     );
                 } else {
                     $commsManager->sendNotification(
                         "You've just #recorded a new #weight of " . $dataEntry->getMeasurement() . " " . $unitOfMeasurement->getName(),
-                        NULL,
+                        null,
                         $patient,
-                        TRUE
+                        true
                     );
                 }
 
@@ -209,7 +232,8 @@ class SamsungBodyWeight extends Constants
                 $entityManager->flush();
             }
 
-            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient,
+                $thirdPartyService, $dataEntry->getDateTime());
 
             if ($newItem) {
                 $awardManager->checkForAwards($dataEntry, "weight");
@@ -219,6 +243,6 @@ class SamsungBodyWeight extends Constants
 
         }
 
-        return NULL;
+        return null;
     }
 }

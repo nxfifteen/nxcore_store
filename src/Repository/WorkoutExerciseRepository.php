@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -18,10 +19,10 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
- * @method WorkoutExercise|null find($id, $lockMode = NULL, $lockVersion = NULL)
- * @method WorkoutExercise|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method WorkoutExercise|null find($id, $lockMode = null, $lockVersion = null)
+ * @method WorkoutExercise|null findOneBy(array $criteria, array $orderBy = null)
  * @method WorkoutExercise[]    findAll()
- * @method WorkoutExercise[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ * @method WorkoutExercise[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class WorkoutExerciseRepository extends ServiceEntityRepository
 {

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -24,6 +25,7 @@ use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\RpgMilestones;
 use App\Entity\SiteNavItem;
+use Exception;
 use LogicException;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,7 +53,7 @@ class AngularController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function index_profile(String $uuid)
+    public function index_profile(string $uuid)
     {
         $this->hasAccess($uuid);
 
@@ -129,9 +131,9 @@ class AngularController extends AbstractController
      *
      * @throws LogicException If the Security component is not available
      */
-    private function hasAccess(String $uuid)
+    private function hasAccess(string $uuid)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
     }
 
     /**
@@ -154,7 +156,7 @@ class AngularController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -167,7 +169,7 @@ class AngularController extends AbstractController
 
         $return['navItems'] = $this->buildUserMenu();
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -178,7 +180,9 @@ class AngularController extends AbstractController
      */
     private function setupRoute(string $userRole = 'ROLE_USER')
     {
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         Sentry\configureScope(function (Sentry\State\Scope $scope): void {
             $scope->setUser([
@@ -220,7 +224,7 @@ class AngularController extends AbstractController
                     $itemIndex = count($navItems);
                     if ($rootMenuItem->getTitle()) {
                         $navItems[$itemIndex] = [
-                            "divider" => TRUE,
+                            "divider" => true,
                         ];
                         $navItems[$itemIndex + 1] =
                             [
@@ -279,7 +283,8 @@ class AngularController extends AbstractController
                                         ];
                                     }
 
-                                    $navItems[$itemIndex]['children'][$itemChildIndex] = $this->doesUserHaveMenuRequired($navItems[$itemIndex]['children'][$itemChildIndex], $menuChildItem);
+                                    $navItems[$itemIndex]['children'][$itemChildIndex] = $this->doesUserHaveMenuRequired($navItems[$itemIndex]['children'][$itemChildIndex],
+                                        $menuChildItem);
                                 }
                             }
                             if (count($navItems[$itemIndex]['children']) == 0) {
@@ -317,13 +322,15 @@ class AngularController extends AbstractController
                             "text" => "No Data",
                         ];
                         $navItem['attributes'] = [
-                            "disabled" => TRUE,
+                            "disabled" => true,
                         ];
-                    } else if (count($rootMenuItems) > 0 && count($rootMenuItems) < 5) {
-                        $navItem['badge'] = [
-                            "variant" => "info",
-                            "text" => "NEW",
-                        ];
+                    } else {
+                        if (count($rootMenuItems) > 0 && count($rootMenuItems) < 5) {
+                            $navItem['badge'] = [
+                                "variant" => "info",
+                                "text" => "NEW",
+                            ];
+                        }
                     }
                 }
             }
@@ -337,11 +344,9 @@ class AngularController extends AbstractController
      * @param String $uuid A users UUID
      *
      * @return JsonResponse
-
-
-     * @throws \Exception
+     * @throws Exception
      */
-    public function index_dashboard(String $uuid)
+    public function index_dashboard(string $uuid)
     {
         $this->hasAccess($uuid);
 
@@ -389,9 +394,9 @@ class AngularController extends AbstractController
      * @param String $date
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    private function angularGetExerciseForMonth(String $uuid, String $date)
+    private function angularGetExerciseForMonth(string $uuid, string $date)
     {
         $this->hasAccess($uuid);
 
@@ -471,11 +476,15 @@ class AngularController extends AbstractController
                 $returnString = $returnString . $hours . " hrs";
             }
             if ($minutes > 0) {
-                if ($returnString != "") $returnString = $returnString . " ";
+                if ($returnString != "") {
+                    $returnString = $returnString . " ";
+                }
                 $returnString = $returnString . $minutes . " min";
             }
             if ($seconds > 9) {
-                if ($returnString != "") $returnString = $returnString . " ";
+                if ($returnString != "") {
+                    $returnString = $returnString . " ";
+                }
                 $returnString = $returnString . $seconds . " sec";
             }
         }
@@ -495,8 +504,12 @@ class AngularController extends AbstractController
      *
      * @return array
      */
-    private function angularGetMilestones(String $uuid, int $trackingDeviceFloors, int $trackingDeviceSteps, int $trackingDeviceDistance)
-    {
+    private function angularGetMilestones(
+        string $uuid,
+        int $trackingDeviceFloors,
+        int $trackingDeviceSteps,
+        int $trackingDeviceDistance
+    ) {
         $this->hasAccess($uuid);
 
         $return = [];
@@ -515,7 +528,8 @@ class AngularController extends AbstractController
             ->getRepository(RpgMilestones::class)
             ->getLessThan('distance', $distance);
         foreach ($distanceMileStonesLess as $distanceMileStoneLess) {
-            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance, 2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
+            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance,
+                    2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
         }
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -527,11 +541,13 @@ class AngularController extends AbstractController
             $times = number_format($distance / $distanceMileStoneMore->getValue(), 0);
             if ($times == 1) {
                 $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "*";
-            } else if ($times == 2) {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
             } else {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
-                    . $times . "** times.";
+                if ($times == 2) {
+                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
+                } else {
+                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
+                        . $times . "** times.";
+                }
             }
         }
 
@@ -544,7 +560,7 @@ class AngularController extends AbstractController
      *
      * @return array
      */
-    private function angularGetTheBest(String $uuid, $trackingDevice)
+    private function angularGetTheBest(string $uuid, $trackingDevice)
     {
         $this->hasAccess($uuid);
 
@@ -597,7 +613,7 @@ class AngularController extends AbstractController
      *
      * @return array
      */
-    private function angularGetDailySummaryFloors(String $uuid, String $date, int $trackingDevice)
+    private function angularGetDailySummaryFloors(string $uuid, string $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
 
@@ -636,7 +652,7 @@ class AngularController extends AbstractController
      *
      * @return array
      */
-    private function angularGetIntraDayFloors(String $uuid, String $date, int $trackingDevice)
+    private function angularGetIntraDayFloors(string $uuid, string $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
 
@@ -672,7 +688,7 @@ class AngularController extends AbstractController
      *
      * @return array
      */
-    private function getHoursArray(int $currentHour = NULL)
+    private function getHoursArray(int $currentHour = null)
     {
         if (is_null($currentHour)) {
             $currentHour = 23;
@@ -690,9 +706,9 @@ class AngularController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    private function angularGetDailySummarySteps(String $uuid, String $date, int $trackingDevice)
+    private function angularGetDailySummarySteps(string $uuid, string $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
 
@@ -742,7 +758,7 @@ class AngularController extends AbstractController
      *
      * @return array
      */
-    private function angularGetIntraDaySteps(String $uuid, String $date, int $trackingDevice)
+    private function angularGetIntraDaySteps(string $uuid, string $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
 
@@ -779,9 +795,9 @@ class AngularController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    private function angularGetDailySummaryDistance(String $uuid, String $date, int $trackingDevice)
+    private function angularGetDailySummaryDistance(string $uuid, string $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
 
@@ -833,9 +849,9 @@ class AngularController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    private function angularGetDailySummaryCalories(String $uuid, String $date, int $trackingDevice)
+    private function angularGetDailySummaryCalories(string $uuid, string $date, int $trackingDevice)
     {
         $this->hasAccess($uuid);
 
@@ -872,9 +888,9 @@ class AngularController extends AbstractController
      * @param int    $dateRange
      *
      * @return array|null
-     * @throws \Exception
+     * @throws Exception
      */
-    private function angularGetBodyWeight(String $uuid, String $date, int $dateRange = 31)
+    private function angularGetBodyWeight(string $uuid, string $date, int $dateRange = 31)
     {
         $this->hasAccess($uuid);
 
@@ -885,7 +901,7 @@ class AngularController extends AbstractController
             ->findByDateRangeHistorical($uuid, $date, $dateRange);
 
         if (count($product) == 0) {
-            return NULL;
+            return null;
         }
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -915,7 +931,8 @@ class AngularController extends AbstractController
 
                     if (is_numeric($item->getPatientGoal()->getGoal())) {
                         $timeStampsInTrack['widget']['data'][0]['label'] = "Goal " . $item->getPatientGoal()->getUnitOfMeasurement()->getName();
-                        $timeStampsInTrack['widget']['data'][0]['data'][] = round($item->getPatientGoal()->getGoal(), 2);
+                        $timeStampsInTrack['widget']['data'][0]['data'][] = round($item->getPatientGoal()->getGoal(),
+                            2);
                     }
 
                     $timeStampsInTrack['widget']['data'][1]['label'] = "Recorded " . $item->getUnitOfMeasurement()->getName();
@@ -963,9 +980,9 @@ class AngularController extends AbstractController
      * @param String $date
      *
      * @return array|null
-     * @throws \Exception
+     * @throws Exception
      */
-    private function angularGetBodyFat(String $uuid, String $date)
+    private function angularGetBodyFat(string $uuid, string $date)
     {
         $this->hasAccess($uuid);
 
@@ -975,7 +992,7 @@ class AngularController extends AbstractController
             ->findByDateRangeHistorical($uuid, $date, 31);
 
         if (count($product) == 0) {
-            return NULL;
+            return null;
         }
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -1008,7 +1025,8 @@ class AngularController extends AbstractController
                     $timeStampsInTrack['widget']['labels'][] = $item->getDateTime()->format("D, jS");
                     if (is_numeric($item->getPatientGoal()->getGoal())) {
                         $timeStampsInTrack['widget']['data'][1]['label'] = "Goal " . $item->getPatientGoal()->getUnitOfMeasurement()->getName();
-                        $timeStampsInTrack['widget']['data'][1]['data'][] = round($item->getPatientGoal()->getGoal(), 2);
+                        $timeStampsInTrack['widget']['data'][1]['data'][] = round($item->getPatientGoal()->getGoal(),
+                            2);
                     }
                 }
             }
@@ -1033,9 +1051,9 @@ class AngularController extends AbstractController
      * @param int    $readings A users UUID
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
-    public function index_body_weight(String $uuid, int $readings)
+    public function index_body_weight(string $uuid, int $readings)
     {
         $this->hasAccess($uuid);
 

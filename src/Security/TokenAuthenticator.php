@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Security;
@@ -60,7 +61,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         // no credential check is needed in this case
 
         // return true to cause authentication success
-        return TRUE;
+        return true;
     }
 
     /**
@@ -95,7 +96,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         $apiToken = $credentials['token'];
 
-        if (NULL === $apiToken) {
+        if (null === $apiToken) {
             return null;
         }
 
@@ -113,7 +114,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
         $data = [
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
+            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
         ];
 
         return new JsonResponse($data, Response::HTTP_FORBIDDEN);
@@ -131,7 +132,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
         // on success, let the request continue
-        return NULL;
+        return null;
     }
 
     /**
@@ -142,7 +143,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      *
      * @return JsonResponse
      */
-    public function start(Request $request, AuthenticationException $authException = NULL)
+    public function start(Request $request, AuthenticationException $authException = null)
     {
         $data = [
             // you might translate this message
@@ -175,6 +176,6 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supportsRememberMe()
     {
-        return FALSE;
+        return false;
     }
 }

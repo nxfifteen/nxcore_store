@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -61,7 +62,7 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findByDates(String $patientId, String $date, String $start, String $end, int $trackingDevice = 0)
+    public function findByDates(string $patientId, string $date, string $start, string $end, int $trackingDevice = 0)
     {
         $today = $date . " " . $start;
         $todayEnd = $date . " " . $end;
@@ -104,7 +105,7 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findSumDates(String $patientId, String $date, String $start, String $end, int $trackingDevice = 0)
+    public function findSumDates(string $patientId, string $date, string $start, string $end, int $trackingDevice = 0)
     {
         $today = $date . " " . $start;
         $todayEnd = $date . " " . $end;
@@ -147,7 +148,7 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice = 0)
+    public function findByDateRange(string $patientId, string $date, int $trackingDevice = 0)
     {
         return $this->findByDates($patientId, $date, "00:00:00", "23:59:00", $trackingDevice);
     }
@@ -160,7 +161,7 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findByForHour(String $patientId, String $date, int $hour, int $trackingDevice = 0)
+    public function findByForHour(string $patientId, string $date, int $hour, int $trackingDevice = 0)
     {
         return $this->findByDates($patientId, $date, $hour . ":00:00", $hour . ":59:59", $trackingDevice);
     }

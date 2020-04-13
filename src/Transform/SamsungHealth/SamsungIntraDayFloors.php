@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -39,9 +40,9 @@ class SamsungIntraDayFloors extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitFloorsIntraDay|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
@@ -55,38 +56,44 @@ class SamsungIntraDayFloors extends Constants
                 $jsonContent->dateTimeOffset = new DateTime($jsonContent->dateTimeOffset);
                 $jsonContent->dateRaw = $jsonContent->dateTime;
             } catch (Exception $e) {
-                return NULL;
+                return null;
             }
 
             $timeDiff = $jsonContent->dateTimeOffset->format("G");
             if ($timeDiff > 0) {
                 $jsonContent->dateTime->modify('+ ' . $timeDiff . ' hour');
                 $jsonContent->dateTimeEnd->modify('+ ' . $timeDiff . ' hour');
-            } else if ($timeDiff < 0) {
-                $jsonContent->dateTime->modify('- ' . $timeDiff . ' hour');
-                $jsonContent->dateTimeEnd->modify('- ' . $timeDiff . ' hour');
+            } else {
+                if ($timeDiff < 0) {
+                    $jsonContent->dateTime->modify('- ' . $timeDiff . ' hour');
+                    $jsonContent->dateTimeEnd->modify('- ' . $timeDiff . ' hour');
+                }
             }
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
             $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var FitFloorsIntraDay $dataEntry */
-            $dataEntry = $doctrine->getRepository(FitFloorsIntraDay::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(FitFloorsIntraDay::class)->findOneBy([
+                'RemoteId' => $jsonContent->remoteId,
+                'patient' => $patient,
+                'trackingDevice' => $deviceTracking,
+            ]);
             if (!$dataEntry) {
                 $dataEntry = new FitFloorsIntraDay();
             }
@@ -107,12 +114,13 @@ class SamsungIntraDayFloors extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient,
+                $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 
         }
 
-        return NULL;
+        return null;
     }
 }

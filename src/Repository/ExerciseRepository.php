@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -61,9 +62,9 @@ class ExerciseRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
+    public function findByDateRangeHistorical(string $patientId, string $date, int $lastDays)
     {
         $dateObject = new DateTime($date);
 

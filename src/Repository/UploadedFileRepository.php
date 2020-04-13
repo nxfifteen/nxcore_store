@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -18,10 +19,10 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
- * @method UploadedFile|null find($id, $lockMode = NULL, $lockVersion = NULL)
- * @method UploadedFile|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method UploadedFile|null find($id, $lockMode = null, $lockVersion = null)
+ * @method UploadedFile|null findOneBy(array $criteria, array $orderBy = null)
  * @method UploadedFile[]    findAll()
- * @method UploadedFile[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ * @method UploadedFile[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class UploadedFileRepository extends ServiceEntityRepository
 {

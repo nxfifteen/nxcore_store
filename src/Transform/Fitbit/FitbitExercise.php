@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
@@ -48,11 +49,16 @@ class FitbitExercise extends Constants
      * @param CommsManager    $commsManager
      *
      * @return Exercise|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, CommsManager $commsManager, $getContent, int $deviceArrayIndex = 0)
-    {
-        if (property_exists($getContent[3], "activities") && property_exists($getContent[3]->activities[$deviceArrayIndex], "logId")) {
+    public static function translate(
+        ManagerRegistry $doctrine,
+        CommsManager $commsManager,
+        $getContent,
+        int $deviceArrayIndex = 0
+    ) {
+        if (property_exists($getContent[3],
+                "activities") && property_exists($getContent[3]->activities[$deviceArrayIndex], "logId")) {
             $activity = $getContent[3]->activities[$deviceArrayIndex];
 
             try {
@@ -66,19 +72,19 @@ class FitbitExercise extends Constants
                     'debug_transform.txt',
                     $e->getMessage()
                 );
-                return NULL;
+                return null;
             }
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $getContent[0]->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::FITBITSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
@@ -89,27 +95,30 @@ class FitbitExercise extends Constants
                 "model" => $activity->source->name,
             ]);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var PartOfDay $partOfDay */
             $partOfDay = self::getPartOfDay($doctrine, $activity->startTime);
             if (is_null($partOfDay)) {
-                return NULL;
+                return null;
             }
 
             /** @var ExerciseType $exerciseType */
             $exerciseType = self::getExerciseType($doctrine, self::convertExerciseType($activity->activityTypeId));
             if (is_null($exerciseType)) {
-                return NULL;
+                return null;
             }
 
-            $newItem = FALSE;
+            $newItem = false;
             /** @var Exercise $dataEntryExercise */
-            $dataEntryExercise = $doctrine->getRepository(Exercise::class)->findOneBy(['RemoteId' => $activity->logId, 'trackingDevice' => $deviceTracking]);
+            $dataEntryExercise = $doctrine->getRepository(Exercise::class)->findOneBy([
+                'RemoteId' => $activity->logId,
+                'trackingDevice' => $deviceTracking,
+            ]);
             if (!$dataEntryExercise) {
                 $dataEntryExercise = new Exercise();
-                $newItem = TRUE;
+                $newItem = true;
             }
 
             $dataEntryExercise->setPatient($patient);
@@ -132,8 +141,8 @@ class FitbitExercise extends Constants
                 $deviceTracking->setLastSynced($dataEntryExercise->getDateTimeEnd());
             }
 
-            $altitudeMax = NULL;
-            $altitudeMin = NULL;
+            $altitudeMax = null;
+            $altitudeMin = null;
             if (property_exists($activity, "tcxLink")) {
                 $locationApiData = self::pullTCXData($doctrine, $patient, $thirdPartyService, $activity->tcxLink);
                 if (
@@ -149,7 +158,7 @@ class FitbitExercise extends Constants
 
                     $trackPoints = $locationApiData->Activities->Activity->Lap->Track->Trackpoint;
                     foreach ($trackPoints as $trackPoint) {
-                        $trackPoint = json_decode(json_encode($trackPoint), FALSE);
+                        $trackPoint = json_decode(json_encode($trackPoint), false);
 
                         $pointDateTime = new DateTime($trackPoint->Time);
                         $pointRef = $pointDateTime->format("U") / 1000;
@@ -221,22 +230,35 @@ class FitbitExercise extends Constants
             }
 
 
-            if (!is_null($altitudeMax)) $dataEntryExerciseSummary->setAltitudeMax($altitudeMax);
-            if (!is_null($altitudeMin)) $dataEntryExerciseSummary->setAltitudeMin($altitudeMin);
-            if (!is_null($altitudeMax) && !is_null($altitudeMax)) $dataEntryExerciseSummary->setAltitudeGain($altitudeMax - $altitudeMin);
+            if (!is_null($altitudeMax)) {
+                $dataEntryExerciseSummary->setAltitudeMax($altitudeMax);
+            }
+            if (!is_null($altitudeMin)) {
+                $dataEntryExerciseSummary->setAltitudeMin($altitudeMin);
+            }
+            if (!is_null($altitudeMax) && !is_null($altitudeMax)) {
+                $dataEntryExerciseSummary->setAltitudeGain($altitudeMax - $altitudeMin);
+            }
 
-            if (property_exists($activity, "calories") && $activity->calories > 0) $dataEntryExerciseSummary->setCalorie($activity->calories);
-            if (property_exists($activity, "distance") && $activity->distance > 0) $dataEntryExerciseSummary->setDistance($activity->distance * 1000);
-            if (property_exists($activity, "speed") && $activity->speed > 0) $dataEntryExerciseSummary->setSpeedMean($activity->speed);
+            if (property_exists($activity, "calories") && $activity->calories > 0) {
+                $dataEntryExerciseSummary->setCalorie($activity->calories);
+            }
+            if (property_exists($activity, "distance") && $activity->distance > 0) {
+                $dataEntryExerciseSummary->setDistance($activity->distance * 1000);
+            }
+            if (property_exists($activity, "speed") && $activity->speed > 0) {
+                $dataEntryExerciseSummary->setSpeedMean($activity->speed);
+            }
 
             $dataEntryExercise->setExerciseSummary($dataEntryExerciseSummary);
 
             if ($newItem) {
                 $commsManager->sendNotification(
-                    "@" . $patient->getUuid() . " just #recorded a new " . round($dataEntryExercise->getDuration() / 60, 0) . " minute #" . strtolower($dataEntryExercise->getExerciseType()->getTag()) . " :dog_14:",
-                    NULL,
+                    "@" . $patient->getUuid() . " just #recorded a new " . round($dataEntryExercise->getDuration() / 60,
+                        0) . " minute #" . strtolower($dataEntryExercise->getExerciseType()->getTag()) . " :dog_14:",
+                    null,
                     $patient,
-                    FALSE
+                    false
                 );
 
                 $notification = new SiteNews();
@@ -255,7 +277,8 @@ class FitbitExercise extends Constants
                 $entityManager->flush();
             }
 
-            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntryExercise)), $patient, $thirdPartyService, $dataEntryExercise->getDateTimeStart());
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntryExercise)), $patient,
+                $thirdPartyService, $dataEntryExercise->getDateTimeStart());
 
             // @TODO: Award support for Fitbit exercises
             /*if ($newItem) {
@@ -266,12 +289,12 @@ class FitbitExercise extends Constants
 
         }
 
-        return NULL;
+        return null;
     }
 
     /**
-     * @param ManagerRegistry   $doctrine
-     * @param Patient           $patient
+     * @param ManagerRegistry $doctrine
+     * @param Patient $patient
      * @param ThirdPartyService $service
      * @param                   $path
      *
@@ -303,7 +326,7 @@ class FitbitExercise extends Constants
             }
         }
 
-        return NULL;
+        return null;
     }
 
     /**

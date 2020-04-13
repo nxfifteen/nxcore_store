@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\AwardDelivery;
@@ -54,8 +55,7 @@ class Badge extends AwardDelivery
         ManagerRegistry $doctrine,
         Patient $patient,
         RpgRewards $reward
-    )
-    {
+    ) {
         $this->doctrine = $doctrine;
         $this->patient = $patient;
         $this->reward = $reward;
@@ -66,13 +66,18 @@ class Badge extends AwardDelivery
      *
      * @return bool
      */
-    public function deliveryReward(DateTimeInterface $dateTime = null) {
+    public function deliveryReward(DateTimeInterface $dateTime = null)
+    {
         if (!is_string($this->reward->getPayload())) {
             return false;
         }
 
         /** @var RpgRewardsAwarded $xpAlreadyAwarded */
-        $xpAlreadyAwarded = $this->doctrine->getRepository(RpgRewardsAwarded::class)->findOneBy(['patient' => $this->patient, 'reward' => $this->reward, 'datetime' => $dateTime]);
+        $xpAlreadyAwarded = $this->doctrine->getRepository(RpgRewardsAwarded::class)->findOneBy([
+            'patient' => $this->patient,
+            'reward' => $this->reward,
+            'datetime' => $dateTime,
+        ]);
         if (!$xpAlreadyAwarded) {
             $rewarded = new RpgRewardsAwarded();
             $rewarded->setPatient($this->patient);

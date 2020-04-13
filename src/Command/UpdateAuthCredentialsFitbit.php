@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Command;
@@ -32,7 +33,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @Cron(minute="/15", noLogs=true, server="web")
  */
-class UpdateAuthCredentialsFitbit extends Command {
+class UpdateAuthCredentialsFitbit extends Command
+{
     /**
      * @var string
      */
@@ -56,7 +58,7 @@ class UpdateAuthCredentialsFitbit extends Command {
 
     /**
      * {@inheritdoc}
-     * @throws \Exception
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -64,7 +66,7 @@ class UpdateAuthCredentialsFitbit extends Command {
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function refreshFitbitTokens()
     {
@@ -92,12 +94,12 @@ class UpdateAuthCredentialsFitbit extends Command {
                     $existingAccessToken = new AccessToken([
                         'access_token' => $patientCredential->getToken(),
                         'refresh_token' => $patientCredential->getRefreshToken(),
-                        'expires' => $patientCredential->getExpires()->format("U")
+                        'expires' => $patientCredential->getExpires()->format("U"),
                     ]);
 
                     if ($existingAccessToken->hasExpired()) {
                         $newAccessToken = $provider->getAccessToken('refresh_token', [
-                            'refresh_token' => $existingAccessToken->getRefreshToken()
+                            'refresh_token' => $existingAccessToken->getRefreshToken(),
                         ]);
 
                         $patientCredential->setToken($newAccessToken->getToken());
@@ -108,12 +110,14 @@ class UpdateAuthCredentialsFitbit extends Command {
 
                         $entityManager->persist($patientCredential);
 
-                        AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUuid() . '\'s Fitbit authentication token has been refreshed');
+                        AppConstants::writeToLog('debug_transform.txt',
+                            "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $patientCredential->getPatient()->getUuid() . '\'s Fitbit authentication token has been refreshed');
                     }
 
                 } catch (IdentityProviderException $e) {
                     // Failed to get the access token or user details.
-                    AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
+                    AppConstants::writeToLog('debug_transform.txt',
+                        "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
                 }
             }
 

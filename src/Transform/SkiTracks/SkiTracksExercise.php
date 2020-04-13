@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SkiTracks;
@@ -48,14 +49,19 @@ class SkiTracksExercise extends Constants
      * @return Exercise|null
      * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, CommsManager $commsManager, Patient $patient)
-    {
-        $jsonContent = json_decode($getContent, FALSE);
+    public static function translate(
+        ManagerRegistry $doctrine,
+        string $getContent,
+        AwardManager $awardManager,
+        CommsManager $commsManager,
+        Patient $patient
+    ) {
+        $jsonContent = json_decode($getContent, false);
 //        AppConstants::writeToLog('debug_transform.txt', print_r($jsonContent, true));
 
         $remoteId = sha1(json_encode($jsonContent));
-        $skiRun = json_decode($jsonContent->skiRun, TRUE);
-        $tracksFile = json_decode($jsonContent->tracksFile, TRUE);
+        $skiRun = json_decode($jsonContent->skiRun, true);
+        $tracksFile = json_decode($jsonContent->tracksFile, true);
         $skiRunAttributes = $tracksFile['@attributes'];
 //        $skiRunMetrics = $tracksFile['metrics'];
         $gps = $jsonContent->gps;
@@ -70,45 +76,49 @@ class SkiTracksExercise extends Constants
             $skiRun['START_ZONE'] = new DateTime($skiRun['START_ZONE']);
             $skiRun['END_ZONE'] = new DateTime($skiRun['END_ZONE']);
         } catch (Exception $e) {
-            return NULL;
+            return null;
         }
 
         /** @var ThirdPartyService $thirdPartyService */
         $thirdPartyService = self::getThirdPartyService($doctrine, self::SKITRACKSSERVICE);
         if (is_null($thirdPartyService)) {
-            return NULL;
+            return null;
         }
 
         $syncDevice = explode("/", $skiRunAttributes['device']);
         /** @var TrackingDevice $deviceTracking */
-        $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $skiRunAttributes['device'], [
-            "name" => "SkiTracks",
-            "type" => "app",
-            "manufacturer" => "CoreCoders",
-            "model" => $syncDevice[2] . " for " . $syncDevice[1],
-        ]);
+        $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $skiRunAttributes['device'],
+            [
+                "name" => "SkiTracks",
+                "type" => "app",
+                "manufacturer" => "CoreCoders",
+                "model" => $syncDevice[2] . " for " . $syncDevice[1],
+            ]);
         if (is_null($deviceTracking)) {
-            return NULL;
+            return null;
         }
 
         /** @var PartOfDay $partOfDay */
         $partOfDay = self::getPartOfDay($doctrine, $skiRun['START_ZONE']);
         if (is_null($partOfDay)) {
-            return NULL;
+            return null;
         }
 
         /** @var ExerciseType $exerciseType */
         $exerciseType = self::getExerciseType($doctrine, self::convertExerciseType($skiRun['ACTIVITY']));
         if (is_null($exerciseType)) {
-            return NULL;
+            return null;
         }
 
-        $newItem = FALSE;
+        $newItem = false;
         /** @var Exercise $dataEntryExercise */
-        $dataEntryExercise = $doctrine->getRepository(Exercise::class)->findOneBy(['RemoteId' => $remoteId, 'trackingDevice' => $deviceTracking]);
+        $dataEntryExercise = $doctrine->getRepository(Exercise::class)->findOneBy([
+            'RemoteId' => $remoteId,
+            'trackingDevice' => $deviceTracking,
+        ]);
         if (!$dataEntryExercise) {
             $dataEntryExercise = new Exercise();
-            $newItem = TRUE;
+            $newItem = true;
         }
 
         if ($newItem) {
@@ -139,10 +149,10 @@ class SkiTracksExercise extends Constants
         $locationData = [];
         $liveData = [];
         $speedData = [];
-        $altitudeStart = NULL;
-        $altitudeFinish = NULL;
-        $altitudeMax = NULL;
-        $altitudeMin = NULL;
+        $altitudeStart = null;
+        $altitudeFinish = null;
+        $altitudeMax = null;
+        $altitudeMin = null;
 
         foreach ($gps as $trackPoint) {
             $pointRef = round($trackPoint->UTC, 0, PHP_ROUND_HALF_UP);
@@ -151,7 +161,9 @@ class SkiTracksExercise extends Constants
             $liveDataItem = [];
 
             if (property_exists($trackPoint, "DISTANCE") && $trackPoint->DISTANCE > 0) {
-                if (!array_key_exists("start_time", $liveDataItem)) $liveDataItem["start_time"] = $pointRef;
+                if (!array_key_exists("start_time", $liveDataItem)) {
+                    $liveDataItem["start_time"] = $pointRef;
+                }
                 $liveDataItem["distance"] = $trackPoint->DISTANCE;
             }
 
@@ -161,21 +173,29 @@ class SkiTracksExercise extends Constants
             }*/
 
             if (property_exists($trackPoint, "VELOCITY") && $trackPoint->VELOCITY > 0) {
-                if (!array_key_exists("start_time", $liveDataItem)) $liveDataItem["start_time"] = $pointRef;
+                if (!array_key_exists("start_time", $liveDataItem)) {
+                    $liveDataItem["start_time"] = $pointRef;
+                }
                 $liveDataItem["speed"] = $trackPoint->VELOCITY;
                 $speedData[] = $trackPoint->VELOCITY;
             }
 
             if (property_exists($trackPoint, "LAT")) {
-                if (!array_key_exists("start_time", $locationDataItem)) $locationDataItem["start_time"] = $pointRef;
+                if (!array_key_exists("start_time", $locationDataItem)) {
+                    $locationDataItem["start_time"] = $pointRef;
+                }
                 $locationDataItem['latitude'] = $trackPoint->LAT;
             }
             if (property_exists($trackPoint, "LON")) {
-                if (!array_key_exists("start_time", $locationDataItem)) $locationDataItem["start_time"] = $pointRef;
+                if (!array_key_exists("start_time", $locationDataItem)) {
+                    $locationDataItem["start_time"] = $pointRef;
+                }
                 $locationDataItem['longitude'] = $trackPoint->LON;
             }
             if (property_exists($trackPoint, "ALT")) {
-                if (!array_key_exists("start_time", $locationDataItem)) $locationDataItem["start_time"] = $pointRef;
+                if (!array_key_exists("start_time", $locationDataItem)) {
+                    $locationDataItem["start_time"] = $pointRef;
+                }
                 $locationDataItem['altitude'] = $trackPoint->ALT;
                 if (is_null($altitudeStart)) {
                     $altitudeStart = $trackPoint->ALT;
@@ -219,16 +239,22 @@ class SkiTracksExercise extends Constants
         if ($altitudeStart > $altitudeFinish) {
             $dataEntryExerciseSummary->setAltitudeGain(0);
             $dataEntryExerciseSummary->setAltitudeLoss($altitudeStart - $altitudeFinish);
-        } else if ($altitudeStart < $altitudeFinish) {
-            $dataEntryExerciseSummary->setAltitudeGain($altitudeFinish - $altitudeStart);
-            $dataEntryExerciseSummary->setAltitudeLoss(0);
         } else {
-            $dataEntryExerciseSummary->setAltitudeGain(0);
-            $dataEntryExerciseSummary->setAltitudeLoss(0);
+            if ($altitudeStart < $altitudeFinish) {
+                $dataEntryExerciseSummary->setAltitudeGain($altitudeFinish - $altitudeStart);
+                $dataEntryExerciseSummary->setAltitudeLoss(0);
+            } else {
+                $dataEntryExerciseSummary->setAltitudeGain(0);
+                $dataEntryExerciseSummary->setAltitudeLoss(0);
+            }
         }
 
-        if (!is_null($altitudeMax)) $dataEntryExerciseSummary->setAltitudeMax($altitudeMax);
-        if (!is_null($altitudeMin)) $dataEntryExerciseSummary->setAltitudeMin($altitudeMin);
+        if (!is_null($altitudeMax)) {
+            $dataEntryExerciseSummary->setAltitudeMax($altitudeMax);
+        }
+        if (!is_null($altitudeMin)) {
+            $dataEntryExerciseSummary->setAltitudeMin($altitudeMin);
+        }
 //        if (property_exists($jsonContent, "cadenceMax") && $jsonContent->cadenceMax > 0) $dataEntryExerciseSummary->setCadenceMax($jsonContent->cadenceMax);
 //        if (property_exists($jsonContent, "cadenceMean") && $jsonContent->cadenceMean > 0) $dataEntryExerciseSummary->setCadenceMean($jsonContent->cadenceMean);
 //        if (property_exists($jsonContent, "cadenceMin") && $jsonContent->cadenceMin > 0) $dataEntryExerciseSummary->setCadenceMin($jsonContent->cadenceMin);
@@ -242,7 +268,7 @@ class SkiTracksExercise extends Constants
         if (count($speedData) > 0) {
             $speedData = array_filter($speedData);
             $dataEntryExerciseSummary->setSpeedMax(max($speedData));
-            $average = array_sum($speedData)/count($speedData);
+            $average = array_sum($speedData) / count($speedData);
             $dataEntryExerciseSummary->setSpeedMean($average);
         }
 

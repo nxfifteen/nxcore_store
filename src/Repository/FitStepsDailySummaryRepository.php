@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -21,10 +22,10 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 
 /**
- * @method FitStepsDailySummary|null find($id, $lockMode = NULL, $lockVersion = NULL)
- * @method FitStepsDailySummary|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method FitStepsDailySummary|null find($id, $lockMode = null, $lockVersion = null)
+ * @method FitStepsDailySummary|null findOneBy(array $criteria, array $orderBy = null)
  * @method FitStepsDailySummary[]    findAll()
- * @method FitStepsDailySummary[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ * @method FitStepsDailySummary[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class FitStepsDailySummaryRepository extends ServiceEntityRepository
 {
@@ -61,7 +62,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      *
      * @return FitStepsDailySummary[]
      */
-    public function findForDay(String $patientId, $date)
+    public function findForDay(string $patientId, $date)
     {
         /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
@@ -80,7 +81,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findSince(String $patientId, $dateSince)
+    public function findSince(string $patientId, $dateSince)
     {
         /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
@@ -101,7 +102,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findBetween(String $patientId, $dateSince, $dateTill)
+    public function findBetween(string $patientId, $dateSince, $dateTill)
     {
         /** @var DateTime $dateSince */
         return $this->createQueryBuilder('c')
@@ -123,7 +124,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findHighest(String $patientId, int $trackingDevice)
+    public function findHighest(string $patientId, int $trackingDevice)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
@@ -143,10 +144,10 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      * @deprecated use findByDateRangeHistorical() instead
      */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
+    public function findByDateRange(string $patientId, string $date, int $trackingDevice)
     {
         return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
     }
@@ -158,10 +159,14 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays = 0, int $trackingDevice = 0)
-    {
+    public function findByDateRangeHistorical(
+        string $patientId,
+        string $date,
+        int $lastDays = 0,
+        int $trackingDevice = 0
+    ) {
         $dateObject = new DateTime($date);
 
         if ($lastDays > 0) {

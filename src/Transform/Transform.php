@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform;
@@ -54,9 +55,9 @@ class Transform
      *
      * @return mixed
      */
-    protected static function decodeJson(String $getContent)
+    protected static function decodeJson(string $getContent)
     {
-        $jsonObject = json_decode($getContent, FALSE);
+        $jsonObject = json_decode($getContent, false);
         if (is_object($jsonObject)) {
             // @TODO: Remove hard coding
             if (!property_exists($jsonObject, "uuid")) {
@@ -78,7 +79,7 @@ class Transform
      *
      * @return Patient|null
      */
-    protected static function getPatient(ManagerRegistry $doctrine, String $uuid)
+    protected static function getPatient(ManagerRegistry $doctrine, string $uuid)
     {
         /** @var Patient $patient */
         $patient = $doctrine->getRepository(Patient::class)->findOneBy(['uuid' => $uuid]);
@@ -86,7 +87,7 @@ class Transform
             return $patient;
         }
 
-        return NULL;
+        return null;
     }
 
     /**
@@ -99,10 +100,19 @@ class Transform
      *
      * @return TrackingDevice|null
      */
-    protected static function getTrackingDevice(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $thirdPartyService, String $remote_id, array $options = [])
-    {
+    protected static function getTrackingDevice(
+        ManagerRegistry $doctrine,
+        Patient $patient,
+        ThirdPartyService $thirdPartyService,
+        string $remote_id,
+        array $options = []
+    ) {
         /** @var TrackingDevice $deviceTracking */
-        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy(['remoteId' => $remote_id, 'patient' => $patient, 'service' => $thirdPartyService]);
+        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
+            'remoteId' => $remote_id,
+            'patient' => $patient,
+            'service' => $thirdPartyService,
+        ]);
         if ($deviceTracking) {
             return $deviceTracking;
         } else {
@@ -115,12 +125,24 @@ class Transform
             $deviceTracking->setType("Unknown");
 
             if (count($options) > 0) {
-                if (array_key_exists("name", $options)) $deviceTracking->setName($options['name']);
-                if (array_key_exists("comment", $options)) $deviceTracking->setComment($options['comment']);
-                if (array_key_exists("battery", $options)) $deviceTracking->setBattery($options['battery']);
-                if (array_key_exists("type", $options)) $deviceTracking->setType($options['type']);
-                if (array_key_exists("manufacturer", $options)) $deviceTracking->setManufacturer($options['manufacturer']);
-                if (array_key_exists("model", $options)) $deviceTracking->setModel($options['model']);
+                if (array_key_exists("name", $options)) {
+                    $deviceTracking->setName($options['name']);
+                }
+                if (array_key_exists("comment", $options)) {
+                    $deviceTracking->setComment($options['comment']);
+                }
+                if (array_key_exists("battery", $options)) {
+                    $deviceTracking->setBattery($options['battery']);
+                }
+                if (array_key_exists("type", $options)) {
+                    $deviceTracking->setType($options['type']);
+                }
+                if (array_key_exists("manufacturer", $options)) {
+                    $deviceTracking->setManufacturer($options['manufacturer']);
+                }
+                if (array_key_exists("model", $options)) {
+                    $deviceTracking->setModel($options['model']);
+                }
             }
 
             $entityManager->persist($deviceTracking);
@@ -142,10 +164,16 @@ class Transform
      * @param bool              $matchGoal
      *
      * @return PatientGoals|null
-     * @throws \Exception
+     * @throws Exception
      */
-    protected static function getPatientGoal(ManagerRegistry $doctrine, String $serviceName, float $serviceGoal, $unitOfMeasurement, Patient $patient, bool $matchGoal = NULL)
-    {
+    protected static function getPatientGoal(
+        ManagerRegistry $doctrine,
+        string $serviceName,
+        float $serviceGoal,
+        $unitOfMeasurement,
+        Patient $patient,
+        bool $matchGoal = null
+    ) {
         if (!is_null($matchGoal) && $matchGoal) {
             $findBy = ['entity' => $serviceName, 'patient' => $patient, 'goal' => $serviceGoal];
         } else {
@@ -180,7 +208,7 @@ class Transform
      *
      * @return ThirdPartyService|null
      */
-    protected static function getThirdPartyService(ManagerRegistry $doctrine, String $serviceName)
+    protected static function getThirdPartyService(ManagerRegistry $doctrine, string $serviceName)
     {
         /** @var ThirdPartyService $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
@@ -203,7 +231,7 @@ class Transform
      *
      * @return UnitOfMeasurement|null
      */
-    protected static function getUnitOfMeasurement(ManagerRegistry $doctrine, String $serviceName)
+    protected static function getUnitOfMeasurement(ManagerRegistry $doctrine, string $serviceName)
     {
         /** @var UnitOfMeasurement $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(UnitOfMeasurement::class)->findOneBy(['name' => $serviceName]);
@@ -226,14 +254,14 @@ class Transform
      *
      * @return FoodDatabase|null
      */
-    protected static function getMealFoodItem(ManagerRegistry $doctrine, String $food_info_id)
+    protected static function getMealFoodItem(ManagerRegistry $doctrine, string $food_info_id)
     {
         /** @var FoodDatabase $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(FoodDatabase::class)->findByFoodInfoId($food_info_id);
         if ($thirdPartyService) {
             return $thirdPartyService;
         } else {
-            return NULL;
+            return null;
         }
     }
 
@@ -243,7 +271,7 @@ class Transform
      *
      * @return FoodMeals|null
      */
-    protected static function getMealType(ManagerRegistry $doctrine, String $serviceName)
+    protected static function getMealType(ManagerRegistry $doctrine, string $serviceName)
     {
         /** @var FoodMeals $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(FoodMeals::class)->findOneBy(['name' => $serviceName]);
@@ -266,7 +294,7 @@ class Transform
      *
      * @return ExerciseType|null
      */
-    protected static function getExerciseType(ManagerRegistry $doctrine, String $serviceName)
+    protected static function getExerciseType(ManagerRegistry $doctrine, string $serviceName)
     {
         /** @var ExerciseType $thirdPartyService */
         $thirdPartyService = $doctrine->getRepository(ExerciseType::class)->findOneBy(['name' => $serviceName]);
@@ -297,12 +325,16 @@ class Transform
 
         if ($trackedDate >= 12 && $trackedDate <= 16) {
             $partOfDayString = "afternoon";
-        } else if ($trackedDate >= 17 && $trackedDate <= 20) {
-            $partOfDayString = "evening";
-        } else if ($trackedDate >= 5 && $trackedDate <= 11) {
-            $partOfDayString = "morning";
         } else {
-            $partOfDayString = "night";
+            if ($trackedDate >= 17 && $trackedDate <= 20) {
+                $partOfDayString = "evening";
+            } else {
+                if ($trackedDate >= 5 && $trackedDate <= 11) {
+                    $partOfDayString = "morning";
+                } else {
+                    $partOfDayString = "night";
+                }
+            }
         }
 
         /** @var PartOfDay $partOfDay */
@@ -324,9 +356,9 @@ class Transform
      * @param $string
      * @param $startString
      *
+     * @return bool
      * @deprecated User AppConstants::startsWith instead
      *
-     * @return bool
      */
     protected static function startsWith($string, $startString)
     {
@@ -341,13 +373,22 @@ class Transform
      * @param DateTimeInterface $dateTime
      *
      * @return ApiAccessLog
-     * @throws \Exception
+     * @throws Exception
      */
-    protected static function updateApi(ManagerRegistry $doctrine, String $fullClassName, Patient $patient, ThirdPartyService $service, DateTimeInterface $dateTime)
-    {
+    protected static function updateApi(
+        ManagerRegistry $doctrine,
+        string $fullClassName,
+        Patient $patient,
+        ThirdPartyService $service,
+        DateTimeInterface $dateTime
+    ) {
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateEntity class type is : " . $fullClassName);
         /** @var ApiAccessLog $dataEntry */
-        $dataEntry = $doctrine->getRepository(ApiAccessLog::class)->findOneBy(['entity' => $fullClassName, 'patient' => $patient, 'thirdPartyService' => $service]);
+        $dataEntry = $doctrine->getRepository(ApiAccessLog::class)->findOneBy([
+            'entity' => $fullClassName,
+            'patient' => $patient,
+            'thirdPartyService' => $service,
+        ]);
         if (!$dataEntry) {
             $dataEntry = new ApiAccessLog();
         }

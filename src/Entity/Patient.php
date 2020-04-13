@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Entity;
@@ -19,6 +20,7 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Ornicar\GravatarBundle\GravatarApi;
@@ -109,7 +111,8 @@ class Patient implements UserInterface
     private $xp;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\RpgRewardsAwarded", mappedBy="patient", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="App\Entity\RpgRewardsAwarded", mappedBy="patient", orphanRemoval=true,
+     *                                                             cascade={"persist"})
      */
     private $rewards;
 
@@ -253,10 +256,10 @@ class Patient implements UserInterface
      */
     public function createGuid()
     {
-        if(is_null($this->guid)) {
+        if (is_null($this->guid)) {
             try {
                 $this->guid = Uuid::uuid4();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
         }
 
@@ -656,7 +659,7 @@ class Patient implements UserInterface
     public function getRpgLevel()
     {
         $totalXp = $this->getXpTotal();
-        return intval(explode(".", ( $totalXp / 100 ))[0]);
+        return intval(explode(".", ($totalXp / 100))[0]);
     }
 
     /**
@@ -933,7 +936,8 @@ class Patient implements UserInterface
      *
      * @return bool
      */
-    public function isFriendOf($friend): bool {
+    public function isFriendOf($friend): bool
+    {
 
         return true;
     }
@@ -1181,7 +1185,7 @@ class Patient implements UserInterface
             $this->rpgChallengeGlobals->removeElement($rpgChallengeGlobal);
             // set the owning side to null (unless already changed)
             if ($rpgChallengeGlobal->getPatient() === $this) {
-                $rpgChallengeGlobal->setPatient(NULL);
+                $rpgChallengeGlobal->setPatient(null);
             }
         }
 
@@ -1222,7 +1226,7 @@ class Patient implements UserInterface
             $this->notifications->removeElement($notification);
             // set the owning side to null (unless already changed)
             if ($notification->getPatient() === $this) {
-                $notification->setPatient(NULL);
+                $notification->setPatient(null);
             }
         }
 
@@ -1263,7 +1267,7 @@ class Patient implements UserInterface
             $this->devices->removeElement($device);
             // set the owning side to null (unless already changed)
             if ($device->getPatient() === $this) {
-                $device->setPatient(NULL);
+                $device->setPatient(null);
             }
         }
 

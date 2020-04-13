@@ -86,8 +86,8 @@ class AwardManager
         Swift_Mailer $mailer,
         Environment $twig,
         CommsManager $commsManager,
-        KernelInterface $appKernel)
-    {
+        KernelInterface $appKernel
+    ) {
         $this->doctrine = $doctrine;
         $this->mailer = $mailer;
         $this->twig = $twig;
@@ -107,25 +107,33 @@ class AwardManager
      * @param string|NULL            $citation
      * @param DateTimeInterface|null $dateTime
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
-    {
+    public function checkForAwards(
+        $dataEntry,
+        string $criteria = null,
+        Patient $patient = null,
+        string $citation = null,
+        DateTimeInterface $dateTime = null
+    ) {
         if (!is_null($patient)) {
             $this->patient = $patient;
-        } else if (
-            get_class($dataEntry) == "App\Entity\FitStepsDailySummary" ||
-            get_class($dataEntry) == "App\Entity\FitDistanceDailySummary" ||
-            get_class($dataEntry) == "App\Entity\PatientMembership" ||
-            get_class($dataEntry) == "App\Entity\FitStepsIntraDay" ||
-            get_class($dataEntry) == "App\Entity\ConsumeWater" ||
-            get_class($dataEntry) == "App\Entity\ConsumeCaffeine" ||
-            get_class($dataEntry) == "App\Entity\Exercise" ||
-            get_class($dataEntry) == "App\Entity\BodyWeight"
-        ) {
-            $this->patient = $dataEntry->getPatient();
         } else {
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Cant get a patient class from = ' . get_class($dataEntry));
+            if (
+                get_class($dataEntry) == "App\Entity\FitStepsDailySummary" ||
+                get_class($dataEntry) == "App\Entity\FitDistanceDailySummary" ||
+                get_class($dataEntry) == "App\Entity\PatientMembership" ||
+                get_class($dataEntry) == "App\Entity\FitStepsIntraDay" ||
+                get_class($dataEntry) == "App\Entity\ConsumeWater" ||
+                get_class($dataEntry) == "App\Entity\ConsumeCaffeine" ||
+                get_class($dataEntry) == "App\Entity\Exercise" ||
+                get_class($dataEntry) == "App\Entity\BodyWeight"
+            ) {
+                $this->patient = $dataEntry->getPatient();
+            } else {
+                AppConstants::writeToLog('debug_transform.txt',
+                    __METHOD__ . '@' . __LINE__ . ': Cant get a patient class from = ' . get_class($dataEntry));
+            }
         }
 
         if (!is_null($dateTime)) {
@@ -152,7 +160,8 @@ class AwardManager
 //                    AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . " Found checkFor" . $inputClass);
                     $this->$methodName($dataEntry);
                 } else {
-                    AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . " Missin checkFor" . $inputClass);
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __METHOD__ . '@' . __LINE__ . ': ' . " Missin checkFor" . $inputClass);
                 }
                 break;
 
@@ -172,8 +181,12 @@ class AwardManager
         $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
     }
 
-    private function findAndDeliveryRewards(string $indicatorDataSet, string $indicatorType, string $indicatorComparator, DateTimeInterface $dateTime = NULL)
-    {
+    private function findAndDeliveryRewards(
+        string $indicatorDataSet,
+        string $indicatorType,
+        string $indicatorComparator,
+        DateTimeInterface $dateTime = null
+    ) {
         if (!is_null($dateTime)) {
             $this->dateTime = $dateTime;
         }
@@ -231,9 +244,10 @@ class AwardManager
         if (is_null($indicatorObject)) {
             $indicatorArray = $this->findIndicatorInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
             if (is_null($indicatorArray)) {
-                return NULL;
+                return null;
             } else {
-                $indicatorObject = $this->installIndicator($indicatorArray, $indicatorDataSet, $indicatorType, $indicatorComparator);
+                $indicatorObject = $this->installIndicator($indicatorArray, $indicatorDataSet, $indicatorType,
+                    $indicatorComparator);
             }
         }
 
@@ -247,8 +261,11 @@ class AwardManager
      *
      * @return array|null
      */
-    private function findIndicatorInDefault(string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
-    {
+    private function findIndicatorInDefault(
+        string $indicatorDataSet,
+        string $indicatorType,
+        string $indicatorComparator
+    ) {
         //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' getProjectDir::' . $this->appKernel->getProjectDir());
         $standard = [
             'FitStepsDailySummary' => [
@@ -313,8 +330,12 @@ class AwardManager
             array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
             return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
         } else {
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
-            return ["name" => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator, "description" => "AUTO"];
+            AppConstants::writeToLog('debug_transform.txt',
+                __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
+            return [
+                "name" => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
+                "description" => "AUTO",
+            ];
         }
     }
 
@@ -326,11 +347,17 @@ class AwardManager
      *
      * @return RpgIndicator
      */
-    private function installIndicator(array $indicatorArray, string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
-    {
+    private function installIndicator(
+        array $indicatorArray,
+        string $indicatorDataSet,
+        string $indicatorType,
+        string $indicatorComparator
+    ) {
         $indicatorObject = new RpgIndicator();
         $indicatorObject->setName($indicatorArray['name']);
-        if (array_key_exists("description", $indicatorArray)) $indicatorObject->setDescription($indicatorArray['description']);
+        if (array_key_exists("description", $indicatorArray)) {
+            $indicatorObject->setDescription($indicatorArray['description']);
+        }
         $indicatorObject->setDataSet($indicatorDataSet);
         $indicatorObject->setType($indicatorType);
         $indicatorObject->setComparator($indicatorComparator);
@@ -373,7 +400,7 @@ class AwardManager
                                     'html_title' => "Step Target Wipped Out!",
                                     'header_image' => '../badges/trg_steps_300.png',
                                     "name" => "Step Target",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Step Target',
                                     'badge_image' => 'trg_steps_300',
                                     'badge_text' => "Reached your step goal today",
@@ -401,7 +428,7 @@ class AwardManager
                                     'html_title' => "Step Target Smashed",
                                     'header_image' => '../badges/trg_steps_250.png',
                                     "name" => "Step Target",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Step Target',
                                     'badge_image' => 'trg_steps_250',
                                     'badge_text' => "Reached your step goal today",
@@ -429,7 +456,7 @@ class AwardManager
                                     'html_title' => "Step Target Smashed",
                                     'header_image' => '../badges/trg_steps_200.png',
                                     "name" => "Step Target",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Step Target',
                                     'badge_image' => 'trg_steps_200',
                                     'badge_text' => "Reached your step goal today",
@@ -457,7 +484,7 @@ class AwardManager
                                     'html_title' => "Step Target Smashed",
                                     'header_image' => '../badges/trg_steps_150.png',
                                     "name" => "Step Target",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Step Target',
                                     'badge_image' => 'trg_steps_150',
                                     'badge_text' => "Smashed your step goal today",
@@ -485,7 +512,7 @@ class AwardManager
                                     'html_title' => "Step Target",
                                     'header_image' => '../badges/trg_steps_100.png',
                                     "name" => "Step Target",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Step Target',
                                     'badge_image' => 'trg_steps_100',
                                     'badge_text' => "Reached your step goal today",
@@ -517,7 +544,7 @@ class AwardManager
                                     'html_title' => "Distance Target Smashed",
                                     'header_image' => '../badges/trg_distance_300.png',
                                     "name" => "Distance Target Smashed",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Distance Target Smashed',
                                     'badge_image' => 'trg_distance_300',
                                     'badge_text' => "Reached your distance goal today",
@@ -545,7 +572,7 @@ class AwardManager
                                     'html_title' => "Distance Target Smashed",
                                     'header_image' => '../badges/trg_distance_250.png',
                                     "name" => "Distance Target Smashed",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Distance Target Smashed',
                                     'badge_image' => 'trg_distance_250',
                                     'badge_text' => "Reached your distance goal today",
@@ -573,7 +600,7 @@ class AwardManager
                                     'html_title' => "Distance Target Smashed",
                                     'header_image' => '../badges/trg_distance_200.png',
                                     "name" => "Distance Target Smashed",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Distance Target Smashed',
                                     'badge_image' => 'trg_distance_200',
                                     'badge_text' => "Reached your distance goal today",
@@ -601,7 +628,7 @@ class AwardManager
                                     'html_title' => "Distance Target Achieved",
                                     'header_image' => '../badges/trg_distance_150.png',
                                     "name" => "Distance Target Achieved",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Distance Target Achieved',
                                     'badge_image' => 'trg_distance_150',
                                     'badge_text' => "Reached your distance goal today",
@@ -629,7 +656,7 @@ class AwardManager
                                     'html_title' => "Distance Target Achieved",
                                     'header_image' => '../badges/trg_distance_100.png',
                                     "name" => "Distance Target Achieved",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Distance Target Achieved',
                                     'badge_image' => 'trg_distance_100',
                                     'badge_text' => "Reached your distance goal today",
@@ -661,7 +688,7 @@ class AwardManager
                                     'html_title' => "Patreon",
                                     'header_image' => '../badges/patreon_header.png',
                                     "name" => "Patreon Supporter",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Patreon',
                                     'badge_image' => 'patreon',
                                     'badge_text' => "Patreon Supporter",
@@ -749,7 +776,7 @@ class AwardManager
                                     'html_title' => "Awarded the Full Month badge",
                                     'header_image' => '../badges/streak_month_header.png',
                                     "name" => "Full Month",
-                                    "repeat" => FALSE,
+                                    "repeat" => false,
                                     'badge_name' => 'Full Month',
                                     'badge_image' => 'login_30',
                                     'badge_text' => "31 Day Streak",
@@ -768,8 +795,9 @@ class AwardManager
             array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
             return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
         } else {
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
-            return NULL;
+            AppConstants::writeToLog('debug_transform.txt',
+                __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
+            return null;
         }
     }
 
@@ -804,9 +832,11 @@ class AwardManager
     private function checkForLoginAwards(array $dataEntry)
     {
         if (array_key_exists("reason", $dataEntry) && array_key_exists("length", $dataEntry)) {
-            $this->findAndDeliveryRewards('login', $dataEntry['reason'], $dataEntry['length'], new DateTime(date("Y-m-d 00:00:00")));
+            $this->findAndDeliveryRewards('login', $dataEntry['reason'], $dataEntry['length'],
+                new DateTime(date("Y-m-d 00:00:00")));
         } else {
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, TRUE));
+            AppConstants::writeToLog('debug_transform.txt',
+                __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, true));
         }
     }
 
@@ -817,8 +847,13 @@ class AwardManager
      * @param string|NULL            $citation
      * @param DateTimeInterface|null $dateTime
      */
-    private function checkForChallengeAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
-    {
+    private function checkForChallengeAwards(
+        $dataEntry,
+        string $criteria = null,
+        Patient $patient = null,
+        string $citation = null,
+        DateTimeInterface $dateTime = null
+    ) {
         $this->findAndDeliveryRewards(
             "pvp_" . strtolower($dataEntry['criteria']),
             strtolower($dataEntry['result']),
@@ -830,14 +865,15 @@ class AwardManager
     /**
      * @param FitStepsDailySummary $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function checkForFitStepsDailySummary(FitStepsDailySummary $dataEntry)
     {
         //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
 
         if ($dataEntry->getDateTime()->format("Y-m-d") != date("Y-m-d")) {
-            AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::DateMissMatch');
+            AppConstants::writeToLog('debug_transform.txt',
+                __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::DateMissMatch');
         } else {
             if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
                 //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
@@ -845,17 +881,24 @@ class AwardManager
                 $indicatorType = "goal";
                 if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
                     $indicatorComparator = ">300%";
-                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
-                    $indicatorComparator = ">250%";
-                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
-                    $indicatorComparator = ">200%";
-                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
-                    $indicatorComparator = ">150%";
                 } else {
-                    $indicatorComparator = ">100%";
+                    if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
+                        $indicatorComparator = ">250%";
+                    } else {
+                        if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
+                            $indicatorComparator = ">200%";
+                        } else {
+                            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
+                                $indicatorComparator = ">150%";
+                            } else {
+                                $indicatorComparator = ">100%";
+                            }
+                        }
+                    }
                 }
 
-                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
+                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
+                    new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
             }
         }
     }
@@ -864,7 +907,7 @@ class AwardManager
     /**
      * @param FitDistanceDailySummary $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function checkForFitDistanceDailySummary(FitDistanceDailySummary $dataEntry)
     {
@@ -874,17 +917,24 @@ class AwardManager
                 $indicatorType = "goal";
                 if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
                     $indicatorComparator = ">300%";
-                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
-                    $indicatorComparator = ">250%";
-                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
-                    $indicatorComparator = ">200%";
-                } else if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
-                    $indicatorComparator = ">150%";
                 } else {
-                    $indicatorComparator = ">100%";
+                    if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
+                        $indicatorComparator = ">250%";
+                    } else {
+                        if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
+                            $indicatorComparator = ">200%";
+                        } else {
+                            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
+                                $indicatorComparator = ">150%";
+                            } else {
+                                $indicatorComparator = ">100%";
+                            }
+                        }
+                    }
                 }
 
-                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime(date("Y-m-d 00:00:00")));
+                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
+                    new DateTime(date("Y-m-d 00:00:00")));
             }
         }
     }
@@ -893,14 +943,15 @@ class AwardManager
     /**
      * @param FitStepsIntraDay $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function checkForFitStepsIntraDay(FitStepsIntraDay $dataEntry)
     {
         /** @var FitStepsIntraDay[] $product */
         $product = $this->doctrine
             ->getRepository(FitStepsIntraDay::class)
-            ->findByForHour($dataEntry->getPatient()->getUuid(), $dataEntry->getDateTime()->format("Y-m-d"), $dataEntry->getHour(), $dataEntry->getTrackingDevice()->getId());
+            ->findByForHour($dataEntry->getPatient()->getUuid(), $dataEntry->getDateTime()->format("Y-m-d"),
+                $dataEntry->getHour(), $dataEntry->getTrackingDevice()->getId());
 
         $value = 0;
         foreach ($product as $item) {
@@ -908,15 +959,28 @@ class AwardManager
         }
 
         if ($value > 5000) {
-            $this->findAndDeliveryRewards("intraday", "steps", "5000", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
-        } else if ($value > 3000) {
-            $this->findAndDeliveryRewards("intraday", "steps", "3000", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
-        } else if ($value > 2500) {
-            $this->findAndDeliveryRewards("intraday", "steps", "2500", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
-        } else if ($value > 1500) {
-            $this->findAndDeliveryRewards("intraday", "steps", "1500", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
-        }else if ($value > 250) {
-            $this->findAndDeliveryRewards("intraday", "steps", "250", new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00" )));
+            $this->findAndDeliveryRewards("intraday", "steps", "5000",
+                new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+        } else {
+            if ($value > 3000) {
+                $this->findAndDeliveryRewards("intraday", "steps", "3000",
+                    new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+            } else {
+                if ($value > 2500) {
+                    $this->findAndDeliveryRewards("intraday", "steps", "2500",
+                        new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+                } else {
+                    if ($value > 1500) {
+                        $this->findAndDeliveryRewards("intraday", "steps", "1500",
+                            new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+                    } else {
+                        if ($value > 250) {
+                            $this->findAndDeliveryRewards("intraday", "steps", "250",
+                                new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -924,7 +988,7 @@ class AwardManager
     /**
      * @param BodyWeight $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function checkForBodyWeight(BodyWeight $dataEntry)
     {
@@ -935,18 +999,19 @@ class AwardManager
     /**
      * @param Exercise $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function checkForExercise(Exercise $dataEntry)
     {
-        $this->findAndDeliveryRewards("exercise_" . strtolower($dataEntry->getExerciseType()->getTag()), "duration", round ($dataEntry->getDuration(), -2), $dataEntry->getDateTimeStart());
+        $this->findAndDeliveryRewards("exercise_" . strtolower($dataEntry->getExerciseType()->getTag()), "duration",
+            round($dataEntry->getDuration(), -2), $dataEntry->getDateTimeStart());
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
     /**
      * @param ConsumeWater $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function checkForConsumeWater(ConsumeWater $dataEntry)
     {
@@ -966,17 +1031,24 @@ class AwardManager
             $indicatorType = "goal";
             if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 3)) {
                 $indicatorComparator = ">300%";
-            } else if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2.5)) {
-                $indicatorComparator = ">250%";
-            } else if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2)) {
-                $indicatorComparator = ">200%";
-            } else if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 1.5)) {
-                $indicatorComparator = ">150%";
             } else {
-                $indicatorComparator = ">100%";
+                if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2.5)) {
+                    $indicatorComparator = ">250%";
+                } else {
+                    if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2)) {
+                        $indicatorComparator = ">200%";
+                    } else {
+                        if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 1.5)) {
+                            $indicatorComparator = ">150%";
+                        } else {
+                            $indicatorComparator = ">100%";
+                        }
+                    }
+                }
             }
 
-            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator, new DateTime(date("Y-m-d 00:00:00")));
+            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
+                new DateTime(date("Y-m-d 00:00:00")));
         }
     }
 
@@ -984,7 +1056,7 @@ class AwardManager
     /**
      * @param ConsumeCaffeine $dataEntry
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function checkForConsumeCaffeine(ConsumeCaffeine $dataEntry)
     {

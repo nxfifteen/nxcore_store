@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -62,9 +63,9 @@ class FitCaloriesDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays, int $trackingDevice)
+    public function findByDateRangeHistorical(string $patientId, string $date, int $lastDays, int $trackingDevice)
     {
         $dateObject = new DateTime($date);
 
@@ -112,9 +113,9 @@ class FitCaloriesDailySummaryRepository extends ServiceEntityRepository
      * @param int    $trackingDevice
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRange(String $patientId, String $date, int $trackingDevice)
+    public function findByDateRange(string $patientId, string $date, int $trackingDevice)
     {
         return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
     }

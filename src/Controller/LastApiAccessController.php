@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -36,7 +37,7 @@ class LastApiAccessController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function index(String $uuid, String $service, String $endpoint)
+    public function index(string $uuid, string $service, string $endpoint)
     {
         $this->hasAccess($uuid);
 
@@ -96,9 +97,9 @@ class LastApiAccessController extends AbstractController
      *
      * @throws LogicException If the Security component is not available
      */
-    private function hasAccess(String $uuid)
+    private function hasAccess(string $uuid)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
 
         /** @var Patient $user */
         $user = $this->getUser();

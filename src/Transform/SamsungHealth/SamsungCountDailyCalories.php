@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -38,9 +39,9 @@ class SamsungCountDailyCalories extends Constants
      * @param AwardManager    $awardManager
      *
      * @return FitCaloriesDailySummary|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
@@ -51,29 +52,34 @@ class SamsungCountDailyCalories extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
             $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitCaloriesDailySummary", $jsonContent->goal, NULL, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "FitCaloriesDailySummary", $jsonContent->goal, null,
+                $patient);
             if (is_null($patientGoal)) {
-                return NULL;
+                return null;
             }
 
             /** @var FitCaloriesDailySummary $dataEntry */
-            $dataEntry = $doctrine->getRepository(FitCaloriesDailySummary::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(FitCaloriesDailySummary::class)->findOneBy([
+                'RemoteId' => $jsonContent->remoteId,
+                'patient' => $patient,
+                'trackingDevice' => $deviceTracking,
+            ]);
             if (!$dataEntry) {
                 $dataEntry = new FitCaloriesDailySummary();
             }
@@ -86,7 +92,7 @@ class SamsungCountDailyCalories extends Constants
 
             $dayStartTime = strtotime($jsonContent->dateTimeDayTime);
             $dayEndTime = strtotime(date("Y-m-d 23:59:59", $dayStartTime));
-            $updateTime = strtotime($jsonContent->dateTimeUpdated) + (60*60);
+            $updateTime = strtotime($jsonContent->dateTimeUpdated) + (60 * 60);
             if ($updateTime > $dayEndTime) {
                 $updateTime = $dayEndTime;
             }
@@ -99,12 +105,13 @@ class SamsungCountDailyCalories extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient,
+                $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 
         }
 
-        return NULL;
+        return null;
     }
 }

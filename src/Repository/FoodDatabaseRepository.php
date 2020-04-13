@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -19,10 +20,10 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 
 /**
- * @method FoodDatabase|null find($id, $lockMode = NULL, $lockVersion = NULL)
- * @method FoodDatabase|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method FoodDatabase|null find($id, $lockMode = null, $lockVersion = null)
+ * @method FoodDatabase|null findOneBy(array $criteria, array $orderBy = null)
  * @method FoodDatabase[]    findAll()
- * @method FoodDatabase[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ * @method FoodDatabase[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class FoodDatabaseRepository extends ServiceEntityRepository
 {
@@ -68,7 +69,7 @@ class FoodDatabaseRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult();
         } catch (NonUniqueResultException $e) {
-            return NULL;
+            return null;
         }
     }
 }

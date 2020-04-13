@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -18,10 +19,10 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
- * @method SiteNavItem|null find($id, $lockMode = NULL, $lockVersion = NULL)
- * @method SiteNavItem|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method SiteNavItem|null find($id, $lockMode = null, $lockVersion = null)
+ * @method SiteNavItem|null findOneBy(array $criteria, array $orderBy = null)
  * @method SiteNavItem[]    findAll()
- * @method SiteNavItem[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ * @method SiteNavItem[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class SiteNavItemRepository extends ServiceEntityRepository
 {

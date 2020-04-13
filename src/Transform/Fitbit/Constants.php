@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
@@ -60,7 +61,7 @@ class Constants extends Transform
      */
     public static function getPath(string $endpoint)
     {
-        switch ( $endpoint ) {
+        switch ($endpoint) {
             case 'BodyWeight':
                 $path = '/body/log/weight/date/{date}/{period}{ext}';
                 break;
@@ -105,8 +106,9 @@ class Constants extends Transform
      *
      * @return array|null
      */
-    public static function convertSubscriptionToClass($endpoint) {
-        switch ( $endpoint ) {
+    public static function convertSubscriptionToClass($endpoint)
+    {
+        switch ($endpoint) {
             case 'activities':
                 return [
                     "TrackingDevice",
@@ -117,7 +119,7 @@ class Constants extends Transform
             case 'body':
                 return [
                     "TrackingDevice",
-                    "BodyWeight"
+                    "BodyWeight",
                 ];
                 break;
 

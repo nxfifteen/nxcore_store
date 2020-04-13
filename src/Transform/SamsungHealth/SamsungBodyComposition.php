@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -40,28 +41,28 @@ class SamsungBodyComposition extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyComposition|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid") &&
             ($jsonContent->skeletal_muscle > 0 ||
-            $jsonContent->muscle_mass > 0 ||
-            $jsonContent->basal_metabolic_rate > 0 ||
-            $jsonContent->skeletal_muscle_mass > 0 ||
-            $jsonContent->total_body_water > 0)) {
+                $jsonContent->muscle_mass > 0 ||
+                $jsonContent->basal_metabolic_rate > 0 ||
+                $jsonContent->skeletal_muscle_mass > 0 ||
+                $jsonContent->total_body_water > 0)) {
             ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too BodyComposition for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
-            if (self::startsWith($jsonContent->comment,"Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
+            if (self::startsWith($jsonContent->comment, "Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
                 /** @var ThirdPartyService $thirdPartyService */
                 $thirdPartyService = self::getThirdPartyService($doctrine, self::FITBITSERVICE);
             } else {
@@ -69,28 +70,33 @@ class SamsungBodyComposition extends Constants
                 $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             }
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
-            if (self::startsWith($jsonContent->comment,"Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
+            if (self::startsWith($jsonContent->comment, "Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
                 /** @var TrackingDevice $deviceTracking */
                 $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, "Aria");
             } else {
                 /** @var TrackingDevice $deviceTracking */
-                $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
+                $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService,
+                    $jsonContent->device);
             }
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var PartOfDay $partOfDay */
             $partOfDay = self::getPartOfDay($doctrine, new DateTime($jsonContent->dateTime));
             if (is_null($partOfDay)) {
-                return NULL;
+                return null;
             }
 
             /** @var BodyComposition $dataEntry */
-            $dataEntry = $doctrine->getRepository(BodyComposition::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(BodyComposition::class)->findOneBy([
+                'RemoteId' => $jsonContent->remoteId,
+                'patient' => $patient,
+                'trackingDevice' => $deviceTracking,
+            ]);
             if (!$dataEntry) {
                 $dataEntry = new BodyComposition();
             }
@@ -114,12 +120,13 @@ class SamsungBodyComposition extends Constants
             $dataEntry->setSkeletalMuscleMass($jsonContent->skeletal_muscle_mass);
             $dataEntry->setTotalBodyWater($jsonContent->total_body_water);
 
-            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient,
+                $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 
         }
 
-        return NULL;
+        return null;
     }
 }

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Entity;
@@ -17,13 +18,15 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="DeviceRemote", columns={"remote_id","tracking_device_id"})})
  *
- * @ApiFilter(SearchFilter::class, properties={"id": "exact", "DateTime": "exact", "patient": "exact", "trackingDevice": "exact"})
+ * @ApiFilter(SearchFilter::class, properties={"id": "exact", "DateTime": "exact", "patient": "exact",
+ *                                 "trackingDevice": "exact"})
  * @ORM\Entity(repositoryClass="App\Repository\FitStepsDailySummaryRepository")
  */
 class FitStepsDailySummary
@@ -96,10 +99,10 @@ class FitStepsDailySummary
      */
     public function createGuid()
     {
-        if(is_null($this->guid)) {
+        if (is_null($this->guid)) {
             try {
                 $this->guid = Uuid::uuid4();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
         }
 

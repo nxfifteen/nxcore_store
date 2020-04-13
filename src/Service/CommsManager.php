@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Service;
@@ -76,8 +77,7 @@ class CommsManager
         Swift_Mailer $mailer,
         Environment $twig,
         FCMClient $fcmClient
-    )
-    {
+    ) {
         $this->doctrine = $doctrine;
         $this->mailer = $mailer;
         $this->twig = $twig;
@@ -94,21 +94,30 @@ class CommsManager
      *
      * @return array
      */
-    public function sendNotification(string $title, ?string $body, Patient $patient, bool $private = FALSE, string $fileUrl = NULL)
-    {
+    public function sendNotification(
+        string $title,
+        ?string $body,
+        Patient $patient,
+        bool $private = false,
+        string $fileUrl = null
+    ) {
         $return = [];
 
         if ($private) {
 
-            $title = $this->findUserNamesInMessage($title, $patient, TRUE);
-            if (!is_null($body)) $body = $this->findUserNamesInMessage($body, $patient, FALSE);
+            $title = $this->findUserNamesInMessage($title, $patient, true);
+            if (!is_null($body)) {
+                $body = $this->findUserNamesInMessage($body, $patient, false);
+            }
 
             $this->sendNotificationChat($title, $body, $patient, $fileUrl);
             $this->sendNotificationPush($title, $body, $patient);
         } else {
 
-            $title = $this->findUserNamesInMessage($title, $patient, FALSE);
-            if (!is_null($body)) $body = $this->findUserNamesInMessage($body, $patient, FALSE);
+            $title = $this->findUserNamesInMessage($title, $patient, false);
+            if (!is_null($body)) {
+                $body = $this->findUserNamesInMessage($body, $patient, false);
+            }
 
             $this->sendChatToChannel($title, $body, $fileUrl);
         }
@@ -116,16 +125,19 @@ class CommsManager
         return $return;
     }
 
-    public function social(string $message, string $channel, string $service = "all", Patient $patient = null) {
+    public function social(string $message, string $channel, string $service = "all", Patient $patient = null)
+    {
         if ($service == "all" || $service == "discord") {
             $this->discord($channel, $message);
-        } else if (!is_null($patient) && ($service == "all" || $service == "synology")) {
-            $this->sendNotification(
-                "",
-                $message,
-                NULL,
-                FALSE
-            );
+        } else {
+            if (!is_null($patient) && ($service == "all" || $service == "synology")) {
+                $this->sendNotification(
+                    "",
+                    $message,
+                    null,
+                    false
+                );
+            }
         }
     }
 
@@ -139,7 +151,7 @@ class CommsManager
     private function findUserNamesInMessage(?string $message, Patient $patient, bool $private)
     {
         if (is_null($message)) {
-            return NULL;
+            return null;
         }
 
         $thirdPartyService = $this->doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => "Synology Chat"]);
@@ -154,7 +166,7 @@ class CommsManager
             foreach ($regs[1] as $reg) {
                 AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' UUID = ' . $reg);
 
-                $userChatId = NULL;
+                $userChatId = null;
                 try {
                     $userChatId = $this->doctrine->getRepository(PatientCredentials::class)->createQueryBuilder('c')
                         ->leftJoin('c.patient', 'p')
@@ -183,7 +195,7 @@ class CommsManager
      * @param Patient     $patient
      * @param string|NULL $fileUrl
      */
-    private function sendNotificationChat(string $title, ?string $body, Patient $patient, string $fileUrl = NULL)
+    private function sendNotificationChat(string $title, ?string $body, Patient $patient, string $fileUrl = null)
     {
         $thirdPartyService = $this->doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => "Synology Chat"]);
         if ($thirdPartyService) {
@@ -194,11 +206,12 @@ class CommsManager
 
             if (!$dbSynologyAccount) {
                 AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' User doesnt have a Synology account');
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Registered Email address is ' . $patient->getEmail());
+                AppConstants::writeToLog('debug_transform.txt',
+                    __LINE__ . ' Registered Email address is ' . $patient->getEmail());
                 $foundUser = $this->findUserInChat($patient->getEmail());
                 if (!is_null($foundUser)) {
                     AppConstants::writeToLog('debug_transform.txt', __LINE__ . '  The Bot can see the user');
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($foundUser, TRUE));
+                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($foundUser, true));
 
                     $dbSynologyAccount = new PatientCredentials();
                     $dbSynologyAccount->setPatient($patient);
@@ -233,7 +246,7 @@ class CommsManager
 
             // trying to get the response contents will block the execution until
             // the full response contents are received
-            $contents = json_decode($response->getContent(), FALSE);
+            $contents = json_decode($response->getContent(), false);
 
             if ($contents->success) {
                 foreach ($contents->data->users as $user) {
@@ -248,7 +261,7 @@ class CommsManager
         } catch (ServerExceptionInterface $e) {
         }
 
-        return NULL;
+        return null;
     }
 
     /**
@@ -259,7 +272,7 @@ class CommsManager
      *
      * @return array|mixed
      */
-    private function sendChatToUser(string $title, ?string $body, int $userId, string $fileUrl = NULL)
+    private function sendChatToUser(string $title, ?string $body, int $userId, string $fileUrl = null)
     {
         $payload = [
             "text" => $title,
@@ -312,7 +325,7 @@ class CommsManager
 
             // trying to get the response contents will block the execution until
             // the full response contents are received
-            $contents = json_decode($response->getContent(), TRUE);
+            $contents = json_decode($response->getContent(), true);
         } catch (TransportExceptionInterface $e) {
         } catch (ClientExceptionInterface $e) {
         } catch (RedirectionExceptionInterface $e) {
@@ -354,7 +367,7 @@ class CommsManager
      *
      * @return array|mixed
      */
-    private function sendChatToChannel(string $title, ?string $body, string $fileUrl = NULL)
+    private function sendChatToChannel(string $title, ?string $body, string $fileUrl = null)
     {
         $payload = [
             "text" => $title,
@@ -437,25 +450,26 @@ class CommsManager
         }
     }
 
-    public function discord(string $channel, string $message, array $embeds = []) {
+    public function discord(string $channel, string $message, array $embeds = [])
+    {
         $webhookurl = $_ENV['DISCORD_WH_' . $channel];
 
         $json_data = json_encode([
             // Message
             "content" => $message,
-        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        $ch = curl_init( $webhookurl );
-        curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
-        curl_setopt( $ch, CURLOPT_POST, 1);
-        curl_setopt( $ch, CURLOPT_POSTFIELDS, $json_data);
-        curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt( $ch, CURLOPT_HEADER, 0);
-        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+        $ch = curl_init($webhookurl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        $response = curl_exec( $ch );
+        $response = curl_exec($ch);
         // If you need to debug, or find out why you can't send message uncomment line below, and execute script.
         // echo $response;
-        curl_close( $ch );
+        curl_close($ch);
     }
 }

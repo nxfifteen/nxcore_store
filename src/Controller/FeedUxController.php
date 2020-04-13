@@ -63,7 +63,7 @@ class FeedUxController extends AbstractController
      * @Route("/feed/activities/log", name="index_activity_log_no_param")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function index_activity_log_no_param()
     {
@@ -83,7 +83,7 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
         $this->setupRoute();
 
         $return['title'] = $dateFrom;
@@ -143,7 +143,7 @@ class FeedUxController extends AbstractController
         } catch (Exception $e) {
             $return['error'] = $e->getMessage();
 
-            $b = microtime(TRUE);
+            $b = microtime(true);
             $c = $b - $a;
             $return['genTime'] = round($c, 4);
             return $this->json($return);
@@ -163,7 +163,8 @@ class FeedUxController extends AbstractController
             foreach ($dbAllTimeDurations as $dbAllTimeDuration) {
                 $newArray["labels"][] = ucwords($dbAllTimeDuration['name']);
                 $newArray["values"][] = intval(round(($dbAllTimeDuration['duration'] / 60), 0));
-                $return['durationsTotal'] = $return['durationsTotal'] + intval(round(($dbAllTimeDuration['duration'] / 60), 0));
+                $return['durationsTotal'] = $return['durationsTotal'] + intval(round(($dbAllTimeDuration['duration'] / 60),
+                        0));
             }
             $return['durations'] = $newArray;
         }
@@ -182,7 +183,8 @@ class FeedUxController extends AbstractController
             foreach ($dbAllTimePartOfDays as $dbAllTimePartOfDay) {
                 $newArray["labels"][] = ucwords($dbAllTimePartOfDay['name']);
                 $newArray["values"][] = intval(round(($dbAllTimePartOfDay['duration'] / 60), 0));
-                $return['partOfDaysTotal'] = $return['partOfDaysTotal'] + intval(round(($dbAllTimePartOfDay['duration'] / 60), 0));
+                $return['partOfDaysTotal'] = $return['partOfDaysTotal'] + intval(round(($dbAllTimePartOfDay['duration'] / 60),
+                        0));
             }
             $return['partOfDays'] = $newArray;
         }
@@ -216,7 +218,7 @@ class FeedUxController extends AbstractController
                 ->getQuery()->getResult();
         }
         if (!$dbExercises) {
-            $b = microtime(TRUE);
+            $b = microtime(true);
             $c = $b - $a;
             $return['genTime'] = round($c, 4);
             return $this->json($return);
@@ -243,7 +245,8 @@ class FeedUxController extends AbstractController
                             $exerciseDateFinished,
                             $dbExercise->getTrackingDevice()->getId()
                         );
-                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) == 1 && array_key_exists("sum", $dbIntraDaySteps[0])) {
+                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) == 1 && array_key_exists("sum",
+                            $dbIntraDaySteps[0])) {
                         if ($dbIntraDaySteps[0]['sum'] > 0) {
                             $dbExercise->setSteps($dbIntraDaySteps[0]['sum']);
 
@@ -283,13 +286,15 @@ class FeedUxController extends AbstractController
             ];
 
             if (array_key_exists($exerciseTag, $return['periodDurations'])) {
-                $return['periodDurations'][$exerciseTag] = $return['periodDurations'][$exerciseTag] + round(($dbExercise->getDuration() / 60), 0);
+                $return['periodDurations'][$exerciseTag] = $return['periodDurations'][$exerciseTag] + round(($dbExercise->getDuration() / 60),
+                        0);
             } else {
                 $return['periodDurations'][$exerciseTag] = round(($dbExercise->getDuration() / 60), 0);
             }
 
             if (array_key_exists($partOfDay, $return['periodPartOfDays'])) {
-                $return['periodPartOfDays'][$partOfDay] = $return['periodPartOfDays'][$partOfDay] + round(($dbExercise->getDuration() / 60), 0);
+                $return['periodPartOfDays'][$partOfDay] = $return['periodPartOfDays'][$partOfDay] + round(($dbExercise->getDuration() / 60),
+                        0);
             } else {
                 $return['periodPartOfDays'][$partOfDay] = round(($dbExercise->getDuration() / 60), 0);
             }
@@ -311,7 +316,7 @@ class FeedUxController extends AbstractController
         }
         $return['periodDurations'] = $newArray;
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -319,8 +324,10 @@ class FeedUxController extends AbstractController
 
     private function setupRoute(string $userRole = 'ROLE_USER')
     {
-        if (is_null($this->patient)) $this->patient = $this->getUser();
-        $this->feed_storage = NULL;
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
+        $this->feed_storage = null;
 
         Sentry\configureScope(function (Sentry\State\Scope $scope): void {
             $scope->setUser([
@@ -340,7 +347,7 @@ class FeedUxController extends AbstractController
      */
     private function hasAccess(string $userRole = 'ROLE_USER')
     {
-        $this->denyAccessUnlessGranted($userRole, NULL, 'User tried to access a page without having ' . $userRole);
+        $this->denyAccessUnlessGranted($userRole, null, 'User tried to access a page without having ' . $userRole);
     }
 
     /**
@@ -355,7 +362,7 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
         $this->setupRoute();
 
         $return['nav'] = [
@@ -373,7 +380,7 @@ class FeedUxController extends AbstractController
             ->setParameter('patientId', $this->patient)
             ->getQuery()->getResult();
         if (!$dbExercises) {
-            $b = microtime(TRUE);
+            $b = microtime(true);
             $c = $b - $a;
             $return['exit'] = __LINE__;
             $return['genTime'] = round($c, 4);
@@ -483,7 +490,8 @@ class FeedUxController extends AbstractController
                 "stepsTotal" => $dayStepTotal,
                 "altitudeMax" => round($dbExercise->getExerciseSummary()->getAltitudeMax(), 2),
                 "altitudeMin" => round($dbExercise->getExerciseSummary()->getAltitudeMin(), 2),
-                "altitudeGain" => round($dbExercise->getExerciseSummary()->getAltitudeMax() - $dbExercise->getExerciseSummary()->getAltitudeMin(), 2),
+                "altitudeGain" => round($dbExercise->getExerciseSummary()->getAltitudeMax() - $dbExercise->getExerciseSummary()->getAltitudeMin(),
+                    2),
                 "calorie" => round($dbExercise->getExerciseSummary()->getCalorie(), 2),
                 "calorieTotal" => -1,
                 "distance" => round($dbExercise->getExerciseSummary()->getDistance() / 1000, 2),
@@ -503,14 +511,14 @@ class FeedUxController extends AbstractController
             ];
 
             if ($return['results']['duration'] > 59) {
-                $includeHours = TRUE;
+                $includeHours = true;
             } else {
-                $includeHours = FALSE;
+                $includeHours = false;
             }
 
             $liveData = $dbExercise->getLiveDataBlob();
             if (!is_null($liveData)) {
-                $liveData = json_decode(AppConstants::uncompressString($liveData), TRUE);
+                $liveData = json_decode(AppConstants::uncompressString($liveData), true);
                 $return['results']['liveData'] = [];
 
                 foreach ($liveData as $liveDatum) {
@@ -519,18 +527,22 @@ class FeedUxController extends AbstractController
                         if ($liveDatum[$key] > $return['results']['maxDistance']) {
                             $return['results']['maxDistance'] = round($liveDatum[$key], 2);
                         }
-                    } else if (array_key_exists('speed', $liveDatum)) {
-                        $key = 'speed';
-                        if ($liveDatum[$key] > $return['results']['maxSpeed']) {
-                            $return['results']['maxSpeed'] = round($liveDatum[$key], 2);
-                        }
-                    } else if (array_key_exists('heart_rate', $liveDatum)) {
-                        $key = 'heart_rate';
-                        if ($liveDatum[$key] > $return['results']['maxHeart']) {
-                            $return['results']['maxHeart'] = round($liveDatum[$key], 2);
-                        }
                     } else {
-                        $key = NULL;
+                        if (array_key_exists('speed', $liveDatum)) {
+                            $key = 'speed';
+                            if ($liveDatum[$key] > $return['results']['maxSpeed']) {
+                                $return['results']['maxSpeed'] = round($liveDatum[$key], 2);
+                            }
+                        } else {
+                            if (array_key_exists('heart_rate', $liveDatum)) {
+                                $key = 'heart_rate';
+                                if ($liveDatum[$key] > $return['results']['maxHeart']) {
+                                    $return['results']['maxHeart'] = round($liveDatum[$key], 2);
+                                }
+                            } else {
+                                $key = null;
+                            }
+                        }
                     }
                     if (!is_null($key)) {
                         if (!array_key_exists($key, $return['results']['liveData'])) {
@@ -538,7 +550,8 @@ class FeedUxController extends AbstractController
                         }
 
                         $return['results']['liveData'][$key][] = [
-                            "timestamp" => AppConstants::formatSeconds(round(($liveDatum['start_time'] - $startedTimeStamp) / 1000, 0), $includeHours),
+                            "timestamp" => AppConstants::formatSeconds(round(($liveDatum['start_time'] - $startedTimeStamp) / 1000,
+                                0), $includeHours),
                             "value" => round($liveDatum[$key], 2),
                         ];
                     }
@@ -547,14 +560,19 @@ class FeedUxController extends AbstractController
 
             $locationData = $dbExercise->getLocationDataBlob();
             if (!is_null($locationData)) {
-                $locationData = json_decode(AppConstants::uncompressString($locationData), TRUE);
+                $locationData = json_decode(AppConstants::uncompressString($locationData), true);
 
                 foreach ($locationData as $locationDatum) {
                     if (array_key_exists("start_time", $locationDatum)) {
                         $newLocationArray = [];
-                        $newLocationArray['start_time'] = AppConstants::formatSeconds(round(($locationDatum['start_time'] - $startedTimeStamp) / 1000, 0), $includeHours);
-                        if (array_key_exists("latitude", $locationDatum)) $newLocationArray['latitude'] = $locationDatum['latitude'];
-                        if (array_key_exists("longitude", $locationDatum)) $newLocationArray['longitude'] = $locationDatum['longitude'];
+                        $newLocationArray['start_time'] = AppConstants::formatSeconds(round(($locationDatum['start_time'] - $startedTimeStamp) / 1000,
+                            0), $includeHours);
+                        if (array_key_exists("latitude", $locationDatum)) {
+                            $newLocationArray['latitude'] = $locationDatum['latitude'];
+                        }
+                        if (array_key_exists("longitude", $locationDatum)) {
+                            $newLocationArray['longitude'] = $locationDatum['longitude'];
+                        }
                         $return['results']['locationData'][] = $newLocationArray;
 
                         if (array_key_exists("altitude", $locationDatum)) {
@@ -572,7 +590,7 @@ class FeedUxController extends AbstractController
 
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -660,13 +678,13 @@ class FeedUxController extends AbstractController
      * @Route("/feed/hass", name="index_hass_digest")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function index_hass_digest()
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -683,7 +701,7 @@ class FeedUxController extends AbstractController
         $return['weight_loss'] = 0;
         $return['resting_heart_rate'] = 0;
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -693,13 +711,15 @@ class FeedUxController extends AbstractController
      * @param bool $pro
      *
      * @return array|null
-     * @throws \Exception
+     * @throws Exception
      */
-    private function getPatientSteps($pro = FALSE)
+    private function getPatientSteps($pro = false)
     {
         $returnSummary = [];
 
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var FitStepsDailySummary[] $dbStepsSummary */
@@ -707,13 +727,15 @@ class FeedUxController extends AbstractController
             ->getRepository(FitStepsDailySummary::class)
             ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 0);
         if (count($dbStepsSummary) == 0) {
-            return NULL;
+            return null;
         }
         $dbStepsSummary = array_pop($dbStepsSummary);
 
         $returnSummary['value'] = $dbStepsSummary->getValue();
         $returnSummary['goal'] = $dbStepsSummary->getGoal()->getGoal();
-        if ($returnSummary['goal'] == 0) $returnSummary['goal'] = 10000;
+        if ($returnSummary['goal'] == 0) {
+            $returnSummary['goal'] = 10000;
+        }
         $returnSummary['progress'] = round(($returnSummary['value'] / $returnSummary['goal']) * 100, 0);
         $returnSummary['intraDay'] = $this->getPatientStepsIntraDay(date("Y-m-d"), $pro);
 
@@ -733,9 +755,11 @@ class FeedUxController extends AbstractController
      *
      * @return array|null
      */
-    private function getPatientStepsIntraDay(String $date, $pro = FALSE)
+    private function getPatientStepsIntraDay(string $date, $pro = false)
     {
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var FitStepsIntraDay[] $dbStepsSummary */
@@ -743,7 +767,7 @@ class FeedUxController extends AbstractController
             ->getRepository(FitStepsIntraDay::class)
             ->findByDateRange($this->patient->getUuid(), $date);
         if (count($dbStepsIntraDay) == 0) {
-            return NULL;
+            return null;
         }
 
         $timeStampsInTrack = [];
@@ -764,7 +788,7 @@ class FeedUxController extends AbstractController
                 }
             }
         } else {
-            return NULL;
+            return null;
         }
 
         if (!$pro) {
@@ -773,7 +797,9 @@ class FeedUxController extends AbstractController
         } else {
             $timeStampsInTrack['widget'] = [];
             foreach ($dbHours as $dbHour => $value) {
-                if ($value == 0) $value = 50;
+                if ($value == 0) {
+                    $value = 50;
+                }
                 $timeStampsInTrack['widget'][] = [
                     "name" => $dbHour,
                     "value" => $value,
@@ -789,7 +815,7 @@ class FeedUxController extends AbstractController
      *
      * @return array
      */
-    private function getHoursArray(int $currentHour = NULL)
+    private function getHoursArray(int $currentHour = null)
     {
         if (is_null($currentHour)) {
             $currentHour = 23;
@@ -808,7 +834,9 @@ class FeedUxController extends AbstractController
     {
         $returnSummary = [];
 
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var FitFloorsIntraDay[] $dbStepsSummary */
@@ -816,7 +844,7 @@ class FeedUxController extends AbstractController
             ->getRepository(FitFloorsIntraDay::class)
             ->findByDateRange($this->patient->getUuid(), date("Y-m-d"));
         if (count($dbStepsSummary) == 0) {
-            return NULL;
+            return null;
         }
 
         $returnSummary['value'] = 0;
@@ -829,7 +857,7 @@ class FeedUxController extends AbstractController
                 }
             }
         } else {
-            return NULL;
+            return null;
         }
 
         if ($returnSummary['goal'] > 0) {
@@ -874,7 +902,7 @@ class FeedUxController extends AbstractController
                 }
             }
         } else {
-            return NULL;
+            return null;
         }
         $timeStampsInTrack['widget']['labels'] = array_keys($dbHours);
         $timeStampsInTrack['widget']['data']['data'] = $dbHours;
@@ -888,15 +916,19 @@ class FeedUxController extends AbstractController
      * @param int         $dateRange
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    private function getPatientWeight($pro = FALSE, String $date = NULL, int $dateRange = 31)
+    private function getPatientWeight($pro = false, string $date = null, int $dateRange = 31)
     {
         $returnSummary = [];
 
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
-        if (is_null($date)) $date = date("Y-m-d");
+        if (is_null($date)) {
+            $date = date("Y-m-d");
+        }
 
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var BodyWeight[] $product */
@@ -904,7 +936,7 @@ class FeedUxController extends AbstractController
             ->getRepository(BodyWeight::class)
             ->findByDateRangeHistorical($this->patient->getUuid(), $date, $dateRange);
         if (count($product) == 0) {
-            return NULL;
+            return null;
         }
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -994,7 +1026,8 @@ class FeedUxController extends AbstractController
 
                         if (is_numeric($item->getPatientGoal()->getGoal())) {
                             $returnSummary['widget']['data'][0]['label'] = "Goal " . $item->getPatientGoal()->getUnitOfMeasurement()->getName();
-                            $returnSummary['widget']['data'][0]['data'][] = round($item->getPatientGoal()->getGoal(), 2);
+                            $returnSummary['widget']['data'][0]['data'][] = round($item->getPatientGoal()->getGoal(),
+                                2);
                         }
 
                         $returnSummary['widget']['data'][1]['label'] = "Recorded " . $item->getUnitOfMeasurement()->getName();
@@ -1020,7 +1053,8 @@ class FeedUxController extends AbstractController
                             $sumWeight = array_sum($returnSummary['widget']['data'][1]['data']);
                             $returnSummary['widget']['data'][2]['data'][] = round($sumWeight / count($countWeight), 2);
 
-                            $buildArrayAverageLoss[] = round($returnSummary['widget']['data'][2]['data'][$newAvgIndex] - ($sumWeight / count($countWeight)), 2);
+                            $buildArrayAverageLoss[] = round($returnSummary['widget']['data'][2]['data'][$newAvgIndex] - ($sumWeight / count($countWeight)),
+                                2);
                         }
 
                         $returnSummary['widget']['labels'][] = $item->getDateTime()->format("D, jS M");
@@ -1044,7 +1078,9 @@ class FeedUxController extends AbstractController
             $totalToReach = round($firstMeasurement - $targetMeasurement, 2);
             $totalProgress = round($firstMeasurement - $currentMeasurement, 2);
             $progressPercentage = round(($totalProgress / $totalToReach) * 100, 2);
-            if ($progressPercentage > 100) $progressPercentage = 100;
+            if ($progressPercentage > 100) {
+                $progressPercentage = 100;
+            }
 
             $returnSummary['goal'] = $targetMeasurement;
             $returnSummary['progress'] = $progressPercentage;
@@ -1057,13 +1093,15 @@ class FeedUxController extends AbstractController
 
     /**
      * @return array|null
-     * @throws \Exception
+     * @throws Exception
      */
     private function getPatientDistance()
     {
         $returnSummary = [];
 
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         /** @noinspection PhpUndefinedMethodInspection */
         /** @var FitDistanceDailySummary[] $dbDistanceSummary */
@@ -1071,14 +1109,16 @@ class FeedUxController extends AbstractController
             ->getRepository(FitDistanceDailySummary::class)
             ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 0);
         if (count($dbDistanceSummary) == 0) {
-            return NULL;
+            return null;
         }
 
         $dbDistanceSummary = array_pop($dbDistanceSummary);
 
         $returnSummary['value'] = $dbDistanceSummary->getValue();
         $returnSummary['goal'] = $dbDistanceSummary->getGoal()->getGoal();
-        if ($returnSummary['goal'] == 0) $returnSummary['goal'] = 3000;
+        if ($returnSummary['goal'] == 0) {
+            $returnSummary['goal'] = 3000;
+        }
         $returnSummary['progress'] = round(($returnSummary['value'] / $returnSummary['goal']) * 100, 0);
         if ($dbDistanceSummary->getUnitOfMeasurement()->getName()) {
             $returnSummary['value'] = round($returnSummary['value'] / 1000, 2);
@@ -1087,7 +1127,7 @@ class FeedUxController extends AbstractController
         } else {
             $returnSummary['units'] = $dbDistanceSummary->getUnitOfMeasurement()->getName();
         }
-        $returnSummary['intraDay'] = NULL;
+        $returnSummary['intraDay'] = null;
 
         if ($returnSummary['progress'] > 100) {
             $returnSummary['progressBar'] = 100;
@@ -1106,13 +1146,13 @@ class FeedUxController extends AbstractController
      * @param CommsManager $commsManager
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function index(AwardManager $awardManager, CommsManager $commsManager)
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -1124,7 +1164,7 @@ class FeedUxController extends AbstractController
         $return['floors'] = $this->getPatientFloors();
         $return['distance'] = $this->getPatientDistance();
         $return['rpg_friends'] = $this->getPatientFriends();
-        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(TRUE);
+        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(true);
         $return['awards'] = $this->getPatientAwards();
         $return['weight'] = $this->getPatientWeight();
 
@@ -1153,31 +1193,36 @@ class FeedUxController extends AbstractController
                 "First login for " . date("l jS F, Y"),
                 "You've #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
                 $this->patient,
-                TRUE
+                true
             );
 
             if ($this->patient->getLoginStreak() % 5 == 0) {
-                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
+                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
+                    "login", $this->patient);
             }
 
             if ($this->patient->getLoginStreak() % 182 == 0) {
-                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
+                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
+                    "login", $this->patient);
 
                 $commsManager->sendNotification(
                     "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                    NULL,
+                    null,
                     $this->patient,
-                    FALSE
+                    false
                 );
-            } else if ($this->patient->getLoginStreak() % 30 == 0) {
-                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()], "login", $this->patient);
+            } else {
+                if ($this->patient->getLoginStreak() % 30 == 0) {
+                    $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
+                        "login", $this->patient);
 
-                $commsManager->sendNotification(
-                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                    NULL,
-                    $this->patient,
-                    FALSE
-                );
+                    $commsManager->sendNotification(
+                        "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                        null,
+                        $this->patient,
+                        false
+                    );
+                }
             }
 
             $entityManager = $this->getDoctrine()->getManager();
@@ -1185,7 +1230,7 @@ class FeedUxController extends AbstractController
             $entityManager->flush();
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -1198,7 +1243,9 @@ class FeedUxController extends AbstractController
     {
         $return = [];
 
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         $return['distance'] = [];
         /** @noinspection PhpUndefinedMethodInspection */
@@ -1207,7 +1254,7 @@ class FeedUxController extends AbstractController
             ->getRepository(FitDistanceDailySummary::class)
             ->getSumOfValues($this->patient->getUuid());
         if (!is_numeric($distance)) {
-            return NULL;
+            return null;
         }
         $distance = ($distance / 1000);
 
@@ -1217,7 +1264,8 @@ class FeedUxController extends AbstractController
             ->getRepository(RpgMilestones::class)
             ->getLessThan('distance', $distance);
         foreach ($distanceMileStonesLess as $distanceMileStoneLess) {
-            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance, 2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
+            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance,
+                    2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
         }
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -1230,11 +1278,13 @@ class FeedUxController extends AbstractController
             $times = number_format($distance / $distanceMileStoneMore->getValue(), 0);
             if ($times == 1) {
                 $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "*";
-            } else if ($times == 2) {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
             } else {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
-                    . $times . "** times.";
+                if ($times == 2) {
+                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
+                } else {
+                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
+                        . $times . "** times.";
+                }
             }
         }
 
@@ -1245,14 +1295,15 @@ class FeedUxController extends AbstractController
      * @param bool $summarise
      *
      * @return array
-
-     * @throws \Exception
+     * @throws Exception
      */
-    private function getPatientFriends(bool $summarise = FALSE)
+    private function getPatientFriends(bool $summarise = false)
     {
         $returnSummary = [];
 
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
 
         $returnSummary[0] = [
@@ -1304,7 +1355,8 @@ class FeedUxController extends AbstractController
                     }
                 }
                 $returnSummary[$friendIndex]['steps'] = $friendStepCount;
-                $returnSummary[$friendIndex]['steps_friendly'] = number_format($returnSummary[$friendIndex]['steps'], 0);
+                $returnSummary[$friendIndex]['steps_friendly'] = number_format($returnSummary[$friendIndex]['steps'],
+                    0);
             }
         }
 
@@ -1326,21 +1378,28 @@ class FeedUxController extends AbstractController
      *
      * @return array
      */
-    private function getPatientChallengesFriends($summaryOnly = FALSE)
+    private function getPatientChallengesFriends($summaryOnly = false)
     {
         $runningFriendsChallenges = [];
         $runningFriendsChallenges['score'] = [];
         $runningFriendsChallenges['running'] = [];
-        if (!$summaryOnly) $runningFriendsChallenges['toAccept'] = [];
-        if (!$summaryOnly) $runningFriendsChallenges['pending'] = [];
-        if (!$summaryOnly) $runningFriendsChallenges['completed'] = [];
+        if (!$summaryOnly) {
+            $runningFriendsChallenges['toAccept'] = [];
+        }
+        if (!$summaryOnly) {
+            $runningFriendsChallenges['pending'] = [];
+        }
+        if (!$summaryOnly) {
+            $runningFriendsChallenges['completed'] = [];
+        }
 
         /** @var RpgChallengeFriends[] $dbChallenger */
         $dbChallenger = $this->getDoctrine()
             ->getRepository(RpgChallengeFriends::class)
             ->findBy(["challenger" => $this->patient], ["endDate" => "DESC"]);
         foreach ($dbChallenger as $challengeFriends) {
-            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges, $challengeFriends);
+            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges,
+                $challengeFriends);
         }
 
         /** @var RpgChallengeFriends[] $dbChallenger */
@@ -1348,7 +1407,8 @@ class FeedUxController extends AbstractController
             ->getRepository(RpgChallengeFriends::class)
             ->findBy(["challenged" => $this->patient], ["endDate" => "DESC"]);
         foreach ($dbChallenged as $challengeFriends) {
-            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges, $challengeFriends);
+            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges,
+                $challengeFriends);
         }
 
         $runningFriendsChallenges['score'] = [
@@ -1366,13 +1426,15 @@ class FeedUxController extends AbstractController
      *
      * @return array
      */
-    private function populatePatientChallengesFriends(array $runningFriendsChallenges, RpgChallengeFriends $challengeFriends)
-    {
+    private function populatePatientChallengesFriends(
+        array $runningFriendsChallenges,
+        RpgChallengeFriends $challengeFriends
+    ) {
         if ($challengeFriends->getChallenger()->getId() == $this->getUser()->getId()) {
-            $wasChallenger = TRUE;
+            $wasChallenger = true;
             $opponent = $challengeFriends->getChallenged();
         } else {
-            $wasChallenger = FALSE;
+            $wasChallenger = false;
             $opponent = $challengeFriends->getChallenger();
         }
 
@@ -1391,231 +1453,261 @@ class FeedUxController extends AbstractController
                     "invited" => $challengeFriends->getInviteDate()->format("Y-m-d H:i"),
                 ];
             }
-        } else if (is_null($challengeFriends->getStartDate()) && $challengeFriends->getChallenger()->getId() != $this->getUser()->getId()) {
-            /*
-             * Challenges you have sent to other users
-             */
-            if (array_key_exists("pending", $runningFriendsChallenges)) {
-                $runningFriendsChallenges['pending'][] = [
-                    "id" => $challengeFriends->getId(),
-                    "opponent" => $opponent->getFirstName(),
-                    "opponentAvatar" => $opponent->getAvatar(),
-                    "criteria" => $this->friendlyNameChallengeCriteria($challengeFriends->getCriteria()),
-                    "target" => $challengeFriends->getTarget(),
-                    "duration" => $challengeFriends->getDuration(),
-                    "invited" => $challengeFriends->getInviteDate()->format("Y-m-d H:i"),
-                ];
-            }
         } else {
-            /*
-             * Challenges that have ether finished or are currently running
-             */
-            if (!is_null($challengeFriends->getOutcome())) {
+            if (is_null($challengeFriends->getStartDate()) && $challengeFriends->getChallenger()->getId() != $this->getUser()->getId()) {
                 /*
-                 * Challenges that have finished
+                 * Challenges you have sent to other users
                  */
-                switch ($challengeFriends->getOutcome()) {
-                    case 6:
-                        $outcome = "draw";
-                        break;
-                    case 5:
-                        if ($wasChallenger) {
-                            $outcome = "win";
-                        } else {
-                            $outcome = "lose";
-                        }
-                        break;
-                    case 4:
-                        if ($wasChallenger) {
-                            $outcome = "lose";
-                        } else {
-                            $outcome = "win";
-                        }
-                        break;
-                    case 2:
-                    case 3:
-                    case 1:
-                        $outcome = "uncompleted";
-                        break;
-                    default:
-                        $outcome = "unknown";
-                        break;
-                }
-
-                if (array_key_exists("completed", $runningFriendsChallenges)) {
-                    $index = count($runningFriendsChallenges['completed']);
-                    $runningFriendsChallenges['completed'][$index] = [
+                if (array_key_exists("pending", $runningFriendsChallenges)) {
+                    $runningFriendsChallenges['pending'][] = [
                         "id" => $challengeFriends->getId(),
                         "opponent" => $opponent->getFirstName(),
                         "opponentAvatar" => $opponent->getAvatar(),
                         "criteria" => $this->friendlyNameChallengeCriteria($challengeFriends->getCriteria()),
                         "target" => $challengeFriends->getTarget(),
-                        "startDate" => $challengeFriends->getStartDate()->format("Y-m-d"),
-                        "endDate" => $challengeFriends->getEndDate()->format("Y-m-d"),
-                        "progressDate" => 100,
                         "duration" => $challengeFriends->getDuration(),
-                        "outcome" => $outcome,
-                        "wasChallenger" => $wasChallenger,
+                        "invited" => $challengeFriends->getInviteDate()->format("Y-m-d H:i"),
                     ];
-
-                    if ($wasChallenger) {
-                        $runningFriendsChallenges['completed'][$index]['userDetail'] = [];
-                        $runningFriendsChallenges['completed'][$index]['userDetail']['sum'] = $challengeFriends->getChallengerSum();
-                        $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100, 0);
-                        if ($runningFriendsChallenges['completed'][$index]['userDetail']['completion'] > 100) $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = 100;
-                        switch ($outcome) {
-                            case "win":
-                                $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "success";
-                                break;
-                            case "lose":
-                                $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "danger";
-                                break;
-                            case "draw":
-                                $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "warning";
-                                break;
-                        }
-                        $runningFriendsChallenges['completed'][$index]['userDetail']['detail'] = $challengeFriends->getChallengerDetails();
-
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail'] = [];
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengedSum();
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100, 0);
-                        if ($runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] > 100) $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = 100;
-                        switch ($outcome) {
-                            case "win":
-                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "danger";
-                                break;
-                            case "lose":
-                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "success";
-                                break;
-                            case "draw":
-                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "warning";
-                                break;
-                        }
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengedDetails();
-                    } else {
-                        $runningFriendsChallenges['completed'][$index]['userDetail'] = [];
-                        $runningFriendsChallenges['completed'][$index]['userDetail']['sum'] = $challengeFriends->getChallengedSum();
-                        $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100, 0);
-                        if ($runningFriendsChallenges['completed'][$index]['userDetail']['completion'] > 100) $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = 100;
-                        switch ($outcome) {
-                            case "win":
-                                $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "success";
-                                break;
-                            case "lose":
-                                $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "danger";
-                                break;
-                            case "draw":
-                                $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "warning";
-                                break;
-                        }
-                        $runningFriendsChallenges['completed'][$index]['userDetail']['detail'] = $challengeFriends->getChallengedDetails();
-
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail'] = [];
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengerSum();
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100, 0);
-                        if ($runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] > 100) $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = 100;
-                        switch ($outcome) {
-                            case "win":
-                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "danger";
-                                break;
-                            case "lose":
-                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "success";
-                                break;
-                            case "draw":
-                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "warning";
-                                break;
-                        }
-                        $runningFriendsChallenges['completed'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengerDetails();
-                    }
                 }
-
-            } else if (!is_null($challengeFriends->getEndDate())) {
+            } else {
                 /*
-                 * Challenges that are currently running
+                 * Challenges that have ether finished or are currently running
                  */
-                $durationInSeconds = $challengeFriends->getEndDate()->format("U") - $challengeFriends->getStartDate()->format("U");
-                $runForInSeconds = date("U") - $challengeFriends->getStartDate()->format("U");
-                $runForInPercentage = ($runForInSeconds / $durationInSeconds) * 100;
-                if ($runForInPercentage > 100) $runForInPercentage = 100;
-
-                $index = count($runningFriendsChallenges['running']);
-                $runningFriendsChallenges['running'][$index] = [
-                    "id" => $challengeFriends->getId(),
-                    "opponent" => $opponent->getFirstName(),
-                    "opponentAvatar" => $opponent->getAvatar(),
-                    "criteria" => $this->friendlyNameChallengeCriteria($challengeFriends->getCriteria()),
-                    "target" => $challengeFriends->getTarget(),
-                    "startDate" => $challengeFriends->getStartDate()->format("Y-m-d"),
-                    "endDate" => $challengeFriends->getEndDate()->format("Y-m-d"),
-                    "progressDate" => round($runForInPercentage, 2),
-                    "duration" => $challengeFriends->getDuration(),
-                ];
-
-                if ($wasChallenger) {
-                    $runningFriendsChallenges['running'][$index]['userDetail'] = [];
-                    $runningFriendsChallenges['running'][$index]['userDetail']['sum'] = $challengeFriends->getChallengerSum();
-                    $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100, 0);
-                    if ($runningFriendsChallenges['running'][$index]['userDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = 100;
-                    if ($challengeFriends->getChallengerSum() > $challengeFriends->getChallengedSum()) {
-                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "success";
-                    } else {
-                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                if (!is_null($challengeFriends->getOutcome())) {
+                    /*
+                     * Challenges that have finished
+                     */
+                    switch ($challengeFriends->getOutcome()) {
+                        case 6:
+                            $outcome = "draw";
+                            break;
+                        case 5:
+                            if ($wasChallenger) {
+                                $outcome = "win";
+                            } else {
+                                $outcome = "lose";
+                            }
+                            break;
+                        case 4:
+                            if ($wasChallenger) {
+                                $outcome = "lose";
+                            } else {
+                                $outcome = "win";
+                            }
+                            break;
+                        case 2:
+                        case 3:
+                        case 1:
+                            $outcome = "uncompleted";
+                            break;
+                        default:
+                            $outcome = "unknown";
+                            break;
                     }
-                    $runningFriendsChallenges['running'][$index]['userDetail']['detail'] = $challengeFriends->getChallengerDetails();
 
-                    $runningFriendsChallenges['running'][$index]['opponentDetail'] = [];
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengedSum();
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100, 0);
-                    if ($runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = 100;
-                    if ($challengeFriends->getChallengerSum() < $challengeFriends->getChallengedSum()) {
-                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "success";
-                    } else {
-                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "info";
+                    if (array_key_exists("completed", $runningFriendsChallenges)) {
+                        $index = count($runningFriendsChallenges['completed']);
+                        $runningFriendsChallenges['completed'][$index] = [
+                            "id" => $challengeFriends->getId(),
+                            "opponent" => $opponent->getFirstName(),
+                            "opponentAvatar" => $opponent->getAvatar(),
+                            "criteria" => $this->friendlyNameChallengeCriteria($challengeFriends->getCriteria()),
+                            "target" => $challengeFriends->getTarget(),
+                            "startDate" => $challengeFriends->getStartDate()->format("Y-m-d"),
+                            "endDate" => $challengeFriends->getEndDate()->format("Y-m-d"),
+                            "progressDate" => 100,
+                            "duration" => $challengeFriends->getDuration(),
+                            "outcome" => $outcome,
+                            "wasChallenger" => $wasChallenger,
+                        ];
+
+                        if ($wasChallenger) {
+                            $runningFriendsChallenges['completed'][$index]['userDetail'] = [];
+                            $runningFriendsChallenges['completed'][$index]['userDetail']['sum'] = $challengeFriends->getChallengerSum();
+                            $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['completed'][$index]['userDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = 100;
+                            }
+                            switch ($outcome) {
+                                case "win":
+                                    $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "success";
+                                    break;
+                                case "lose":
+                                    $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "danger";
+                                    break;
+                                case "draw":
+                                    $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "warning";
+                                    break;
+                            }
+                            $runningFriendsChallenges['completed'][$index]['userDetail']['detail'] = $challengeFriends->getChallengerDetails();
+
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail'] = [];
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengedSum();
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = 100;
+                            }
+                            switch ($outcome) {
+                                case "win":
+                                    $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "danger";
+                                    break;
+                                case "lose":
+                                    $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "success";
+                                    break;
+                                case "draw":
+                                    $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "warning";
+                                    break;
+                            }
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengedDetails();
+                        } else {
+                            $runningFriendsChallenges['completed'][$index]['userDetail'] = [];
+                            $runningFriendsChallenges['completed'][$index]['userDetail']['sum'] = $challengeFriends->getChallengedSum();
+                            $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['completed'][$index]['userDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['completed'][$index]['userDetail']['completion'] = 100;
+                            }
+                            switch ($outcome) {
+                                case "win":
+                                    $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "success";
+                                    break;
+                                case "lose":
+                                    $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "danger";
+                                    break;
+                                case "draw":
+                                    $runningFriendsChallenges['completed'][$index]['userDetail']['outcomeType'] = "warning";
+                                    break;
+                            }
+                            $runningFriendsChallenges['completed'][$index]['userDetail']['detail'] = $challengeFriends->getChallengedDetails();
+
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail'] = [];
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengerSum();
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['completed'][$index]['opponentDetail']['completion'] = 100;
+                            }
+                            switch ($outcome) {
+                                case "win":
+                                    $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "danger";
+                                    break;
+                                case "lose":
+                                    $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "success";
+                                    break;
+                                case "draw":
+                                    $runningFriendsChallenges['completed'][$index]['opponentDetail']['outcomeType'] = "warning";
+                                    break;
+                            }
+                            $runningFriendsChallenges['completed'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengerDetails();
+                        }
                     }
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengedDetails();
+
                 } else {
-                    $runningFriendsChallenges['running'][$index]['userDetail'] = [];
-                    $runningFriendsChallenges['running'][$index]['userDetail']['sum'] = $challengeFriends->getChallengedSum();
-                    $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100, 0);
-                    if ($runningFriendsChallenges['running'][$index]['userDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = 100;
-                    if ($challengeFriends->getChallengedSum() > $challengeFriends->getChallengerSum()) {
-                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "success";
-                    } else {
-                        $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                    if (!is_null($challengeFriends->getEndDate())) {
+                        /*
+                         * Challenges that are currently running
+                         */
+                        $durationInSeconds = $challengeFriends->getEndDate()->format("U") - $challengeFriends->getStartDate()->format("U");
+                        $runForInSeconds = date("U") - $challengeFriends->getStartDate()->format("U");
+                        $runForInPercentage = ($runForInSeconds / $durationInSeconds) * 100;
+                        if ($runForInPercentage > 100) {
+                            $runForInPercentage = 100;
+                        }
+
+                        $index = count($runningFriendsChallenges['running']);
+                        $runningFriendsChallenges['running'][$index] = [
+                            "id" => $challengeFriends->getId(),
+                            "opponent" => $opponent->getFirstName(),
+                            "opponentAvatar" => $opponent->getAvatar(),
+                            "criteria" => $this->friendlyNameChallengeCriteria($challengeFriends->getCriteria()),
+                            "target" => $challengeFriends->getTarget(),
+                            "startDate" => $challengeFriends->getStartDate()->format("Y-m-d"),
+                            "endDate" => $challengeFriends->getEndDate()->format("Y-m-d"),
+                            "progressDate" => round($runForInPercentage, 2),
+                            "duration" => $challengeFriends->getDuration(),
+                        ];
+
+                        if ($wasChallenger) {
+                            $runningFriendsChallenges['running'][$index]['userDetail'] = [];
+                            $runningFriendsChallenges['running'][$index]['userDetail']['sum'] = $challengeFriends->getChallengerSum();
+                            $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['running'][$index]['userDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = 100;
+                            }
+                            if ($challengeFriends->getChallengerSum() > $challengeFriends->getChallengedSum()) {
+                                $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "success";
+                            } else {
+                                $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                            }
+                            $runningFriendsChallenges['running'][$index]['userDetail']['detail'] = $challengeFriends->getChallengerDetails();
+
+                            $runningFriendsChallenges['running'][$index]['opponentDetail'] = [];
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengedSum();
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = 100;
+                            }
+                            if ($challengeFriends->getChallengerSum() < $challengeFriends->getChallengedSum()) {
+                                $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "success";
+                            } else {
+                                $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "info";
+                            }
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengedDetails();
+                        } else {
+                            $runningFriendsChallenges['running'][$index]['userDetail'] = [];
+                            $runningFriendsChallenges['running'][$index]['userDetail']['sum'] = $challengeFriends->getChallengedSum();
+                            $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = round(($challengeFriends->getChallengedSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['running'][$index]['userDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['running'][$index]['userDetail']['completion'] = 100;
+                            }
+                            if ($challengeFriends->getChallengedSum() > $challengeFriends->getChallengerSum()) {
+                                $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "success";
+                            } else {
+                                $runningFriendsChallenges['running'][$index]['userDetail']['outcomeType'] = "warning";
+                            }
+                            $runningFriendsChallenges['running'][$index]['userDetail']['detail'] = $challengeFriends->getChallengedDetails();
+
+                            $runningFriendsChallenges['running'][$index]['opponentDetail'] = [];
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengerSum();
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100,
+                                0);
+                            if ($runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] > 100) {
+                                $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = 100;
+                            }
+                            if ($challengeFriends->getChallengedSum() < $challengeFriends->getChallengerSum()) {
+                                $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "success";
+                            } else {
+                                $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "info";
+                            }
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengerDetails();
+                        }
+
+                        /** @noinspection PhpUndefinedMethodInspection */
+                        /** @var ApiAccessLog $apiLogLastSync */
+                        $apiLogLastSyncUser = $this->getDoctrine()
+                            ->getRepository(ApiAccessLog::class)
+                            ->findOneBy(["patient" => $this->patient, "entity" => $challengeFriends->getCriteria()]);
+                        if (!is_null($apiLogLastSyncUser)) {
+                            $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = $apiLogLastSyncUser->getLastRetrieved()->format("Y-m-d H:i:s");
+                        } else {
+                            $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = "0000-00-00 00:00:00";
+                        }
+
+                        /** @var ApiAccessLog $apiLogLastSync */
+                        $apiLogLastSyncOpponent = $this->getDoctrine()
+                            ->getRepository(ApiAccessLog::class)
+                            ->findOneBy(["patient" => $opponent, "entity" => $challengeFriends->getCriteria()]);
+                        if (!is_null($apiLogLastSyncOpponent)) {
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = $apiLogLastSyncOpponent->getLastRetrieved()->format("Y-m-d H:i:s");
+                        } else {
+                            $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = "0000-00-00 00:00:00";
+                        }
                     }
-                    $runningFriendsChallenges['running'][$index]['userDetail']['detail'] = $challengeFriends->getChallengedDetails();
-
-                    $runningFriendsChallenges['running'][$index]['opponentDetail'] = [];
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['sum'] = $challengeFriends->getChallengerSum();
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = round(($challengeFriends->getChallengerSum() / $challengeFriends->getTarget()) * 100, 0);
-                    if ($runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] > 100) $runningFriendsChallenges['running'][$index]['opponentDetail']['completion'] = 100;
-                    if ($challengeFriends->getChallengedSum() < $challengeFriends->getChallengerSum()) {
-                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "success";
-                    } else {
-                        $runningFriendsChallenges['running'][$index]['opponentDetail']['outcomeType'] = "info";
-                    }
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['detail'] = $challengeFriends->getChallengerDetails();
-                }
-
-                /** @noinspection PhpUndefinedMethodInspection */
-                /** @var ApiAccessLog $apiLogLastSync */
-                $apiLogLastSyncUser = $this->getDoctrine()
-                    ->getRepository(ApiAccessLog::class)
-                    ->findOneBy(["patient" => $this->patient, "entity" => $challengeFriends->getCriteria()]);
-                if (!is_null($apiLogLastSyncUser)) {
-                    $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = $apiLogLastSyncUser->getLastRetrieved()->format("Y-m-d H:i:s");
-                } else {
-                    $runningFriendsChallenges['running'][$index]['userDetail']['lastPulled'] = "0000-00-00 00:00:00";
-                }
-
-                /** @var ApiAccessLog $apiLogLastSync */
-                $apiLogLastSyncOpponent = $this->getDoctrine()
-                    ->getRepository(ApiAccessLog::class)
-                    ->findOneBy(["patient" => $opponent, "entity" => $challengeFriends->getCriteria()]);
-                if (!is_null($apiLogLastSyncOpponent)) {
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = $apiLogLastSyncOpponent->getLastRetrieved()->format("Y-m-d H:i:s");
-                } else {
-                    $runningFriendsChallenges['running'][$index]['opponentDetail']['lastPulled'] = "0000-00-00 00:00:00";
                 }
             }
         }
@@ -1675,7 +1767,9 @@ class FeedUxController extends AbstractController
     {
         $returnSummary = [];
 
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         foreach ($this->patient->getRewards() as $reward) {
             if (array_key_exists($reward->getReward()->getId(), $returnSummary)) {
@@ -1707,7 +1801,7 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -1716,7 +1810,7 @@ class FeedUxController extends AbstractController
 
         $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends();
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -1732,7 +1826,7 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $return['nav'] = [
             "nextMonth" => '',
@@ -1755,10 +1849,10 @@ class FeedUxController extends AbstractController
         }
 
         if ($dbChallenger->getChallenger()->getId() == $this->getUser()->getId()) {
-            $wasChallenger = TRUE;
+            $wasChallenger = true;
             $opponent = $dbChallenger->getChallenged();
         } else {
-            $wasChallenger = FALSE;
+            $wasChallenger = false;
             $opponent = $dbChallenger->getChallenger();
         }
 
@@ -1968,7 +2062,8 @@ class FeedUxController extends AbstractController
 
         $pacesetterDaily = round($dbChallenger->getTarget() / $dbChallenger->getDuration(), 0, PHP_ROUND_HALF_UP);
         $pacesetterHourly = $pacesetterDaily / 24;
-        $return['pacesetterDetail']['raw'] = round(($runForInSeconds / 60 / 60) * $pacesetterHourly, 0, PHP_ROUND_HALF_UP);
+        $return['pacesetterDetail']['raw'] = round(($runForInSeconds / 60 / 60) * $pacesetterHourly, 0,
+            PHP_ROUND_HALF_UP);
         $return['pacesetterDetail']['sum'] = number_format($return['pacesetterDetail']['raw'], 0);
 
         if ($wasChallenger) {
@@ -1998,8 +2093,10 @@ class FeedUxController extends AbstractController
             $return['opponentDetail']['raw'] = $dbChallenger->getChallengedSum();
             $return['opponentDetail']['sum'] = number_format($return['opponentDetail']['raw'], 0);
 
-            $return['userDetail']['progress'] = 100 - round(($dbChallenger->getChallengerSum() / $dbChallenger->getTarget()) * 100, 0);
-            $return['opponentDetail']['progress'] = 100 - round(($dbChallenger->getChallengedSum() / $dbChallenger->getTarget()) * 100, 0);
+            $return['userDetail']['progress'] = 100 - round(($dbChallenger->getChallengerSum() / $dbChallenger->getTarget()) * 100,
+                    0);
+            $return['opponentDetail']['progress'] = 100 - round(($dbChallenger->getChallengedSum() / $dbChallenger->getTarget()) * 100,
+                    0);
 
             foreach ($dbChallenger->getChallengerDetails() as $key => $value) {
                 $return['widget']['data'][0]['data'][] = $pacesetterDaily;
@@ -2053,11 +2150,14 @@ class FeedUxController extends AbstractController
             $return['opponentDetail']['raw'] = $dbChallenger->getChallengerSum();
             $return['opponentDetail']['sum'] = number_format($return['opponentDetail']['raw'], 0);
 
-            $return['userDetail']['progress'] = 100 - round(($dbChallenger->getChallengedSum() / $dbChallenger->getTarget()) * 100, 0);
-            $return['opponentDetail']['progress'] = 100 - round(($dbChallenger->getChallengerSum() / $dbChallenger->getTarget()) * 100, 0);
+            $return['userDetail']['progress'] = 100 - round(($dbChallenger->getChallengedSum() / $dbChallenger->getTarget()) * 100,
+                    0);
+            $return['opponentDetail']['progress'] = 100 - round(($dbChallenger->getChallengerSum() / $dbChallenger->getTarget()) * 100,
+                    0);
 
             foreach ($dbChallenger->getChallengerDetails() as $key => $value) {
-                $return['widget']['data'][0]['data'][] = round($dbChallenger->getTarget() / $dbChallenger->getDuration(), 0, PHP_ROUND_HALF_UP);
+                $return['widget']['data'][0]['data'][] = round($dbChallenger->getTarget() / $dbChallenger->getDuration(),
+                    0, PHP_ROUND_HALF_UP);
                 $return['challenge']['data'][2]['data'][] = $dbChallenger->getTarget();
                 if ($value > 0) {
                     $userSum = $userSum + $value;
@@ -2083,11 +2183,19 @@ class FeedUxController extends AbstractController
             }
         }
 
-        if ($return['userDetail']['progress'] > 100) $return['userDetail']['progress'] = 100;
-        if ($return['userDetail']['progress'] < 0) $return['userDetail']['progress'] = 0;
+        if ($return['userDetail']['progress'] > 100) {
+            $return['userDetail']['progress'] = 100;
+        }
+        if ($return['userDetail']['progress'] < 0) {
+            $return['userDetail']['progress'] = 0;
+        }
 
-        if ($return['opponentDetail']['progress'] > 100) $return['opponentDetail']['progress'] = 100;
-        if ($return['opponentDetail']['progress'] < 0) $return['opponentDetail']['progress'] = 0;
+        if ($return['opponentDetail']['progress'] > 100) {
+            $return['opponentDetail']['progress'] = 100;
+        }
+        if ($return['opponentDetail']['progress'] < 0) {
+            $return['opponentDetail']['progress'] = 0;
+        }
 
         $return['pacesetterDetail']['diffRaw'] = $return['userDetail']['raw'] - $return['pacesetterDetail']['raw'];
         if ($return['pacesetterDetail']['diffRaw'] < 0) {
@@ -2107,7 +2215,7 @@ class FeedUxController extends AbstractController
         }
         $return['opponentDetail']['diff'] = number_format($return['opponentDetail']['diffRaw'], 0);
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2121,25 +2229,36 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         $return['status'] = "okay";
         $return['code'] = "200";
 
-        $return['friends'] = $this->getPatientFriends(TRUE);
+        $return['friends'] = $this->getPatientFriends(true);
         $return['criteria'] = [
             "steps",
         ];
         $return['targets'] = [
-            10000, 30000, 50000, 70000, 100000,
+            10000,
+            30000,
+            50000,
+            70000,
+            100000,
         ];
         $return['durations'] = [
-            1, 2, 3, 5, 7, 10, 14, 31,
+            1,
+            2,
+            3,
+            5,
+            7,
+            10,
+            14,
+            31,
         ];
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2153,7 +2272,7 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -2168,7 +2287,7 @@ class FeedUxController extends AbstractController
             }
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2184,7 +2303,7 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -2215,12 +2334,14 @@ class FeedUxController extends AbstractController
             if (date("w") == 0) { // Sunday
                 $startDateRange = date("Y-m-d", strtotime('last monday'));
                 $endDateRange = date("Y-m-d");
-            } else if (date("w") == 1) { // Monday
-                $startDateRange = date("Y-m-d");
-                $endDateRange = date("Y-m-d", strtotime('next sunday'));
             } else {
-                $startDateRange = date("Y-m-d", strtotime('last monday'));
-                $endDateRange = date("Y-m-d", strtotime('next sunday'));
+                if (date("w") == 1) { // Monday
+                    $startDateRange = date("Y-m-d");
+                    $endDateRange = date("Y-m-d", strtotime('next sunday'));
+                } else {
+                    $startDateRange = date("Y-m-d", strtotime('last monday'));
+                    $endDateRange = date("Y-m-d", strtotime('next sunday'));
+                }
             }
 
             $return['monday'] = $startDateRange;
@@ -2237,10 +2358,12 @@ class FeedUxController extends AbstractController
                 foreach ($periods as $period) {
                     if (strtotime($period->format("Y-m-d")) > date("U")) {
                         $awardWeekReport[$period->format("Y-m-d")] = 0;
-                    } else if ($period->format("Y-m-d") == date("Y-m-d")) {
-                        $awardWeekReport[$period->format("Y-m-d")] = 2;
                     } else {
-                        $awardWeekReport[$period->format("Y-m-d")] = 1;
+                        if ($period->format("Y-m-d") == date("Y-m-d")) {
+                            $awardWeekReport[$period->format("Y-m-d")] = 2;
+                        } else {
+                            $awardWeekReport[$period->format("Y-m-d")] = 1;
+                        }
                     }
                 }
 
@@ -2260,7 +2383,7 @@ class FeedUxController extends AbstractController
             }
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2273,14 +2396,14 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         /** @var SiteNews[] $newsItemsSite */
         $newsItemsSite = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => NULL], ['published' => 'DESC']);
+            ->findBy(['patient' => null], ['published' => 'DESC']);
 
         /** @var SiteNews[] $newsItemsPersonal */
         $newsItemsPersonal = $this->getDoctrine()
@@ -2292,7 +2415,7 @@ class FeedUxController extends AbstractController
             $return['items'] = $this->buildNewsItems($newsItems);
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2325,14 +2448,16 @@ class FeedUxController extends AbstractController
                 ];
 
                 if (is_null($newsItem->getImage())) {
-                    $newReturn['imageName'] = NULL;
-                    $newReturn['imageHref'] = NULL;
-                } else if (substr($newsItem->getImage(), 0, 4) == "http") {
-                    $newReturn['imageName'] = NULL;
-                    $newReturn['imageHref'] = $newsItem->getImage();
+                    $newReturn['imageName'] = null;
+                    $newReturn['imageHref'] = null;
                 } else {
-                    $newReturn['imageName'] = $newsItem->getImage();
-                    $newReturn['imageHref'] = NULL;
+                    if (substr($newsItem->getImage(), 0, 4) == "http") {
+                        $newReturn['imageName'] = null;
+                        $newReturn['imageHref'] = $newsItem->getImage();
+                    } else {
+                        $newReturn['imageName'] = $newsItem->getImage();
+                        $newReturn['imageHref'] = null;
+                    }
                 }
 
                 $return[] = $newReturn;
@@ -2349,14 +2474,14 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         /** @var SiteNews[] $newsItemsSite */
         $newsItemsSite = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => NULL], ['published' => 'DESC']);
+            ->findBy(['patient' => null], ['published' => 'DESC']);
 
         /** @var SiteNews[] $newsItemsPersonal */
         $newsItemsPersonal = $this->getDoctrine()
@@ -2368,7 +2493,7 @@ class FeedUxController extends AbstractController
             $return['items'] = $this->buildNewsItems($newsItems);
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2381,19 +2506,19 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         /** @var SiteNews[] $newsItems */
         $newsItemsFalse = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => FALSE], ['published' => 'DESC']);
+            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => false], ['published' => 'DESC']);
 
         /** @var SiteNews[] $newsItems */
         $newsItemsNull = $this->getDoctrine()
             ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => NULL], ['published' => 'DESC']);
+            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => null], ['published' => 'DESC']);
 
         $newsItems = array_merge($newsItemsNull, $newsItemsFalse);
 
@@ -2403,7 +2528,7 @@ class FeedUxController extends AbstractController
             $return['items'] = [];
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2420,14 +2545,14 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
         $requestBody = str_replace('&#39;', "'", $requestBody);
-        $requestJson = json_decode($requestBody, FALSE);
+        $requestJson = json_decode($requestBody, false);
 
         if (is_object($requestJson)) {
             if (property_exists($requestJson, "toastId") && $requestJson->toastId > 0) {
@@ -2445,14 +2570,14 @@ class FeedUxController extends AbstractController
             if ($newsItems) {
                 $entityManager = $doctrine->getManager();
                 foreach ($newsItems as $newsItem) {
-                    $newsItem->setDisplayed(TRUE);
+                    $newsItem->setDisplayed(true);
                     $entityManager->persist($newsItem);
                 }
                 $entityManager->flush();
             }
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2469,14 +2594,14 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
         $requestBody = str_replace('&#39;', "'", $requestBody);
-        $requestJson = json_decode($requestBody, FALSE);
+        $requestJson = json_decode($requestBody, false);
 
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
 
@@ -2495,10 +2620,11 @@ class FeedUxController extends AbstractController
             $entityManager->persist($accessDevice);
             $entityManager->flush();
         } else {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Unknown Device ' . $requestJson->deviceId . ' for ' . $this->patient->getId());
+            AppConstants::writeToLog('debug_transform.txt',
+                __LINE__ . ' Unknown Device ' . $requestJson->deviceId . ' for ' . $this->patient->getId());
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2511,20 +2637,20 @@ class FeedUxController extends AbstractController
      * @param Request         $request
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function index_loggedin_feedback(string $deviceId, ManagerRegistry $doctrine, Request $request)
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
         $requestBody = str_replace('&#39;', "'", $requestBody);
-        $requestJson = json_decode($requestBody, FALSE);
+        $requestJson = json_decode($requestBody, false);
 
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
 
@@ -2533,10 +2659,10 @@ class FeedUxController extends AbstractController
             $app = $requestJson->cordova;
             if ($requestJson->production == "development") {
                 $version = $requestJson->version . "-dev";
-                $production = FALSE;
+                $production = false;
             } else {
                 $version = $requestJson->version;
-                $production = TRUE;
+                $production = true;
             }
             if ($requestDeviceInfo->device == "Unknown") {
                 $requestDeviceInfo->device = $requestJson->cordova;
@@ -2545,10 +2671,10 @@ class FeedUxController extends AbstractController
             $requestDeviceInfo = $requestJson;
             $version = 'legacy';
             $app = 'unknown';
-            $production = TRUE;
+            $production = true;
         }
 
-        $accessDevice = NULL;
+        $accessDevice = null;
         if ($deviceId > 0) {
             /** @var PatientDevice $accessDevice */
             $accessDevice = $this->getDoctrine()
@@ -2588,21 +2714,23 @@ class FeedUxController extends AbstractController
             $accessDevice->setApp($app);
             $accessDevice->setProduction($production);
             AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Updated');
-        } else if ($accessDevice) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Found');
         } else {
-            $accessDevice = new PatientDevice();
-            $accessDevice->setPatient($this->patient);
-            $accessDevice->setBrowser($requestDeviceInfo->browser);
-            $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
-            $accessDevice->setDevice($requestDeviceInfo->device);
-            $accessDevice->setOs($requestDeviceInfo->os);
-            $accessDevice->setOsVersion($requestDeviceInfo->os_version);
-            $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
-            $accessDevice->setVersion($version);
-            $accessDevice->setApp($app);
-            $accessDevice->setProduction($production);
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' New device');
+            if ($accessDevice) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Found');
+            } else {
+                $accessDevice = new PatientDevice();
+                $accessDevice->setPatient($this->patient);
+                $accessDevice->setBrowser($requestDeviceInfo->browser);
+                $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
+                $accessDevice->setDevice($requestDeviceInfo->device);
+                $accessDevice->setOs($requestDeviceInfo->os);
+                $accessDevice->setOsVersion($requestDeviceInfo->os_version);
+                $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
+                $accessDevice->setVersion($version);
+                $accessDevice->setApp($app);
+                $accessDevice->setProduction($production);
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' New device');
+            }
         }
         $accessDevice->setLastSeen(new DateTime());
 
@@ -2612,7 +2740,7 @@ class FeedUxController extends AbstractController
 
         $return['id'] = $accessDevice->getId();
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2625,7 +2753,7 @@ class FeedUxController extends AbstractController
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -2646,7 +2774,7 @@ class FeedUxController extends AbstractController
         $return['xp_log'] = array_slice(array_reverse($return['xp_log']), 0, 10);
         $return['awards'] = $this->getPatientAwards();
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2657,21 +2785,21 @@ class FeedUxController extends AbstractController
      * @param int $readings A users UUID
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function index_body_weight(int $readings)
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
         $return['status'] = "okay";
         $return['code'] = "200";
-        $return['weight'] = $this->getPatientWeight(FALSE, date("Y-m-d"), $readings);
+        $return['weight'] = $this->getPatientWeight(false, date("Y-m-d"), $readings);
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2689,18 +2817,18 @@ class FeedUxController extends AbstractController
 
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $return['latestVersion'] = $latestVersion;
         $return['yourVersion'] = $currentVersion;
 
         if (ip2long($latestVersion) > ip2long($currentVersion)) {
-            $return['updateAvailable'] = TRUE;
+            $return['updateAvailable'] = true;
         } else {
-            $return['updateAvailable'] = FALSE;
+            $return['updateAvailable'] = false;
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
@@ -2710,13 +2838,13 @@ class FeedUxController extends AbstractController
      * @Route("/feed/pve/challenges", name="index_global_challenge_in")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function index_global_challenge_in()
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -2731,7 +2859,8 @@ class FeedUxController extends AbstractController
                 $this->feed_storage = 0;
                 if (is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
                     $arrayIndex = count($return['challenges']);
-                    $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal->getChallenge(), $dbRpgChallengeGlobal);
+                    $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal->getChallenge(),
+                        $dbRpgChallengeGlobal);
                     if (is_null($return['challenges'][$arrayIndex])) {
                         unset($return['challenges'][$arrayIndex]);
                     }
@@ -2739,25 +2868,29 @@ class FeedUxController extends AbstractController
             }
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);
     }
 
-    private function buildChallengeArray(RpgChallengeGlobal $dbRpgChallengeGlobal, RpgChallengeGlobalPatient $challengePatientDetails = NULL)
-    {
+    private function buildChallengeArray(
+        RpgChallengeGlobal $dbRpgChallengeGlobal,
+        RpgChallengeGlobalPatient $challengePatientDetails = null
+    ) {
         if (!is_null($dbRpgChallengeGlobal->getProgression())) {
             $return = $this->findChallengeChildren($dbRpgChallengeGlobal, $challengePatientDetails);
             if (is_null($return)) {
-                return NULL;
+                return null;
             }
 
             $xp = 0;
             if (!is_null($dbRpgChallengeGlobal->getReward())) {
                 $xp = $dbRpgChallengeGlobal->getReward()->getXp();
-            } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
-                $xp = $dbRpgChallengeGlobal->getXp();
+            } else {
+                if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                    $xp = $dbRpgChallengeGlobal->getXp();
+                }
             }
 
             if (is_array($return) && array_key_exists("children", $return)) {
@@ -2778,18 +2911,21 @@ class FeedUxController extends AbstractController
                 "id" => $dbRpgChallengeGlobal->getId(),
                 "name" => $dbRpgChallengeGlobal->getName(),
                 "description" => $dbRpgChallengeGlobal->getDescripton(),
-                "criteria" => NULL,
+                "criteria" => null,
                 "target" => $dbRpgChallengeGlobal->getTarget(),
                 "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
-                "reward" => NULL,
+                "reward" => null,
                 "depth" => 0,
-                "isCollapsed" => FALSE,
+                "isCollapsed" => false,
             ];
 
             if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
                 $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
-            } else if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
-                $return['criteria'] = strtolower(str_replace("Fit", "", str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+            } else {
+                if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
+                    $return['criteria'] = strtolower(str_replace("Fit", "",
+                        str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+                }
             }
 
             $return = $this->participationInChallenge($return, $challengePatientDetails, $dbRpgChallengeGlobal);
@@ -2799,30 +2935,34 @@ class FeedUxController extends AbstractController
                     "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
                     "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
                 ];
-            } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
-                $return['reward'] = [
-                    "xp" => $dbRpgChallengeGlobal->getXp(),
-                    "badge" => NULL,
-                ];
+            } else {
+                if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                    $return['reward'] = [
+                        "xp" => $dbRpgChallengeGlobal->getXp(),
+                        "badge" => null,
+                    ];
+                }
             }
         }
 
         return $return;
     }
 
-    private function findChallengeChildren(RpgChallengeGlobal $dbRpgChallengeGlobal, RpgChallengeGlobalPatient $challengePatientDetails = NULL)
-    {
+    private function findChallengeChildren(
+        RpgChallengeGlobal $dbRpgChallengeGlobal,
+        RpgChallengeGlobalPatient $challengePatientDetails = null
+    ) {
         $return = [
             "id" => $dbRpgChallengeGlobal->getId(),
             "name" => $dbRpgChallengeGlobal->getName(),
             "description" => $dbRpgChallengeGlobal->getDescripton(),
             "progression" => $dbRpgChallengeGlobal->getProgression(),
-            "criteria" => NULL,
+            "criteria" => null,
             "target" => $dbRpgChallengeGlobal->getTarget(),
             "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
-            "reward" => NULL,
+            "reward" => null,
             "depth" => 0,
-            "isCollapsed" => FALSE,
+            "isCollapsed" => false,
         ];
 
         $return = $this->participationInChallenge($return, $challengePatientDetails, $dbRpgChallengeGlobal);
@@ -2830,44 +2970,53 @@ class FeedUxController extends AbstractController
         if (!is_null($dbRpgChallengeGlobal->getReward())) {
             $return['reward'] = [];
             $return['reward']["badge"] = $dbRpgChallengeGlobal->getReward()->getName();
-            $return['reward']["xp"] = NULL;
-        } else if (!is_null($dbRpgChallengeGlobal->getXp())) {
-            $return['reward'] = [
-                "xp" => NULL,
-                "badge" => NULL,
-            ];
+            $return['reward']["xp"] = null;
+        } else {
+            if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                $return['reward'] = [
+                    "xp" => null,
+                    "badge" => null,
+                ];
+            }
         }
 
         if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
             $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
-        } else if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
-            $return['criteria'] = strtolower(str_replace("Fit", "", str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+        } else {
+            if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
+                $return['criteria'] = strtolower(str_replace("Fit", "",
+                    str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+            }
         }
 
         /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
         $dbRpgChallengeGlobalChildren = $this->getDoctrine()
             ->getRepository(RpgChallengeGlobal::class)
-            ->findBy(['childOf' => $dbRpgChallengeGlobal, 'active' => TRUE], ['target' => 'asc', 'id' => 'asc']);
+            ->findBy(['childOf' => $dbRpgChallengeGlobal, 'active' => true], ['target' => 'asc', 'id' => 'asc']);
 
         if ($dbRpgChallengeGlobalChildren) {
             $return['children'] = [];
             foreach ($dbRpgChallengeGlobalChildren as $dbRpgChallengeGlobalChild) {
-                $return['children'][] = $this->buildChallengeArray($dbRpgChallengeGlobalChild, $challengePatientDetails);
+                $return['children'][] = $this->buildChallengeArray($dbRpgChallengeGlobalChild,
+                    $challengePatientDetails);
             }
             $return['depth'] = $return['children'][0]['depth'] + 1;
         } else {
-            return NULL;
+            return null;
         }
 
         if ($return['depth'] > 0) {
-            $return['isCollapsed'] = TRUE;
+            $return['isCollapsed'] = true;
         }
 
         return $return;
     }
 
-    private function participationInChallenge(array $return, RpgChallengeGlobalPatient $challengePatientDetails, RpgChallengeGlobal $dbRpgChallengeGlobal)
-    {
+    private function participationInChallenge(
+        array $return,
+        RpgChallengeGlobalPatient $challengePatientDetails,
+        RpgChallengeGlobal $dbRpgChallengeGlobal
+    ) {
         if (!is_null($challengePatientDetails)) {
             if ($challengePatientDetails->getChallenge()->getId() != $dbRpgChallengeGlobal->getId()) {
                 /** @var RpgChallengeGlobalPatient $challengePatientDetails */
@@ -2878,16 +3027,17 @@ class FeedUxController extends AbstractController
 
             if ($challengePatientDetails) {
                 $return['participation'] = [];
-                $return['participation']['progress'] = round($challengePatientDetails->getProgress(), 0, PHP_ROUND_HALF_DOWN);
+                $return['participation']['progress'] = round($challengePatientDetails->getProgress(), 0,
+                    PHP_ROUND_HALF_DOWN);
                 if (!is_null($challengePatientDetails->getStartDateTime())) {
                     $return['participation']['startDateTime'] = $challengePatientDetails->getStartDateTime()->format("Y-m-d H:i:s");
                 } else {
-                    $return['participation']['startDateTime'] = NULL;
+                    $return['participation']['startDateTime'] = null;
                 }
                 if (!is_null($challengePatientDetails->getFinishDateTime())) {
                     $return['participation']['finishDateTime'] = $challengePatientDetails->getFinishDateTime()->format("Y-m-d H:i:s");
                 } else {
-                    $return['participation']['finishDateTime'] = NULL;
+                    $return['participation']['finishDateTime'] = null;
                 }
             } else {
                 $return['participation'] = -1;
@@ -2901,13 +3051,13 @@ class FeedUxController extends AbstractController
      * @Route("/feed/pve/challenges/all", name="index_global_challenge")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function index_global_challenge()
     {
         $return = [];
         $return['genTime'] = -1;
-        $a = microtime(TRUE);
+        $a = microtime(true);
 
         $this->setupRoute();
 
@@ -2917,7 +3067,7 @@ class FeedUxController extends AbstractController
         /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
         $dbRpgChallengeGlobals = $this->getDoctrine()
             ->getRepository(RpgChallengeGlobal::class)
-            ->findBy(['childOf' => NULL, 'active' => TRUE], ['id' => 'asc']);
+            ->findBy(['childOf' => null, 'active' => true], ['id' => 'asc']);
 
         if ($dbRpgChallengeGlobals) {
             $return['challenges'] = [];
@@ -2931,7 +3081,7 @@ class FeedUxController extends AbstractController
             }
         }
 
-        $b = microtime(TRUE);
+        $b = microtime(true);
         $c = $b - $a;
         $return['genTime'] = round($c, 4);
         return $this->json($return);

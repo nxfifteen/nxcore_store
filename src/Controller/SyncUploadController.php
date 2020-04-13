@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -44,9 +45,9 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
-    public function sync_webhook_post(String $service, LoggerInterface $logger)
+    public function sync_webhook_post(string $service, LoggerInterface $logger)
     {
         return $this->sync_webhook_get($service, $logger);
     }
@@ -58,13 +59,13 @@ class SyncUploadController extends AbstractController
      * @param LoggerInterface $logger
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
-    public function sync_webhook_get(String $service, LoggerInterface $logger)
+    public function sync_webhook_get(string $service, LoggerInterface $logger)
     {
         if (strtolower($service) == "habitica") {
             $request = Request::createFromGlobals();
-            $jsonContent = json_decode($request->getContent(), FALSE);
+            $jsonContent = json_decode($request->getContent(), false);
 
             AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - ' . $jsonContent->user->_id);
             AppConstants::writeToLog('webhook_' . $service . '.txt', $request->getContent());
@@ -76,10 +77,12 @@ class SyncUploadController extends AbstractController
 
         if (is_array($_GET) && array_key_exists("verify", $_GET)) {
             if ($_GET['verify'] != "c9dc17fc026d90cf8ddb6d7e1960828962265bac03605449054fb2e9033c927c") {
-                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
+                AppConstants::writeToLog('debug_transform.txt',
+                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
                 throw $this->createNotFoundException('404');
             } else {
-                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code valid');
+                AppConstants::writeToLog('debug_transform.txt',
+                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code valid');
             }
 
             $response = new JsonResponse();
@@ -88,7 +91,7 @@ class SyncUploadController extends AbstractController
         }
 
         $request = Request::createFromGlobals();
-        $jsonContent = json_decode($request->getContent(), FALSE);
+        $jsonContent = json_decode($request->getContent(), false);
 
         $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
         foreach ($jsonContent as $item) {
@@ -97,7 +100,8 @@ class SyncUploadController extends AbstractController
                 ->findOneBy(['id' => $item->subscriptionId]);
 
             if (!$patient) {
-                AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - No patient with this ID ' . $item->subscriptionId);
+                AppConstants::writeToLog('debug_transform.txt',
+                    '[webhook:' . $service . '] - No patient with this ID ' . $item->subscriptionId);
             } else {
                 $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
                 if (is_array($queueEndpoints)) {
@@ -111,7 +115,11 @@ class SyncUploadController extends AbstractController
 
                     $serviceSyncQueue = $this->getDoctrine()
                         ->getRepository(SyncQueue::class)
-                        ->findOneBy(['credentials' => $patientCredential, 'service' => $serviceObject, 'endpoint' => $queueEndpoints]);
+                        ->findOneBy([
+                            'credentials' => $patientCredential,
+                            'service' => $serviceObject,
+                            'endpoint' => $queueEndpoints,
+                        ]);
 
                     if (!$serviceSyncQueue) {
                         $serviceSyncQueue = new SyncQueue();
@@ -149,8 +157,14 @@ class SyncUploadController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function index_post(String $service, String $data_set, LoggerInterface $logger, AwardManager $awardManager, ChallengePve $challengePve, CommsManager $commsManager)
-    {
+    public function index_post(
+        string $service,
+        string $data_set,
+        LoggerInterface $logger,
+        AwardManager $awardManager,
+        ChallengePve $challengePve,
+        CommsManager $commsManager
+    ) {
         $request = Request::createFromGlobals();
 
         if ($service == "samasung") {
@@ -185,47 +199,56 @@ class SyncUploadController extends AbstractController
                 $transformerClass = new $transformerClassName($logger);
             }
             /** @noinspection PhpUndefinedMethodInspection */
-            $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine(), $awardManager, $challengePve, $commsManager);
+            $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine(),
+                $awardManager, $challengePve, $commsManager);
         }
 
         if (is_array($savedId)) {
             return $this->json([
-                'success' => TRUE,
+                'success' => true,
                 'status' => 200,
                 'message' => "Saved multiple '$service/$data_set' entitles",
                 'entity_id' => $savedId,
             ]);
-        } else if ($savedId > 0) {
-            return $this->json([
-                'success' => TRUE,
-                'status' => 200,
-                'message' => "Saved '$service/$data_set' as " . $savedId,
-                'entity_id' => $savedId,
-            ]);
-        } else if ($savedId == -1) {
-            return $this->json([
-                'success' => FALSE,
-                'status' => 500,
-                'message' => "Unable to save entity",
-            ]);
-        } else if ($savedId == -2) {
-            return $this->json([
-                'success' => FALSE,
-                'status' => 500,
-                'message' => "Unknown service '$service'",
-            ]);
-        } else if ($savedId == -3) {
-            return $this->json([
-                'success' => FALSE,
-                'status' => 500,
-                'message' => "Unknown data set '$data_set' in '$service'",
-            ]);
         } else {
-            return $this->json([
-                'success' => FALSE,
-                'status' => 500,
-                'message' => "Unknown error",
-            ]);
+            if ($savedId > 0) {
+                return $this->json([
+                    'success' => true,
+                    'status' => 200,
+                    'message' => "Saved '$service/$data_set' as " . $savedId,
+                    'entity_id' => $savedId,
+                ]);
+            } else {
+                if ($savedId == -1) {
+                    return $this->json([
+                        'success' => false,
+                        'status' => 500,
+                        'message' => "Unable to save entity",
+                    ]);
+                } else {
+                    if ($savedId == -2) {
+                        return $this->json([
+                            'success' => false,
+                            'status' => 500,
+                            'message' => "Unknown service '$service'",
+                        ]);
+                    } else {
+                        if ($savedId == -3) {
+                            return $this->json([
+                                'success' => false,
+                                'status' => 500,
+                                'message' => "Unknown data set '$data_set' in '$service'",
+                            ]);
+                        } else {
+                            return $this->json([
+                                'success' => false,
+                                'status' => 500,
+                                'message' => "Unknown error",
+                            ]);
+                        }
+                    }
+                }
+            }
         }
 
     }

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -52,18 +53,24 @@ class Entry
     }
 
     /**
-     * @param String          $data_set
-     * @param String          $getContent
+     * @param String $data_set
+     * @param String $getContent
      * @param ManagerRegistry $doctrine
-     * @param AwardManager    $awardManager
-     * @param ChallengePve    $challengePve
-     * @param CommsManager    $commsManager
+     * @param AwardManager $awardManager
+     * @param ChallengePve $challengePve
+     * @param CommsManager $commsManager
      *
      * @return array|int|null
      */
-    public function transform(String $data_set, String $getContent, ManagerRegistry $doctrine, AwardManager $awardManager, ChallengePve $challengePve, CommsManager $commsManager)
-    {
-        $translateEntity = NULL;
+    public function transform(
+        string $data_set,
+        string $getContent,
+        ManagerRegistry $doctrine,
+        AwardManager $awardManager,
+        ChallengePve $challengePve,
+        CommsManager $commsManager
+    ) {
+        $translateEntity = null;
 
         Sentry\configureScope(function (Sentry\State\Scope $scope) use ($data_set): void {
             $scope->setUser([
@@ -78,7 +85,8 @@ class Entry
                 break;
             case Constants::SAMSUNGHEALTHEPDAILYSTEPS:
                 try {
-                    $translateEntity = SamsungCountDailySteps::translate($doctrine, $getContent, $awardManager, $challengePve);
+                    $translateEntity = SamsungCountDailySteps::translate($doctrine, $getContent, $awardManager,
+                        $challengePve);
                 } catch (Exception $e) {
                 }
                 break;
@@ -120,7 +128,8 @@ class Entry
                 break;
             case Constants::SAMSUNGHEALTHDISTNACE:
                 try {
-                    $translateEntity = SamsungCountDailyDistance::translate($doctrine, $getContent, $awardManager, $challengePve);
+                    $translateEntity = SamsungCountDailyDistance::translate($doctrine, $getContent, $awardManager,
+                        $challengePve);
                 } catch (Exception $e) {
                 }
                 break;

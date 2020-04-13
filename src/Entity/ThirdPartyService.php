@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Entity;
@@ -19,6 +20,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
@@ -83,10 +85,10 @@ class ThirdPartyService
      */
     public function createGuid()
     {
-        if(is_null($this->guid)) {
+        if (is_null($this->guid)) {
             try {
                 $this->guid = Uuid::uuid4();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
         }
 

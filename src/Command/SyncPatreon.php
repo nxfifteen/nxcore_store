@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Command;
@@ -77,8 +78,7 @@ class SyncPatreon extends Command
         ManagerRegistry $doctrine,
         LoggerInterface $logger,
         AwardManager $awardManager
-    ): void
-    {
+    ): void {
         $this->doctrine = $doctrine;
         $this->logger = $logger;
         $this->awardManager = $awardManager;
@@ -86,7 +86,7 @@ class SyncPatreon extends Command
 
     /**
      * {@inheritdoc}
-     * @throws \Exception
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -95,7 +95,7 @@ class SyncPatreon extends Command
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function syncServicePatreon()
     {
@@ -109,21 +109,27 @@ class SyncPatreon extends Command
 
         if (count($patreonCredentials) > 0) {
             foreach ($patreonCredentials as $patreonCredential) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Refreshing Patreon ' . $patreonCredential->getPatient()->getFirstName());
+                AppConstants::writeToLog('debug_transform.txt',
+                    __LINE__ . ' Refreshing Patreon ' . $patreonCredential->getPatient()->getFirstName());
                 $api_client = new API($patreonCredential->getToken());
 
                 try {
                     $patron_user = $api_client->fetch_user();
-                    if (is_array($patron_user) && array_key_exists("included", $patron_user) && array_key_exists("0", $patron_user['included']) && array_key_exists("attributes", $patron_user['included'][0])) {
+                    if (is_array($patron_user) && array_key_exists("included", $patron_user) && array_key_exists("0",
+                            $patron_user['included']) && array_key_exists("attributes", $patron_user['included'][0])) {
                         $this->entityManager = $this->doctrine->getManager();
-                        $endPointTearSettings = $this->updateUserTear($patron_user['included'][0]['attributes'], $patreonCredential->getPatient(), $service);
-                        $endPointStatusSettings = $this->updateUserStatus($patron_user['included'][0]['attributes'], $patreonCredential->getPatient(), $service);
+                        $endPointTearSettings = $this->updateUserTear($patron_user['included'][0]['attributes'],
+                            $patreonCredential->getPatient(), $service);
+                        $endPointStatusSettings = $this->updateUserStatus($patron_user['included'][0]['attributes'],
+                            $patreonCredential->getPatient(), $service);
 
-                        $this->checkMembershipTear($endPointTearSettings, $endPointStatusSettings, $patreonCredential->getPatient());
+                        $this->checkMembershipTear($endPointTearSettings, $endPointStatusSettings,
+                            $patreonCredential->getPatient());
 
                         $this->entityManager->flush();
                     } else {
-                        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Patreon ' . print_r($patron_user, TRUE));
+                        AppConstants::writeToLog('debug_transform.txt',
+                            __LINE__ . ' Patreon ' . print_r($patron_user, true));
                     }
                 } catch (APIException $e) {
                 } catch (CurlException $e) {
@@ -189,22 +195,22 @@ class SyncPatreon extends Command
             $last_charge_status = $patron_user['last_charge_status'];
         } else {
             $last_charge_status = 'unknown';
-        };
+        }
         if (array_key_exists("last_charge_date", $patron_user)) {
             $last_charge_date = $patron_user['last_charge_date'];
         } else {
             $last_charge_date = '';
-        };
+        }
         if (array_key_exists("patron_status", $patron_user)) {
             $patron_status = $patron_user['patron_status'];
         } else {
             $patron_status = 'unknown';
-        };
+        }
         if (array_key_exists("pledge_relationship_start", $patron_user)) {
             $pledge_relationship_start = $patron_user['pledge_relationship_start'];
         } else {
             $pledge_relationship_start = '';
-        };
+        }
 
         // Patreon Status
         /** @var PatientSettings $endPointTearSettings */
@@ -235,10 +241,13 @@ class SyncPatreon extends Command
      * @param PatientSettings $endPointStatusSettings
      * @param Patient         $patient
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    private function checkMembershipTear(PatientSettings $endPointTearSettings, PatientSettings $endPointStatusSettings, Patient $patient)
-    {
+    private function checkMembershipTear(
+        PatientSettings $endPointTearSettings,
+        PatientSettings $endPointStatusSettings,
+        Patient $patient
+    ) {
         $settingsTear = $endPointTearSettings->getValue();
         $settingsStatus = $endPointStatusSettings->getValue();
 
@@ -246,19 +255,19 @@ class SyncPatreon extends Command
         if (is_null($patientMembership)) {
             $patientMembership = new PatientMembership();
             $patientMembership->setPatient($patient);
-            $patientMembership->setLifetime(FALSE);
-            $patientMembership->setActive(FALSE);
+            $patientMembership->setLifetime(false);
+            $patientMembership->setActive(false);
             $patientMembership->setSince(new DateTime());
             $patientMembership->setLastPaid(new DateTime('1900-01-01 00:00:00'));
         }
 
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Patreon ' . print_r($settingsTear, TRUE));
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Patreon ' . print_r($settingsTear, true));
 
         $patientMembership->setTear($this->getTearFromPaidCent($settingsTear[0]));
         if (strtolower($settingsStatus[1]) == "paid") {
-            $patientMembership->setActive(TRUE);
+            $patientMembership->setActive(true);
         } else {
-            $patientMembership->setActive(FALSE);
+            $patientMembership->setActive(false);
         }
         try {
             $patientMembership->setSince(new DateTime($settingsStatus[3]));
@@ -276,8 +285,9 @@ class SyncPatreon extends Command
      * @return string
      */
     private
-    function getTearFromPaidCent(int $latestPaid)
-    {
+    function getTearFromPaidCent(
+        int $latestPaid
+    ) {
         switch ($latestPaid) {
             case "0":
                 return "follower";

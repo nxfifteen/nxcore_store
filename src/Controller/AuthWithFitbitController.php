@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -44,7 +45,7 @@ class AuthWithFitbitController extends AbstractController
      *
      * @return void
      */
-    public function auth_with_fitbit(ManagerRegistry $doctrine, RequestStack $request, String $uuid)
+    public function auth_with_fitbit(ManagerRegistry $doctrine, RequestStack $request, string $uuid)
     {
         $this->hasAccess($uuid);
 
@@ -84,9 +85,9 @@ class AuthWithFitbitController extends AbstractController
      *
      * @throws LogicException If the Security component is not available
      */
-    private function hasAccess(String $uuid)
+    private function hasAccess(string $uuid)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
 
         /** @var Patient $user */
         $user = $this->getUser();
@@ -102,7 +103,7 @@ class AuthWithFitbitController extends AbstractController
      * @param RequestStack    $request
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function auth_with_fitbit_callback(ManagerRegistry $doctrine, RequestStack $request)
     {
@@ -112,7 +113,8 @@ class AuthWithFitbitController extends AbstractController
 
         $queryCallback = explode('?', $request->getMasterRequest()->getUri())[0];
         $queryCallback = str_replace("http://", "https://", $queryCallback);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $_SESSION['uuid'] . '\'s Fitbit authentication succeeded');
+        AppConstants::writeToLog('debug_transform.txt',
+            __LINE__ . ' ' . $_SESSION['uuid'] . '\'s Fitbit authentication succeeded');
 
         /** @var Patient $patient */
         $patient = $this->getDoctrine()
@@ -157,7 +159,7 @@ class AuthWithFitbitController extends AbstractController
             $date->setTimestamp($accessToken->getExpires());
             $patientCredentials->setExpires($date);
 
-            $patient->setFirstRun(FALSE);
+            $patient->setFirstRun(false);
 
             $endPointSettings = new PatientSettings();
             $endPointSettings->setPatient($patient);
@@ -181,14 +183,16 @@ class AuthWithFitbitController extends AbstractController
 
                 $response = $this->getLibrary()->getResponse($request);
             } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
+                AppConstants::writeToLog('debug_transform.txt',
+                    __LINE__ . " - " . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
                 header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
                 exit;
             }
 
         } catch (IdentityProviderException $e) {
             // Failed to get the access token or user details.
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
+            AppConstants::writeToLog('debug_transform.txt',
+                __LINE__ . ' ' . $e->getMessage());        // Redirect the user to the authorization URL.
             header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
             exit;
         }

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -61,9 +62,9 @@ class BodyFatRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
+    public function findByDateRangeHistorical(string $patientId, string $date, int $lastDays)
     {
         $dateObject = new DateTime($date);
 
@@ -94,9 +95,9 @@ class BodyFatRepository extends ServiceEntityRepository
      * @param String $date
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRange(String $patientId, String $date)
+    public function findByDateRange(string $patientId, string $date)
     {
         return $this->findByDateRangeHistorical($patientId, $date, 0);
     }
@@ -106,7 +107,7 @@ class BodyFatRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findFirst(String $patientId)
+    public function findFirst(string $patientId)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')

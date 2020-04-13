@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\AwardDelivery;
@@ -54,8 +55,7 @@ class Xp extends AwardDelivery
         ManagerRegistry $doctrine,
         Patient $patient,
         RpgRewards $reward
-    )
-    {
+    ) {
         $this->doctrine = $doctrine;
         $this->patient = $patient;
         $this->reward = $reward;
@@ -82,11 +82,17 @@ class Xp extends AwardDelivery
             $reasoning = $this->replaceTags($reasoning);
 
             /** @var RpgXP $xpAlreadyAwarded */
-            $xpAlreadyAwarded = $this->doctrine->getRepository(RpgXP::class)->findOneBy(['patient' => $this->patient, 'reason' => $reasoning, 'datetime' => $dateTime]);
+            $xpAlreadyAwarded = $this->doctrine->getRepository(RpgXP::class)->findOneBy([
+                'patient' => $this->patient,
+                'reason' => $reasoning,
+                'datetime' => $dateTime,
+            ]);
             if (!$xpAlreadyAwarded) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Awarding ' . $this->patient->getFirstName() . ' ' . $this->reward->getPayload() . 'XP for ' . $reasoning);
+                AppConstants::writeToLog('debug_transform.txt',
+                    __LINE__ . ' Awarding ' . $this->patient->getFirstName() . ' ' . $this->reward->getPayload() . 'XP for ' . $reasoning);
 
-                $xpToAward = round(($this->reward->getPayload() * $this->patient->getRpgFactor()), 0, PHP_ROUND_HALF_DOWN);
+                $xpToAward = round(($this->reward->getPayload() * $this->patient->getRpgFactor()), 0,
+                    PHP_ROUND_HALF_DOWN);
 
                 $xpAward = new RpgXP();
                 $xpAward->setDatetime($dateTime);

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -23,6 +24,7 @@ use App\Entity\WorkoutEquipment;
 use App\Entity\WorkoutExercise;
 use App\Entity\WorkoutMuscle;
 use App\Entity\WorkoutMuscleRelation;
+use Exception;
 use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -42,7 +44,7 @@ class FeedJsonController extends AbstractController
      * @Route("/json/count/daily/steps", name="json_daily_step")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function FitStepsDailySummary()
     {
@@ -56,7 +58,9 @@ class FeedJsonController extends AbstractController
      */
     private function setupRoute()
     {
-        if (is_null($this->patient)) $this->patient = $this->getUser();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
         Sentry\configureScope(function (Sentry\State\Scope $scope): void {
             $scope->setUser([
@@ -74,9 +78,9 @@ class FeedJsonController extends AbstractController
      * @param int    $trackingDevice
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
-    public function FitStepsDailySummaryDateTracker(String $date, int $trackingDevice)
+    public function FitStepsDailySummaryDateTracker(string $date, int $trackingDevice)
     {
         $this->setupRoute();
 
@@ -108,8 +112,12 @@ class FeedJsonController extends AbstractController
                     $recordItem = [];
                     $recordItem['dateTime'] = $item->getDateTime()->format("H:i:s");
                     $recordItem['value'] = $item->getValue();
-                    if (!is_null($item->getTrackingDevice())) $recordItem['tracker'] = $item->getTrackingDevice()->getName();
-                    if (!is_null($item->getTrackingDevice()->getService())) $recordItem['service'] = $item->getTrackingDevice()->getService()->getName();
+                    if (!is_null($item->getTrackingDevice())) {
+                        $recordItem['tracker'] = $item->getTrackingDevice()->getName();
+                    }
+                    if (!is_null($item->getTrackingDevice()->getService())) {
+                        $recordItem['service'] = $item->getTrackingDevice()->getService()->getName();
+                    }
 
                     $timeStampsInTrack['values'][] = $recordItem;
                 }
@@ -134,7 +142,7 @@ class FeedJsonController extends AbstractController
      * @param int $trackingDevice
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function FitStepsDailySummaryTracker(int $trackingDevice)
     {
@@ -162,7 +170,7 @@ class FeedJsonController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function consumeWaterDate(String $date)
+    public function consumeWaterDate(string $date)
     {
         $this->setupRoute();
 
@@ -184,13 +192,17 @@ class FeedJsonController extends AbstractController
             foreach ($product as $item) {
                 if (is_numeric($item->getMeasurement())) {
                     $timeStampsInTrack['sum'] = $timeStampsInTrack['sum'] + $item->getMeasurement();
-                    if ($timeStampsInTrack['goal'] == 0) $timeStampsInTrack['goal'] = $item->getPatientGoal()->getGoal();
+                    if ($timeStampsInTrack['goal'] == 0) {
+                        $timeStampsInTrack['goal'] = $item->getPatientGoal()->getGoal();
+                    }
 
                     $recordItem = [];
                     $recordItem['dateTime'] = $item->getDateTime()->format("H:i:s");
                     $recordItem['value'] = $item->getMeasurement();
                     $recordItem['comment'] = $item->getComment();
-                    if (!is_null($item->getTrackingDevice())) $recordItem['service'] = $item->getTrackingDevice()->getName();
+                    if (!is_null($item->getTrackingDevice())) {
+                        $recordItem['service'] = $item->getTrackingDevice()->getName();
+                    }
 
                     $timeStampsInTrack['values'][] = $recordItem;
                 }
@@ -207,7 +219,7 @@ class FeedJsonController extends AbstractController
      * @Route("/json/count/daily/body", name="json_daily_body")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function body()
     {
@@ -222,9 +234,9 @@ class FeedJsonController extends AbstractController
      * @param String $date
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
-    public function bodyDate(String $date)
+    public function bodyDate(string $date)
     {
         $this->setupRoute();
 
@@ -381,13 +393,15 @@ class FeedJsonController extends AbstractController
             }
 
             if (count($formattedArray['muscles']["front_svg"]) > 0) {
-                $formattedArray['muscles']["front_svg"] = join(",", $formattedArray['muscles']["front_svg"]) . ",url(/assets/muscles/muscular_system_front.svg)";
+                $formattedArray['muscles']["front_svg"] = join(",",
+                        $formattedArray['muscles']["front_svg"]) . ",url(/assets/muscles/muscular_system_front.svg)";
             } else {
                 $formattedArray['muscles']["front_svg"] = "url(/assets/muscles/muscular_system_back.svg";
             }
 
             if (count($formattedArray['muscles']["back_svg"]) > 0) {
-                $formattedArray['muscles']["back_svg"] = join(",", $formattedArray['muscles']["back_svg"]) . ",url(/assets/muscles/muscular_system_back.svg)";
+                $formattedArray['muscles']["back_svg"] = join(",",
+                        $formattedArray['muscles']["back_svg"]) . ",url(/assets/muscles/muscular_system_back.svg)";
             } else {
                 $formattedArray['muscles']["back_svg"] = "url(/assets/muscles/muscular_system_back.svg";
             }

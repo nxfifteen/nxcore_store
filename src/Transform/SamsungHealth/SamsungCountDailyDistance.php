@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -45,10 +46,14 @@ class SamsungCountDailyDistance extends Constants
      * @param ChallengePve    $challengePve
      *
      * @return FitDistanceDailySummary|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager, ChallengePve $challengePve)
-    {
+    public static function translate(
+        ManagerRegistry $doctrine,
+        string $getContent,
+        AwardManager $awardManager,
+        ChallengePve $challengePve
+    ) {
         $jsonContent = self::decodeJson($getContent);
 
         if (property_exists($jsonContent, "uuid") && $jsonContent->device == 'VfS0qUERdZ') {
@@ -61,35 +66,40 @@ class SamsungCountDailyDistance extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
             $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var UnitOfMeasurement $unitOfMeasurement */
             $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->units);
             if (is_null($unitOfMeasurement)) {
-                return NULL;
+                return null;
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "FitDistanceDailySummary", $jsonContent->goal, $unitOfMeasurement, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "FitDistanceDailySummary", $jsonContent->goal,
+                $unitOfMeasurement, $patient);
             if (is_null($patientGoal)) {
-                return NULL;
+                return null;
             }
 
             /** @var FitDistanceDailySummary $dataEntry */
-            $dataEntry = $doctrine->getRepository(FitDistanceDailySummary::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(FitDistanceDailySummary::class)->findOneBy([
+                'RemoteId' => $jsonContent->remoteId,
+                'patient' => $patient,
+                'trackingDevice' => $deviceTracking,
+            ]);
             if (!$dataEntry) {
                 $dataEntry = new FitDistanceDailySummary();
             }
@@ -103,7 +113,7 @@ class SamsungCountDailyDistance extends Constants
 
             $dayStartTime = strtotime($jsonContent->dateTimeDayTime);
             $dayEndTime = strtotime(date("Y-m-d 23:59:59", $dayStartTime));
-            $updateTime = strtotime($jsonContent->dateTimeUpdated) + (60*60);
+            $updateTime = strtotime($jsonContent->dateTimeUpdated) + (60 * 60);
             if ($updateTime > $dayEndTime) {
                 $updateTime = $dayEndTime;
             }
@@ -112,7 +122,8 @@ class SamsungCountDailyDistance extends Constants
                 try {
                     $dataEntry->setDateTime(new DateTime(date("Y-m-d H:i:s", $updateTime)));
                 } catch (Exception $e) {
-                    AppConstants::writeToLog('debug_transform.txt', __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '' . __LINE__ . ' = ' . $e->getMessage());
                 }
             }
 
@@ -120,8 +131,11 @@ class SamsungCountDailyDistance extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            if ($dataEntry->getTrackingDevice()->getId() == 3) $awardManager->checkForAwards($dataEntry, "goal");
-            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
+            if ($dataEntry->getTrackingDevice()->getId() == 3) {
+                $awardManager->checkForAwards($dataEntry, "goal");
+            }
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient,
+                $thirdPartyService, $dataEntry->getDateTime());
             try {
                 $challengePve->checkAnyRunning($dataEntry);
             } catch (Exception $e) {
@@ -132,6 +146,6 @@ class SamsungCountDailyDistance extends Constants
 
         }
 
-        return NULL;
+        return null;
     }
 }

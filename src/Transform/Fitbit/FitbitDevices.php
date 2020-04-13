@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\Fitbit;
@@ -41,34 +42,43 @@ class FitbitDevices extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent[0]->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::FITBITSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
-            $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent[1][$deviceArrayIndex]->id);
+            $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService,
+                $jsonContent[1][$deviceArrayIndex]->id);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             $deviceTracking->setManufacturer(self::FITBITSERVICE);
             if (property_exists($jsonContent[1][$deviceArrayIndex], "deviceVersion")) {
-                if (is_null($deviceTracking->getName()) || $deviceTracking->getName() == $deviceTracking->getRemoteId()) $deviceTracking->setName($jsonContent[1][$deviceArrayIndex]->deviceVersion);
+                if (is_null($deviceTracking->getName()) || $deviceTracking->getName() == $deviceTracking->getRemoteId()) {
+                    $deviceTracking->setName($jsonContent[1][$deviceArrayIndex]->deviceVersion);
+                }
                 $deviceTracking->setModel($jsonContent[1][$deviceArrayIndex]->deviceVersion);
             }
-            if (property_exists($jsonContent[1][$deviceArrayIndex], "type")) $deviceTracking->setType($jsonContent[1][$deviceArrayIndex]->type);
-            if (property_exists($jsonContent[1][$deviceArrayIndex], "battery")) $deviceTracking->setBattery($jsonContent[1][$deviceArrayIndex]->batteryLevel);
-            if (property_exists($jsonContent[1][$deviceArrayIndex], "lastSynced")) $deviceTracking->setLastSynced($jsonContent[1][$deviceArrayIndex]->lastSyncTime);
+            if (property_exists($jsonContent[1][$deviceArrayIndex], "type")) {
+                $deviceTracking->setType($jsonContent[1][$deviceArrayIndex]->type);
+            }
+            if (property_exists($jsonContent[1][$deviceArrayIndex], "battery")) {
+                $deviceTracking->setBattery($jsonContent[1][$deviceArrayIndex]->batteryLevel);
+            }
+            if (property_exists($jsonContent[1][$deviceArrayIndex], "lastSynced")) {
+                $deviceTracking->setLastSynced($jsonContent[1][$deviceArrayIndex]->lastSyncTime);
+            }
 
             return $deviceTracking;
 
         }
 
-        return NULL;
+        return null;
     }
 }

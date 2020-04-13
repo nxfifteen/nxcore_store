@@ -27,15 +27,16 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200411184303 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return 'Initial Install. Create all the table and linkings';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('CREATE TABLE api_access_log (id INT AUTO_INCREMENT NOT NULL, patient_id INT NOT NULL, third_party_service_id INT NOT NULL, guid CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\', entity VARCHAR(255) NOT NULL, last_retrieved DATETIME NOT NULL, last_pulled DATETIME NOT NULL, cooldown DATETIME DEFAULT NULL, UNIQUE INDEX UNIQ_28D549012B6FCFB2 (guid), INDEX IDX_28D549016B899279 (patient_id), INDEX IDX_28D54901EBDDCD21 (third_party_service_id), UNIQUE INDEX EntityPulled (patient_id, third_party_service_id, entity), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('CREATE TABLE body_composition (id INT AUTO_INCREMENT NOT NULL, patient_id INT NOT NULL, part_of_day_id INT NOT NULL, tracking_device_id INT NOT NULL, guid CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\', skeletal_muscle DOUBLE PRECISION DEFAULT NULL, muscle_mass DOUBLE PRECISION DEFAULT NULL, basal_metabolic_rate DOUBLE PRECISION DEFAULT NULL, skeletal_muscle_mass DOUBLE PRECISION DEFAULT NULL, total_body_water DOUBLE PRECISION DEFAULT NULL, remote_id VARCHAR(255) NOT NULL, date_time DATETIME NOT NULL, UNIQUE INDEX UNIQ_C5EB24472B6FCFB2 (guid), INDEX IDX_C5EB24476B899279 (patient_id), INDEX IDX_C5EB2447DEE7B414 (part_of_day_id), INDEX IDX_C5EB24471984B75B (tracking_device_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
@@ -177,10 +178,11 @@ final class Version20200411184303 extends AbstractMigration
         $this->addSql('ALTER TABLE workout_muscle_relation ADD CONSTRAINT FK_56B0B011E934951A FOREIGN KEY (exercise_id) REFERENCES workout_exercise (id)');
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE uploaded_file DROP FOREIGN KEY FK_B40DF75D460F904B');
         $this->addSql('ALTER TABLE workout_exercise DROP FOREIGN KEY FK_76AB38AA460F904B');

@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Repository;
@@ -25,10 +26,10 @@ use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 
 /**
- * @method BodyWeight|null find($id, $lockMode = NULL, $lockVersion = NULL)
- * @method BodyWeight|null findOneBy(array $criteria, array $orderBy = NULL)
+ * @method BodyWeight|null find($id, $lockMode = null, $lockVersion = null)
+ * @method BodyWeight|null findOneBy(array $criteria, array $orderBy = null)
  * @method BodyWeight[]    findAll()
- * @method BodyWeight[]    findBy(array $criteria, array $orderBy = NULL, $limit = NULL, $offset = NULL)
+ * @method BodyWeight[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class BodyWeightRepository extends ServiceEntityRepository
 {
@@ -64,9 +65,9 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param String $date
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRange(String $patientId, String $date)
+    public function findByDateRange(string $patientId, string $date)
     {
         return $this->findByDateRangeHistorical($patientId, $date, 0);
     }
@@ -77,9 +78,9 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @param int    $lastDays
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findByDateRangeHistorical(String $patientId, String $date, int $lastDays)
+    public function findByDateRangeHistorical(string $patientId, string $date, int $lastDays)
     {
         $dateObject = new DateTime($date);
 
@@ -124,8 +125,8 @@ class BodyWeightRepository extends ServiceEntityRepository
         $loopWeightCount = 0;
         $weightReturnData = [];
         /** @var BodyWeight $previousWeightRecord */
-        $previousWeightRecord = NULL;
-        for ($i = 0; $i <= ($lastDays - 1); $i++){
+        $previousWeightRecord = null;
+        for ($i = 0; $i <= ($lastDays - 1); $i++) {
             if ($weightRecords[$loopWeightCount]->getDateTime()->format("Y-m-d") == $dateArray[$i]->format('Y-m-d')) {
                 $previousWeightRecord = clone $weightRecords[$loopWeightCount];
                 $weightReturnData[] = clone $weightRecords[$loopWeightCount];
@@ -146,7 +147,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findFirst(String $patientId)
+    public function findFirst(string $patientId)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
@@ -164,7 +165,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      * @return mixed
      * @throws NonUniqueResultException
      */
-    public function findLast(String $patientId)
+    public function findLast(string $patientId)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
@@ -177,15 +178,15 @@ class BodyWeightRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param String             $patientId
+     * @param String            $patientId
      *
      * @param DateTimeInterface $dateTime
      *
      * @return mixed
      * @throws NonUniqueResultException
-     * @throws \Exception
+     * @throws Exception
      */
-    public function findSevenDayAgo(String $patientId, DateTimeInterface $dateTime)
+    public function findSevenDayAgo(string $patientId, DateTimeInterface $dateTime)
     {
         $interval = new DateInterval('P6D');
         $dateTime->sub($interval);
@@ -202,14 +203,14 @@ class BodyWeightRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param String             $patientId
+     * @param String            $patientId
      *
      * @param DateTimeInterface $dateTime
      *
      * @return mixed
      * @throws NonUniqueResultException
      */
-    public function findSevenDayAverage(String $patientId, DateTimeInterface $dateTime)
+    public function findSevenDayAverage(string $patientId, DateTimeInterface $dateTime)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
@@ -223,14 +224,14 @@ class BodyWeightRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param String             $patientId
+     * @param String            $patientId
      *
      * @param DateTimeInterface $dateTime
      *
      * @return mixed
      * @throws NonUniqueResultException
      */
-    public function findPrevious(String $patientId, DateTimeInterface $dateTime)
+    public function findPrevious(string $patientId, DateTimeInterface $dateTime)
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
@@ -250,7 +251,7 @@ class BodyWeightRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function getSumOfValues(String $patientId, int $trackingDevice)
+    public function getSumOfValues(string $patientId, int $trackingDevice)
     {
         try {
             return $this->createQueryBuilder('c')
@@ -263,7 +264,7 @@ class BodyWeightRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult()['sum'];
         } catch (NonUniqueResultException $e) {
-            return NULL;
+            return null;
         }
     }
 }

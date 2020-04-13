@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -33,7 +34,7 @@ class SamsungDevices extends Constants
      *
      * @return TrackingDevice|null
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent)
+    public static function translate(ManagerRegistry $doctrine, string $getContent)
     {
         $jsonContent = self::decodeJson($getContent);
         if (property_exists($jsonContent, "remoteId")) {
@@ -42,33 +43,47 @@ class SamsungDevices extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
             /** @var ThirdPartyService $thirdPartyService */
             $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
             /** @var TrackingDevice $deviceTracking */
             $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->remoteId);
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
-            if (is_null($deviceTracking->getName()) && property_exists($jsonContent, "name")) $deviceTracking->setName($jsonContent->name);
-            if (is_null($deviceTracking->getComment()) && property_exists($jsonContent, "comment")) $deviceTracking->setComment($jsonContent->comment);
-            if (property_exists($jsonContent, "type")) $deviceTracking->setType($jsonContent->type);
-            if (property_exists($jsonContent, "manufacturer")) $deviceTracking->setManufacturer($jsonContent->manufacturer);
-            if (property_exists($jsonContent, "model")) $deviceTracking->setModel($jsonContent->model);
-            if (property_exists($jsonContent, "battery")) $deviceTracking->setBattery($jsonContent->battery);
-            if (property_exists($jsonContent, "lastSynced")) $deviceTracking->setLastSynced($jsonContent->lastSynced);
+            if (is_null($deviceTracking->getName()) && property_exists($jsonContent, "name")) {
+                $deviceTracking->setName($jsonContent->name);
+            }
+            if (is_null($deviceTracking->getComment()) && property_exists($jsonContent, "comment")) {
+                $deviceTracking->setComment($jsonContent->comment);
+            }
+            if (property_exists($jsonContent, "type")) {
+                $deviceTracking->setType($jsonContent->type);
+            }
+            if (property_exists($jsonContent, "manufacturer")) {
+                $deviceTracking->setManufacturer($jsonContent->manufacturer);
+            }
+            if (property_exists($jsonContent, "model")) {
+                $deviceTracking->setModel($jsonContent->model);
+            }
+            if (property_exists($jsonContent, "battery")) {
+                $deviceTracking->setBattery($jsonContent->battery);
+            }
+            if (property_exists($jsonContent, "lastSynced")) {
+                $deviceTracking->setLastSynced($jsonContent->lastSynced);
+            }
 
             return $deviceTracking;
 
         }
 
-        return NULL;
+        return null;
     }
 }

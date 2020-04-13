@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Transform\SamsungHealth;
@@ -40,9 +41,9 @@ class SamsungBodyFat extends Constants
      * @param AwardManager    $awardManager
      *
      * @return BodyFat|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function translate(ManagerRegistry $doctrine, String $getContent, AwardManager $awardManager)
+    public static function translate(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
         //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
@@ -53,10 +54,10 @@ class SamsungBodyFat extends Constants
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
             if (is_null($patient)) {
-                return NULL;
+                return null;
             }
 
-            if (self::startsWith($jsonContent->comment,"Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
+            if (self::startsWith($jsonContent->comment, "Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
                 /** @var ThirdPartyService $thirdPartyService */
                 $thirdPartyService = self::getThirdPartyService($doctrine, self::FITBITSERVICE);
             } else {
@@ -64,40 +65,46 @@ class SamsungBodyFat extends Constants
                 $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
             }
             if (is_null($thirdPartyService)) {
-                return NULL;
+                return null;
             }
 
-            if (self::startsWith($jsonContent->comment,"Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
+            if (self::startsWith($jsonContent->comment, "Fitbit: ") && $jsonContent->device == "yJdRrYpC43") {
                 /** @var TrackingDevice $deviceTracking */
                 $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, "Aria");
             } else {
                 /** @var TrackingDevice $deviceTracking */
-                $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService, $jsonContent->device);
+                $deviceTracking = self::getTrackingDevice($doctrine, $patient, $thirdPartyService,
+                    $jsonContent->device);
             }
             if (is_null($deviceTracking)) {
-                return NULL;
+                return null;
             }
 
             /** @var PartOfDay $partOfDay */
             $partOfDay = self::getPartOfDay($doctrine, new DateTime($jsonContent->dateTime));
             if (is_null($partOfDay)) {
-                return NULL;
+                return null;
             }
 
             /** @var UnitOfMeasurement $unitOfMeasurement */
             $unitOfMeasurement = self::getUnitOfMeasurement($doctrine, $jsonContent->fatUnitOfMeasurement);
             if (is_null($unitOfMeasurement)) {
-                return NULL;
+                return null;
             }
 
             /** @var PatientGoals $patientGoal */
-            $patientGoal = self::getPatientGoal($doctrine, "BodyFat", $jsonContent->fatGoal, $unitOfMeasurement, $patient);
+            $patientGoal = self::getPatientGoal($doctrine, "BodyFat", $jsonContent->fatGoal, $unitOfMeasurement,
+                $patient);
             if (is_null($patientGoal)) {
-                return NULL;
+                return null;
             }
 
             /** @var BodyFat $dataEntry */
-            $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy(['RemoteId' => $jsonContent->remoteId, 'patient' => $patient, 'trackingDevice' => $deviceTracking]);
+            $dataEntry = $doctrine->getRepository(BodyFat::class)->findOneBy([
+                'RemoteId' => $jsonContent->remoteId,
+                'patient' => $patient,
+                'trackingDevice' => $deviceTracking,
+            ]);
             if (!$dataEntry) {
                 $dataEntry = new BodyFat();
             }
@@ -108,9 +115,15 @@ class SamsungBodyFat extends Constants
             $dataEntry->setRemoteId($jsonContent->remoteId);
             $dataEntry->setMeasurement($jsonContent->fatMeasurement);
             $dataEntry->setUnitOfMeasurement($unitOfMeasurement);
-            if ($jsonContent->fat_free > 0) $dataEntry->setFatFree($jsonContent->fat_free);
-            if ($jsonContent->fat_free_mass > 0) $dataEntry->setFatFreeMass($jsonContent->fat_free_mass);
-            if ($jsonContent->body_fat_mass > 0) $dataEntry->setBodyFatMass($jsonContent->body_fat_mass);
+            if ($jsonContent->fat_free > 0) {
+                $dataEntry->setFatFree($jsonContent->fat_free);
+            }
+            if ($jsonContent->fat_free_mass > 0) {
+                $dataEntry->setFatFreeMass($jsonContent->fat_free_mass);
+            }
+            if ($jsonContent->body_fat_mass > 0) {
+                $dataEntry->setBodyFatMass($jsonContent->body_fat_mass);
+            }
             $dataEntry->setPatientGoal($patientGoal);
             if (is_null($dataEntry->getDateTime()) || $dataEntry->getDateTime()->format("U") <> (new DateTime($jsonContent->dateTime))->format("U")) {
                 $dataEntry->setDateTime(new DateTime($jsonContent->dateTime));
@@ -120,12 +133,13 @@ class SamsungBodyFat extends Constants
                 $deviceTracking->setLastSynced($dataEntry->getDateTime());
             }
 
-            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient, $thirdPartyService, $dataEntry->getDateTime());
+            self::updateApi($doctrine, str_ireplace("App\\Entity\\", "", get_class($dataEntry)), $patient,
+                $thirdPartyService, $dataEntry->getDateTime());
 
             return $dataEntry;
 
         }
 
-        return NULL;
+        return null;
     }
 }

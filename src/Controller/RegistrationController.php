@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
+
 /** @noinspection DuplicatedCode */
 
 namespace App\Controller;
@@ -29,6 +30,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
  * Class RegistrationController
@@ -39,33 +43,38 @@ class RegistrationController extends AbstractController
 {
     /**
      * @Route("/users/register", name="login_register")
-     * @param ManagerRegistry              $doctrine
-     * @param Request                      $request
+     * @param ManagerRegistry $doctrine
+     * @param Request $request
      *
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
-     * @param AwardManager                 $awardManager
+     * @param AwardManager $awardManager
      *
-     * @param CommsManager                 $commsManager
+     * @param CommsManager $commsManager
      *
      * @return JsonResponse
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
-    public function index(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder, AwardManager $awardManager, CommsManager $commsManager)
-    {
+    public function index(
+        ManagerRegistry $doctrine,
+        Request $request,
+        UserPasswordEncoderInterface $passwordEncoder,
+        AwardManager $awardManager,
+        CommsManager $commsManager
+    ) {
         $blockedUserNames = [
             "root",
             "admin",
             "core",
             "nxfifteen",
-            "nx15"
+            "nx15",
         ];
 
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
-        $requestJson = json_decode($requestBody, FALSE);
+        $requestJson = json_decode($requestBody, false);
         $requestJson->username = strtolower($requestJson->username);
 
         AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r([
@@ -73,7 +82,7 @@ class RegistrationController extends AbstractController
                 "email" => $requestJson->email,
                 "invite" => $requestJson->invite,
                 "password" => $requestJson->password,
-            ], TRUE));
+            ], true));
         AppConstants::writeToLog('debug_transform.txt',
             __LINE__ . ' New user registration ' . $requestJson->username . ' ' . $requestJson->email);
 
@@ -135,7 +144,7 @@ class RegistrationController extends AbstractController
         $patient->setUuid($requestJson->username);
         $patient->setEmail($requestJson->email);
         //$patient->setAvatar('https://connect.core.nxfifteen.me.uk/new.jpg');
-        $patient->setUiSettings(["showNavBar::false","showAsideBar::false"]);
+        $patient->setUiSettings(["showNavBar::false", "showAsideBar::false"]);
         $patient->setPassword($passwordEncoder->encodePassword($patient, $requestJson->password));
         $patient->setRoles(['ROLE_USER', 'ROLE_BETA']);
         $patient->setApiToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
@@ -146,8 +155,8 @@ class RegistrationController extends AbstractController
         $membership->setTear('alpha_user');
         $membership->setSince(new DateTime());
         $membership->setLastPaid(new DateTime());
-        $membership->setActive(TRUE);
-        $membership->setLifetime(TRUE);
+        $membership->setActive(true);
+        $membership->setLifetime(true);
         $entityManager->persist($membership);
 
         /** @var Patient $patientOwner */
@@ -188,14 +197,18 @@ class RegistrationController extends AbstractController
             ]
         );
 
-        return $this->json(["username" => $patient->getUuid(), "token" => $patient->getApiToken(), "firstrun" => $patient->getFirstRun()]);
+        return $this->json([
+            "username" => $patient->getUuid(),
+            "token" => $patient->getApiToken(),
+            "firstrun" => $patient->getFirstRun(),
+        ]);
     }
 
     /**
      * @Route("/users/profile", name="get_profile")
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function get_profile()
     {
@@ -224,11 +237,11 @@ class RegistrationController extends AbstractController
 
     /**
      * @Route("/users/profile/save", name="save_profile")
-     * @param ManagerRegistry              $doctrine
-     * @param Request                      $request
+     * @param ManagerRegistry $doctrine
+     * @param Request         $request
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function save_profile(ManagerRegistry $doctrine, Request $request)
     {
@@ -238,8 +251,8 @@ class RegistrationController extends AbstractController
 
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
-        $requestJson = json_decode($requestBody, FALSE);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, TRUE));
+        $requestJson = json_decode($requestBody, false);
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
 
         $entityManager = $doctrine->getManager();
 
@@ -253,7 +266,7 @@ class RegistrationController extends AbstractController
         }
         $patient->setDateOfBirth(new DateTime($requestJson->dateOfBirth));
         $patient->setFirstRun(false);
-        $patient->setUiSettings(["showNavBar::lg","showAsideBar::false"]);
+        $patient->setUiSettings(["showNavBar::lg", "showAsideBar::false"]);
 
         $userProfile = [
             "username" => $patient->getUsername(),
@@ -268,7 +281,6 @@ class RegistrationController extends AbstractController
         $entityManager->persist($patient);
 
 
-
         $entityManager->flush();
 
         return $this->json($userProfile);
@@ -277,7 +289,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/invite/{inviteCode}", name="login_register_invite")
      *
-     * @param string                $inviteCode
+     * @param string $inviteCode
      *
      * @return JsonResponse
      */
@@ -285,7 +297,7 @@ class RegistrationController extends AbstractController
     {
         AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Invite Code ' . $inviteCode);
 
-        return $this->json(["status" => TRUE]);
+        return $this->json(["status" => true]);
     }
 
     /*
@@ -328,9 +340,9 @@ class RegistrationController extends AbstractController
      *
      * @throws LogicException If the Security component is not available
      */
-    private function hasAccess(String $uuid)
+    private function hasAccess(string $uuid)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER', NULL, 'User tried to access a page without having ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
 
         /** @var Patient $user */
         $user = $this->getUser();
