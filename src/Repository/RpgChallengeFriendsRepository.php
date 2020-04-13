@@ -38,6 +38,40 @@ class RpgChallengeFriendsRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param Patient $patient
+     * @param int     $int
+     *
+     * @return int
+     */
+    private function countChallengedByOutcome(Patient $patient, int $int)
+    {
+        return count($this->createQueryBuilder('c')
+            ->andWhere('c.challenged = :patientId')
+            ->setParameter('patientId', $patient->getId())
+            ->andWhere('c.outcome = :winOutcome')
+            ->setParameter('winOutcome', $int)
+            ->getQuery()
+            ->getResult());
+    }
+
+    /**
+     * @param Patient $patient
+     * @param int     $int
+     *
+     * @return int
+     */
+    private function countChallengerByOutcome(Patient $patient, int $int)
+    {
+        return count($this->createQueryBuilder('c')
+            ->andWhere('c.challenger = :patientId')
+            ->setParameter('patientId', $patient->getId())
+            ->andWhere('c.outcome = :winOutcome')
+            ->setParameter('winOutcome', $int)
+            ->getQuery()
+            ->getResult());
+    }
+
+    /**
      * Find a Entity by its GUID
      *
      * @param string $value
@@ -59,10 +93,10 @@ class RpgChallengeFriendsRepository extends ServiceEntityRepository
      *
      * @return int
      */
-    public function findChallengeWins($patient)
+    public function findChallengeDraws($patient)
     {
-        $challenger = $this->countChallengerByOutcome($patient, 5);
-        $challenged = $this->countChallengedByOutcome($patient, 4);
+        $challenger = $this->countChallengerByOutcome($patient, 6);
+        $challenged = $this->countChallengedByOutcome($patient, 6);
 
         return $challenger + $challenged;
     }
@@ -85,45 +119,11 @@ class RpgChallengeFriendsRepository extends ServiceEntityRepository
      *
      * @return int
      */
-    public function findChallengeDraws($patient)
+    public function findChallengeWins($patient)
     {
-        $challenger = $this->countChallengerByOutcome($patient, 6);
-        $challenged = $this->countChallengedByOutcome($patient, 6);
+        $challenger = $this->countChallengerByOutcome($patient, 5);
+        $challenged = $this->countChallengedByOutcome($patient, 4);
 
         return $challenger + $challenged;
-    }
-
-    /**
-     * @param Patient $patient
-     * @param int     $int
-     *
-     * @return int
-     */
-    private function countChallengerByOutcome(Patient $patient, int $int)
-    {
-        return count($this->createQueryBuilder('c')
-            ->andWhere('c.challenger = :patientId')
-            ->setParameter('patientId', $patient->getId())
-            ->andWhere('c.outcome = :winOutcome')
-            ->setParameter('winOutcome', $int)
-            ->getQuery()
-            ->getResult());
-    }
-
-    /**
-     * @param Patient $patient
-     * @param int     $int
-     *
-     * @return int
-     */
-    private function countChallengedByOutcome(Patient $patient, int $int)
-    {
-        return count($this->createQueryBuilder('c')
-            ->andWhere('c.challenged = :patientId')
-            ->setParameter('patientId', $patient->getId())
-            ->andWhere('c.outcome = :winOutcome')
-            ->setParameter('winOutcome', $int)
-            ->getQuery()
-            ->getResult());
     }
 }

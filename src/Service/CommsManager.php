@@ -85,60 +85,37 @@ class CommsManager
     }
 
     /**
-     * @param string      $title
-     * @param string|null $body
-     * @param Patient     $patient
-     * @param bool        $private
+     * @param string $emailAddress
      *
-     * @param string|null $fileUrl
-     *
-     * @return array
+     * @return |null
      */
-    public function sendNotification(
-        string $title,
-        ?string $body,
-        Patient $patient,
-        bool $private = false,
-        string $fileUrl = null
-    ) {
-        $return = [];
-
-        if ($private) {
-
-            $title = $this->findUserNamesInMessage($title, $patient, true);
-            if (!is_null($body)) {
-                $body = $this->findUserNamesInMessage($body, $patient, false);
-            }
-
-            $this->sendNotificationChat($title, $body, $patient, $fileUrl);
-            $this->sendNotificationPush($title, $body, $patient);
-        } else {
-
-            $title = $this->findUserNamesInMessage($title, $patient, false);
-            if (!is_null($body)) {
-                $body = $this->findUserNamesInMessage($body, $patient, false);
-            }
-
-            $this->sendChatToChannel($title, $body, $fileUrl);
-        }
-
-        return $return;
-    }
-
-    public function social(string $message, string $channel, string $service = "all", Patient $patient = null)
+    private function findUserInChat(string $emailAddress)
     {
-        if ($service == "all" || $service == "discord") {
-            $this->discord($channel, $message);
-        } else {
-            if (!is_null($patient) && ($service == "all" || $service == "synology")) {
-                $this->sendNotification(
-                    "",
-                    $message,
-                    null,
-                    false
-                );
+        $chat_param = "webapi/entry.cgi?api=SYNO.Chat.External&method=user_list&version=2&token=%22" . $_ENV['SYNOLOGY_CHATBOT'] . "%22";
+
+        $client = HttpClient::create();
+        // code execution continues immediately; it doesn't wait to receive the response
+        try {
+            $response = $client->request('GET', $_ENV['SYNOLOGY_CHAT_URL'] . $chat_param);
+
+            // trying to get the response contents will block the execution until
+            // the full response contents are received
+            $contents = json_decode($response->getContent(), false);
+
+            if ($contents->success) {
+                foreach ($contents->data->users as $user) {
+                    if (!is_null($user->user_props->email) && strtolower($emailAddress) == strtolower($user->user_props->email)) {
+                        return $user;
+                    }
+                }
             }
+        } catch (TransportExceptionInterface $e) {
+        } catch (ClientExceptionInterface $e) {
+        } catch (RedirectionExceptionInterface $e) {
+        } catch (ServerExceptionInterface $e) {
         }
+
+        return null;
     }
 
     /**
@@ -190,78 +167,72 @@ class CommsManager
     }
 
     /**
-     * @param string      $title
-     * @param string|null $body
-     * @param Patient     $patient
-     * @param string|NULL $fileUrl
-     */
-    private function sendNotificationChat(string $title, ?string $body, Patient $patient, string $fileUrl = null)
-    {
-        $thirdPartyService = $this->doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => "Synology Chat"]);
-        if ($thirdPartyService) {
-            /** @var PatientCredentials $dbSynologyAccount */
-            $dbSynologyAccount = $this->doctrine
-                ->getRepository(PatientCredentials::class)
-                ->findOneBy(['patient' => $patient, 'service' => $thirdPartyService]);
-
-            if (!$dbSynologyAccount) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' User doesnt have a Synology account');
-                AppConstants::writeToLog('debug_transform.txt',
-                    __LINE__ . ' Registered Email address is ' . $patient->getEmail());
-                $foundUser = $this->findUserInChat($patient->getEmail());
-                if (!is_null($foundUser)) {
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . '  The Bot can see the user');
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($foundUser, true));
-
-                    $dbSynologyAccount = new PatientCredentials();
-                    $dbSynologyAccount->setPatient($patient);
-                    $dbSynologyAccount->setService($thirdPartyService);
-                    $dbSynologyAccount->setToken($foundUser->user_id);
-
-                    $manager = $this->doctrine->getManager();
-                    $manager->persist($dbSynologyAccount);
-                    $manager->flush();
-                }
-            }
-
-            if ($dbSynologyAccount) {
-                $this->sendChatToUser($title, $body, $dbSynologyAccount->getToken(), $fileUrl);
-            }
-        }
-    }
-
-    /**
-     * @param string $emailAddress
+     * @param string $method
+     * @param string $apiKey
+     * @param array  $payload
      *
-     * @return |null
+     * @return array|mixed
      */
-    private function findUserInChat(string $emailAddress)
+    private function makeSynologyChatRequest(string $method, string $apiKey, array $payload)
     {
-        $chat_param = "webapi/entry.cgi?api=SYNO.Chat.External&method=user_list&version=2&token=%22" . $_ENV['SYNOLOGY_CHATBOT'] . "%22";
+        $chat_param = "webapi/entry.cgi?api=SYNO.Chat.External&method=" . $method . "&version=2&token=%22" . $apiKey . "%22";
+
+        $contents = [];
 
         $client = HttpClient::create();
         // code execution continues immediately; it doesn't wait to receive the response
         try {
-            $response = $client->request('GET', $_ENV['SYNOLOGY_CHAT_URL'] . $chat_param);
+            $response = $client->request('POST', $_ENV['SYNOLOGY_CHAT_URL'] . $chat_param, [
+                'body' => 'payload=' . json_encode($payload),
+            ]);
 
             // trying to get the response contents will block the execution until
             // the full response contents are received
-            $contents = json_decode($response->getContent(), false);
-
-            if ($contents->success) {
-                foreach ($contents->data->users as $user) {
-                    if (!is_null($user->user_props->email) && strtolower($emailAddress) == strtolower($user->user_props->email)) {
-                        return $user;
-                    }
-                }
-            }
+            $contents = json_decode($response->getContent(), true);
         } catch (TransportExceptionInterface $e) {
         } catch (ClientExceptionInterface $e) {
         } catch (RedirectionExceptionInterface $e) {
         } catch (ServerExceptionInterface $e) {
         }
 
-        return null;
+        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($contents, TRUE));
+
+        return $contents;
+    }
+
+    /**
+     * @param string      $title
+     * @param string|null $body
+     * @param string|NULL $fileUrl
+     *
+     * @return array|mixed
+     */
+    private function sendChatToChannel(string $title, ?string $body, string $fileUrl = null)
+    {
+        $payload = [
+            "text" => $title,
+            "attachments" => [
+                "callback_id" => "abc",
+                "text" => "attachment",
+                "actions" => [
+                    "type" => "button",
+                    "name" => "resp",
+                    "value" => "ok",
+                    "text" => "OK",
+                    "style" => "green",
+                ],
+            ],
+        ];
+
+        if (!is_null($fileUrl)) {
+            $payload['file_url'] = $fileUrl;
+        }
+
+        if (!is_null($body)) {
+            $payload['text'] = $payload['text'] . "\n" . $body;
+        }
+
+        return $this->makeSynologyChatRequest('incoming', $_ENV['SYNOLOGY_CHAT'], $payload);
     }
 
     /**
@@ -304,37 +275,44 @@ class CommsManager
     }
 
     /**
-     * @param string $method
-     * @param string $apiKey
-     * @param array  $payload
-     *
-     * @return array|mixed
+     * @param string      $title
+     * @param string|null $body
+     * @param Patient     $patient
+     * @param string|NULL $fileUrl
      */
-    private function makeSynologyChatRequest(string $method, string $apiKey, array $payload)
+    private function sendNotificationChat(string $title, ?string $body, Patient $patient, string $fileUrl = null)
     {
-        $chat_param = "webapi/entry.cgi?api=SYNO.Chat.External&method=" . $method . "&version=2&token=%22" . $apiKey . "%22";
+        $thirdPartyService = $this->doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => "Synology Chat"]);
+        if ($thirdPartyService) {
+            /** @var PatientCredentials $dbSynologyAccount */
+            $dbSynologyAccount = $this->doctrine
+                ->getRepository(PatientCredentials::class)
+                ->findOneBy(['patient' => $patient, 'service' => $thirdPartyService]);
 
-        $contents = [];
+            if (!$dbSynologyAccount) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' User doesnt have a Synology account');
+                AppConstants::writeToLog('debug_transform.txt',
+                    __LINE__ . ' Registered Email address is ' . $patient->getEmail());
+                $foundUser = $this->findUserInChat($patient->getEmail());
+                if (!is_null($foundUser)) {
+                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . '  The Bot can see the user');
+                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($foundUser, true));
 
-        $client = HttpClient::create();
-        // code execution continues immediately; it doesn't wait to receive the response
-        try {
-            $response = $client->request('POST', $_ENV['SYNOLOGY_CHAT_URL'] . $chat_param, [
-                'body' => 'payload=' . json_encode($payload),
-            ]);
+                    $dbSynologyAccount = new PatientCredentials();
+                    $dbSynologyAccount->setPatient($patient);
+                    $dbSynologyAccount->setService($thirdPartyService);
+                    $dbSynologyAccount->setToken($foundUser->user_id);
 
-            // trying to get the response contents will block the execution until
-            // the full response contents are received
-            $contents = json_decode($response->getContent(), true);
-        } catch (TransportExceptionInterface $e) {
-        } catch (ClientExceptionInterface $e) {
-        } catch (RedirectionExceptionInterface $e) {
-        } catch (ServerExceptionInterface $e) {
+                    $manager = $this->doctrine->getManager();
+                    $manager->persist($dbSynologyAccount);
+                    $manager->flush();
+                }
+            }
+
+            if ($dbSynologyAccount) {
+                $this->sendChatToUser($title, $body, $dbSynologyAccount->getToken(), $fileUrl);
+            }
         }
-
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($contents, TRUE));
-
-        return $contents;
     }
 
     /**
@@ -360,39 +338,68 @@ class CommsManager
         }
     }
 
+    public function discord(string $channel, string $message, array $embeds = [])
+    {
+        $webhookurl = $_ENV['DISCORD_WH_' . $channel];
+
+        $json_data = json_encode([
+            // Message
+            "content" => $message,
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        $ch = curl_init($webhookurl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec($ch);
+        // If you need to debug, or find out why you can't send message uncomment line below, and execute script.
+        // echo $response;
+        curl_close($ch);
+    }
+
     /**
      * @param string      $title
      * @param string|null $body
-     * @param string|NULL $fileUrl
+     * @param Patient     $patient
+     * @param bool        $private
      *
-     * @return array|mixed
+     * @param string|null $fileUrl
+     *
+     * @return array
      */
-    private function sendChatToChannel(string $title, ?string $body, string $fileUrl = null)
-    {
-        $payload = [
-            "text" => $title,
-            "attachments" => [
-                "callback_id" => "abc",
-                "text" => "attachment",
-                "actions" => [
-                    "type" => "button",
-                    "name" => "resp",
-                    "value" => "ok",
-                    "text" => "OK",
-                    "style" => "green",
-                ],
-            ],
-        ];
+    public function sendNotification(
+        string $title,
+        ?string $body,
+        Patient $patient,
+        bool $private = false,
+        string $fileUrl = null
+    ) {
+        $return = [];
 
-        if (!is_null($fileUrl)) {
-            $payload['file_url'] = $fileUrl;
+        if ($private) {
+
+            $title = $this->findUserNamesInMessage($title, $patient, true);
+            if (!is_null($body)) {
+                $body = $this->findUserNamesInMessage($body, $patient, false);
+            }
+
+            $this->sendNotificationChat($title, $body, $patient, $fileUrl);
+            $this->sendNotificationPush($title, $body, $patient);
+        } else {
+
+            $title = $this->findUserNamesInMessage($title, $patient, false);
+            if (!is_null($body)) {
+                $body = $this->findUserNamesInMessage($body, $patient, false);
+            }
+
+            $this->sendChatToChannel($title, $body, $fileUrl);
         }
 
-        if (!is_null($body)) {
-            $payload['text'] = $payload['text'] . "\n" . $body;
-        }
-
-        return $this->makeSynologyChatRequest('incoming', $_ENV['SYNOLOGY_CHAT'], $payload);
+        return $return;
     }
 
     /**
@@ -450,26 +457,19 @@ class CommsManager
         }
     }
 
-    public function discord(string $channel, string $message, array $embeds = [])
+    public function social(string $message, string $channel, string $service = "all", Patient $patient = null)
     {
-        $webhookurl = $_ENV['DISCORD_WH_' . $channel];
-
-        $json_data = json_encode([
-            // Message
-            "content" => $message,
-        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-        $ch = curl_init($webhookurl);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $response = curl_exec($ch);
-        // If you need to debug, or find out why you can't send message uncomment line below, and execute script.
-        // echo $response;
-        curl_close($ch);
+        if ($service == "all" || $service == "discord") {
+            $this->discord($channel, $message);
+        } else {
+            if (!is_null($patient) && ($service == "all" || $service == "synology")) {
+                $this->sendNotification(
+                    "",
+                    $message,
+                    null,
+                    false
+                );
+            }
+        }
     }
 }

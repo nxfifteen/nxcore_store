@@ -42,6 +42,55 @@ use SimpleXMLElement;
 class FitbitExercise extends Constants
 {
     /**
+     * @return Fitbit
+     */
+    private static function getLibrary()
+    {
+        return new Fitbit([
+            'clientId' => $_ENV['FITBIT_ID'],
+            'clientSecret' => $_ENV['FITBIT_SECRET'],
+            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
+        ]);
+    }
+
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param ThirdPartyService $service
+     * @param                   $path
+     *
+     * @return SimpleXMLElement|null
+     */
+    private static function pullTCXData(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $service, $path)
+    {
+        /** @var PatientCredentials $accessToken */
+        $accessToken = $doctrine
+            ->getRepository(PatientCredentials::class)
+            ->findOneBy(['patient' => $patient, 'service' => $service]);
+
+        $accessToken = new AccessToken([
+            'access_token' => $accessToken->getToken(),
+            'refresh_token' => $accessToken->getRefreshToken(),
+            'expires' => $accessToken->getExpires()->format("U"),
+        ]);
+
+        if (!$accessToken->hasExpired()) {
+            try {
+                $fitbitLibrary = self::getLibrary();
+
+                $request = $fitbitLibrary->getAuthenticatedRequest('GET', $path, $accessToken);
+                $response = simplexml_load_string($fitbitLibrary->getParsedResponse($request));
+
+                return $response;
+            } catch (IdentityProviderException $e) {
+                AppConstants::writeToLog('debug_transform.txt', "[] - " . ' ' . $e->getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param ManagerRegistry $doctrine
      * @param                 $getContent
      * @param int             $deviceArrayIndex
@@ -290,54 +339,5 @@ class FitbitExercise extends Constants
         }
 
         return null;
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param Patient $patient
-     * @param ThirdPartyService $service
-     * @param                   $path
-     *
-     * @return SimpleXMLElement|null
-     */
-    private static function pullTCXData(ManagerRegistry $doctrine, Patient $patient, ThirdPartyService $service, $path)
-    {
-        /** @var PatientCredentials $accessToken */
-        $accessToken = $doctrine
-            ->getRepository(PatientCredentials::class)
-            ->findOneBy(['patient' => $patient, 'service' => $service]);
-
-        $accessToken = new AccessToken([
-            'access_token' => $accessToken->getToken(),
-            'refresh_token' => $accessToken->getRefreshToken(),
-            'expires' => $accessToken->getExpires()->format("U"),
-        ]);
-
-        if (!$accessToken->hasExpired()) {
-            try {
-                $fitbitLibrary = self::getLibrary();
-
-                $request = $fitbitLibrary->getAuthenticatedRequest('GET', $path, $accessToken);
-                $response = simplexml_load_string($fitbitLibrary->getParsedResponse($request));
-
-                return $response;
-            } catch (IdentityProviderException $e) {
-                AppConstants::writeToLog('debug_transform.txt', "[] - " . ' ' . $e->getMessage());
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @return Fitbit
-     */
-    private static function getLibrary()
-    {
-        return new Fitbit([
-            'clientId' => $_ENV['FITBIT_ID'],
-            'clientSecret' => $_ENV['FITBIT_SECRET'],
-            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
-        ]);
     }
 }

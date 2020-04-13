@@ -40,20 +40,16 @@ class FitCaloriesDailySummaryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a Entity by its GUID
-     *
-     * @param string $value
+     * @param String $patientId
+     * @param String $date
+     * @param int    $trackingDevice
      *
      * @return mixed
+     * @throws Exception
      */
-    public function findByGuid(string $value)
+    public function findByDateRange(string $patientId, string $date, int $trackingDevice)
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.guid = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->getQuery()
-            ->getResult();
+        return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
     }
 
     /**
@@ -108,15 +104,19 @@ class FitCaloriesDailySummaryRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param String $patientId
-     * @param String $date
-     * @param int    $trackingDevice
+     * Find a Entity by its GUID
+     *
+     * @param string $value
      *
      * @return mixed
-     * @throws Exception
      */
-    public function findByDateRange(string $patientId, string $date, int $trackingDevice)
+    public function findByGuid(string $value)
     {
-        return $this->findByDateRangeHistorical($patientId, $date, 0, $trackingDevice);
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

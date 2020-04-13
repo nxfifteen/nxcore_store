@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class RpgChallengeFriends
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class RpgChallengeFriends
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="integer")
      */
@@ -118,14 +116,6 @@ class RpgChallengeFriends
     private $completedAt;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -143,51 +133,41 @@ class RpgChallengeFriends
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
+     * @return Patient|null
      */
-    public function getGuid(): ?UuidInterface
+    public function getChallenged(): ?Patient
     {
-        return $this->guid;
+        return $this->challenged;
     }
 
     /**
-     * @return int|null
-     */
-    public function getTarget(): ?int
-    {
-        return $this->target;
-    }
-
-    /**
-     * @param int $target
+     * @param Patient|null $challenged
      *
      * @return $this
      */
-    public function setTarget(int $target): self
+    public function setChallenged(?Patient $challenged): self
     {
-        $this->target = $target;
+        $this->challenged = $challenged;
 
         return $this;
     }
 
     /**
-     * @return DateTimeInterface|null
+     * @return array|null
      */
-    public function getStartDate(): ?DateTimeInterface
+    public function getChallengedDetails(): ?array
     {
-        return $this->startDate;
+        return $this->challengedDetails;
     }
 
     /**
-     * @param DateTimeInterface $startDate
+     * @param array|null $challengedDetails
      *
      * @return $this
      */
-    public function setStartDate(DateTimeInterface $startDate): self
+    public function setChallengedDetails(?array $challengedDetails): self
     {
-        $this->startDate = $startDate;
+        $this->challengedDetails = $challengedDetails;
 
         return $this;
     }
@@ -195,19 +175,19 @@ class RpgChallengeFriends
     /**
      * @return int|null
      */
-    public function getDuration(): ?int
+    public function getChallengedSum(): ?int
     {
-        return $this->duration + 1;
+        return $this->challengedSum;
     }
 
     /**
-     * @param int $duration
+     * @param int|null $challengedSum
      *
      * @return $this
      */
-    public function setDuration(int $duration): self
+    public function setChallengedSum(?int $challengedSum): self
     {
-        $this->duration = $duration;
+        $this->challengedSum = $challengedSum;
 
         return $this;
     }
@@ -233,21 +213,61 @@ class RpgChallengeFriends
     }
 
     /**
-     * @return Patient|null
+     * @return array|null
      */
-    public function getChallenged(): ?Patient
+    public function getChallengerDetails(): ?array
     {
-        return $this->challenged;
+        return $this->challengerDetails;
     }
 
     /**
-     * @param Patient|null $challenged
+     * @param array|null $challengerDetails
      *
      * @return $this
      */
-    public function setChallenged(?Patient $challenged): self
+    public function setChallengerDetails(?array $challengerDetails): self
     {
-        $this->challenged = $challenged;
+        $this->challengerDetails = $challengerDetails;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getChallengerSum(): ?int
+    {
+        return $this->challengerSum;
+    }
+
+    /**
+     * @param int|null $challengerSum
+     *
+     * @return $this
+     */
+    public function setChallengerSum(?int $challengerSum): self
+    {
+        $this->challengerSum = $challengerSum;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCompletedAt(): ?DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    /**
+     * @param DateTimeInterface|null $completedAt
+     *
+     * @return $this
+     */
+    public function setCompletedAt(?DateTimeInterface $completedAt): self
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }
@@ -275,39 +295,19 @@ class RpgChallengeFriends
     /**
      * @return int|null
      */
-    public function getOutcome(): ?int
+    public function getDuration(): ?int
     {
-        return $this->outcome;
+        return $this->duration + 1;
     }
 
     /**
-     * @param int|null $outcome
+     * @param int $duration
      *
      * @return $this
      */
-    public function setOutcome(?int $outcome): self
+    public function setDuration(int $duration): self
     {
-        $this->outcome = $outcome;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getInviteDate(): ?DateTimeInterface
-    {
-        return $this->inviteDate;
-    }
-
-    /**
-     * @param DateTimeInterface $inviteDate
-     *
-     * @return $this
-     */
-    public function setInviteDate(DateTimeInterface $inviteDate): self
-    {
-        $this->inviteDate = $inviteDate;
+        $this->duration = $duration;
 
         return $this;
     }
@@ -333,81 +333,59 @@ class RpgChallengeFriends
     }
 
     /**
-     * @return int|null
-     */
-    public function getChallengerSum(): ?int
-    {
-        return $this->challengerSum;
-    }
-
-    /**
-     * @param int|null $challengerSum
+     * Get the internal primary identity key.
      *
-     * @return $this
+     * @return UuidInterface|null
      */
-    public function setChallengerSum(?int $challengerSum): self
+    public function getGuid(): ?UuidInterface
     {
-        $this->challengerSum = $challengerSum;
-
-        return $this;
+        return $this->guid;
     }
 
     /**
      * @return int|null
      */
-    public function getChallengedSum(): ?int
+    public function getId(): ?int
     {
-        return $this->challengedSum;
+        return $this->id;
     }
 
     /**
-     * @param int|null $challengedSum
+     * @return DateTimeInterface|null
+     */
+    public function getInviteDate(): ?DateTimeInterface
+    {
+        return $this->inviteDate;
+    }
+
+    /**
+     * @param DateTimeInterface $inviteDate
      *
      * @return $this
      */
-    public function setChallengedSum(?int $challengedSum): self
+    public function setInviteDate(DateTimeInterface $inviteDate): self
     {
-        $this->challengedSum = $challengedSum;
+        $this->inviteDate = $inviteDate;
 
         return $this;
     }
 
     /**
-     * @return array|null
+     * @return int|null
      */
-    public function getChallengerDetails(): ?array
+    public function getOutcome(): ?int
     {
-        return $this->challengerDetails;
+        return $this->outcome;
     }
 
     /**
-     * @param array|null $challengerDetails
+     * @param int|null $outcome
      *
      * @return $this
      */
-    public function setChallengerDetails(?array $challengerDetails): self
+    public function setOutcome(?int $outcome): self
     {
-        $this->challengerDetails = $challengerDetails;
-
-        return $this;
-    }
-
-    /**
-     * @return array|null
-     */
-    public function getChallengedDetails(): ?array
-    {
-        return $this->challengedDetails;
-    }
-
-    /**
-     * @param array|null $challengedDetails
-     *
-     * @return $this
-     */
-    public function setChallengedDetails(?array $challengedDetails): self
-    {
-        $this->challengedDetails = $challengedDetails;
+        $this->outcome = $outcome;
 
         return $this;
     }
@@ -415,19 +393,39 @@ class RpgChallengeFriends
     /**
      * @return DateTimeInterface|null
      */
-    public function getCompletedAt(): ?DateTimeInterface
+    public function getStartDate(): ?DateTimeInterface
     {
-        return $this->completedAt;
+        return $this->startDate;
     }
 
     /**
-     * @param DateTimeInterface|null $completedAt
+     * @param DateTimeInterface $startDate
      *
      * @return $this
      */
-    public function setCompletedAt(?DateTimeInterface $completedAt): self
+    public function setStartDate(DateTimeInterface $startDate): self
     {
-        $this->completedAt = $completedAt;
+        $this->startDate = $startDate;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getTarget(): ?int
+    {
+        return $this->target;
+    }
+
+    /**
+     * @param int $target
+     *
+     * @return $this
+     */
+    public function setTarget(int $target): self
+    {
+        $this->target = $target;
 
         return $this;
     }

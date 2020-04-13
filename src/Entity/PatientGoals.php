@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class PatientGoals
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class PatientGoals
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(nullable=false)
@@ -72,14 +70,6 @@ class PatientGoals
     private $unitOfMeasurement;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -97,31 +87,21 @@ class PatientGoals
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
+     * @return DateTimeInterface|null
      */
-    public function getGuid(): ?UuidInterface
+    public function getDateSet(): ?DateTimeInterface
     {
-        return $this->guid;
+        return $this->dateSet;
     }
 
     /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
+     * @param DateTimeInterface $dateSet
      *
      * @return $this
      */
-    public function setPatient(?Patient $patient): self
+    public function setDateSet(DateTimeInterface $dateSet): self
     {
-        $this->patient = $patient;
+        $this->dateSet = $dateSet;
 
         return $this;
     }
@@ -167,21 +147,39 @@ class PatientGoals
     }
 
     /**
-     * @return DateTimeInterface|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getDateSet(): ?DateTimeInterface
+    public function getGuid(): ?UuidInterface
     {
-        return $this->dateSet;
+        return $this->guid;
     }
 
     /**
-     * @param DateTimeInterface $dateSet
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
      *
      * @return $this
      */
-    public function setDateSet(DateTimeInterface $dateSet): self
+    public function setPatient(?Patient $patient): self
     {
-        $this->dateSet = $dateSet;
+        $this->patient = $patient;
 
         return $this;
     }

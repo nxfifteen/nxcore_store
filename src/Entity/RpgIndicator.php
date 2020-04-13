@@ -27,6 +27,14 @@ use Ramsey\Uuid\UuidInterface;
 class RpgIndicator
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -36,16 +44,6 @@ class RpgIndicator
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -85,11 +83,18 @@ class RpgIndicator
     }
 
     /**
-     * @return int|null
+     * @param RpgRewards $reward
+     *
+     * @return $this
      */
-    public function getId(): ?int
+    public function addReward(RpgRewards $reward): self
     {
-        return $this->id;
+        if (!$this->rewards->contains($reward)) {
+            $this->rewards[] = $reward;
+            $reward->setIndicator($this);
+        }
+
+        return $this;
     }
 
     /**
@@ -110,51 +115,21 @@ class RpgIndicator
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
      * @return string|null
      */
-    public function getName(): ?string
+    public function getComparator(): ?string
     {
-        return $this->name;
+        return $this->comparator;
     }
 
     /**
-     * @param string $name
+     * @param string $comparator
      *
      * @return $this
      */
-    public function setName(string $name): self
+    public function setComparator(string $comparator): self
     {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    /**
-     * @param string|null $description
-     *
-     * @return $this
-     */
-    public function setDescription(?string $description): self
-    {
-        $this->description = $description;
+        $this->comparator = $comparator;
 
         return $this;
     }
@@ -182,39 +157,57 @@ class RpgIndicator
     /**
      * @return string|null
      */
-    public function getType(): ?string
+    public function getDescription(): ?string
     {
-        return $this->type;
+        return $this->description;
     }
 
     /**
-     * @param string $type
+     * @param string|null $description
      *
      * @return $this
      */
-    public function setType(string $type): self
+    public function setDescription(?string $description): self
     {
-        $this->type = $type;
+        $this->description = $description;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getComparator(): ?string
+    public function getGuid(): ?UuidInterface
     {
-        return $this->comparator;
+        return $this->guid;
     }
 
     /**
-     * @param string $comparator
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
      *
      * @return $this
      */
-    public function setComparator(string $comparator): self
+    public function setName(string $name): self
     {
-        $this->comparator = $comparator;
+        $this->name = $name;
 
         return $this;
     }
@@ -228,16 +221,21 @@ class RpgIndicator
     }
 
     /**
-     * @param RpgRewards $reward
+     * @return string|null
+     */
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
      *
      * @return $this
      */
-    public function addReward(RpgRewards $reward): self
+    public function setType(string $type): self
     {
-        if (!$this->rewards->contains($reward)) {
-            $this->rewards[] = $reward;
-            $reward->setIndicator($this);
-        }
+        $this->type = $type;
 
         return $this;
     }

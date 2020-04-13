@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class RpgRewards
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class RpgRewards
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -76,14 +74,6 @@ class RpgRewards
     private $payload;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -111,6 +101,34 @@ class RpgRewards
     }
 
     /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return RpgIndicator|null
+     */
+    public function getIndicator(): ?RpgIndicator
+    {
+        return $this->indicator;
+    }
+
+    /**
+     * @param RpgIndicator|null $indicator
+     *
+     * @return $this
+     */
+    public function setIndicator(?RpgIndicator $indicator): self
+    {
+        $this->indicator = $indicator;
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
     public function getName(): ?string
@@ -126,6 +144,26 @@ class RpgRewards
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPayload(): ?string
+    {
+        return $this->payload;
+    }
+
+    /**
+     * @param string $payload
+     *
+     * @return $this
+     */
+    public function setPayload(string $payload): self
+    {
+        $this->payload = $payload;
 
         return $this;
     }
@@ -171,26 +209,6 @@ class RpgRewards
     }
 
     /**
-     * @return RpgIndicator|null
-     */
-    public function getIndicator(): ?RpgIndicator
-    {
-        return $this->indicator;
-    }
-
-    /**
-     * @param RpgIndicator|null $indicator
-     *
-     * @return $this
-     */
-    public function setIndicator(?RpgIndicator $indicator): self
-    {
-        $this->indicator = $indicator;
-
-        return $this;
-    }
-
-    /**
      * @return string|null
      */
     public function getType(): ?string
@@ -206,26 +224,6 @@ class RpgRewards
     public function setType(string $type): self
     {
         $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getPayload(): ?string
-    {
-        return $this->payload;
-    }
-
-    /**
-     * @param string $payload
-     *
-     * @return $this
-     */
-    public function setPayload(string $payload): self
-    {
-        $this->payload = $payload;
 
         return $this;
     }

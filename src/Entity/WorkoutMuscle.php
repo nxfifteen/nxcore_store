@@ -27,6 +27,14 @@ use Ramsey\Uuid\UuidInterface;
 class WorkoutMuscle
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -36,16 +44,6 @@ class WorkoutMuscle
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
@@ -62,14 +60,6 @@ class WorkoutMuscle
     public function __construct()
     {
 
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     /**
@@ -100,23 +90,11 @@ class WorkoutMuscle
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getName(): ?string
+    public function getId(): ?int
     {
-        return $this->name;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return $this
-     */
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
+        return $this->id;
     }
 
     /**
@@ -135,6 +113,26 @@ class WorkoutMuscle
     public function setIsFront(bool $isFront): self
     {
         $this->isFront = $isFront;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }

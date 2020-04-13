@@ -46,26 +46,6 @@ class UpdateAuthCredentialsFitbit extends Command
     private $doctrine;
 
     /**
-     * @required
-     *
-     * @param ManagerRegistry $doctrine
-     */
-    public function dependencyInjection(
-        ManagerRegistry $doctrine
-    ): void {
-        $this->doctrine = $doctrine;
-    }
-
-    /**
-     * {@inheritdoc}
-     * @throws Exception
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): void
-    {
-        $this->refreshFitbitTokens();
-    }
-
-    /**
      * @throws Exception
      */
     private function refreshFitbitTokens()
@@ -125,5 +105,25 @@ class UpdateAuthCredentialsFitbit extends Command
         }/* else {
             AppConstants::writeToLog('debug_transform.txt', "[" . UpdateAuthCredentialsFitbit::$defaultName . "] - " . ' ' . 'No Fitbit authentication token need refreshed');
         }*/
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws Exception
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
+    {
+        $this->refreshFitbitTokens();
+    }
+
+    /**
+     * @required
+     *
+     * @param ManagerRegistry $doctrine
+     */
+    public function dependencyInjection(
+        ManagerRegistry $doctrine
+    ): void {
+        $this->doctrine = $doctrine;
     }
 }

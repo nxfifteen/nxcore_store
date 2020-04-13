@@ -37,6 +37,23 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthWithPatreonController extends AbstractController
 {
     /**
+     * @param String $uuid
+     *
+     * @throws LogicException If the Security component is not available
+     */
+    private function hasAccess(string $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
+
+        /** @var Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
+
+    /**
      * @Route("/auth/with/patreon/{uuid}", name="auth_with_patreon")
      * @param ManagerRegistry $doctrine
      * @param RequestStack    $request
@@ -80,23 +97,6 @@ class AuthWithPatreonController extends AbstractController
         // Redirect the user to the authorization URL.
         header('Location: ' . $href);
         exit;
-    }
-
-    /**
-     * @param String $uuid
-     *
-     * @throws LogicException If the Security component is not available
-     */
-    private function hasAccess(string $uuid)
-    {
-        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
-
-        /** @var Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
     }
 
     /**

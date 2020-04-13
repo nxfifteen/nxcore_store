@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class PatientDevice
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class PatientDevice
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="devices")
      * @ORM\JoinColumn(nullable=false)
@@ -112,14 +110,6 @@ class PatientDevice
     private $production;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -137,71 +127,21 @@ class PatientDevice
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
      * @return string|null
      */
-    public function getUserAgent(): ?string
+    public function getApp(): ?string
     {
-        return $this->userAgent;
+        return $this->app;
     }
 
     /**
-     * @param string|null $userAgent
+     * @param string|null $app
      *
      * @return $this
      */
-    public function setUserAgent(?string $userAgent): self
+    public function setApp(?string $app): self
     {
-        $this->userAgent = $userAgent;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getOs(): ?string
-    {
-        return $this->os;
-    }
-
-    /**
-     * @param string|null $os
-     *
-     * @return $this
-     */
-    public function setOs(?string $os): self
-    {
-        $this->os = $os;
+        $this->app = $app;
 
         return $this;
     }
@@ -229,46 +169,6 @@ class PatientDevice
     /**
      * @return string|null
      */
-    public function getDevice(): ?string
-    {
-        return $this->device;
-    }
-
-    /**
-     * @param string|null $device
-     *
-     * @return $this
-     */
-    public function setDevice(?string $device): self
-    {
-        $this->device = $device;
-
-        return $this;
-    }
-
-    /**
-     * @return array|null
-     */
-    public function getOsVersion(): ?array
-    {
-        return $this->os_version;
-    }
-
-    /**
-     * @param string|null $os_version
-     *
-     * @return $this
-     */
-    public function setOsVersion(?string $os_version): self
-    {
-        $this->os_version = $os_version;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
     public function getBrowserVersion(): ?string
     {
         return $this->browser_version;
@@ -289,21 +189,39 @@ class PatientDevice
     /**
      * @return string|null
      */
-    public function getSms(): ?string
+    public function getDevice(): ?string
     {
-        return $this->sms;
+        return $this->device;
     }
 
     /**
-     * @param string|null $sms
+     * @param string|null $device
      *
      * @return $this
      */
-    public function setSms(?string $sms): self
+    public function setDevice(?string $device): self
     {
-        $this->sms = $sms;
+        $this->device = $device;
 
         return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     /**
@@ -349,39 +267,59 @@ class PatientDevice
     /**
      * @return string|null
      */
-    public function getApp(): ?string
+    public function getOs(): ?string
     {
-        return $this->app;
+        return $this->os;
     }
 
     /**
-     * @param string|null $app
+     * @param string|null $os
      *
      * @return $this
      */
-    public function setApp(?string $app): self
+    public function setOs(?string $os): self
     {
-        $this->app = $app;
+        $this->os = $os;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return array|null
      */
-    public function getVersion(): ?string
+    public function getOsVersion(): ?array
     {
-        return $this->version;
+        return $this->os_version;
     }
 
     /**
-     * @param string|null $version
+     * @param string|null $os_version
      *
      * @return $this
      */
-    public function setVersion(?string $version): self
+    public function setOsVersion(?string $os_version): self
     {
-        $this->version = $version;
+        $this->os_version = $os_version;
+
+        return $this;
+    }
+
+    /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
 
         return $this;
     }
@@ -402,6 +340,66 @@ class PatientDevice
     public function setProduction(?bool $production): self
     {
         $this->production = $production;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSms(): ?string
+    {
+        return $this->sms;
+    }
+
+    /**
+     * @param string|null $sms
+     *
+     * @return $this
+     */
+    public function setSms(?string $sms): self
+    {
+        $this->sms = $sms;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUserAgent(): ?string
+    {
+        return $this->userAgent;
+    }
+
+    /**
+     * @param string|null $userAgent
+     *
+     * @return $this
+     */
+    public function setUserAgent(?string $userAgent): self
+    {
+        $this->userAgent = $userAgent;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getVersion(): ?string
+    {
+        return $this->version;
+    }
+
+    /**
+     * @param string|null $version
+     *
+     * @return $this
+     */
+    public function setVersion(?string $version): self
+    {
+        $this->version = $version;
 
         return $this;
     }

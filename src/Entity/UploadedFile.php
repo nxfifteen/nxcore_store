@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class UploadedFile
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class UploadedFile
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -71,14 +69,6 @@ class UploadedFile
     private $type;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -96,6 +86,26 @@ class UploadedFile
     }
 
     /**
+     * @return WorkoutExercise|null
+     */
+    public function getExercise(): ?WorkoutExercise
+    {
+        return $this->exercise;
+    }
+
+    /**
+     * @param WorkoutExercise|null $exercise
+     *
+     * @return $this
+     */
+    public function setExercise(?WorkoutExercise $exercise): self
+    {
+        $this->exercise = $exercise;
+
+        return $this;
+    }
+
+    /**
      * Get the internal primary identity key.
      *
      * @return UuidInterface|null
@@ -103,6 +113,34 @@ class UploadedFile
     public function getGuid(): ?UuidInterface
     {
         return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return ContributionLicense|null
+     */
+    public function getLicense(): ?ContributionLicense
+    {
+        return $this->license;
+    }
+
+    /**
+     * @param ContributionLicense|null $license
+     *
+     * @return $this
+     */
+    public function setLicense(?ContributionLicense $license): self
+    {
+        $this->license = $license;
+
+        return $this;
     }
 
     /**
@@ -141,46 +179,6 @@ class UploadedFile
     public function setPath(string $path): self
     {
         $this->path = $path;
-
-        return $this;
-    }
-
-    /**
-     * @return ContributionLicense|null
-     */
-    public function getLicense(): ?ContributionLicense
-    {
-        return $this->license;
-    }
-
-    /**
-     * @param ContributionLicense|null $license
-     *
-     * @return $this
-     */
-    public function setLicense(?ContributionLicense $license): self
-    {
-        $this->license = $license;
-
-        return $this;
-    }
-
-    /**
-     * @return WorkoutExercise|null
-     */
-    public function getExercise(): ?WorkoutExercise
-    {
-        return $this->exercise;
-    }
-
-    /**
-     * @param WorkoutExercise|null $exercise
-     *
-     * @return $this
-     */
-    public function setExercise(?WorkoutExercise $exercise): self
-    {
-        $this->exercise = $exercise;
 
         return $this;
     }

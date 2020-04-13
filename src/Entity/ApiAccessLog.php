@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class ApiAccessLog
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class ApiAccessLog
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(nullable=false)
@@ -80,14 +78,6 @@ class ApiAccessLog
     private $cooldown;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -105,6 +95,46 @@ class ApiAccessLog
     }
 
     /**
+     * @return DateTimeInterface|null
+     */
+    public function getCooldown(): ?DateTimeInterface
+    {
+        return $this->cooldown;
+    }
+
+    /**
+     * @param DateTimeInterface|null $cooldown
+     *
+     * @return $this
+     */
+    public function setCooldown(?DateTimeInterface $cooldown): self
+    {
+        $this->cooldown = $cooldown;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEntity(): ?string
+    {
+        return $this->entity;
+    }
+
+    /**
+     * @param string $entity
+     *
+     * @return $this
+     */
+    public function setEntity(string $entity): self
+    {
+        $this->entity = $entity;
+
+        return $this;
+    }
+
+    /**
      * Get the internal primary identity key.
      *
      * @return UuidInterface|null
@@ -112,6 +142,54 @@ class ApiAccessLog
     public function getGuid(): ?UuidInterface
     {
         return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getLastPulled(): ?DateTimeInterface
+    {
+        return $this->lastPulled;
+    }
+
+    /**
+     * @param DateTimeInterface $lastPulled
+     *
+     * @return $this
+     */
+    public function setLastPulled(DateTimeInterface $lastPulled): self
+    {
+        $this->lastPulled = $lastPulled;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getLastRetrieved(): ?DateTimeInterface
+    {
+        return $this->lastRetrieved;
+    }
+
+    /**
+     * @param DateTimeInterface $lastRetrieved
+     *
+     * @return $this
+     */
+    public function setLastRetrieved(DateTimeInterface $lastRetrieved): self
+    {
+        $this->lastRetrieved = $lastRetrieved;
+
+        return $this;
     }
 
     /**
@@ -150,86 +228,6 @@ class ApiAccessLog
     public function setThirdPartyService(?ThirdPartyService $thirdPartyService): self
     {
         $this->thirdPartyService = $thirdPartyService;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getEntity(): ?string
-    {
-        return $this->entity;
-    }
-
-    /**
-     * @param string $entity
-     *
-     * @return $this
-     */
-    public function setEntity(string $entity): self
-    {
-        $this->entity = $entity;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getLastRetrieved(): ?DateTimeInterface
-    {
-        return $this->lastRetrieved;
-    }
-
-    /**
-     * @param DateTimeInterface $lastRetrieved
-     *
-     * @return $this
-     */
-    public function setLastRetrieved(DateTimeInterface $lastRetrieved): self
-    {
-        $this->lastRetrieved = $lastRetrieved;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getLastPulled(): ?DateTimeInterface
-    {
-        return $this->lastPulled;
-    }
-
-    /**
-     * @param DateTimeInterface $lastPulled
-     *
-     * @return $this
-     */
-    public function setLastPulled(DateTimeInterface $lastPulled): self
-    {
-        $this->lastPulled = $lastPulled;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getCooldown(): ?DateTimeInterface
-    {
-        return $this->cooldown;
-    }
-
-    /**
-     * @param DateTimeInterface|null $cooldown
-     *
-     * @return $this
-     */
-    public function setCooldown(?DateTimeInterface $cooldown): self
-    {
-        $this->cooldown = $cooldown;
 
         return $this;
     }

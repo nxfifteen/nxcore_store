@@ -53,12 +53,12 @@ class Entry
     }
 
     /**
-     * @param String $data_set
-     * @param String $getContent
+     * @param String          $data_set
+     * @param String          $getContent
      * @param ManagerRegistry $doctrine
-     * @param AwardManager $awardManager
-     * @param ChallengePve $challengePve
-     * @param CommsManager $commsManager
+     * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param CommsManager    $commsManager
      *
      * @return array|int|null
      */

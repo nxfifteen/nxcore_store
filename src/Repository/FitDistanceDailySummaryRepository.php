@@ -41,111 +41,6 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a Entity by its GUID
-     *
-     * @param string $value
-     *
-     * @return mixed
-     */
-    public function findByGuid(string $value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.guid = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @param String $patientId
-     * @param int    $trackingDevice
-     *
-     * @return mixed
-     */
-    public function getSumOfValues(string $patientId, int $trackingDevice = 0)
-    {
-        if ($trackingDevice > 0) {
-            try {
-                return $this->createQueryBuilder('c')
-                    ->leftJoin('c.patient', 'p')
-                    ->andWhere('p.uuid = :patientId')
-                    ->setParameter('patientId', $patientId)
-                    ->andWhere('c.trackingDevice = :trackingDevice')
-                    ->setParameter('trackingDevice', $trackingDevice)
-                    ->select('sum(c.value) as sum')
-                    ->getQuery()
-                    ->getOneOrNullResult()['sum'];
-            } catch (NonUniqueResultException $e) {
-                return null;
-            }
-        } else {
-            try {
-                return $this->createQueryBuilder('c')
-                    ->leftJoin('c.patient', 'p')
-                    ->andWhere('p.uuid = :patientId')
-                    ->setParameter('patientId', $patientId)
-                    ->select('sum(c.value) as sum')
-                    ->getQuery()
-                    ->getOneOrNullResult()['sum'];
-            } catch (NonUniqueResultException $e) {
-                return null;
-            }
-        }
-    }
-
-    /**
-     * @param String $patientId
-     * @param        $dateSince
-     *
-     * @return mixed
-     */
-    public function findSince(string $patientId, $dateSince)
-    {
-        /** @var DateTime $dateSince */
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->andWhere('c.DateTime >= :startDate')
-            ->setParameter('startDate', $dateSince->format("Y-m-d 00:00:00"))
-            ->orderBy('c.value', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @param String $patientId
-     * @param int    $trackingDevice
-     *
-     * @return mixed
-     */
-    public function findHighest(string $patientId, int $trackingDevice = 0)
-    {
-        if ($trackingDevice > 0) {
-            return $this->createQueryBuilder('c')
-                ->leftJoin('c.patient', 'p')
-                ->andWhere('p.uuid = :patientId')
-                ->setParameter('patientId', $patientId)
-                ->andWhere('c.trackingDevice = :trackingDevice')
-                ->setParameter('trackingDevice', $trackingDevice)
-                ->orderBy('c.value', 'DESC')
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getResult();
-        } else {
-            return $this->createQueryBuilder('c')
-                ->leftJoin('c.patient', 'p')
-                ->andWhere('p.uuid = :patientId')
-                ->setParameter('patientId', $patientId)
-                ->orderBy('c.value', 'DESC')
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getResult();
-        }
-    }
-
-    /**
      * @param String $patientId
      * @param String $date
      * @param int    $trackingDevice
@@ -206,6 +101,111 @@ class FitDistanceDailySummaryRepository extends ServiceEntityRepository
                 ->orderBy('c.DateTime', 'ASC')
                 ->getQuery()
                 ->getResult();
+        }
+    }
+
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function findHighest(string $patientId, int $trackingDevice = 0)
+    {
+        if ($trackingDevice > 0) {
+            return $this->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('p.uuid = :patientId')
+                ->setParameter('patientId', $patientId)
+                ->andWhere('c.trackingDevice = :trackingDevice')
+                ->setParameter('trackingDevice', $trackingDevice)
+                ->orderBy('c.value', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getResult();
+        } else {
+            return $this->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('p.uuid = :patientId')
+                ->setParameter('patientId', $patientId)
+                ->orderBy('c.value', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getResult();
+        }
+    }
+
+    /**
+     * @param String $patientId
+     * @param        $dateSince
+     *
+     * @return mixed
+     */
+    public function findSince(string $patientId, $dateSince)
+    {
+        /** @var DateTime $dateSince */
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime >= :startDate')
+            ->setParameter('startDate', $dateSince->format("Y-m-d 00:00:00"))
+            ->orderBy('c.value', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function getSumOfValues(string $patientId, int $trackingDevice = 0)
+    {
+        if ($trackingDevice > 0) {
+            try {
+                return $this->createQueryBuilder('c')
+                    ->leftJoin('c.patient', 'p')
+                    ->andWhere('p.uuid = :patientId')
+                    ->setParameter('patientId', $patientId)
+                    ->andWhere('c.trackingDevice = :trackingDevice')
+                    ->setParameter('trackingDevice', $trackingDevice)
+                    ->select('sum(c.value) as sum')
+                    ->getQuery()
+                    ->getOneOrNullResult()['sum'];
+            } catch (NonUniqueResultException $e) {
+                return null;
+            }
+        } else {
+            try {
+                return $this->createQueryBuilder('c')
+                    ->leftJoin('c.patient', 'p')
+                    ->andWhere('p.uuid = :patientId')
+                    ->setParameter('patientId', $patientId)
+                    ->select('sum(c.value) as sum')
+                    ->getQuery()
+                    ->getOneOrNullResult()['sum'];
+            } catch (NonUniqueResultException $e) {
+                return null;
+            }
         }
     }
 }

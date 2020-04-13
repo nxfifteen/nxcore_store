@@ -95,9 +95,14 @@ class AwardManager
         $this->appKernel = $appKernel;
     }
 
-    public function test()
+    /**
+     * @param BodyWeight $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForBodyWeight(BodyWeight $dataEntry)
     {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__);
+        //
     }
 
     /**
@@ -106,65 +111,220 @@ class AwardManager
      * @param Patient|NULL           $patient
      * @param string|NULL            $citation
      * @param DateTimeInterface|null $dateTime
-     *
-     * @throws Exception
      */
-    public function checkForAwards(
+    private function checkForChallengeAwards(
         $dataEntry,
         string $criteria = null,
         Patient $patient = null,
         string $citation = null,
         DateTimeInterface $dateTime = null
     ) {
-        if (!is_null($patient)) {
-            $this->patient = $patient;
-        } else {
-            if (
-                get_class($dataEntry) == "App\Entity\FitStepsDailySummary" ||
-                get_class($dataEntry) == "App\Entity\FitDistanceDailySummary" ||
-                get_class($dataEntry) == "App\Entity\PatientMembership" ||
-                get_class($dataEntry) == "App\Entity\FitStepsIntraDay" ||
-                get_class($dataEntry) == "App\Entity\ConsumeWater" ||
-                get_class($dataEntry) == "App\Entity\ConsumeCaffeine" ||
-                get_class($dataEntry) == "App\Entity\Exercise" ||
-                get_class($dataEntry) == "App\Entity\BodyWeight"
-            ) {
-                $this->patient = $dataEntry->getPatient();
+        $this->findAndDeliveryRewards(
+            "pvp_" . strtolower($dataEntry['criteria']),
+            strtolower($dataEntry['result']),
+            round($dataEntry['target'] / $dataEntry['duration'], 0, PHP_ROUND_HALF_DOWN)
+        );
+    }
+
+    /**
+     * @param ConsumeCaffeine $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForConsumeCaffeine(ConsumeCaffeine $dataEntry)
+    {
+//        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' ' . $dataEntry->getMeasurement());
+//        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' ' . $dataEntry->getPatientGoal()->getGoal());
+    }
+
+    /**
+     * @param ConsumeWater $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForConsumeWater(ConsumeWater $dataEntry)
+    {
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var ConsumeWater[] $product */
+        $product = $this->doctrine
+            ->getRepository(ConsumeWater::class)
+            ->findByDateRange($dataEntry->getPatient()->getUuid(), date("Y-m-d"));
+
+        $waterSum = 0;
+        foreach ($product as $item) {
+            $waterSum = $waterSum + $item->getMeasurement();
+        }
+
+        if ($waterSum >= $dataEntry->getPatientGoal()->getGoal()) {
+            $indicatorDataSet = "ConsumeWater";
+            $indicatorType = "goal";
+            if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 3)) {
+                $indicatorComparator = ">300%";
             } else {
-                AppConstants::writeToLog('debug_transform.txt',
-                    __METHOD__ . '@' . __LINE__ . ': Cant get a patient class from = ' . get_class($dataEntry));
+                if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2.5)) {
+                    $indicatorComparator = ">250%";
+                } else {
+                    if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2)) {
+                        $indicatorComparator = ">200%";
+                    } else {
+                        if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 1.5)) {
+                            $indicatorComparator = ">150%";
+                        } else {
+                            $indicatorComparator = ">100%";
+                        }
+                    }
+                }
+            }
+
+            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
+                new DateTime(date("Y-m-d 00:00:00")));
+        }
+    }
+
+    /**
+     * @param Exercise $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForExercise(Exercise $dataEntry)
+    {
+        $this->findAndDeliveryRewards("exercise_" . strtolower($dataEntry->getExerciseType()->getTag()), "duration",
+            round($dataEntry->getDuration(), -2), $dataEntry->getDateTimeStart());
+    }
+
+    /**
+     * @param FitDistanceDailySummary $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForFitDistanceDailySummary(FitDistanceDailySummary $dataEntry)
+    {
+        if ($dataEntry->getDateTime()->format("Y-m-d") == date("Y-m-d")) {
+            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+                $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
+                $indicatorType = "goal";
+                if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
+                    $indicatorComparator = ">300%";
+                } else {
+                    if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
+                        $indicatorComparator = ">250%";
+                    } else {
+                        if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
+                            $indicatorComparator = ">200%";
+                        } else {
+                            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
+                                $indicatorComparator = ">150%";
+                            } else {
+                                $indicatorComparator = ">100%";
+                            }
+                        }
+                    }
+                }
+
+                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
+                    new DateTime(date("Y-m-d 00:00:00")));
             }
         }
+    }
 
-        if (!is_null($dateTime)) {
-            $this->dateTime = $dateTime;
+    /**
+     * @param FitStepsDailySummary $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForFitStepsDailySummary(FitStepsDailySummary $dataEntry)
+    {
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
+
+        if ($dataEntry->getDateTime()->format("Y-m-d") != date("Y-m-d")) {
+            AppConstants::writeToLog('debug_transform.txt',
+                __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::DateMissMatch');
         } else {
-            $this->dateTime = new DateTime();
+            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
+                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
+                $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
+                $indicatorType = "goal";
+                if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
+                    $indicatorComparator = ">300%";
+                } else {
+                    if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
+                        $indicatorComparator = ">250%";
+                    } else {
+                        if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
+                            $indicatorComparator = ">200%";
+                        } else {
+                            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
+                                $indicatorComparator = ">150%";
+                            } else {
+                                $indicatorComparator = ">100%";
+                            }
+                        }
+                    }
+                }
+
+                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
+                    new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
+            }
+        }
+    }
+
+    /**
+     * @param FitStepsIntraDay $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForFitStepsIntraDay(FitStepsIntraDay $dataEntry)
+    {
+        /** @var FitStepsIntraDay[] $product */
+        $product = $this->doctrine
+            ->getRepository(FitStepsIntraDay::class)
+            ->findByForHour($dataEntry->getPatient()->getUuid(), $dataEntry->getDateTime()->format("Y-m-d"),
+                $dataEntry->getHour(), $dataEntry->getTrackingDevice()->getId());
+
+        $value = 0;
+        foreach ($product as $item) {
+            $value = $value + $item->getValue();
         }
 
-        switch (strtolower($criteria)) {
-            case "membership":
-                $this->checkForMembershipAwards($dataEntry);
-                break;
-            case "login":
-                $this->checkForLoginAwards($dataEntry);
-                break;
-            case "pve":
-            case "challenge":
-                $this->checkForChallengeAwards($dataEntry, $criteria, $patient, $citation, $dateTime);
-                break;
-            default:
-                $inputClass = str_ireplace("App\Entity\\", "", get_class($dataEntry));
-                $methodName = "checkFor" . $inputClass;
-                if (method_exists($this, $methodName)) {
-//                    AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . " Found checkFor" . $inputClass);
-                    $this->$methodName($dataEntry);
+        if ($value > 5000) {
+            $this->findAndDeliveryRewards("intraday", "steps", "5000",
+                new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+        } else {
+            if ($value > 3000) {
+                $this->findAndDeliveryRewards("intraday", "steps", "3000",
+                    new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+            } else {
+                if ($value > 2500) {
+                    $this->findAndDeliveryRewards("intraday", "steps", "2500",
+                        new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
                 } else {
-                    AppConstants::writeToLog('debug_transform.txt',
-                        __METHOD__ . '@' . __LINE__ . ': ' . " Missin checkFor" . $inputClass);
+                    if ($value > 1500) {
+                        $this->findAndDeliveryRewards("intraday", "steps", "1500",
+                            new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+                    } else {
+                        if ($value > 250) {
+                            $this->findAndDeliveryRewards("intraday", "steps", "250",
+                                new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+                        }
+                    }
                 }
-                break;
+            }
+        }
+    }
 
+    /**
+     * @param array $dataEntry
+     *
+     * @throws Exception
+     */
+    private function checkForLoginAwards(array $dataEntry)
+    {
+        if (array_key_exists("reason", $dataEntry) && array_key_exists("length", $dataEntry)) {
+            $this->findAndDeliveryRewards('login', $dataEntry['reason'], $dataEntry['length'],
+                new DateTime(date("Y-m-d 00:00:00")));
+        } else {
+            AppConstants::writeToLog('debug_transform.txt',
+                __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, true));
         }
     }
 
@@ -180,6 +340,36 @@ class AwardManager
 
         $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator);
     }
+
+    /**
+     * @param string $indicatorDataSet
+     * @param string $indicatorType
+     * @param string $indicatorComparator
+     *
+     * @return RpgIndicator|null
+     */
+    private function findAnIndicator(string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
+    {
+        $indicatorObject = $this->doctrine->getRepository(RpgIndicator::class)->findOneBy([
+            'dataSet' => strtolower($indicatorDataSet),
+            'type' => strtolower($indicatorType),
+            'comparator' => strtolower($indicatorComparator),
+        ]);
+
+        if (is_null($indicatorObject)) {
+            $indicatorArray = $this->findIndicatorInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
+            if (is_null($indicatorArray)) {
+                return null;
+            } else {
+                $indicatorObject = $this->installIndicator($indicatorArray, $indicatorDataSet, $indicatorType,
+                    $indicatorComparator);
+            }
+        }
+
+        return $indicatorObject;
+    }
+
+    /** @noinspection PhpUnusedPrivateMethodInspection */
 
     private function findAndDeliveryRewards(
         string $indicatorDataSet,
@@ -226,148 +416,7 @@ class AwardManager
         }
     }
 
-    /**
-     * @param string $indicatorDataSet
-     * @param string $indicatorType
-     * @param string $indicatorComparator
-     *
-     * @return RpgIndicator|null
-     */
-    private function findAnIndicator(string $indicatorDataSet, string $indicatorType, string $indicatorComparator)
-    {
-        $indicatorObject = $this->doctrine->getRepository(RpgIndicator::class)->findOneBy([
-            'dataSet' => strtolower($indicatorDataSet),
-            'type' => strtolower($indicatorType),
-            'comparator' => strtolower($indicatorComparator),
-        ]);
-
-        if (is_null($indicatorObject)) {
-            $indicatorArray = $this->findIndicatorInDefault($indicatorDataSet, $indicatorType, $indicatorComparator);
-            if (is_null($indicatorArray)) {
-                return null;
-            } else {
-                $indicatorObject = $this->installIndicator($indicatorArray, $indicatorDataSet, $indicatorType,
-                    $indicatorComparator);
-            }
-        }
-
-        return $indicatorObject;
-    }
-
-    /**
-     * @param string $indicatorDataSet
-     * @param string $indicatorType
-     * @param string $indicatorComparator
-     *
-     * @return array|null
-     */
-    private function findIndicatorInDefault(
-        string $indicatorDataSet,
-        string $indicatorType,
-        string $indicatorComparator
-    ) {
-        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' getProjectDir::' . $this->appKernel->getProjectDir());
-        $standard = [
-            'FitStepsDailySummary' => [
-                'goal' => [
-                    '>300%' => [
-                        "name" => "300% of Step Goal",
-                    ],
-                    '>250%' => [
-                        "name" => "250% of Step Goal",
-                    ],
-                    '>200%' => [
-                        "name" => "200% of Step Goal",
-                    ],
-                    '>150%' => [
-                        "name" => "150% of Step Goal",
-                    ],
-                    '>100%' => [
-                        "name" => "100% of Step Goal",
-                    ],
-                ],
-            ],
-            'FitDistanceDailySummary' => [
-                'goal' => [
-                    '>300%' => [
-                        "name" => "300% of Distance Goal",
-                    ],
-                    '>250%' => [
-                        "name" => "250% of Distance Goal",
-                    ],
-                    '>200%' => [
-                        "name" => "200% of Distance Goal",
-                    ],
-                    '>150%' => [
-                        "name" => "150% of Distance Goal",
-                    ],
-                    '>100%' => [
-                        "name" => "100% of Distance Goal",
-                    ],
-                ],
-            ],
-            'membership' => [
-                'all_history' => [
-                    '1' => [
-                        "name" => "Full Member",
-                    ],
-                ],
-                'beta_user' => [
-                    '1' => [
-                        "name" => "Beta Tester",
-                    ],
-                ],
-                'alpha_user' => [
-                    '1' => [
-                        "name" => "Alpha Tester",
-                    ],
-                ],
-            ],
-        ];
-
-        if (array_key_exists($indicatorDataSet, $standard) &&
-            array_key_exists($indicatorType, $standard[$indicatorDataSet]) &&
-            array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
-            return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
-        } else {
-            AppConstants::writeToLog('debug_transform.txt',
-                __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
-            return [
-                "name" => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
-                "description" => "AUTO",
-            ];
-        }
-    }
-
-    /**
-     * @param array  $indicatorArray
-     * @param string $indicatorDataSet
-     * @param string $indicatorType
-     * @param string $indicatorComparator
-     *
-     * @return RpgIndicator
-     */
-    private function installIndicator(
-        array $indicatorArray,
-        string $indicatorDataSet,
-        string $indicatorType,
-        string $indicatorComparator
-    ) {
-        $indicatorObject = new RpgIndicator();
-        $indicatorObject->setName($indicatorArray['name']);
-        if (array_key_exists("description", $indicatorArray)) {
-            $indicatorObject->setDescription($indicatorArray['description']);
-        }
-        $indicatorObject->setDataSet($indicatorDataSet);
-        $indicatorObject->setType($indicatorType);
-        $indicatorObject->setComparator($indicatorComparator);
-
-        $entityManager = $this->doctrine->getManager();
-        $entityManager->persist($indicatorObject);
-        $entityManager->flush();
-
-        return $indicatorObject;
-    }
+    /** @noinspection PhpUnusedPrivateMethodInspection */
 
     /**
      * @param string $indicatorDataSet
@@ -801,6 +850,127 @@ class AwardManager
         }
     }
 
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+
+    /**
+     * @param string $indicatorDataSet
+     * @param string $indicatorType
+     * @param string $indicatorComparator
+     *
+     * @return array|null
+     */
+    private function findIndicatorInDefault(
+        string $indicatorDataSet,
+        string $indicatorType,
+        string $indicatorComparator
+    ) {
+        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' getProjectDir::' . $this->appKernel->getProjectDir());
+        $standard = [
+            'FitStepsDailySummary' => [
+                'goal' => [
+                    '>300%' => [
+                        "name" => "300% of Step Goal",
+                    ],
+                    '>250%' => [
+                        "name" => "250% of Step Goal",
+                    ],
+                    '>200%' => [
+                        "name" => "200% of Step Goal",
+                    ],
+                    '>150%' => [
+                        "name" => "150% of Step Goal",
+                    ],
+                    '>100%' => [
+                        "name" => "100% of Step Goal",
+                    ],
+                ],
+            ],
+            'FitDistanceDailySummary' => [
+                'goal' => [
+                    '>300%' => [
+                        "name" => "300% of Distance Goal",
+                    ],
+                    '>250%' => [
+                        "name" => "250% of Distance Goal",
+                    ],
+                    '>200%' => [
+                        "name" => "200% of Distance Goal",
+                    ],
+                    '>150%' => [
+                        "name" => "150% of Distance Goal",
+                    ],
+                    '>100%' => [
+                        "name" => "100% of Distance Goal",
+                    ],
+                ],
+            ],
+            'membership' => [
+                'all_history' => [
+                    '1' => [
+                        "name" => "Full Member",
+                    ],
+                ],
+                'beta_user' => [
+                    '1' => [
+                        "name" => "Beta Tester",
+                    ],
+                ],
+                'alpha_user' => [
+                    '1' => [
+                        "name" => "Alpha Tester",
+                    ],
+                ],
+            ],
+        ];
+
+        if (array_key_exists($indicatorDataSet, $standard) &&
+            array_key_exists($indicatorType, $standard[$indicatorDataSet]) &&
+            array_key_exists($indicatorComparator, $standard[$indicatorDataSet][$indicatorType])) {
+            return $standard[$indicatorDataSet][$indicatorType][$indicatorComparator];
+        } else {
+            AppConstants::writeToLog('debug_transform.txt',
+                __METHOD__ . ' ' . $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator);
+            return [
+                "name" => $indicatorDataSet . '/' . $indicatorType . '/' . $indicatorComparator,
+                "description" => "AUTO",
+            ];
+        }
+    }
+
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+
+    /**
+     * @param array  $indicatorArray
+     * @param string $indicatorDataSet
+     * @param string $indicatorType
+     * @param string $indicatorComparator
+     *
+     * @return RpgIndicator
+     */
+    private function installIndicator(
+        array $indicatorArray,
+        string $indicatorDataSet,
+        string $indicatorType,
+        string $indicatorComparator
+    ) {
+        $indicatorObject = new RpgIndicator();
+        $indicatorObject->setName($indicatorArray['name']);
+        if (array_key_exists("description", $indicatorArray)) {
+            $indicatorObject->setDescription($indicatorArray['description']);
+        }
+        $indicatorObject->setDataSet($indicatorDataSet);
+        $indicatorObject->setType($indicatorType);
+        $indicatorObject->setComparator($indicatorComparator);
+
+        $entityManager = $this->doctrine->getManager();
+        $entityManager->persist($indicatorObject);
+        $entityManager->flush();
+
+        return $indicatorObject;
+    }
+
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+
     /**
      * @param array        $item
      * @param RpgIndicator $indicatorObject
@@ -824,21 +994,7 @@ class AwardManager
         return $rewardObject;
     }
 
-    /**
-     * @param array $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForLoginAwards(array $dataEntry)
-    {
-        if (array_key_exists("reason", $dataEntry) && array_key_exists("length", $dataEntry)) {
-            $this->findAndDeliveryRewards('login', $dataEntry['reason'], $dataEntry['length'],
-                new DateTime(date("Y-m-d 00:00:00")));
-        } else {
-            AppConstants::writeToLog('debug_transform.txt',
-                __METHOD__ . '@' . __LINE__ . ': Origin class = ' . print_r($dataEntry, true));
-        }
-    }
+    /** @noinspection PhpUnusedPrivateMethodInspection */
 
     /**
      * @param mixed                  $dataEntry
@@ -846,222 +1002,73 @@ class AwardManager
      * @param Patient|NULL           $patient
      * @param string|NULL            $citation
      * @param DateTimeInterface|null $dateTime
+     *
+     * @throws Exception
      */
-    private function checkForChallengeAwards(
+    public function checkForAwards(
         $dataEntry,
         string $criteria = null,
         Patient $patient = null,
         string $citation = null,
         DateTimeInterface $dateTime = null
     ) {
-        $this->findAndDeliveryRewards(
-            "pvp_" . strtolower($dataEntry['criteria']),
-            strtolower($dataEntry['result']),
-            round($dataEntry['target'] / $dataEntry['duration'], 0, PHP_ROUND_HALF_DOWN)
-        );
-    }
-
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    /**
-     * @param FitStepsDailySummary $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForFitStepsDailySummary(FitStepsDailySummary $dataEntry)
-    {
-        //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
-
-        if ($dataEntry->getDateTime()->format("Y-m-d") != date("Y-m-d")) {
-            AppConstants::writeToLog('debug_transform.txt',
-                __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::DateMissMatch');
+        if (!is_null($patient)) {
+            $this->patient = $patient;
         } else {
-            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-                //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
-                $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
-                $indicatorType = "goal";
-                if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
-                    $indicatorComparator = ">300%";
-                } else {
-                    if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
-                        $indicatorComparator = ">250%";
-                    } else {
-                        if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
-                            $indicatorComparator = ">200%";
-                        } else {
-                            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
-                                $indicatorComparator = ">150%";
-                            } else {
-                                $indicatorComparator = ">100%";
-                            }
-                        }
-                    }
-                }
-
-                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
-                    new DateTime($dataEntry->getDateTime()->format("Y-m-d 00:00:00")));
+            if (
+                get_class($dataEntry) == "App\Entity\FitStepsDailySummary" ||
+                get_class($dataEntry) == "App\Entity\FitDistanceDailySummary" ||
+                get_class($dataEntry) == "App\Entity\PatientMembership" ||
+                get_class($dataEntry) == "App\Entity\FitStepsIntraDay" ||
+                get_class($dataEntry) == "App\Entity\ConsumeWater" ||
+                get_class($dataEntry) == "App\Entity\ConsumeCaffeine" ||
+                get_class($dataEntry) == "App\Entity\Exercise" ||
+                get_class($dataEntry) == "App\Entity\BodyWeight"
+            ) {
+                $this->patient = $dataEntry->getPatient();
+            } else {
+                AppConstants::writeToLog('debug_transform.txt',
+                    __METHOD__ . '@' . __LINE__ . ': Cant get a patient class from = ' . get_class($dataEntry));
             }
         }
-    }
 
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    /**
-     * @param FitDistanceDailySummary $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForFitDistanceDailySummary(FitDistanceDailySummary $dataEntry)
-    {
-        if ($dataEntry->getDateTime()->format("Y-m-d") == date("Y-m-d")) {
-            if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
-                $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
-                $indicatorType = "goal";
-                if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 3)) {
-                    $indicatorComparator = ">300%";
-                } else {
-                    if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2.5)) {
-                        $indicatorComparator = ">250%";
-                    } else {
-                        if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 2)) {
-                            $indicatorComparator = ">200%";
-                        } else {
-                            if ($dataEntry->getValue() >= ($dataEntry->getGoal()->getGoal() * 1.5)) {
-                                $indicatorComparator = ">150%";
-                            } else {
-                                $indicatorComparator = ">100%";
-                            }
-                        }
-                    }
-                }
-
-                $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
-                    new DateTime(date("Y-m-d 00:00:00")));
-            }
-        }
-    }
-
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    /**
-     * @param FitStepsIntraDay $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForFitStepsIntraDay(FitStepsIntraDay $dataEntry)
-    {
-        /** @var FitStepsIntraDay[] $product */
-        $product = $this->doctrine
-            ->getRepository(FitStepsIntraDay::class)
-            ->findByForHour($dataEntry->getPatient()->getUuid(), $dataEntry->getDateTime()->format("Y-m-d"),
-                $dataEntry->getHour(), $dataEntry->getTrackingDevice()->getId());
-
-        $value = 0;
-        foreach ($product as $item) {
-            $value = $value + $item->getValue();
-        }
-
-        if ($value > 5000) {
-            $this->findAndDeliveryRewards("intraday", "steps", "5000",
-                new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+        if (!is_null($dateTime)) {
+            $this->dateTime = $dateTime;
         } else {
-            if ($value > 3000) {
-                $this->findAndDeliveryRewards("intraday", "steps", "3000",
-                    new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
-            } else {
-                if ($value > 2500) {
-                    $this->findAndDeliveryRewards("intraday", "steps", "2500",
-                        new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+            $this->dateTime = new DateTime();
+        }
+
+        switch (strtolower($criteria)) {
+            case "membership":
+                $this->checkForMembershipAwards($dataEntry);
+                break;
+            case "login":
+                $this->checkForLoginAwards($dataEntry);
+                break;
+            case "pve":
+            case "challenge":
+                $this->checkForChallengeAwards($dataEntry, $criteria, $patient, $citation, $dateTime);
+                break;
+            default:
+                $inputClass = str_ireplace("App\Entity\\", "", get_class($dataEntry));
+                $methodName = "checkFor" . $inputClass;
+                if (method_exists($this, $methodName)) {
+//                    AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': ' . " Found checkFor" . $inputClass);
+                    $this->$methodName($dataEntry);
                 } else {
-                    if ($value > 1500) {
-                        $this->findAndDeliveryRewards("intraday", "steps", "1500",
-                            new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
-                    } else {
-                        if ($value > 250) {
-                            $this->findAndDeliveryRewards("intraday", "steps", "250",
-                                new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
-                        }
-                    }
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __METHOD__ . '@' . __LINE__ . ': ' . " Missin checkFor" . $inputClass);
                 }
-            }
+                break;
+
         }
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    /**
-     * @param BodyWeight $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForBodyWeight(BodyWeight $dataEntry)
+
+    public function test()
     {
-        //
-    }
-
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    /**
-     * @param Exercise $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForExercise(Exercise $dataEntry)
-    {
-        $this->findAndDeliveryRewards("exercise_" . strtolower($dataEntry->getExerciseType()->getTag()), "duration",
-            round($dataEntry->getDuration(), -2), $dataEntry->getDateTimeStart());
-    }
-
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    /**
-     * @param ConsumeWater $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForConsumeWater(ConsumeWater $dataEntry)
-    {
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var ConsumeWater[] $product */
-        $product = $this->doctrine
-            ->getRepository(ConsumeWater::class)
-            ->findByDateRange($dataEntry->getPatient()->getUuid(), date("Y-m-d"));
-
-        $waterSum = 0;
-        foreach ($product as $item) {
-            $waterSum = $waterSum + $item->getMeasurement();
-        }
-
-        if ($waterSum >= $dataEntry->getPatientGoal()->getGoal()) {
-            $indicatorDataSet = "ConsumeWater";
-            $indicatorType = "goal";
-            if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 3)) {
-                $indicatorComparator = ">300%";
-            } else {
-                if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2.5)) {
-                    $indicatorComparator = ">250%";
-                } else {
-                    if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 2)) {
-                        $indicatorComparator = ">200%";
-                    } else {
-                        if ($waterSum >= ($dataEntry->getPatientGoal()->getGoal() * 1.5)) {
-                            $indicatorComparator = ">150%";
-                        } else {
-                            $indicatorComparator = ">100%";
-                        }
-                    }
-                }
-            }
-
-            $this->findAndDeliveryRewards($indicatorDataSet, $indicatorType, $indicatorComparator,
-                new DateTime(date("Y-m-d 00:00:00")));
-        }
-    }
-
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    /**
-     * @param ConsumeCaffeine $dataEntry
-     *
-     * @throws Exception
-     */
-    private function checkForConsumeCaffeine(ConsumeCaffeine $dataEntry)
-    {
-//        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' ' . $dataEntry->getMeasurement());
-//        AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' ' . $dataEntry->getPatientGoal()->getGoal());
+        AppConstants::writeToLog('debug_transform.txt', __LINE__);
     }
 
 }

@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class BodyComposition
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class BodyComposition
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="float", nullable=true)
      */
@@ -99,14 +97,6 @@ class BodyComposition
     private $trackingDevice;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -119,56 +109,6 @@ class BodyComposition
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getSkeletalMuscle(): ?float
-    {
-        return $this->skeletalMuscle;
-    }
-
-    /**
-     * @param float|null $skeletalMuscle
-     *
-     * @return $this
-     */
-    public function setSkeletalMuscle(?float $skeletalMuscle): self
-    {
-        $this->skeletalMuscle = $skeletalMuscle;
-
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getMuscleMass(): ?float
-    {
-        return $this->muscleMass;
-    }
-
-    /**
-     * @param float|null $muscleMass
-     *
-     * @return $this
-     */
-    public function setMuscleMass(?float $muscleMass): self
-    {
-        $this->muscleMass = $muscleMass;
 
         return $this;
     }
@@ -194,41 +134,79 @@ class BodyComposition
     }
 
     /**
-     * @return float|null
+     * @return DateTimeInterface|null
      */
-    public function getSkeletalMuscleMass(): ?float
+    public function getDateTime(): ?DateTimeInterface
     {
-        return $this->skeletalMuscleMass;
+        return $this->DateTime;
     }
 
     /**
-     * @param float|null $skeletalMuscleMass
+     * @param DateTimeInterface $DateTime
      *
      * @return $this
      */
-    public function setSkeletalMuscleMass(?float $skeletalMuscleMass): self
+    public function setDateTime(DateTimeInterface $DateTime): self
     {
-        $this->skeletalMuscleMass = $skeletalMuscleMass;
+        $this->DateTime = $DateTime;
 
         return $this;
     }
 
     /**
-     * @return float|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getTotalBodyWater(): ?float
+    public function getGuid(): ?UuidInterface
     {
-        return $this->totalBodyWater;
+        return $this->guid;
     }
 
     /**
-     * @param float|null $totalBodyWater
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getMuscleMass(): ?float
+    {
+        return $this->muscleMass;
+    }
+
+    /**
+     * @param float|null $muscleMass
      *
      * @return $this
      */
-    public function setTotalBodyWater(?float $totalBodyWater): self
+    public function setMuscleMass(?float $muscleMass): self
     {
-        $this->totalBodyWater = $totalBodyWater;
+        $this->muscleMass = $muscleMass;
+
+        return $this;
+    }
+
+    /**
+     * @return PartOfDay|null
+     */
+    public function getPartOfDay(): ?PartOfDay
+    {
+        return $this->partOfDay;
+    }
+
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
+    public function setPartOfDay(?PartOfDay $partOfDay): self
+    {
+        $this->partOfDay = $partOfDay;
 
         return $this;
     }
@@ -274,41 +252,61 @@ class BodyComposition
     }
 
     /**
-     * @return DateTimeInterface|null
+     * @return float|null
      */
-    public function getDateTime(): ?DateTimeInterface
+    public function getSkeletalMuscle(): ?float
     {
-        return $this->DateTime;
+        return $this->skeletalMuscle;
     }
 
     /**
-     * @param DateTimeInterface $DateTime
+     * @param float|null $skeletalMuscle
      *
      * @return $this
      */
-    public function setDateTime(DateTimeInterface $DateTime): self
+    public function setSkeletalMuscle(?float $skeletalMuscle): self
     {
-        $this->DateTime = $DateTime;
+        $this->skeletalMuscle = $skeletalMuscle;
 
         return $this;
     }
 
     /**
-     * @return PartOfDay|null
+     * @return float|null
      */
-    public function getPartOfDay(): ?PartOfDay
+    public function getSkeletalMuscleMass(): ?float
     {
-        return $this->partOfDay;
+        return $this->skeletalMuscleMass;
     }
 
     /**
-     * @param PartOfDay|null $partOfDay
+     * @param float|null $skeletalMuscleMass
      *
      * @return $this
      */
-    public function setPartOfDay(?PartOfDay $partOfDay): self
+    public function setSkeletalMuscleMass(?float $skeletalMuscleMass): self
     {
-        $this->partOfDay = $partOfDay;
+        $this->skeletalMuscleMass = $skeletalMuscleMass;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getTotalBodyWater(): ?float
+    {
+        return $this->totalBodyWater;
+    }
+
+    /**
+     * @param float|null $totalBodyWater
+     *
+     * @return $this
+     */
+    public function setTotalBodyWater(?float $totalBodyWater): self
+    {
+        $this->totalBodyWater = $totalBodyWater;
 
         return $this;
     }

@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class PatientFriends
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class PatientFriends
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="friendsOf")
      * @ORM\JoinColumn(nullable=false)
@@ -60,14 +58,6 @@ class PatientFriends
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $accepted;
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * Get the internal primary identity key.
@@ -87,13 +77,23 @@ class PatientFriends
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
+     * @return bool|null
      */
-    public function getGuid(): ?UuidInterface
+    public function getAccepted(): ?bool
     {
-        return $this->guid;
+        return $this->accepted;
+    }
+
+    /**
+     * @param bool|null $accepted
+     *
+     * @return $this
+     */
+    public function setAccepted(?bool $accepted): self
+    {
+        $this->accepted = $accepted;
+
+        return $this;
     }
 
     /**
@@ -137,22 +137,20 @@ class PatientFriends
     }
 
     /**
-     * @return bool|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getAccepted(): ?bool
+    public function getGuid(): ?UuidInterface
     {
-        return $this->accepted;
+        return $this->guid;
     }
 
     /**
-     * @param bool|null $accepted
-     *
-     * @return $this
+     * @return int|null
      */
-    public function setAccepted(?bool $accepted): self
+    public function getId(): ?int
     {
-        $this->accepted = $accepted;
-
-        return $this;
+        return $this->id;
     }
 }

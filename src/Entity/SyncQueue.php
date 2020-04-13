@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class SyncQueue
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class SyncQueue
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\PatientCredentials")
      * @ORM\JoinColumn(nullable=false)
@@ -68,14 +66,6 @@ class SyncQueue
     private $service;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -90,16 +80,6 @@ class SyncQueue
         }
 
         return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
     }
 
     /**
@@ -118,6 +98,26 @@ class SyncQueue
     public function setCredentials(?PatientCredentials $credentials): self
     {
         $this->credentials = $credentials;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDatetime(): ?DateTimeInterface
+    {
+        return $this->datetime;
+    }
+
+    /**
+     * @param DateTimeInterface $datetime
+     *
+     * @return $this
+     */
+    public function setDatetime(DateTimeInterface $datetime): self
+    {
+        $this->datetime = $datetime;
 
         return $this;
     }
@@ -143,23 +143,21 @@ class SyncQueue
     }
 
     /**
-     * @return DateTimeInterface|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getDatetime(): ?DateTimeInterface
+    public function getGuid(): ?UuidInterface
     {
-        return $this->datetime;
+        return $this->guid;
     }
 
     /**
-     * @param DateTimeInterface $datetime
-     *
-     * @return $this
+     * @return int|null
      */
-    public function setDatetime(DateTimeInterface $datetime): self
+    public function getId(): ?int
     {
-        $this->datetime = $datetime;
-
-        return $this;
+        return $this->id;
     }
 
     /**

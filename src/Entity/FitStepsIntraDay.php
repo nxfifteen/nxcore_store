@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class FitStepsIntraDay
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class FitStepsIntraDay
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="datetime")
      */
@@ -85,14 +83,6 @@ class FitStepsIntraDay
     private $duration;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -107,16 +97,6 @@ class FitStepsIntraDay
         }
 
         return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
     }
 
     /**
@@ -140,21 +120,51 @@ class FitStepsIntraDay
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getRemoteId(): ?string
+    public function getDuration(): ?int
     {
-        return $this->RemoteId;
+        return $this->duration;
     }
 
     /**
-     * @param string|null $RemoteId
+     * @param int|null $duration
      *
      * @return $this
      */
-    public function setRemoteId(?string $RemoteId): self
+    public function setDuration(?int $duration): self
     {
-        $this->RemoteId = $RemoteId;
+        $this->duration = $duration;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getHour(): ?int
+    {
+        return $this->hour;
+    }
+
+    /**
+     * @param int $hour
+     *
+     * @return $this
+     */
+    public function setHour(int $hour): self
+    {
+        $this->hour = $hour;
 
         return $this;
     }
@@ -162,21 +172,9 @@ class FitStepsIntraDay
     /**
      * @return int|null
      */
-    public function getValue(): ?int
+    public function getId(): ?int
     {
-        return $this->value;
-    }
-
-    /**
-     * @param int $value
-     *
-     * @return $this
-     */
-    public function setValue(int $value): self
-    {
-        $this->value = $value;
-
-        return $this;
+        return $this->id;
     }
 
     /**
@@ -195,6 +193,26 @@ class FitStepsIntraDay
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRemoteId(): ?string
+    {
+        return $this->RemoteId;
+    }
+
+    /**
+     * @param string|null $RemoteId
+     *
+     * @return $this
+     */
+    public function setRemoteId(?string $RemoteId): self
+    {
+        $this->RemoteId = $RemoteId;
 
         return $this;
     }
@@ -222,39 +240,19 @@ class FitStepsIntraDay
     /**
      * @return int|null
      */
-    public function getHour(): ?int
+    public function getValue(): ?int
     {
-        return $this->hour;
+        return $this->value;
     }
 
     /**
-     * @param int $hour
+     * @param int $value
      *
      * @return $this
      */
-    public function setHour(int $hour): self
+    public function setValue(int $value): self
     {
-        $this->hour = $hour;
-
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getDuration(): ?int
-    {
-        return $this->duration;
-    }
-
-    /**
-     * @param int|null $duration
-     *
-     * @return $this
-     */
-    public function setDuration(?int $duration): self
-    {
-        $this->duration = $duration;
+        $this->value = $value;
 
         return $this;
     }

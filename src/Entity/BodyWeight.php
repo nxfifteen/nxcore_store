@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class BodyWeight
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class BodyWeight
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(nullable=false)
@@ -92,14 +90,6 @@ class BodyWeight
     private $RemoteId;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -112,136 +102,6 @@ class BodyWeight
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
-     * @return TrackingDevice|null
-     */
-    public function getTrackingDevice(): ?TrackingDevice
-    {
-        return $this->trackingDevice;
-    }
-
-    /**
-     * @param TrackingDevice|null $trackingDevice
-     *
-     * @return $this
-     */
-    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
-    {
-        $this->trackingDevice = $trackingDevice;
-
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getMeasurement(): ?float
-    {
-        return $this->measurement;
-    }
-
-    /**
-     * @param float $measurement
-     *
-     * @return $this
-     */
-    public function setMeasurement(float $measurement): self
-    {
-        $this->measurement = $measurement;
-
-        return $this;
-    }
-
-    /**
-     * @return UnitOfMeasurement|null
-     */
-    public function getUnitOfMeasurement(): ?UnitOfMeasurement
-    {
-        return $this->unitOfMeasurement;
-    }
-
-    /**
-     * @param UnitOfMeasurement|null $unitOfMeasurement
-     *
-     * @return $this
-     */
-    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
-    {
-        $this->unitOfMeasurement = $unitOfMeasurement;
-
-        return $this;
-    }
-
-    /**
-     * @return PartOfDay|null
-     */
-    public function getPartOfDay(): ?PartOfDay
-    {
-        return $this->partOfDay;
-    }
-
-    /**
-     * @param PartOfDay|null $partOfDay
-     *
-     * @return $this
-     */
-    public function setPartOfDay(?PartOfDay $partOfDay): self
-    {
-        $this->partOfDay = $partOfDay;
-
-        return $this;
-    }
-
-    /**
-     * @return PatientGoals|null
-     */
-    public function getPatientGoal(): ?PatientGoals
-    {
-        return $this->patientGoal;
-    }
-
-    /**
-     * @param PatientGoals|null $patientGoal
-     *
-     * @return $this
-     */
-    public function setPatientGoal(?PatientGoals $patientGoal): self
-    {
-        $this->patientGoal = $patientGoal;
 
         return $this;
     }
@@ -267,6 +127,104 @@ class BodyWeight
     }
 
     /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getMeasurement(): ?float
+    {
+        return $this->measurement;
+    }
+
+    /**
+     * @param float $measurement
+     *
+     * @return $this
+     */
+    public function setMeasurement(float $measurement): self
+    {
+        $this->measurement = $measurement;
+
+        return $this;
+    }
+
+    /**
+     * @return PartOfDay|null
+     */
+    public function getPartOfDay(): ?PartOfDay
+    {
+        return $this->partOfDay;
+    }
+
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
+    public function setPartOfDay(?PartOfDay $partOfDay): self
+    {
+        $this->partOfDay = $partOfDay;
+
+        return $this;
+    }
+
+    /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
+     * @return PatientGoals|null
+     */
+    public function getPatientGoal(): ?PatientGoals
+    {
+        return $this->patientGoal;
+    }
+
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
+    public function setPatientGoal(?PatientGoals $patientGoal): self
+    {
+        $this->patientGoal = $patientGoal;
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
     public function getRemoteId(): ?string
@@ -282,6 +240,46 @@ class BodyWeight
     public function setRemoteId(string $RemoteId): self
     {
         $this->RemoteId = $RemoteId;
+
+        return $this;
+    }
+
+    /**
+     * @return TrackingDevice|null
+     */
+    public function getTrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
+    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    /**
+     * @return UnitOfMeasurement|null
+     */
+    public function getUnitOfMeasurement(): ?UnitOfMeasurement
+    {
+        return $this->unitOfMeasurement;
+    }
+
+    /**
+     * @param UnitOfMeasurement|null $unitOfMeasurement
+     *
+     * @return $this
+     */
+    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
+    {
+        $this->unitOfMeasurement = $unitOfMeasurement;
 
         return $this;
     }

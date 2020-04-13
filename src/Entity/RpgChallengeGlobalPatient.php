@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class RpgChallengeGlobalPatient
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class RpgChallengeGlobalPatient
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="rpgChallengeGlobals")
      * @ORM\JoinColumn(nullable=false)
@@ -78,14 +76,6 @@ class RpgChallengeGlobalPatient
     private $progress;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -98,36 +88,6 @@ class RpgChallengeGlobalPatient
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
 
         return $this;
     }
@@ -175,26 +135,6 @@ class RpgChallengeGlobalPatient
     /**
      * @return DateTimeInterface|null
      */
-    public function getStartDateTime(): ?DateTimeInterface
-    {
-        return $this->startDateTime;
-    }
-
-    /**
-     * @param DateTimeInterface $startDateTime
-     *
-     * @return $this
-     */
-    public function setStartDateTime(DateTimeInterface $startDateTime): self
-    {
-        $this->startDateTime = $startDateTime;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
     public function getFinishDateTime(): ?DateTimeInterface
     {
         return $this->finishDateTime;
@@ -208,6 +148,44 @@ class RpgChallengeGlobalPatient
     public function setFinishDateTime(?DateTimeInterface $finishDateTime): self
     {
         $this->finishDateTime = $finishDateTime;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
 
         return $this;
     }
@@ -228,6 +206,26 @@ class RpgChallengeGlobalPatient
     public function setProgress(?float $progress): self
     {
         $this->progress = $progress;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getStartDateTime(): ?DateTimeInterface
+    {
+        return $this->startDateTime;
+    }
+
+    /**
+     * @param DateTimeInterface $startDateTime
+     *
+     * @return $this
+     */
+    public function setStartDateTime(DateTimeInterface $startDateTime): self
+    {
+        $this->startDateTime = $startDateTime;
 
         return $this;
     }

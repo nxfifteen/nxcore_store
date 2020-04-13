@@ -41,19 +41,6 @@ class FeedJsonController extends AbstractController
     private $patient;
 
     /**
-     * @Route("/json/count/daily/steps", name="json_daily_step")
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function FitStepsDailySummary()
-    {
-        $this->setupRoute();
-
-        return $this->FitStepsDailySummaryDateTracker(date("Y-m-d"), -1);
-    }
-
-    /**
      *
      */
     private function setupRoute()
@@ -69,6 +56,19 @@ class FeedJsonController extends AbstractController
                 'email' => $this->patient->getEmail(),
             ]);
         });
+    }
+
+    /**
+     * @Route("/json/count/daily/steps", name="json_daily_step")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function FitStepsDailySummary()
+    {
+        $this->setupRoute();
+
+        return $this->FitStepsDailySummaryDateTracker(date("Y-m-d"), -1);
     }
 
     /**
@@ -152,70 +152,6 @@ class FeedJsonController extends AbstractController
     }
 
     /**
-     * @Route("/json/count/daily/water", name="json_daily_water")
-     *
-     * @return JsonResponse
-     */
-    public function consumeWater()
-    {
-        $this->setupRoute();
-
-        return $this->consumeWaterDate(date("Y-m-d"));
-    }
-
-    /**
-     * @Route("/json/count/daily/water/{date}", name="json_daily_water_date")
-     *
-     * @param String $date
-     *
-     * @return JsonResponse
-     */
-    public function consumeWaterDate(string $date)
-    {
-        $this->setupRoute();
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        $product = $this->getDoctrine()
-            ->getRepository(ConsumeWater::class)
-            ->findByDateRange($this->patient->getUuid(), $date);
-
-        $timeStampsInTrack = [];
-        $timeStampsInTrack['uuid'] = $this->patient->getUuid();
-        $timeStampsInTrack['today'] = $date;
-        $timeStampsInTrack['lastReading'] = "00:00:00";
-        $timeStampsInTrack['sum'] = 0;
-        $timeStampsInTrack['goal'] = 0;
-        $timeStampsInTrack['values'] = [];
-
-        if (count($product) > 0) {
-            /** @var ConsumeWater[] $product */
-            foreach ($product as $item) {
-                if (is_numeric($item->getMeasurement())) {
-                    $timeStampsInTrack['sum'] = $timeStampsInTrack['sum'] + $item->getMeasurement();
-                    if ($timeStampsInTrack['goal'] == 0) {
-                        $timeStampsInTrack['goal'] = $item->getPatientGoal()->getGoal();
-                    }
-
-                    $recordItem = [];
-                    $recordItem['dateTime'] = $item->getDateTime()->format("H:i:s");
-                    $recordItem['value'] = $item->getMeasurement();
-                    $recordItem['comment'] = $item->getComment();
-                    if (!is_null($item->getTrackingDevice())) {
-                        $recordItem['service'] = $item->getTrackingDevice()->getName();
-                    }
-
-                    $timeStampsInTrack['values'][] = $recordItem;
-                }
-            }
-            if (isset($item)) {
-                $timeStampsInTrack['lastReading'] = $item->getDateTime()->format("H:i:s");
-            }
-        }
-
-        return $this->json($timeStampsInTrack);
-    }
-
-    /**
      * @Route("/json/count/daily/body", name="json_daily_body")
      *
      * @return JsonResponse
@@ -281,146 +217,67 @@ class FeedJsonController extends AbstractController
     }
 
     /**
-     * @Route("/json/rpg/xp", name="json_rpg_xp")
+     * @Route("/json/count/daily/water", name="json_daily_water")
      *
      * @return JsonResponse
      */
-    public function rpgXp()
+    public function consumeWater()
     {
         $this->setupRoute();
 
-        $returnArray = [];
-        $returnArray['uuid'] = $this->patient->getUuid();
-        $returnArray['today'] = date("Y-m-d");
-        $returnArray['lastReading'] = date("H:i:s");
-
-        $returnArray['level'] = $this->patient->getRpgLevel();
-        $returnArray['factor'] = $this->patient->getRpgFactor();
-        $returnArray['current'] = round($this->patient->getXpTotal(), 0);
-        $returnArray['next'] = ceil($returnArray['current'] / 100) * 100;
-        $returnArray['level_next'] = $returnArray['next'] - $returnArray['current'];
-        $returnArray['level_percentage'] = 100 - ($returnArray['next'] - $returnArray['current']);
-
-        if (count($this->patient->getXp()) > 0) {
-            $returnArray['log'] = $this->patient->getXp()->last()->getReason();
-        } else {
-            $returnArray['log'] = "";
-        }
-
-        return $this->json($returnArray);
+        return $this->consumeWaterDate(date("Y-m-d"));
     }
 
     /**
-     * @Route("/json/profile", name="json_profile")
+     * @Route("/json/count/daily/water/{date}", name="json_daily_water_date")
+     *
+     * @param String $date
      *
      * @return JsonResponse
      */
-    public function profile()
+    public function consumeWaterDate(string $date)
     {
         $this->setupRoute();
 
-        $returnArray = [];
-        $returnArray['uuid'] = $this->patient->getUuid();
-        $returnArray['today'] = date("Y-m-d");
-        $returnArray['loginStreak'] = $this->patient->getLoginStreak();
+        /** @noinspection PhpUndefinedMethodInspection */
+        $product = $this->getDoctrine()
+            ->getRepository(ConsumeWater::class)
+            ->findByDateRange($this->patient->getUuid(), $date);
 
-        return $this->json($returnArray);
-    }
+        $timeStampsInTrack = [];
+        $timeStampsInTrack['uuid'] = $this->patient->getUuid();
+        $timeStampsInTrack['today'] = $date;
+        $timeStampsInTrack['lastReading'] = "00:00:00";
+        $timeStampsInTrack['sum'] = 0;
+        $timeStampsInTrack['goal'] = 0;
+        $timeStampsInTrack['values'] = [];
 
-    /**
-     * @Route("/json/exercises/overview", name="json_exercisesOverview")
-     *
-     * @return JsonResponse
-     */
-    public function exercisesOverview()
-    {
-        $this->setupRoute();
-
-        $return = [];
-
-        /** @var WorkoutExercise[] $exercises */
-        $exercises = $this->getDoctrine()
-            ->getRepository(WorkoutExercise::class)
-            ->findAll();
-
-        foreach ($exercises as $exercise) {
-            $formattedArray = [
-                "id" => $exercise->getId(),
-                "name" => $exercise->getName(),
-                "description" => $exercise->getDescription(),
-                "license" => $exercise->getLicense(),
-            ];
-            $formattedArray['category'] = [];
-            foreach ($exercise->getCategory() as $category) {
-                $formattedArray['category'][] = $category->getName();
-            }
-            $formattedArray['equipment'] = $exercise->getEquipment()->getName();
-
-            /** @var WorkoutMuscleRelation[] $relatedExercises */
-            $relatedExercises = $this->getDoctrine()
-                ->getRepository(WorkoutMuscleRelation::class)
-                ->findBy(['exercise' => $exercise]);
-            $formattedArray['muscles'] = [
-                "front" => [],
-                "back" => [],
-                "front_svg" => [],
-                "back_svg" => [],
-            ];
-            foreach ($relatedExercises as $muscleRelation) {
-                if ($muscleRelation->getMuscle()->getIsFront()) {
-                    $formattedArray['muscles']["front"][] = [
-                        "id" => $muscleRelation->getMuscle()->getId(),
-                        "name" => $muscleRelation->getMuscle()->getName(),
-                        "isPrimary" => $muscleRelation->getIsPrimary(),
-                    ];
-                    if ($muscleRelation->getIsPrimary()) {
-                        $formattedArray['muscles']["front_svg"][] = "url(/assets/muscles/primary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
-                    } else {
-                        $formattedArray['muscles']["front_svg"][] = "url(/assets/muscles/secondary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+        if (count($product) > 0) {
+            /** @var ConsumeWater[] $product */
+            foreach ($product as $item) {
+                if (is_numeric($item->getMeasurement())) {
+                    $timeStampsInTrack['sum'] = $timeStampsInTrack['sum'] + $item->getMeasurement();
+                    if ($timeStampsInTrack['goal'] == 0) {
+                        $timeStampsInTrack['goal'] = $item->getPatientGoal()->getGoal();
                     }
-                } else {
-                    $formattedArray['muscles']["back"][] = [
-                        "id" => $muscleRelation->getMuscle()->getId(),
-                        "name" => $muscleRelation->getMuscle()->getName(),
-                        "isPrimary" => $muscleRelation->getIsPrimary(),
-                    ];
-                    if ($muscleRelation->getIsPrimary()) {
-                        $formattedArray['muscles']["back_svg"][] = "url(/assets/muscles/primary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
-                    } else {
-                        $formattedArray['muscles']["back_svg"][] = "url(/assets/muscles/secondary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+
+                    $recordItem = [];
+                    $recordItem['dateTime'] = $item->getDateTime()->format("H:i:s");
+                    $recordItem['value'] = $item->getMeasurement();
+                    $recordItem['comment'] = $item->getComment();
+                    if (!is_null($item->getTrackingDevice())) {
+                        $recordItem['service'] = $item->getTrackingDevice()->getName();
                     }
+
+                    $timeStampsInTrack['values'][] = $recordItem;
                 }
             }
-
-            if (count($formattedArray['muscles']["front_svg"]) > 0) {
-                $formattedArray['muscles']["front_svg"] = join(",",
-                        $formattedArray['muscles']["front_svg"]) . ",url(/assets/muscles/muscular_system_front.svg)";
-            } else {
-                $formattedArray['muscles']["front_svg"] = "url(/assets/muscles/muscular_system_back.svg";
+            if (isset($item)) {
+                $timeStampsInTrack['lastReading'] = $item->getDateTime()->format("H:i:s");
             }
-
-            if (count($formattedArray['muscles']["back_svg"]) > 0) {
-                $formattedArray['muscles']["back_svg"] = join(",",
-                        $formattedArray['muscles']["back_svg"]) . ",url(/assets/muscles/muscular_system_back.svg)";
-            } else {
-                $formattedArray['muscles']["back_svg"] = "url(/assets/muscles/muscular_system_back.svg";
-            }
-
-            //url(/assets/muscles/muscular_system_front.svg)
-
-            $formattedArray['resources'] = [];
-            foreach ($exercise->getUploads() as $upload) {
-                $formattedArray['resources'][] = [
-                    "name" => $upload->getName(),
-                    "type" => $upload->getType(),
-                    "path" => $upload->getPath(),
-                ];
-            }
-
-            $return[] = $formattedArray;
         }
 
-        return $this->json($return);
+        return $this->json($timeStampsInTrack);
     }
 
     /**
@@ -545,5 +402,148 @@ class FeedJsonController extends AbstractController
         }
 
         return $this->json($return);
+    }
+
+    /**
+     * @Route("/json/exercises/overview", name="json_exercisesOverview")
+     *
+     * @return JsonResponse
+     */
+    public function exercisesOverview()
+    {
+        $this->setupRoute();
+
+        $return = [];
+
+        /** @var WorkoutExercise[] $exercises */
+        $exercises = $this->getDoctrine()
+            ->getRepository(WorkoutExercise::class)
+            ->findAll();
+
+        foreach ($exercises as $exercise) {
+            $formattedArray = [
+                "id" => $exercise->getId(),
+                "name" => $exercise->getName(),
+                "description" => $exercise->getDescription(),
+                "license" => $exercise->getLicense(),
+            ];
+            $formattedArray['category'] = [];
+            foreach ($exercise->getCategory() as $category) {
+                $formattedArray['category'][] = $category->getName();
+            }
+            $formattedArray['equipment'] = $exercise->getEquipment()->getName();
+
+            /** @var WorkoutMuscleRelation[] $relatedExercises */
+            $relatedExercises = $this->getDoctrine()
+                ->getRepository(WorkoutMuscleRelation::class)
+                ->findBy(['exercise' => $exercise]);
+            $formattedArray['muscles'] = [
+                "front" => [],
+                "back" => [],
+                "front_svg" => [],
+                "back_svg" => [],
+            ];
+            foreach ($relatedExercises as $muscleRelation) {
+                if ($muscleRelation->getMuscle()->getIsFront()) {
+                    $formattedArray['muscles']["front"][] = [
+                        "id" => $muscleRelation->getMuscle()->getId(),
+                        "name" => $muscleRelation->getMuscle()->getName(),
+                        "isPrimary" => $muscleRelation->getIsPrimary(),
+                    ];
+                    if ($muscleRelation->getIsPrimary()) {
+                        $formattedArray['muscles']["front_svg"][] = "url(/assets/muscles/primary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    } else {
+                        $formattedArray['muscles']["front_svg"][] = "url(/assets/muscles/secondary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    }
+                } else {
+                    $formattedArray['muscles']["back"][] = [
+                        "id" => $muscleRelation->getMuscle()->getId(),
+                        "name" => $muscleRelation->getMuscle()->getName(),
+                        "isPrimary" => $muscleRelation->getIsPrimary(),
+                    ];
+                    if ($muscleRelation->getIsPrimary()) {
+                        $formattedArray['muscles']["back_svg"][] = "url(/assets/muscles/primary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    } else {
+                        $formattedArray['muscles']["back_svg"][] = "url(/assets/muscles/secondary/muscle-" . $muscleRelation->getMuscle()->getId() . ".svg)";
+                    }
+                }
+            }
+
+            if (count($formattedArray['muscles']["front_svg"]) > 0) {
+                $formattedArray['muscles']["front_svg"] = join(",",
+                        $formattedArray['muscles']["front_svg"]) . ",url(/assets/muscles/muscular_system_front.svg)";
+            } else {
+                $formattedArray['muscles']["front_svg"] = "url(/assets/muscles/muscular_system_back.svg";
+            }
+
+            if (count($formattedArray['muscles']["back_svg"]) > 0) {
+                $formattedArray['muscles']["back_svg"] = join(",",
+                        $formattedArray['muscles']["back_svg"]) . ",url(/assets/muscles/muscular_system_back.svg)";
+            } else {
+                $formattedArray['muscles']["back_svg"] = "url(/assets/muscles/muscular_system_back.svg";
+            }
+
+            //url(/assets/muscles/muscular_system_front.svg)
+
+            $formattedArray['resources'] = [];
+            foreach ($exercise->getUploads() as $upload) {
+                $formattedArray['resources'][] = [
+                    "name" => $upload->getName(),
+                    "type" => $upload->getType(),
+                    "path" => $upload->getPath(),
+                ];
+            }
+
+            $return[] = $formattedArray;
+        }
+
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/json/profile", name="json_profile")
+     *
+     * @return JsonResponse
+     */
+    public function profile()
+    {
+        $this->setupRoute();
+
+        $returnArray = [];
+        $returnArray['uuid'] = $this->patient->getUuid();
+        $returnArray['today'] = date("Y-m-d");
+        $returnArray['loginStreak'] = $this->patient->getLoginStreak();
+
+        return $this->json($returnArray);
+    }
+
+    /**
+     * @Route("/json/rpg/xp", name="json_rpg_xp")
+     *
+     * @return JsonResponse
+     */
+    public function rpgXp()
+    {
+        $this->setupRoute();
+
+        $returnArray = [];
+        $returnArray['uuid'] = $this->patient->getUuid();
+        $returnArray['today'] = date("Y-m-d");
+        $returnArray['lastReading'] = date("H:i:s");
+
+        $returnArray['level'] = $this->patient->getRpgLevel();
+        $returnArray['factor'] = $this->patient->getRpgFactor();
+        $returnArray['current'] = round($this->patient->getXpTotal(), 0);
+        $returnArray['next'] = ceil($returnArray['current'] / 100) * 100;
+        $returnArray['level_next'] = $returnArray['next'] - $returnArray['current'];
+        $returnArray['level_percentage'] = 100 - ($returnArray['next'] - $returnArray['current']);
+
+        if (count($this->patient->getXp()) > 0) {
+            $returnArray['log'] = $this->patient->getXp()->last()->getReason();
+        } else {
+            $returnArray['log'] = "";
+        }
+
+        return $this->json($returnArray);
     }
 }

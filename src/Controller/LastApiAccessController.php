@@ -30,6 +30,23 @@ use Symfony\Component\Routing\Annotation\Route;
 class LastApiAccessController extends AbstractController
 {
     /**
+     * @param String $uuid
+     *
+     * @throws LogicException If the Security component is not available
+     */
+    private function hasAccess(string $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
+
+        /** @var Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
+
+    /**
      * @Route("/json/{uuid}/api/{endpoint}/{service}/last", name="get_endpoint_last_pulled")
      * @param String $uuid     A users UUID
      * @param String $service  The Service ID requested
@@ -90,23 +107,6 @@ class LastApiAccessController extends AbstractController
         $return['payload'] = $apiAccessLog->getLastRetrieved()->format("Y-m-d H:i:s.v");
 
         return $this->json($return);
-    }
-
-    /**
-     * @param String $uuid
-     *
-     * @throws LogicException If the Security component is not available
-     */
-    private function hasAccess(string $uuid)
-    {
-        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
-
-        /** @var Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
     }
 
 }

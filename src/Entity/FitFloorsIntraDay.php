@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class FitFloorsIntraDay
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class FitFloorsIntraDay
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="datetime")
      */
@@ -75,14 +73,6 @@ class FitFloorsIntraDay
     private $trackingDevice;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -97,16 +87,6 @@ class FitFloorsIntraDay
         }
 
         return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
     }
 
     /**
@@ -125,6 +105,44 @@ class FitFloorsIntraDay
     public function setDateTime(DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
 
         return $this;
     }
@@ -150,46 +168,6 @@ class FitFloorsIntraDay
     }
 
     /**
-     * @return int|null
-     */
-    public function getValue(): ?int
-    {
-        return $this->value;
-    }
-
-    /**
-     * @param int $value
-     *
-     * @return $this
-     */
-    public function setValue(int $value): self
-    {
-        $this->value = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
      * @return TrackingDevice|null
      */
     public function getTrackingDevice(): ?TrackingDevice
@@ -205,6 +183,26 @@ class FitFloorsIntraDay
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getValue(): ?int
+    {
+        return $this->value;
+    }
+
+    /**
+     * @param int $value
+     *
+     * @return $this
+     */
+    public function setValue(int $value): self
+    {
+        $this->value = $value;
 
         return $this;
     }

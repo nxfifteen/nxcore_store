@@ -42,15 +42,63 @@ use Twig\Error\SyntaxError;
 class RegistrationController extends AbstractController
 {
     /**
+     * @param String $uuid
+     *
+     * @throws LogicException If the Security component is not available
+     */
+    private function hasAccess(string $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
+
+        /** @var Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
+
+    /**
+     * @Route("/users/profile", name="get_profile")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function get_profile()
+    {
+        /** @var Patient $patient */
+        $patient = $this->getUser();
+        $this->hasAccess($patient->getUuid());
+
+        $userProfile = [
+            "username" => $patient->getUsername(),
+            "firstName" => $patient->getFirstName(),
+            "lastName" => $patient->getSurName(),
+            "avatar" => $patient->getAvatar(),
+            "email" => $patient->getEmail(),
+            "height" => 0,
+        ];
+
+        $dob = $patient->getDateOfBirth();
+        if (is_null($dob)) {
+            $userProfile['dateOfBirth'] = "1900-12-01";
+        } else {
+            $userProfile['dateOfBirth'] = $dob->format("Y-m-d");
+        }
+
+        return $this->json($userProfile);
+    }
+
+    /**
      * @Route("/users/register", name="login_register")
-     * @param ManagerRegistry $doctrine
-     * @param Request $request
+     * @param ManagerRegistry              $doctrine
+     * @param Request                      $request
      *
      * @param UserPasswordEncoderInterface $passwordEncoder
      *
-     * @param AwardManager $awardManager
+     * @param AwardManager                 $awardManager
      *
-     * @param CommsManager $commsManager
+     * @param CommsManager                 $commsManager
      *
      * @return JsonResponse
      * @throws LoaderError
@@ -205,35 +253,53 @@ class RegistrationController extends AbstractController
     }
 
     /**
-     * @Route("/users/profile", name="get_profile")
+     * @Route("/invite/{inviteCode}", name="login_register_invite")
+     *
+     * @param string $inviteCode
      *
      * @return JsonResponse
-     * @throws Exception
      */
-    public function get_profile()
+    public function index_invite_code(string $inviteCode)
     {
-        /** @var Patient $patient */
-        $patient = $this->getUser();
-        $this->hasAccess($patient->getUuid());
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Invite Code ' . $inviteCode);
 
-        $userProfile = [
-            "username" => $patient->getUsername(),
-            "firstName" => $patient->getFirstName(),
-            "lastName" => $patient->getSurName(),
-            "avatar" => $patient->getAvatar(),
-            "email" => $patient->getEmail(),
-            "height" => 0,
-        ];
+        return $this->json(["status" => true]);
+    }
 
-        $dob = $patient->getDateOfBirth();
-        if (is_null($dob)) {
-            $userProfile['dateOfBirth'] = "1900-12-01";
-        } else {
-            $userProfile['dateOfBirth'] = $dob->format("Y-m-d");
+    /*
+     * @Route("/users/update/password", name="login_update_password")
+     * @param ManagerRegistry              $doctrine
+     * @param Request                      $request
+     *
+     * @param UserPasswordEncoderInterface $passwordEncoder
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    /*public function update_password(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $requestBody = $request->getContent();
+        $requestBody = str_replace("'", "\"", $requestBody);
+        $requestJson = json_decode($requestBody, FALSE);
+        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+
+        $patient = $this->getDoctrine()
+            ->getRepository(Patient::class)
+            ->findOneBy(['uuid' => $requestJson->username]);
+
+        if (!$patient) {
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' No matching user');
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
         }
 
-        return $this->json($userProfile);
-    }
+        $entityManager = $doctrine->getManager();
+        $patient->setPassword($passwordEncoder->encodePassword($patient, ''));
+        $entityManager->persist($patient);
+        $entityManager->flush();
+
+
+        return $this->json(["status" => true]);
+    }*/
 
     /**
      * @Route("/users/profile/save", name="save_profile")
@@ -284,71 +350,5 @@ class RegistrationController extends AbstractController
         $entityManager->flush();
 
         return $this->json($userProfile);
-    }
-
-    /**
-     * @Route("/invite/{inviteCode}", name="login_register_invite")
-     *
-     * @param string $inviteCode
-     *
-     * @return JsonResponse
-     */
-    public function index_invite_code(string $inviteCode)
-    {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Invite Code ' . $inviteCode);
-
-        return $this->json(["status" => true]);
-    }
-
-    /*
-     * @Route("/users/update/password", name="login_update_password")
-     * @param ManagerRegistry              $doctrine
-     * @param Request                      $request
-     *
-     * @param UserPasswordEncoderInterface $passwordEncoder
-     *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    /*public function update_password(ManagerRegistry $doctrine, Request $request, UserPasswordEncoderInterface $passwordEncoder)
-    {
-        $requestBody = $request->getContent();
-        $requestBody = str_replace("'", "\"", $requestBody);
-        $requestJson = json_decode($requestBody, FALSE);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
-
-        $patient = $this->getDoctrine()
-            ->getRepository(Patient::class)
-            ->findOneBy(['uuid' => $requestJson->username]);
-
-        if (!$patient) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' No matching user');
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
-
-        $entityManager = $doctrine->getManager();
-        $patient->setPassword($passwordEncoder->encodePassword($patient, ''));
-        $entityManager->persist($patient);
-        $entityManager->flush();
-
-
-        return $this->json(["status" => true]);
-    }*/
-
-    /**
-     * @param String $uuid
-     *
-     * @throws LogicException If the Security component is not available
-     */
-    private function hasAccess(string $uuid)
-    {
-        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
-
-        /** @var Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
     }
 }

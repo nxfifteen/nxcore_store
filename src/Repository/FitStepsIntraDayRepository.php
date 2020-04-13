@@ -37,20 +37,15 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a Entity by its GUID
-     *
-     * @param string $value
+     * @param String $patientId
+     * @param String $date
+     * @param int    $trackingDevice
      *
      * @return mixed
      */
-    public function findByGuid(string $value)
+    public function findByDateRange(string $patientId, string $date, int $trackingDevice = 0)
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.guid = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->getQuery()
-            ->getResult();
+        return $this->findByDates($patientId, $date, "00:00:00", "23:59:00", $trackingDevice);
     }
 
     /**
@@ -99,6 +94,36 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
     /**
      * @param String $patientId
      * @param String $date
+     * @param int    $hour
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function findByForHour(string $patientId, string $date, int $hour, int $trackingDevice = 0)
+    {
+        return $this->findByDates($patientId, $date, $hour . ":00:00", $hour . ":59:59", $trackingDevice);
+    }
+
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     * @param String $date
      * @param String $start
      * @param String $end
      * @param int    $trackingDevice
@@ -139,30 +164,5 @@ class FitStepsIntraDayRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
         }
-    }
-
-    /**
-     * @param String $patientId
-     * @param String $date
-     * @param int    $trackingDevice
-     *
-     * @return mixed
-     */
-    public function findByDateRange(string $patientId, string $date, int $trackingDevice = 0)
-    {
-        return $this->findByDates($patientId, $date, "00:00:00", "23:59:00", $trackingDevice);
-    }
-
-    /**
-     * @param String $patientId
-     * @param String $date
-     * @param int    $hour
-     * @param int    $trackingDevice
-     *
-     * @return mixed
-     */
-    public function findByForHour(string $patientId, string $date, int $hour, int $trackingDevice = 0)
-    {
-        return $this->findByDates($patientId, $date, $hour . ":00:00", $hour . ":59:59", $trackingDevice);
     }
 }

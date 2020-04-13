@@ -37,23 +37,6 @@ class FitFloorsIntraDayRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a Entity by its GUID
-     *
-     * @param string $value
-     *
-     * @return mixed
-     */
-    public function findByGuid(string $value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.guid = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * @param String $patientId
      * @param String $date
      * @param int    $trackingDevice
@@ -92,5 +75,22 @@ class FitFloorsIntraDayRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
         }
+    }
+
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

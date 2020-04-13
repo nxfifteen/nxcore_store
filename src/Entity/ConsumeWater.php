@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class ConsumeWater
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class ConsumeWater
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="datetime")
      */
@@ -104,14 +102,6 @@ class ConsumeWater
     private $patientGoal;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -124,136 +114,6 @@ class ConsumeWater
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getMeasurement(): ?float
-    {
-        return $this->measurement;
-    }
-
-    /**
-     * @param float $measurement
-     *
-     * @return $this
-     */
-    public function setMeasurement(float $measurement): self
-    {
-        $this->measurement = $measurement;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getDateTime(): ?DateTimeInterface
-    {
-        return $this->DateTime;
-    }
-
-    /**
-     * @param DateTimeInterface $DateTime
-     *
-     * @return $this
-     */
-    public function setDateTime(DateTimeInterface $DateTime): self
-    {
-        $this->DateTime = $DateTime;
-
-        return $this;
-    }
-
-    /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getRemoteId(): ?string
-    {
-        return $this->RemoteId;
-    }
-
-    /**
-     * @param string $RemoteId
-     *
-     * @return $this
-     */
-    public function setRemoteId(string $RemoteId): self
-    {
-        $this->RemoteId = $RemoteId;
-
-        return $this;
-    }
-
-    /**
-     * @return TrackingDevice|null
-     */
-    public function gettrackingDevice(): ?TrackingDevice
-    {
-        return $this->trackingDevice;
-    }
-
-    /**
-     * @param TrackingDevice|null $trackingDevice
-     *
-     * @return $this
-     */
-    public function settrackingDevice(?TrackingDevice $trackingDevice): self
-    {
-        $this->trackingDevice = $trackingDevice;
-
-        return $this;
-    }
-
-    /**
-     * @return ThirdPartyService|null
-     */
-    public function getService(): ?ThirdPartyService
-    {
-        return $this->service;
-    }
-
-    /**
-     * @param ThirdPartyService|null $service
-     *
-     * @return $this
-     */
-    public function setService(?ThirdPartyService $service): self
-    {
-        $this->service = $service;
 
         return $this;
     }
@@ -279,21 +139,59 @@ class ConsumeWater
     }
 
     /**
-     * @return UnitOfMeasurement|null
+     * @return DateTimeInterface|null
      */
-    public function getUnitOfMeasurement(): ?UnitOfMeasurement
+    public function getDateTime(): ?DateTimeInterface
     {
-        return $this->unitOfMeasurement;
+        return $this->DateTime;
     }
 
     /**
-     * @param UnitOfMeasurement|null $unitOfMeasurement
+     * @param DateTimeInterface $DateTime
      *
      * @return $this
      */
-    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
+    public function setDateTime(DateTimeInterface $DateTime): self
     {
-        $this->unitOfMeasurement = $unitOfMeasurement;
+        $this->DateTime = $DateTime;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getMeasurement(): ?float
+    {
+        return $this->measurement;
+    }
+
+    /**
+     * @param float $measurement
+     *
+     * @return $this
+     */
+    public function setMeasurement(float $measurement): self
+    {
+        $this->measurement = $measurement;
 
         return $this;
     }
@@ -319,6 +217,26 @@ class ConsumeWater
     }
 
     /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
      * @return PatientGoals|null
      */
     public function getPatientGoal(): ?PatientGoals
@@ -334,6 +252,86 @@ class ConsumeWater
     public function setPatientGoal(?PatientGoals $patientGoal): self
     {
         $this->patientGoal = $patientGoal;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRemoteId(): ?string
+    {
+        return $this->RemoteId;
+    }
+
+    /**
+     * @param string $RemoteId
+     *
+     * @return $this
+     */
+    public function setRemoteId(string $RemoteId): self
+    {
+        $this->RemoteId = $RemoteId;
+
+        return $this;
+    }
+
+    /**
+     * @return ThirdPartyService|null
+     */
+    public function getService(): ?ThirdPartyService
+    {
+        return $this->service;
+    }
+
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
+    public function setService(?ThirdPartyService $service): self
+    {
+        $this->service = $service;
+
+        return $this;
+    }
+
+    /**
+     * @return UnitOfMeasurement|null
+     */
+    public function getUnitOfMeasurement(): ?UnitOfMeasurement
+    {
+        return $this->unitOfMeasurement;
+    }
+
+    /**
+     * @param UnitOfMeasurement|null $unitOfMeasurement
+     *
+     * @return $this
+     */
+    public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
+    {
+        $this->unitOfMeasurement = $unitOfMeasurement;
+
+        return $this;
+    }
+
+    /**
+     * @return TrackingDevice|null
+     */
+    public function gettrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
+    public function settrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
 
         return $this;
     }

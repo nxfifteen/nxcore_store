@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class Exercise
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class Exercise
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(nullable=false)
@@ -119,14 +117,6 @@ class Exercise
     }
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -139,56 +129,6 @@ class Exercise
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getDateTimeStart(): ?DateTimeInterface
-    {
-        return $this->dateTimeStart;
-    }
-
-    /**
-     * @param DateTimeInterface $dateTimeStart
-     *
-     * @return $this
-     */
-    public function setDateTimeStart(DateTimeInterface $dateTimeStart): self
-    {
-        $this->dateTimeStart = $dateTimeStart;
 
         return $this;
     }
@@ -214,61 +154,41 @@ class Exercise
     }
 
     /**
-     * @return TrackingDevice|null
+     * @return DateTimeInterface|null
      */
-    public function getTrackingDevice(): ?TrackingDevice
+    public function getDateTimeStart(): ?DateTimeInterface
     {
-        return $this->trackingDevice;
+        return $this->dateTimeStart;
     }
 
     /**
-     * @param TrackingDevice|null $trackingDevice
+     * @param DateTimeInterface $dateTimeStart
      *
      * @return $this
      */
-    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    public function setDateTimeStart(DateTimeInterface $dateTimeStart): self
     {
-        $this->trackingDevice = $trackingDevice;
+        $this->dateTimeStart = $dateTimeStart;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getRemoteId(): ?string
+    public function getDuration(): ?int
     {
-        return $this->RemoteId;
+        return $this->duration;
     }
 
     /**
-     * @param string|null $RemoteId
+     * @param int $duration
      *
      * @return $this
      */
-    public function setRemoteId(?string $RemoteId): self
+    public function setDuration(int $duration): self
     {
-        $this->RemoteId = $RemoteId;
-
-        return $this;
-    }
-
-    /**
-     * @return PartOfDay|null
-     */
-    public function getPartOfDay(): ?PartOfDay
-    {
-        return $this->partOfDay;
-    }
-
-    /**
-     * @param PartOfDay|null $partOfDay
-     *
-     * @return $this
-     */
-    public function setPartOfDay(?PartOfDay $partOfDay): self
-    {
-        $this->partOfDay = $partOfDay;
+        $this->duration = $duration;
 
         return $this;
     }
@@ -299,26 +219,6 @@ class Exercise
     }
 
     /**
-     * @return int|null
-     */
-    public function getDuration(): ?int
-    {
-        return $this->duration;
-    }
-
-    /**
-     * @param int $duration
-     *
-     * @return $this
-     */
-    public function setDuration(int $duration): self
-    {
-        $this->duration = $duration;
-
-        return $this;
-    }
-
-    /**
      * @return ExerciseType|null
      */
     public function getExerciseType(): ?ExerciseType
@@ -339,23 +239,21 @@ class Exercise
     }
 
     /**
-     * @return int|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getSteps(): ?int
+    public function getGuid(): ?UuidInterface
     {
-        return $this->steps;
+        return $this->guid;
     }
 
     /**
-     * @param int|null $steps
-     *
-     * @return $this
+     * @return int|null
      */
-    public function setSteps(?int $steps): self
+    public function getId(): ?int
     {
-        $this->steps = $steps;
-
-        return $this;
+        return $this->id;
     }
 
     /**
@@ -402,6 +300,106 @@ class Exercise
     public function setLocationDataBlob($locationDataBlob): self
     {
         $this->locationDataBlob = $locationDataBlob;
+
+        return $this;
+    }
+
+    /**
+     * @return PartOfDay|null
+     */
+    public function getPartOfDay(): ?PartOfDay
+    {
+        return $this->partOfDay;
+    }
+
+    /**
+     * @param PartOfDay|null $partOfDay
+     *
+     * @return $this
+     */
+    public function setPartOfDay(?PartOfDay $partOfDay): self
+    {
+        $this->partOfDay = $partOfDay;
+
+        return $this;
+    }
+
+    /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRemoteId(): ?string
+    {
+        return $this->RemoteId;
+    }
+
+    /**
+     * @param string|null $RemoteId
+     *
+     * @return $this
+     */
+    public function setRemoteId(?string $RemoteId): self
+    {
+        $this->RemoteId = $RemoteId;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getSteps(): ?int
+    {
+        return $this->steps;
+    }
+
+    /**
+     * @param int|null $steps
+     *
+     * @return $this
+     */
+    public function setSteps(?int $steps): self
+    {
+        $this->steps = $steps;
+
+        return $this;
+    }
+
+    /**
+     * @return TrackingDevice|null
+     */
+    public function getTrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
+    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
 
         return $this;
     }

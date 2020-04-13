@@ -37,71 +37,6 @@ use Twig\Error\SyntaxError;
 class AppConstants
 {
     /**
-     * @param String $fileName
-     * @param String $body
-     */
-    static function writeToLog(string $fileName, string $body)
-    {
-        try {
-            $path = sys_get_temp_dir() . '/sync_upload_post';
-        } catch (Exception $exception) {
-            echo $exception->getMessage();
-        }
-
-        if (!empty($path)) {
-            $file = $path . '/' . $fileName;
-
-            $fileSystem = new Filesystem();
-            try {
-                $fileSystem->mkdir($path);
-                if ($fileSystem->exists($file)) {
-                    $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
-                } else {
-                    $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
-                }
-
-            } catch (IOExceptionInterface $exception) {
-                echo "An error occurred while creating your directory at " . $exception->getPath();
-            }
-        }
-    }
-
-    /**
-     * @param $haystack
-     * @param $needle
-     *
-     * @return bool
-     */
-    static function startsWith($haystack, $needle)
-    {
-        $len = strlen($needle);
-        return (substr($haystack, 0, $len) === $needle);
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return ThirdPartyService|null
-     */
-    static function getThirdPartyService(ManagerRegistry $doctrine, string $serviceName)
-    {
-        /** @var ThirdPartyService $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new ThirdPartyService();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
-        }
-    }
-
-    /**
      * @param $stringToCompress
      *
      * @return string
@@ -114,15 +49,27 @@ class AppConstants
     }
 
     /**
-     * @param $stringToUncompress
+     * @param $value
+     * @param $valueUnit
+     * @param $targetUnit
      *
-     * @return false|string
+     * @return float|int
      */
-    static function uncompressString($stringToUncompress)
+    static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
     {
-        $uncompressedString = gzuncompress(substr($stringToUncompress, 4));
+        if ($valueUnit == "mile" && $targetUnit == "meter") {
+            return $value * 1609.34;
+        } else {
+            if ($valueUnit == "meter" && $targetUnit == "mile") {
+                return $value / 1609.34;
+            } else {
+                if ($valueUnit == "meter" && $targetUnit == "km") {
+                    return $value / 1000;
+                }
+            }
+        }
 
-        return $uncompressedString;
+        return 0.5;
     }
 
     /**
@@ -152,26 +99,79 @@ class AppConstants
     }
 
     /**
-     * @param $value
-     * @param $valueUnit
-     * @param $targetUnit
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
      *
-     * @return float|int
+     * @return ThirdPartyService|null
      */
-    static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
+    static function getThirdPartyService(ManagerRegistry $doctrine, string $serviceName)
     {
-        if ($valueUnit == "mile" && $targetUnit == "meter") {
-            return $value * 1609.34;
+        /** @var ThirdPartyService $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
         } else {
-            if ($valueUnit == "meter" && $targetUnit == "mile") {
-                return $value / 1609.34;
-            } else {
-                if ($valueUnit == "meter" && $targetUnit == "km") {
-                    return $value / 1000;
-                }
-            }
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new ThirdPartyService();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param $haystack
+     * @param $needle
+     *
+     * @return bool
+     */
+    static function startsWith($haystack, $needle)
+    {
+        $len = strlen($needle);
+        return (substr($haystack, 0, $len) === $needle);
+    }
+
+    /**
+     * @param $stringToUncompress
+     *
+     * @return false|string
+     */
+    static function uncompressString($stringToUncompress)
+    {
+        $uncompressedString = gzuncompress(substr($stringToUncompress, 4));
+
+        return $uncompressedString;
+    }
+
+    /**
+     * @param String $fileName
+     * @param String $body
+     */
+    static function writeToLog(string $fileName, string $body)
+    {
+        try {
+            $path = sys_get_temp_dir() . '/sync_upload_post';
+        } catch (Exception $exception) {
+            echo $exception->getMessage();
         }
 
-        return 0.5;
+        if (!empty($path)) {
+            $file = $path . '/' . $fileName;
+
+            $fileSystem = new Filesystem();
+            try {
+                $fileSystem->mkdir($path);
+                if ($fileSystem->exists($file)) {
+                    $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                } else {
+                    $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                }
+
+            } catch (IOExceptionInterface $exception) {
+                echo "An error occurred while creating your directory at " . $exception->getPath();
+            }
+        }
     }
 }

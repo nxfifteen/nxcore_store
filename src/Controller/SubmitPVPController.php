@@ -43,6 +43,57 @@ class SubmitPVPController extends AbstractController
     private $patient;
 
     /**
+     * @param $criteria
+     *
+     * @return string
+     */
+    private function convertCriteria($criteria)
+    {
+        switch ($criteria) {
+            case "steps":
+                return "FitStepsDailySummary";
+                break;
+            default:
+                return $criteria;
+                break;
+        }
+    }
+
+    /**
+     * @param $criteria
+     *
+     * @return string
+     */
+    private function convertCriteriaEnglish($criteria)
+    {
+        switch ($criteria) {
+            case "FitStepsDailySummary":
+                return "steps";
+                break;
+            default:
+                return $criteria;
+                break;
+        }
+    }
+
+    /**
+     * @param RpgChallengeFriends $challenge
+     *
+     * @return DateTime
+     * @throws Exception
+     */
+    private function getEndDate(RpgChallengeFriends $challenge)
+    {
+        $endDate = new DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
+        try {
+            $endDate->add(new DateInterval("P" . $challenge->getDuration() . "D"));
+        } catch (Exception $e) {
+        }
+
+        return $endDate;
+    }
+
+    /**
      * @Route("/submit/pvp/challenge", name="submit_pvp_challenge")
      * @param ManagerRegistry $doctrine
      * @param Request         $request
@@ -204,56 +255,5 @@ class SubmitPVPController extends AbstractController
         }
 
         return $this->json(["status" => 200]);
-    }
-
-    /**
-     * @param $criteria
-     *
-     * @return string
-     */
-    private function convertCriteria($criteria)
-    {
-        switch ($criteria) {
-            case "steps":
-                return "FitStepsDailySummary";
-                break;
-            default:
-                return $criteria;
-                break;
-        }
-    }
-
-    /**
-     * @param $criteria
-     *
-     * @return string
-     */
-    private function convertCriteriaEnglish($criteria)
-    {
-        switch ($criteria) {
-            case "FitStepsDailySummary":
-                return "steps";
-                break;
-            default:
-                return $criteria;
-                break;
-        }
-    }
-
-    /**
-     * @param RpgChallengeFriends $challenge
-     *
-     * @return DateTime
-     * @throws Exception
-     */
-    private function getEndDate(RpgChallengeFriends $challenge)
-    {
-        $endDate = new DateTime($challenge->getStartDate()->format("Y-m-d 00:00:00"));
-        try {
-            $endDate->add(new DateInterval("P" . $challenge->getDuration() . "D"));
-        } catch (Exception $e) {
-        }
-
-        return $endDate;
     }
 }

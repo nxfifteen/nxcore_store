@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class ExerciseType
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class ExerciseType
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -58,14 +56,6 @@ class ExerciseType
      * @ORM\Column(type="float", nullable=true)
      */
     private $MET;
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * Get the internal primary identity key.
@@ -92,6 +82,34 @@ class ExerciseType
     public function getGuid(): ?UuidInterface
     {
         return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getMET(): ?float
+    {
+        return $this->MET;
+    }
+
+    /**
+     * @param float|null $MET
+     *
+     * @return $this
+     */
+    public function setMET(?float $MET): self
+    {
+        $this->MET = $MET;
+
+        return $this;
     }
 
     /**
@@ -130,26 +148,6 @@ class ExerciseType
     public function setTag(?string $tag): self
     {
         $this->tag = $tag;
-
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getMET(): ?float
-    {
-        return $this->MET;
-    }
-
-    /**
-     * @param float|null $MET
-     *
-     * @return $this
-     */
-    public function setMET(?float $MET): self
-    {
-        $this->MET = $MET;
 
         return $this;
     }

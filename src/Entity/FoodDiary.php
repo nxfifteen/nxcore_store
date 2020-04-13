@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class FoodDiary
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class FoodDiary
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient")
      * @ORM\JoinColumn(nullable=false)
@@ -96,14 +94,6 @@ class FoodDiary
     private $comment;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -121,51 +111,21 @@ class FoodDiary
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
+     * @return float|null
      */
-    public function getGuid(): ?UuidInterface
+    public function getAmount(): ?float
     {
-        return $this->guid;
+        return $this->amount;
     }
 
     /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
+     * @param float $amount
      *
      * @return $this
      */
-    public function setPatient(?Patient $patient): self
+    public function setAmount(float $amount): self
     {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
-     * @return TrackingDevice|null
-     */
-    public function getTrackingDevice(): ?TrackingDevice
-    {
-        return $this->trackingDevice;
-    }
-
-    /**
-     * @param TrackingDevice|null $trackingDevice
-     *
-     * @return $this
-     */
-    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
-    {
-        $this->trackingDevice = $trackingDevice;
+        $this->amount = $amount;
 
         return $this;
     }
@@ -173,19 +133,19 @@ class FoodDiary
     /**
      * @return string|null
      */
-    public function getRemoteId(): ?string
+    public function getComment(): ?string
     {
-        return $this->remoteId;
+        return $this->comment;
     }
 
     /**
-     * @param string $remoteId
+     * @param string|null $comment
      *
      * @return $this
      */
-    public function setRemoteId(string $remoteId): self
+    public function setComment(?string $comment): self
     {
-        $this->remoteId = $remoteId;
+        $this->comment = $comment;
 
         return $this;
     }
@@ -231,43 +191,21 @@ class FoodDiary
     }
 
     /**
-     * @return float|null
-     */
-    public function getAmount(): ?float
-    {
-        return $this->amount;
-    }
-
-    /**
-     * @param float $amount
+     * Get the internal primary identity key.
      *
-     * @return $this
+     * @return UuidInterface|null
      */
-    public function setAmount(float $amount): self
+    public function getGuid(): ?UuidInterface
     {
-        $this->amount = $amount;
-
-        return $this;
+        return $this->guid;
     }
 
     /**
-     * @return UnitOfMeasurement|null
+     * @return int|null
      */
-    public function getUnit(): ?UnitOfMeasurement
+    public function getId(): ?int
     {
-        return $this->unit;
-    }
-
-    /**
-     * @param UnitOfMeasurement|null $unit
-     *
-     * @return $this
-     */
-    public function setUnit(?UnitOfMeasurement $unit): self
-    {
-        $this->unit = $unit;
-
-        return $this;
+        return $this->id;
     }
 
     /**
@@ -291,21 +229,81 @@ class FoodDiary
     }
 
     /**
-     * @return string|null
+     * @return Patient|null
      */
-    public function getComment(): ?string
+    public function getPatient(): ?Patient
     {
-        return $this->comment;
+        return $this->patient;
     }
 
     /**
-     * @param string|null $comment
+     * @param Patient|null $patient
      *
      * @return $this
      */
-    public function setComment(?string $comment): self
+    public function setPatient(?Patient $patient): self
     {
-        $this->comment = $comment;
+        $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRemoteId(): ?string
+    {
+        return $this->remoteId;
+    }
+
+    /**
+     * @param string $remoteId
+     *
+     * @return $this
+     */
+    public function setRemoteId(string $remoteId): self
+    {
+        $this->remoteId = $remoteId;
+
+        return $this;
+    }
+
+    /**
+     * @return TrackingDevice|null
+     */
+    public function getTrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
+    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    /**
+     * @return UnitOfMeasurement|null
+     */
+    public function getUnit(): ?UnitOfMeasurement
+    {
+        return $this->unit;
+    }
+
+    /**
+     * @param UnitOfMeasurement|null $unit
+     *
+     * @return $this
+     */
+    public function setUnit(?UnitOfMeasurement $unit): self
+    {
+        $this->unit = $unit;
 
         return $this;
     }

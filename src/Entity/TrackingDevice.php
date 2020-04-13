@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class TrackingDevice
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class TrackingDevice
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=150, nullable=true)
      */
@@ -100,14 +98,6 @@ class TrackingDevice
     private $service;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -120,56 +110,6 @@ class TrackingDevice
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string|null $name
-     *
-     * @return $this
-     */
-    public function setName(?string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getComment(): ?string
-    {
-        return $this->comment;
-    }
-
-    /**
-     * @param string|null $comment
-     *
-     * @return $this
-     */
-    public function setComment(?string $comment): self
-    {
-        $this->comment = $comment;
 
         return $this;
     }
@@ -195,6 +135,44 @@ class TrackingDevice
     }
 
     /**
+     * @return string|null
+     */
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @param string|null $comment
+     *
+     * @return $this
+     */
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
      * @return DateTimeInterface|null
      */
     public function getLastSynced(): ?DateTimeInterface
@@ -210,46 +188,6 @@ class TrackingDevice
     public function setLastSynced(?DateTimeInterface $lastSynced): self
     {
         $this->lastSynced = $lastSynced;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getRemoteId(): ?string
-    {
-        return $this->remoteId;
-    }
-
-    /**
-     * @param string|null $remoteId
-     *
-     * @return $this
-     */
-    public function setRemoteId(?string $remoteId): self
-    {
-        $this->remoteId = $remoteId;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param string|null $type
-     *
-     * @return $this
-     */
-    public function setType(?string $type): self
-    {
-        $this->type = $type;
 
         return $this;
     }
@@ -295,6 +233,26 @@ class TrackingDevice
     }
 
     /**
+     * @return string|null
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string|null $name
+     *
+     * @return $this
+     */
+    public function setName(?string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
      * @return Patient|null
      */
     public function getPatient(): ?Patient
@@ -315,6 +273,26 @@ class TrackingDevice
     }
 
     /**
+     * @return string|null
+     */
+    public function getRemoteId(): ?string
+    {
+        return $this->remoteId;
+    }
+
+    /**
+     * @param string|null $remoteId
+     *
+     * @return $this
+     */
+    public function setRemoteId(?string $remoteId): self
+    {
+        $this->remoteId = $remoteId;
+
+        return $this;
+    }
+
+    /**
      * @return ThirdPartyService|null
      */
     public function getService(): ?ThirdPartyService
@@ -330,6 +308,26 @@ class TrackingDevice
     public function setService(?ThirdPartyService $service): self
     {
         $this->service = $service;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string|null $type
+     *
+     * @return $this
+     */
+    public function setType(?string $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }

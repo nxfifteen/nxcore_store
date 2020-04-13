@@ -45,17 +45,6 @@ class QueueSyncFitbit extends Command
     private $doctrine;
 
     /**
-     * @required
-     *
-     * @param ManagerRegistry $doctrine
-     */
-    public function dependencyInjection(
-        ManagerRegistry $doctrine
-    ): void {
-        $this->doctrine = $doctrine;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
@@ -139,6 +128,17 @@ class QueueSyncFitbit extends Command
             AppConstants::writeToLog('debug_transform.txt',
                 "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . 'There are not Fitbit users');
         }
+    }
+
+    /**
+     * @required
+     *
+     * @param ManagerRegistry $doctrine
+     */
+    public function dependencyInjection(
+        ManagerRegistry $doctrine
+    ): void {
+        $this->doctrine = $doctrine;
     }
 
 }

@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class ExerciseSummary
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class ExerciseSummary
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Exercise", inversedBy="exerciseSummary", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
@@ -131,14 +129,6 @@ class ExerciseSummary
     private $heartRateMin;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -151,36 +141,6 @@ class ExerciseSummary
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return Exercise|null
-     */
-    public function getExercise(): ?Exercise
-    {
-        return $this->exercise;
-    }
-
-    /**
-     * @param Exercise $exercise
-     *
-     * @return $this
-     */
-    public function setExercise(Exercise $exercise): self
-    {
-        $this->exercise = $exercise;
 
         return $this;
     }
@@ -348,19 +308,19 @@ class ExerciseSummary
     /**
      * @return float|null
      */
-    public function getDistanceIncline(): ?float
+    public function getDistance(): ?float
     {
-        return $this->distanceIncline;
+        return $this->distance;
     }
 
     /**
-     * @param float|null $distanceIncline
+     * @param float|null $distance
      *
      * @return $this
      */
-    public function setDistanceIncline(?float $distanceIncline): self
+    public function setDistance(?float $distance): self
     {
-        $this->distanceIncline = $distanceIncline;
+        $this->distance = $distance;
 
         return $this;
     }
@@ -388,61 +348,51 @@ class ExerciseSummary
     /**
      * @return float|null
      */
-    public function getDistance(): ?float
+    public function getDistanceIncline(): ?float
     {
-        return $this->distance;
+        return $this->distanceIncline;
     }
 
     /**
-     * @param float|null $distance
+     * @param float|null $distanceIncline
      *
      * @return $this
      */
-    public function setDistance(?float $distance): self
+    public function setDistanceIncline(?float $distanceIncline): self
     {
-        $this->distance = $distance;
+        $this->distanceIncline = $distanceIncline;
 
         return $this;
     }
 
     /**
-     * @return float|null
+     * @return Exercise|null
      */
-    public function getSpeedMax(): ?float
+    public function getExercise(): ?Exercise
     {
-        return $this->speedMax;
+        return $this->exercise;
     }
 
     /**
-     * @param float|null $speedMax
+     * @param Exercise $exercise
      *
      * @return $this
      */
-    public function setSpeedMax(?float $speedMax): self
+    public function setExercise(Exercise $exercise): self
     {
-        $this->speedMax = $speedMax;
+        $this->exercise = $exercise;
 
         return $this;
     }
 
     /**
-     * @return float|null
-     */
-    public function getSpeedMean(): ?float
-    {
-        return $this->speedMean;
-    }
-
-    /**
-     * @param float|null $speedMean
+     * Get the internal primary identity key.
      *
-     * @return $this
+     * @return UuidInterface|null
      */
-    public function setSpeedMean(?float $speedMean): self
+    public function getGuid(): ?UuidInterface
     {
-        $this->speedMean = $speedMean;
-
-        return $this;
+        return $this->guid;
     }
 
     /**
@@ -501,6 +451,54 @@ class ExerciseSummary
     public function setHeartRateMin(?float $heartRateMin): self
     {
         $this->heartRateMin = $heartRateMin;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getSpeedMax(): ?float
+    {
+        return $this->speedMax;
+    }
+
+    /**
+     * @param float|null $speedMax
+     *
+     * @return $this
+     */
+    public function setSpeedMax(?float $speedMax): self
+    {
+        $this->speedMax = $speedMax;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getSpeedMean(): ?float
+    {
+        return $this->speedMean;
+    }
+
+    /**
+     * @param float|null $speedMean
+     *
+     * @return $this
+     */
+    public function setSpeedMean(?float $speedMean): self
+    {
+        $this->speedMean = $speedMean;
 
         return $this;
     }

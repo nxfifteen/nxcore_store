@@ -40,17 +40,6 @@ class Transform
 {
 
     /**
-     * @param Object $getContent
-     *
-     * @return mixed
-     */
-    protected static function encodeJson(Object $getContent)
-    {
-        $jsonObject = json_encode($getContent);
-        return $jsonObject;
-    }
-
-    /**
      * @param String $getContent
      *
      * @return mixed
@@ -74,6 +63,121 @@ class Transform
     }
 
     /**
+     * @param Object $getContent
+     *
+     * @return mixed
+     */
+    protected static function encodeJson(Object $getContent)
+    {
+        $jsonObject = json_encode($getContent);
+        return $jsonObject;
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @return ExerciseType|null
+     */
+    protected static function getExerciseType(ManagerRegistry $doctrine, string $serviceName)
+    {
+        /** @var ExerciseType $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(ExerciseType::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new ExerciseType();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $food_info_id
+     *
+     * @return FoodDatabase|null
+     */
+    protected static function getMealFoodItem(ManagerRegistry $doctrine, string $food_info_id)
+    {
+        /** @var FoodDatabase $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(FoodDatabase::class)->findByFoodInfoId($food_info_id);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param String          $serviceName
+     *
+     * @return FoodMeals|null
+     */
+    protected static function getMealType(ManagerRegistry $doctrine, string $serviceName)
+    {
+        /** @var FoodMeals $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(FoodMeals::class)->findOneBy(['name' => $serviceName]);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new FoodMeals();
+            $thirdPartyService->setName($serviceName);
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param DateTimeInterface $trackedDate
+     *
+     * @return PartOfDay|null
+     */
+    protected static function getPartOfDay(ManagerRegistry $doctrine, DateTimeInterface $trackedDate)
+    {
+        /** @var DateTime $trackedDate */
+        $trackedDate = $trackedDate->format("U");
+        $trackedDate = date("H", $trackedDate);
+
+        if ($trackedDate >= 12 && $trackedDate <= 16) {
+            $partOfDayString = "afternoon";
+        } else {
+            if ($trackedDate >= 17 && $trackedDate <= 20) {
+                $partOfDayString = "evening";
+            } else {
+                if ($trackedDate >= 5 && $trackedDate <= 11) {
+                    $partOfDayString = "morning";
+                } else {
+                    $partOfDayString = "night";
+                }
+            }
+        }
+
+        /** @var PartOfDay $partOfDay */
+        $partOfDay = $doctrine->getRepository(PartOfDay::class)->findOneBy(['name' => $partOfDayString]);
+        if ($partOfDay) {
+            return $partOfDay;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $partOfDay = new PartOfDay();
+            $partOfDay->setName($partOfDayString);
+            $entityManager->persist($partOfDay);
+            $entityManager->flush();
+
+            return $partOfDay;
+        }
+    }
+
+    /**
      * @param ManagerRegistry $doctrine
      * @param                 $uuid
      *
@@ -88,68 +192,6 @@ class Transform
         }
 
         return null;
-    }
-
-    /**
-     * @param ManagerRegistry   $doctrine
-     * @param Patient           $patient
-     * @param ThirdPartyService $thirdPartyService
-     * @param String            $remote_id
-     *
-     * @param array             $options
-     *
-     * @return TrackingDevice|null
-     */
-    protected static function getTrackingDevice(
-        ManagerRegistry $doctrine,
-        Patient $patient,
-        ThirdPartyService $thirdPartyService,
-        string $remote_id,
-        array $options = []
-    ) {
-        /** @var TrackingDevice $deviceTracking */
-        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
-            'remoteId' => $remote_id,
-            'patient' => $patient,
-            'service' => $thirdPartyService,
-        ]);
-        if ($deviceTracking) {
-            return $deviceTracking;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $deviceTracking = new TrackingDevice();
-            $deviceTracking->setPatient($patient);
-            $deviceTracking->setService($thirdPartyService);
-            $deviceTracking->setRemoteId($remote_id);
-            $deviceTracking->setName($remote_id);
-            $deviceTracking->setType("Unknown");
-
-            if (count($options) > 0) {
-                if (array_key_exists("name", $options)) {
-                    $deviceTracking->setName($options['name']);
-                }
-                if (array_key_exists("comment", $options)) {
-                    $deviceTracking->setComment($options['comment']);
-                }
-                if (array_key_exists("battery", $options)) {
-                    $deviceTracking->setBattery($options['battery']);
-                }
-                if (array_key_exists("type", $options)) {
-                    $deviceTracking->setType($options['type']);
-                }
-                if (array_key_exists("manufacturer", $options)) {
-                    $deviceTracking->setManufacturer($options['manufacturer']);
-                }
-                if (array_key_exists("model", $options)) {
-                    $deviceTracking->setModel($options['model']);
-                }
-            }
-
-            $entityManager->persist($deviceTracking);
-            $entityManager->flush();
-
-            return $deviceTracking;
-        }
     }
 
     /**
@@ -226,6 +268,68 @@ class Transform
     }
 
     /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param ThirdPartyService $thirdPartyService
+     * @param String            $remote_id
+     *
+     * @param array             $options
+     *
+     * @return TrackingDevice|null
+     */
+    protected static function getTrackingDevice(
+        ManagerRegistry $doctrine,
+        Patient $patient,
+        ThirdPartyService $thirdPartyService,
+        string $remote_id,
+        array $options = []
+    ) {
+        /** @var TrackingDevice $deviceTracking */
+        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
+            'remoteId' => $remote_id,
+            'patient' => $patient,
+            'service' => $thirdPartyService,
+        ]);
+        if ($deviceTracking) {
+            return $deviceTracking;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $deviceTracking = new TrackingDevice();
+            $deviceTracking->setPatient($patient);
+            $deviceTracking->setService($thirdPartyService);
+            $deviceTracking->setRemoteId($remote_id);
+            $deviceTracking->setName($remote_id);
+            $deviceTracking->setType("Unknown");
+
+            if (count($options) > 0) {
+                if (array_key_exists("name", $options)) {
+                    $deviceTracking->setName($options['name']);
+                }
+                if (array_key_exists("comment", $options)) {
+                    $deviceTracking->setComment($options['comment']);
+                }
+                if (array_key_exists("battery", $options)) {
+                    $deviceTracking->setBattery($options['battery']);
+                }
+                if (array_key_exists("type", $options)) {
+                    $deviceTracking->setType($options['type']);
+                }
+                if (array_key_exists("manufacturer", $options)) {
+                    $deviceTracking->setManufacturer($options['manufacturer']);
+                }
+                if (array_key_exists("model", $options)) {
+                    $deviceTracking->setModel($options['model']);
+                }
+            }
+
+            $entityManager->persist($deviceTracking);
+            $entityManager->flush();
+
+            return $deviceTracking;
+        }
+    }
+
+    /**
      * @param ManagerRegistry $doctrine
      * @param String          $serviceName
      *
@@ -245,110 +349,6 @@ class Transform
             $entityManager->flush();
 
             return $thirdPartyService;
-        }
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $food_info_id
-     *
-     * @return FoodDatabase|null
-     */
-    protected static function getMealFoodItem(ManagerRegistry $doctrine, string $food_info_id)
-    {
-        /** @var FoodDatabase $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(FoodDatabase::class)->findByFoodInfoId($food_info_id);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return FoodMeals|null
-     */
-    protected static function getMealType(ManagerRegistry $doctrine, string $serviceName)
-    {
-        /** @var FoodMeals $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(FoodMeals::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new FoodMeals();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
-        }
-    }
-
-    /**
-     * @param ManagerRegistry $doctrine
-     * @param String          $serviceName
-     *
-     * @return ExerciseType|null
-     */
-    protected static function getExerciseType(ManagerRegistry $doctrine, string $serviceName)
-    {
-        /** @var ExerciseType $thirdPartyService */
-        $thirdPartyService = $doctrine->getRepository(ExerciseType::class)->findOneBy(['name' => $serviceName]);
-        if ($thirdPartyService) {
-            return $thirdPartyService;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $thirdPartyService = new ExerciseType();
-            $thirdPartyService->setName($serviceName);
-            $entityManager->persist($thirdPartyService);
-            $entityManager->flush();
-
-            return $thirdPartyService;
-        }
-    }
-
-    /**
-     * @param ManagerRegistry   $doctrine
-     * @param DateTimeInterface $trackedDate
-     *
-     * @return PartOfDay|null
-     */
-    protected static function getPartOfDay(ManagerRegistry $doctrine, DateTimeInterface $trackedDate)
-    {
-        /** @var DateTime $trackedDate */
-        $trackedDate = $trackedDate->format("U");
-        $trackedDate = date("H", $trackedDate);
-
-        if ($trackedDate >= 12 && $trackedDate <= 16) {
-            $partOfDayString = "afternoon";
-        } else {
-            if ($trackedDate >= 17 && $trackedDate <= 20) {
-                $partOfDayString = "evening";
-            } else {
-                if ($trackedDate >= 5 && $trackedDate <= 11) {
-                    $partOfDayString = "morning";
-                } else {
-                    $partOfDayString = "night";
-                }
-            }
-        }
-
-        /** @var PartOfDay $partOfDay */
-        $partOfDay = $doctrine->getRepository(PartOfDay::class)->findOneBy(['name' => $partOfDayString]);
-        if ($partOfDay) {
-            return $partOfDay;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $partOfDay = new PartOfDay();
-            $partOfDay->setName($partOfDayString);
-            $entityManager->persist($partOfDay);
-            $entityManager->flush();
-
-            return $partOfDay;
         }
     }
 

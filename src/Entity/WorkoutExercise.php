@@ -27,6 +27,14 @@ use Ramsey\Uuid\UuidInterface;
 class WorkoutExercise
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -36,16 +44,6 @@ class WorkoutExercise
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -92,11 +90,47 @@ class WorkoutExercise
     }
 
     /**
-     * @return int|null
+     * @param WorkoutCategories $category
+     *
+     * @return $this
      */
-    public function getId(): ?int
+    public function addCategory(WorkoutCategories $category): self
     {
-        return $this->id;
+        if (!$this->category->contains($category)) {
+            $this->category[] = $category;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param WorkoutMuscleRelation $muscle
+     *
+     * @return $this
+     */
+    public function addMuscle(WorkoutMuscleRelation $muscle): self
+    {
+        if (!$this->muscles->contains($muscle)) {
+            $this->muscles[] = $muscle;
+            $muscle->setExercise($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param UploadedFile $upload
+     *
+     * @return $this
+     */
+    public function addUpload(UploadedFile $upload): self
+    {
+        if (!$this->uploads->contains($upload)) {
+            $this->uploads[] = $upload;
+            $upload->setExercise($this);
+        }
+
+        return $this;
     }
 
     /**
@@ -117,33 +151,11 @@ class WorkoutExercise
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
+     * @return Collection|WorkoutCategories[]
      */
-    public function getGuid(): ?UuidInterface
+    public function getCategory(): Collection
     {
-        return $this->guid;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return $this
-     */
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
+        return $this->category;
     }
 
     /**
@@ -187,6 +199,44 @@ class WorkoutExercise
     }
 
     /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return ContributionLicense|null
+     */
+    public function getLicense(): ?ContributionLicense
+    {
+        return $this->license;
+    }
+
+    /**
+     * @param ContributionLicense|null $license
+     *
+     * @return $this
+     */
+    public function setLicense(?ContributionLicense $license): self
+    {
+        $this->license = $license;
+
+        return $this;
+    }
+
+    /**
      * @return Collection|WorkoutMuscleRelation[]
      */
     public function getMuscles(): Collection
@@ -195,15 +245,42 @@ class WorkoutExercise
     }
 
     /**
-     * @param WorkoutMuscleRelation $muscle
+     * @return string|null
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
      *
      * @return $this
      */
-    public function addMuscle(WorkoutMuscleRelation $muscle): self
+    public function setName(string $name): self
     {
-        if (!$this->muscles->contains($muscle)) {
-            $this->muscles[] = $muscle;
-            $muscle->setExercise($this);
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UploadedFile[]
+     */
+    public function getUploads(): Collection
+    {
+        return $this->uploads;
+    }
+
+    /**
+     * @param WorkoutCategories $category
+     *
+     * @return $this
+     */
+    public function removeCategory(WorkoutCategories $category): self
+    {
+        if ($this->category->contains($category)) {
+            $this->category->removeElement($category);
         }
 
         return $this;
@@ -228,29 +305,6 @@ class WorkoutExercise
     }
 
     /**
-     * @return Collection|UploadedFile[]
-     */
-    public function getUploads(): Collection
-    {
-        return $this->uploads;
-    }
-
-    /**
-     * @param UploadedFile $upload
-     *
-     * @return $this
-     */
-    public function addUpload(UploadedFile $upload): self
-    {
-        if (!$this->uploads->contains($upload)) {
-            $this->uploads[] = $upload;
-            $upload->setExercise($this);
-        }
-
-        return $this;
-    }
-
-    /**
      * @param UploadedFile $upload
      *
      * @return $this
@@ -264,62 +318,6 @@ class WorkoutExercise
                 $upload->setExercise(null);
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|WorkoutCategories[]
-     */
-    public function getCategory(): Collection
-    {
-        return $this->category;
-    }
-
-    /**
-     * @param WorkoutCategories $category
-     *
-     * @return $this
-     */
-    public function addCategory(WorkoutCategories $category): self
-    {
-        if (!$this->category->contains($category)) {
-            $this->category[] = $category;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param WorkoutCategories $category
-     *
-     * @return $this
-     */
-    public function removeCategory(WorkoutCategories $category): self
-    {
-        if ($this->category->contains($category)) {
-            $this->category->removeElement($category);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return ContributionLicense|null
-     */
-    public function getLicense(): ?ContributionLicense
-    {
-        return $this->license;
-    }
-
-    /**
-     * @param ContributionLicense|null $license
-     *
-     * @return $this
-     */
-    public function setLicense(?ContributionLicense $license): self
-    {
-        $this->license = $license;
 
         return $this;
     }

@@ -39,111 +39,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class SyncUploadController extends AbstractController
 {
     /**
-     * @Route("/sync/webhook/{service}", name="sync_webhook_post", methods={"POST"})
-     * @param String          $service
-     *
-     * @param LoggerInterface $logger
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function sync_webhook_post(string $service, LoggerInterface $logger)
-    {
-        return $this->sync_webhook_get($service, $logger);
-    }
-
-    /**
-     * @Route("/sync/webhook/{service}", name="sync_webhook_get", methods={"GET"})
-     * @param String          $service
-     *
-     * @param LoggerInterface $logger
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function sync_webhook_get(string $service, LoggerInterface $logger)
-    {
-        if (strtolower($service) == "habitica") {
-            $request = Request::createFromGlobals();
-            $jsonContent = json_decode($request->getContent(), false);
-
-            AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - ' . $jsonContent->user->_id);
-            AppConstants::writeToLog('webhook_' . $service . '.txt', $request->getContent());
-
-            $response = new JsonResponse();
-            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
-            return $response;
-        }
-
-        if (is_array($_GET) && array_key_exists("verify", $_GET)) {
-            if ($_GET['verify'] != "c9dc17fc026d90cf8ddb6d7e1960828962265bac03605449054fb2e9033c927c") {
-                AppConstants::writeToLog('debug_transform.txt',
-                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
-                throw $this->createNotFoundException('404');
-            } else {
-                AppConstants::writeToLog('debug_transform.txt',
-                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code valid');
-            }
-
-            $response = new JsonResponse();
-            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
-            return $response;
-        }
-
-        $request = Request::createFromGlobals();
-        $jsonContent = json_decode($request->getContent(), false);
-
-        $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
-        foreach ($jsonContent as $item) {
-            $patient = $this->getDoctrine()
-                ->getRepository(Patient::class)
-                ->findOneBy(['id' => $item->subscriptionId]);
-
-            if (!$patient) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    '[webhook:' . $service . '] - No patient with this ID ' . $item->subscriptionId);
-            } else {
-                $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
-                if (is_array($queueEndpoints)) {
-                    $queueEndpoints = join("::", $queueEndpoints);
-                }
-
-                if (!is_null($queueEndpoints)) {
-                    $patientCredential = $this->getDoctrine()
-                        ->getRepository(PatientCredentials::class)
-                        ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
-
-                    $serviceSyncQueue = $this->getDoctrine()
-                        ->getRepository(SyncQueue::class)
-                        ->findOneBy([
-                            'credentials' => $patientCredential,
-                            'service' => $serviceObject,
-                            'endpoint' => $queueEndpoints,
-                        ]);
-
-                    if (!$serviceSyncQueue) {
-                        $serviceSyncQueue = new SyncQueue();
-                        $serviceSyncQueue->setService($serviceObject);
-                        $serviceSyncQueue->setDatetime(new DateTime());
-                        $serviceSyncQueue->setCredentials($patientCredential);
-                        $serviceSyncQueue->setEndpoint($queueEndpoints);
-
-                        $entityManager = $this->getDoctrine()->getManager();
-                        $entityManager->persist($serviceSyncQueue);
-                        $entityManager->flush();
-                    }
-                }
-
-            }
-
-        }
-
-        $response = new JsonResponse();
-        $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
-        return $response;
-    }
-
-    /**
      * @Route("/sync/upload/{service}/{data_set}", name="sync_upload_post", methods={"POST"})
      * @param String          $service
      * @param String          $data_set
@@ -251,5 +146,110 @@ class SyncUploadController extends AbstractController
             }
         }
 
+    }
+
+    /**
+     * @Route("/sync/webhook/{service}", name="sync_webhook_get", methods={"GET"})
+     * @param String          $service
+     *
+     * @param LoggerInterface $logger
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function sync_webhook_get(string $service, LoggerInterface $logger)
+    {
+        if (strtolower($service) == "habitica") {
+            $request = Request::createFromGlobals();
+            $jsonContent = json_decode($request->getContent(), false);
+
+            AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - ' . $jsonContent->user->_id);
+            AppConstants::writeToLog('webhook_' . $service . '.txt', $request->getContent());
+
+            $response = new JsonResponse();
+            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+            return $response;
+        }
+
+        if (is_array($_GET) && array_key_exists("verify", $_GET)) {
+            if ($_GET['verify'] != "c9dc17fc026d90cf8ddb6d7e1960828962265bac03605449054fb2e9033c927c") {
+                AppConstants::writeToLog('debug_transform.txt',
+                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
+                throw $this->createNotFoundException('404');
+            } else {
+                AppConstants::writeToLog('debug_transform.txt',
+                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code valid');
+            }
+
+            $response = new JsonResponse();
+            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+            return $response;
+        }
+
+        $request = Request::createFromGlobals();
+        $jsonContent = json_decode($request->getContent(), false);
+
+        $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
+        foreach ($jsonContent as $item) {
+            $patient = $this->getDoctrine()
+                ->getRepository(Patient::class)
+                ->findOneBy(['id' => $item->subscriptionId]);
+
+            if (!$patient) {
+                AppConstants::writeToLog('debug_transform.txt',
+                    '[webhook:' . $service . '] - No patient with this ID ' . $item->subscriptionId);
+            } else {
+                $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
+                if (is_array($queueEndpoints)) {
+                    $queueEndpoints = join("::", $queueEndpoints);
+                }
+
+                if (!is_null($queueEndpoints)) {
+                    $patientCredential = $this->getDoctrine()
+                        ->getRepository(PatientCredentials::class)
+                        ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
+
+                    $serviceSyncQueue = $this->getDoctrine()
+                        ->getRepository(SyncQueue::class)
+                        ->findOneBy([
+                            'credentials' => $patientCredential,
+                            'service' => $serviceObject,
+                            'endpoint' => $queueEndpoints,
+                        ]);
+
+                    if (!$serviceSyncQueue) {
+                        $serviceSyncQueue = new SyncQueue();
+                        $serviceSyncQueue->setService($serviceObject);
+                        $serviceSyncQueue->setDatetime(new DateTime());
+                        $serviceSyncQueue->setCredentials($patientCredential);
+                        $serviceSyncQueue->setEndpoint($queueEndpoints);
+
+                        $entityManager = $this->getDoctrine()->getManager();
+                        $entityManager->persist($serviceSyncQueue);
+                        $entityManager->flush();
+                    }
+                }
+
+            }
+
+        }
+
+        $response = new JsonResponse();
+        $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+        return $response;
+    }
+
+    /**
+     * @Route("/sync/webhook/{service}", name="sync_webhook_post", methods={"POST"})
+     * @param String          $service
+     *
+     * @param LoggerInterface $logger
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function sync_webhook_post(string $service, LoggerInterface $logger)
+    {
+        return $this->sync_webhook_get($service, $logger);
     }
 }

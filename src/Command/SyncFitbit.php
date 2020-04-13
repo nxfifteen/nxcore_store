@@ -88,34 +88,303 @@ class SyncFitbit extends Command
     private $userSubscriptions;
 
     /**
-     * @required
-     *
-     * @param ManagerRegistry $doctrine
-     * @param LoggerInterface $logger
-     * @param AwardManager    $awardManager
-     * @param ChallengePve    $challengePve
-     * @param CommsManager    $commsManager
+     * @param             $settingsEndpoint
+     * @param AccessToken $accessToken
+     * @param Patient     $patient
      */
-    public function dependencyInjection(
-        ManagerRegistry $doctrine,
-        LoggerInterface $logger,
-        AwardManager $awardManager,
-        ChallengePve $challengePve,
-        CommsManager $commsManager
-    ): void {
-        $this->doctrine = $doctrine;
-        $this->logger = $logger;
-        $this->awardManager = $awardManager;
-        $this->challengePve = $challengePve;
-        $this->commsManager = $commsManager;
+    private function checkSubscription($settingsEndpoint, AccessToken $accessToken, Patient $patient)
+    {
+        //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
+        $serviceEndpoint = $this->convertEndpointToSubscription($settingsEndpoint);
+
+        $subscriptionFound = false;
+        $subscriptionId = -1;
+
+        if (!is_null($serviceEndpoint)) {
+            $userSubscriptions = $this->pullSubscription($accessToken);
+            if (count($userSubscriptions) > 0) {
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $userSubscription = ' . print_r($userSubscriptions, TRUE));
+                $currentSubs = [];
+                foreach ($userSubscriptions as $apiSubscription) {
+                    if ($apiSubscription->collectionType == $serviceEndpoint) {
+                        $subscriptionFound = true;
+                        $subscriptionId = $apiSubscription->subscriptionId;
+                        break;
+                    }
+                }
+            }
+
+            if (!$subscriptionFound) {
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' subscribing too ' . $serviceEndpoint . ' as ' . $patient->getId()."_".$serviceEndpoint);
+                $subRequest = $this->postSubscription($accessToken, "/" . $serviceEndpoint,
+                    $patient->getId() . "_" . $serviceEndpoint);
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($subRequest, TRUE));
+            } else {
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' already subscribed too ' . $serviceEndpoint . ' as ' . $subscriptionId);
+            }
+        }
     }
 
     /**
-     * {@inheritdoc}
+     * @param $endpoint
+     *
+     * @return string|null
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    private function convertEndpointToSubscription($endpoint)
     {
-        $this->syncServiceFitbit();
+        switch ($endpoint) {
+            case "BodyWeight":
+                return "body";
+                break;
+            case "FitStepsDailySummary":
+                return "activities";
+                break;
+            default:
+                return null;
+                break;
+        }
+    }
+
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     * @param string      $subId
+     *
+     * @return array|mixed
+     */
+    private function deleteSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
+    {
+        $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
+
+        try {
+            $request = $this->getLibrary()->getAuthenticatedRequest('DELETE', $path, $accessToken);
+            // Make the authenticated API request and get the response.
+
+            $response = $this->getLibrary()->getResponse($request);
+            $responseObject = json_decode(json_encode($response), false);
+
+            return $responseObject;
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
+            AppConstants::writeToLog('debug_transform.txt',
+                "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
+     * @param PatientCredentials $credentials
+     *
+     * @return AccessToken
+     */
+    private function getAccessToken(PatientCredentials $credentials)
+    {
+        return new AccessToken([
+            'access_token' => $credentials->getToken(),
+            'refresh_token' => $credentials->getRefreshToken(),
+            'expires' => $credentials->getExpires()->format("U"),
+        ]);
+    }
+
+    /**
+     * @param                   $requestedEndpoint
+     * @param ApiAccessLog|NULL $apiAccessLog
+     *
+     * @return bool|mixed|string
+     */
+    private function getApiPath($requestedEndpoint, ApiAccessLog $apiAccessLog = null)
+    {
+        $path = Constants::getPath($requestedEndpoint);
+
+        if (is_null($path)) {
+            return null;
+        }
+
+
+        if (strpos($path, "{ext}") !== false) {
+            $path = str_replace("{ext}", ".json", $path);
+        }
+
+        if (strpos($path, "{date}") !== false) {
+            if (!$apiAccessLog) {
+                $this->syncDate = date("Y-m-d");
+            } else {
+                $this->syncDate = $apiAccessLog->getLastPulled()->format("Y-m-d");
+            }
+
+            $path = str_replace("{date}", $this->syncDate, $path);
+        }
+
+        if (strpos($path, "{+31days}") !== false) {
+            $path = str_replace("{+31days}", date("Y-m-d"), $path);
+        }
+
+        if (strpos($path, "{today}") !== false) {
+            $path = str_replace("{today}", date("Y-m-d"), $path);
+        }
+
+        if (strpos($path, "{period}") !== false) {
+            $syncPeriod = $this->getDaysSyncPeriod();
+            $path = str_replace("{period}", $syncPeriod, $path);
+        }
+
+        // AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Path = ' . $path);
+
+        return $path;
+    }
+
+    /**
+     * @return float|int|string
+     */
+    private function getDaysSyncPeriod()
+    {
+        $daysSince = (date("U") - strtotime($this->syncDate)) / (60 * 60 * 24);
+        if ($daysSince < 8) {
+            $daysSince = "7d";
+        } else {
+            if ($daysSince < 30) {
+                $daysSince = "30d";
+            } else {
+                $daysSince = "1m";
+            }
+        }
+
+        return $daysSince;
+    }
+
+    /**
+     * @return Fitbit
+     */
+    private function getLibrary()
+    {
+        return new Fitbit([
+            'clientId' => $_ENV['FITBIT_ID'],
+            'clientSecret' => $_ENV['FITBIT_SECRET'],
+            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
+        ]);
+    }
+
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     * @param string      $subId
+     *
+     * @return array|mixed
+     */
+    private function postSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
+    {
+        $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
+
+        try {
+            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $path);
+            $request = $this->getLibrary()->getAuthenticatedRequest('POST', $path, $accessToken);
+            // Make the authenticated API request and get the response.
+
+            $responseHdr = $this->getLibrary()->getHeaders();
+            AppConstants::writeToLog('debug_transform.txt',
+                "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseHdr, true));
+            $response = $this->getLibrary()->getResponse($request);
+            $responseObject = json_decode(json_encode($response), false);
+            return $responseObject;
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
+            AppConstants::writeToLog('debug_transform.txt',
+                "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
+     * @param AccessToken $accessToken
+     * @param SyncQueue   $serviceSyncQueue
+     * @param string      $requestedEndpoint
+     *
+     * @return array|mixed
+     */
+    private function pullBabel(AccessToken $accessToken, SyncQueue $serviceSyncQueue, string $requestedEndpoint)
+    {
+        /** @var ApiAccessLog $patient */
+        $apiAccessLog = $this->doctrine
+            ->getRepository(ApiAccessLog::class)
+            ->findLastAccess($serviceSyncQueue->getCredentials()->getPatient(),
+                $serviceSyncQueue->getCredentials()->getService(), $requestedEndpoint);
+
+        $path = $this->getApiPath($requestedEndpoint, $apiAccessLog);
+        /*if ($requestedEndpoint == "BodyWeight") {
+            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $path);
+        }*/
+
+        if ($requestedEndpoint != "BodyWeight" &&
+            $requestedEndpoint != "FitStepsDailySummary" &&
+            $requestedEndpoint != "PatientGoals" &&
+            $requestedEndpoint != "TrackingDevice" &&
+            $requestedEndpoint != "Exercise") {
+            AppConstants::writeToLog('debug_transform.txt',
+                "[" . SyncFitbit::$defaultName . "] - " . ' Unsupported EndPoint - ' . $requestedEndpoint);
+            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] -  " . $path);
+        } else {
+            try {
+                if (strpos($path, '.json') !== false) {
+                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path, $accessToken);
+                } else {
+                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path . ".json", $accessToken);
+                }
+                $response = $this->getLibrary()->getParsedResponse($request);
+
+                $responseObject = json_decode(json_encode($response), false);
+                /*if ($requestedEndpoint == "BodyWeight") {
+                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseObject, true));
+                }*/
+
+                return $responseObject;
+            } catch (IdentityProviderException $e) {
+                AppConstants::writeToLog('debug_transform.txt',
+                    "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * @param AccessToken $accessToken
+     * @param string      $endpoint
+     *
+     * @return array
+     */
+    private function pullSubscription(AccessToken $accessToken, $endpoint = "")
+    {
+        if (is_null($this->userSubscriptions)) {
+            $paths = [
+                "https://api.fitbit.com/1/user/-/apiSubscriptions.json",
+                "https://api.fitbit.com/1/user/-/activities/apiSubscriptions.json",
+                "https://api.fitbit.com/1/user/-/foods/apiSubscriptions.json",
+                "https://api.fitbit.com/1/user/-/sleep/apiSubscriptions.json",
+                "https://api.fitbit.com/1/user/-/body/apiSubscriptions.json",
+            ];
+
+            $subReturn = [];
+
+            foreach ($paths as $path) {
+//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . $path);
+                try {
+                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path, $accessToken);
+                    $response = $this->getLibrary()->getParsedResponse($request);
+//                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . print_r(json_decode(json_encode($response), FALSE), true));
+
+                    foreach (json_decode(json_encode($response), false)->apiSubscriptions as $item) {
+                        $item->path = $path;
+                        $subReturn[] = $item;
+                    }
+                } catch (IdentityProviderException $e) {
+                }
+            }
+//            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . print_r($subReturn, true));
+
+            $this->userSubscriptions = $subReturn;
+        }
+
+        return $this->userSubscriptions;
     }
 
     /**
@@ -320,303 +589,34 @@ class SyncFitbit extends Command
     }
 
     /**
-     * @param PatientCredentials $credentials
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
+    {
+        $this->syncServiceFitbit();
+    }
+
+    /**
+     * @required
      *
-     * @return AccessToken
+     * @param ManagerRegistry $doctrine
+     * @param LoggerInterface $logger
+     * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param CommsManager    $commsManager
      */
-    private function getAccessToken(PatientCredentials $credentials)
-    {
-        return new AccessToken([
-            'access_token' => $credentials->getToken(),
-            'refresh_token' => $credentials->getRefreshToken(),
-            'expires' => $credentials->getExpires()->format("U"),
-        ]);
-    }
-
-    /**
-     * @param             $settingsEndpoint
-     * @param AccessToken $accessToken
-     * @param Patient     $patient
-     */
-    private function checkSubscription($settingsEndpoint, AccessToken $accessToken, Patient $patient)
-    {
-        //AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $settingsEndpoint = ' . $settingsEndpoint);
-        $serviceEndpoint = $this->convertEndpointToSubscription($settingsEndpoint);
-
-        $subscriptionFound = false;
-        $subscriptionId = -1;
-
-        if (!is_null($serviceEndpoint)) {
-            $userSubscriptions = $this->pullSubscription($accessToken);
-            if (count($userSubscriptions) > 0) {
-//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' $userSubscription = ' . print_r($userSubscriptions, TRUE));
-                $currentSubs = [];
-                foreach ($userSubscriptions as $apiSubscription) {
-                    if ($apiSubscription->collectionType == $serviceEndpoint) {
-                        $subscriptionFound = true;
-                        $subscriptionId = $apiSubscription->subscriptionId;
-                        break;
-                    }
-                }
-            }
-
-            if (!$subscriptionFound) {
-//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' subscribing too ' . $serviceEndpoint . ' as ' . $patient->getId()."_".$serviceEndpoint);
-                $subRequest = $this->postSubscription($accessToken, "/" . $serviceEndpoint,
-                    $patient->getId() . "_" . $serviceEndpoint);
-//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($subRequest, TRUE));
-            } else {
-//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' already subscribed too ' . $serviceEndpoint . ' as ' . $subscriptionId);
-            }
-        }
-    }
-
-    /**
-     * @param $endpoint
-     *
-     * @return string|null
-     */
-    private function convertEndpointToSubscription($endpoint)
-    {
-        switch ($endpoint) {
-            case "BodyWeight":
-                return "body";
-                break;
-            case "FitStepsDailySummary":
-                return "activities";
-                break;
-            default:
-                return null;
-                break;
-        }
-    }
-
-    /**
-     * @param AccessToken $accessToken
-     * @param string      $endpoint
-     *
-     * @return array
-     */
-    private function pullSubscription(AccessToken $accessToken, $endpoint = "")
-    {
-        if (is_null($this->userSubscriptions)) {
-            $paths = [
-                "https://api.fitbit.com/1/user/-/apiSubscriptions.json",
-                "https://api.fitbit.com/1/user/-/activities/apiSubscriptions.json",
-                "https://api.fitbit.com/1/user/-/foods/apiSubscriptions.json",
-                "https://api.fitbit.com/1/user/-/sleep/apiSubscriptions.json",
-                "https://api.fitbit.com/1/user/-/body/apiSubscriptions.json",
-            ];
-
-            $subReturn = [];
-
-            foreach ($paths as $path) {
-//                AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . $path);
-                try {
-                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path, $accessToken);
-                    $response = $this->getLibrary()->getParsedResponse($request);
-//                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . print_r(json_decode(json_encode($response), FALSE), true));
-
-                    foreach (json_decode(json_encode($response), false)->apiSubscriptions as $item) {
-                        $item->path = $path;
-                        $subReturn[] = $item;
-                    }
-                } catch (IdentityProviderException $e) {
-                }
-            }
-//            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . print_r($subReturn, true));
-
-            $this->userSubscriptions = $subReturn;
-        }
-
-        return $this->userSubscriptions;
-    }
-
-    /**
-     * @return Fitbit
-     */
-    private function getLibrary()
-    {
-        return new Fitbit([
-            'clientId' => $_ENV['FITBIT_ID'],
-            'clientSecret' => $_ENV['FITBIT_SECRET'],
-            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
-        ]);
-    }
-
-    /**
-     * @param AccessToken $accessToken
-     * @param string      $endpoint
-     * @param string      $subId
-     *
-     * @return array|mixed
-     */
-    private function postSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
-    {
-        $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
-
-        try {
-            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $path);
-            $request = $this->getLibrary()->getAuthenticatedRequest('POST', $path, $accessToken);
-            // Make the authenticated API request and get the response.
-
-            $responseHdr = $this->getLibrary()->getHeaders();
-            AppConstants::writeToLog('debug_transform.txt',
-                "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseHdr, true));
-            $response = $this->getLibrary()->getResponse($request);
-            $responseObject = json_decode(json_encode($response), false);
-            return $responseObject;
-        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
-            AppConstants::writeToLog('debug_transform.txt',
-                "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
-        }
-
-        return [];
-    }
-
-    /**
-     * @param AccessToken $accessToken
-     * @param SyncQueue   $serviceSyncQueue
-     * @param string      $requestedEndpoint
-     *
-     * @return array|mixed
-     */
-    private function pullBabel(AccessToken $accessToken, SyncQueue $serviceSyncQueue, string $requestedEndpoint)
-    {
-        /** @var ApiAccessLog $patient */
-        $apiAccessLog = $this->doctrine
-            ->getRepository(ApiAccessLog::class)
-            ->findLastAccess($serviceSyncQueue->getCredentials()->getPatient(),
-                $serviceSyncQueue->getCredentials()->getService(), $requestedEndpoint);
-
-        $path = $this->getApiPath($requestedEndpoint, $apiAccessLog);
-        /*if ($requestedEndpoint == "BodyWeight") {
-            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $path);
-        }*/
-
-        if ($requestedEndpoint != "BodyWeight" &&
-            $requestedEndpoint != "FitStepsDailySummary" &&
-            $requestedEndpoint != "PatientGoals" &&
-            $requestedEndpoint != "TrackingDevice" &&
-            $requestedEndpoint != "Exercise") {
-            AppConstants::writeToLog('debug_transform.txt',
-                "[" . SyncFitbit::$defaultName . "] - " . ' Unsupported EndPoint - ' . $requestedEndpoint);
-            AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] -  " . $path);
-        } else {
-            try {
-                if (strpos($path, '.json') !== false) {
-                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path, $accessToken);
-                } else {
-                    $request = $this->getLibrary()->getAuthenticatedRequest('GET', $path . ".json", $accessToken);
-                }
-                $response = $this->getLibrary()->getParsedResponse($request);
-
-                $responseObject = json_decode(json_encode($response), false);
-                /*if ($requestedEndpoint == "BodyWeight") {
-                    AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseObject, true));
-                }*/
-
-                return $responseObject;
-            } catch (IdentityProviderException $e) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
-            }
-        }
-
-        return [];
-    }
-
-    /**
-     * @param                   $requestedEndpoint
-     * @param ApiAccessLog|NULL $apiAccessLog
-     *
-     * @return bool|mixed|string
-     */
-    private function getApiPath($requestedEndpoint, ApiAccessLog $apiAccessLog = null)
-    {
-        $path = Constants::getPath($requestedEndpoint);
-
-        if (is_null($path)) {
-            return null;
-        }
-
-
-        if (strpos($path, "{ext}") !== false) {
-            $path = str_replace("{ext}", ".json", $path);
-        }
-
-        if (strpos($path, "{date}") !== false) {
-            if (!$apiAccessLog) {
-                $this->syncDate = date("Y-m-d");
-            } else {
-                $this->syncDate = $apiAccessLog->getLastPulled()->format("Y-m-d");
-            }
-
-            $path = str_replace("{date}", $this->syncDate, $path);
-        }
-
-        if (strpos($path, "{+31days}") !== false) {
-            $path = str_replace("{+31days}", date("Y-m-d"), $path);
-        }
-
-        if (strpos($path, "{today}") !== false) {
-            $path = str_replace("{today}", date("Y-m-d"), $path);
-        }
-
-        if (strpos($path, "{period}") !== false) {
-            $syncPeriod = $this->getDaysSyncPeriod();
-            $path = str_replace("{period}", $syncPeriod, $path);
-        }
-
-        // AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Path = ' . $path);
-
-        return $path;
-    }
-
-    /**
-     * @return float|int|string
-     */
-    private function getDaysSyncPeriod()
-    {
-        $daysSince = (date("U") - strtotime($this->syncDate)) / (60 * 60 * 24);
-        if ($daysSince < 8) {
-            $daysSince = "7d";
-        } else {
-            if ($daysSince < 30) {
-                $daysSince = "30d";
-            } else {
-                $daysSince = "1m";
-            }
-        }
-
-        return $daysSince;
-    }
-
-    /**
-     * @param AccessToken $accessToken
-     * @param string      $endpoint
-     * @param string      $subId
-     *
-     * @return array|mixed
-     */
-    private function deleteSubscription(AccessToken $accessToken, $endpoint = "", $subId = "")
-    {
-        $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
-
-        try {
-            $request = $this->getLibrary()->getAuthenticatedRequest('DELETE', $path, $accessToken);
-            // Make the authenticated API request and get the response.
-
-            $response = $this->getLibrary()->getResponse($request);
-            $responseObject = json_decode(json_encode($response), false);
-
-            return $responseObject;
-        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (IdentityProviderException $e) {
-            AppConstants::writeToLog('debug_transform.txt',
-                "[" . SyncFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
-        }
-
-        return [];
+    public function dependencyInjection(
+        ManagerRegistry $doctrine,
+        LoggerInterface $logger,
+        AwardManager $awardManager,
+        ChallengePve $challengePve,
+        CommsManager $commsManager
+    ): void {
+        $this->doctrine = $doctrine;
+        $this->logger = $logger;
+        $this->awardManager = $awardManager;
+        $this->challengePve = $challengePve;
+        $this->commsManager = $commsManager;
     }
 
 }

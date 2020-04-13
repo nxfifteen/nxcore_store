@@ -33,6 +33,14 @@ use Ramsey\Uuid\UuidInterface;
 class ThirdPartyService
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -42,16 +50,6 @@ class ThirdPartyService
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
@@ -71,11 +69,18 @@ class ThirdPartyService
     }
 
     /**
-     * @return int|null
+     * @param TrackingDevice $trackingDevice
+     *
+     * @return $this
      */
-    public function getId(): ?int
+    public function addTrackingDevice(TrackingDevice $trackingDevice): self
     {
-        return $this->id;
+        if (!$this->trackingDevices->contains($trackingDevice)) {
+            $this->trackingDevices[] = $trackingDevice;
+            $trackingDevice->setService($this);
+        }
+
+        return $this;
     }
 
     /**
@@ -106,6 +111,14 @@ class ThirdPartyService
     }
 
     /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
      * @return string|null
      */
     public function getName(): ?string
@@ -131,21 +144,6 @@ class ThirdPartyService
     public function getTrackingDevices(): Collection
     {
         return $this->trackingDevices;
-    }
-
-    /**
-     * @param TrackingDevice $trackingDevice
-     *
-     * @return $this
-     */
-    public function addTrackingDevice(TrackingDevice $trackingDevice): self
-    {
-        if (!$this->trackingDevices->contains($trackingDevice)) {
-            $this->trackingDevices[] = $trackingDevice;
-            $trackingDevice->setService($this);
-        }
-
-        return $this;
     }
 
     /**

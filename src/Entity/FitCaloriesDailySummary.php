@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class FitCaloriesDailySummary
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class FitCaloriesDailySummary
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="datetime")
      */
@@ -81,14 +79,6 @@ class FitCaloriesDailySummary
     private $patientGoal;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -103,16 +93,6 @@ class FitCaloriesDailySummary
         }
 
         return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
     }
 
     /**
@@ -131,6 +111,72 @@ class FitCaloriesDailySummary
     public function setDateTime(DateTimeInterface $DateTime): self
     {
         $this->DateTime = $DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @return PatientGoals|null
+     */
+    public function getGoal(): ?PatientGoals
+    {
+        return $this->patientGoal;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
+     * @return PatientGoals|null
+     */
+    public function getPatientGoal(): ?PatientGoals
+    {
+        return $this->patientGoal;
+    }
+
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
+    public function setPatientGoal(?PatientGoals $patientGoal): self
+    {
+        $this->patientGoal = $patientGoal;
 
         return $this;
     }
@@ -156,46 +202,6 @@ class FitCaloriesDailySummary
     }
 
     /**
-     * @return float|null
-     */
-    public function getValue(): ?float
-    {
-        return $this->value;
-    }
-
-    /**
-     * @param float $value
-     *
-     * @return $this
-     */
-    public function setValue(float $value): self
-    {
-        $this->value = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
      * @return TrackingDevice|null
      */
     public function getTrackingDevice(): ?TrackingDevice
@@ -216,11 +222,23 @@ class FitCaloriesDailySummary
     }
 
     /**
-     * @return PatientGoals|null
+     * @return float|null
      */
-    public function getGoal(): ?PatientGoals
+    public function getValue(): ?float
     {
-        return $this->patientGoal;
+        return $this->value;
+    }
+
+    /**
+     * @param float $value
+     *
+     * @return $this
+     */
+    public function setValue(float $value): self
+    {
+        $this->value = $value;
+
+        return $this;
     }
 
     /**
@@ -229,26 +247,6 @@ class FitCaloriesDailySummary
      * @return $this
      */
     public function setGoal(?PatientGoals $patientGoal): self
-    {
-        $this->patientGoal = $patientGoal;
-
-        return $this;
-    }
-
-    /**
-     * @return PatientGoals|null
-     */
-    public function getPatientGoal(): ?PatientGoals
-    {
-        return $this->patientGoal;
-    }
-
-    /**
-     * @param PatientGoals|null $patientGoal
-     *
-     * @return $this
-     */
-    public function setPatientGoal(?PatientGoals $patientGoal): self
     {
         $this->patientGoal = $patientGoal;
 

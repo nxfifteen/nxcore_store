@@ -44,23 +44,6 @@ class BodyWeightRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a Entity by its GUID
-     *
-     * @param string $value
-     *
-     * @return mixed
-     */
-    public function findByGuid(string $value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.guid = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * @param String $patientId
      * @param String $date
      *
@@ -143,6 +126,23 @@ class BodyWeightRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param String $patientId
      *
      * @return mixed
@@ -171,6 +171,28 @@ class BodyWeightRepository extends ServiceEntityRepository
             ->leftJoin('c.patient', 'p')
             ->andWhere('p.uuid = :patientId')
             ->setParameter('patientId', $patientId)
+            ->orderBy('c.DateTime', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param String            $patientId
+     *
+     * @param DateTimeInterface $dateTime
+     *
+     * @return mixed
+     * @throws NonUniqueResultException
+     */
+    public function findPrevious(string $patientId, DateTimeInterface $dateTime)
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime < :currentDateTime')
+            ->setParameter('currentDateTime', $dateTime->format("Y-m-d 00:00:00"))
             ->orderBy('c.DateTime', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
@@ -221,28 +243,6 @@ class BodyWeightRepository extends ServiceEntityRepository
             ->orderBy('c.DateTime', 'DESC')
             ->select('avg(c.measurement) as avg')
             ->getQuery()->getOneOrNullResult()['avg'];
-    }
-
-    /**
-     * @param String            $patientId
-     *
-     * @param DateTimeInterface $dateTime
-     *
-     * @return mixed
-     * @throws NonUniqueResultException
-     */
-    public function findPrevious(string $patientId, DateTimeInterface $dateTime)
-    {
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('p.id = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->andWhere('c.DateTime < :currentDateTime')
-            ->setParameter('currentDateTime', $dateTime->format("Y-m-d 00:00:00"))
-            ->orderBy('c.DateTime', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
     }
 
     /**

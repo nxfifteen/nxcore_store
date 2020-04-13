@@ -63,6 +63,32 @@ class ChallengePve
     }
 
     /**
+     * @param RpgChallengeGlobal $dbRpgChallengeGlobal
+     *
+     * @return RpgChallengeGlobal
+     */
+    private function getRootChallenge(RpgChallengeGlobal $dbRpgChallengeGlobal)
+    {
+        if (!is_null($dbRpgChallengeGlobal->getChildOf())) {
+            return $this->getRootChallenge($dbRpgChallengeGlobal->getChildOf());
+        } else {
+            return $dbRpgChallengeGlobal;
+        }
+    }
+
+    /**
+     * @param $value
+     * @param $valueUnit
+     * @param $targetUnit
+     *
+     * @return float|int
+     */
+    protected static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
+    {
+        return AppConstants::convertUnitOfMeasurement($value, $valueUnit, $targetUnit);
+    }
+
+    /**
      * @param FitStepsDailySummary|FitDistanceDailySummary $dataEntry
      *
      * @throws Exception
@@ -197,32 +223,6 @@ class ChallengePve
             }
 
             $entityManager->flush();
-        }
-    }
-
-    /**
-     * @param $value
-     * @param $valueUnit
-     * @param $targetUnit
-     *
-     * @return float|int
-     */
-    protected static function convertUnitOfMeasurement($value, $valueUnit, $targetUnit)
-    {
-        return AppConstants::convertUnitOfMeasurement($value, $valueUnit, $targetUnit);
-    }
-
-    /**
-     * @param RpgChallengeGlobal $dbRpgChallengeGlobal
-     *
-     * @return RpgChallengeGlobal
-     */
-    private function getRootChallenge(RpgChallengeGlobal $dbRpgChallengeGlobal)
-    {
-        if (!is_null($dbRpgChallengeGlobal->getChildOf())) {
-            return $this->getRootChallenge($dbRpgChallengeGlobal->getChildOf());
-        } else {
-            return $dbRpgChallengeGlobal;
         }
     }
 

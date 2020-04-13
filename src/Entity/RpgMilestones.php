@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class RpgMilestones
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class RpgMilestones
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -65,14 +63,6 @@ class RpgMilestones
     private $msgMore;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -87,16 +77,6 @@ class RpgMilestones
         }
 
         return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
     }
 
     /**
@@ -120,23 +100,21 @@ class RpgMilestones
     }
 
     /**
-     * @return float|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getValue(): ?float
+    public function getGuid(): ?UuidInterface
     {
-        return $this->value;
+        return $this->guid;
     }
 
     /**
-     * @param float $value
-     *
-     * @return $this
+     * @return int|null
      */
-    public function setValue(float $value): self
+    public function getId(): ?int
     {
-        $this->value = $value;
-
-        return $this;
+        return $this->id;
     }
 
     /**
@@ -175,6 +153,26 @@ class RpgMilestones
     public function setMsgMore(?string $msgMore): self
     {
         $this->msgMore = $msgMore;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getValue(): ?float
+    {
+        return $this->value;
+    }
+
+    /**
+     * @param float $value
+     *
+     * @return $this
+     */
+    public function setValue(float $value): self
+    {
+        $this->value = $value;
 
         return $this;
     }

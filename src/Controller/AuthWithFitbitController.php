@@ -37,6 +37,35 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthWithFitbitController extends AbstractController
 {
     /**
+     * @return Fitbit
+     */
+    private function getLibrary()
+    {
+        return new Fitbit([
+            'clientId' => $_ENV['FITBIT_ID'],
+            'clientSecret' => $_ENV['FITBIT_SECRET'],
+            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
+        ]);
+    }
+
+    /**
+     * @param String $uuid
+     *
+     * @throws LogicException If the Security component is not available
+     */
+    private function hasAccess(string $uuid)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
+
+        /** @var Patient $user */
+        $user = $this->getUser();
+        if ($user->getUuid() != $uuid) {
+            $exception = $this->createAccessDeniedException("User tried to access another users information");
+            throw $exception;
+        }
+    }
+
+    /**
      * @Route("/auth/with/fitbit/{uuid}", name="auth_with_fitbit")
      * @param ManagerRegistry $doctrine
      * @param RequestStack    $request
@@ -78,23 +107,6 @@ class AuthWithFitbitController extends AbstractController
         // Redirect the user to the authorization URL.
         header('Location: ' . $authorizationUrl);
         exit;
-    }
-
-    /**
-     * @param String $uuid
-     *
-     * @throws LogicException If the Security component is not available
-     */
-    private function hasAccess(string $uuid)
-    {
-        $this->denyAccessUnlessGranted('ROLE_USER', null, 'User tried to access a page without having ROLE_USER');
-
-        /** @var Patient $user */
-        $user = $this->getUser();
-        if ($user->getUuid() != $uuid) {
-            $exception = $this->createAccessDeniedException("User tried to access another users information");
-            throw $exception;
-        }
     }
 
     /**
@@ -200,17 +212,5 @@ class AuthWithFitbitController extends AbstractController
         // Redirect the user to the authorization URL.
         header('Location: ' . $_SESSION['returnUrl'] . '?complete=true');
         exit;
-    }
-
-    /**
-     * @return Fitbit
-     */
-    private function getLibrary()
-    {
-        return new Fitbit([
-            'clientId' => $_ENV['FITBIT_ID'],
-            'clientSecret' => $_ENV['FITBIT_SECRET'],
-            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
-        ]);
     }
 }

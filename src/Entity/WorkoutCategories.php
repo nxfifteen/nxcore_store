@@ -27,6 +27,14 @@ use Ramsey\Uuid\UuidInterface;
 class WorkoutCategories
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -36,16 +44,6 @@ class WorkoutCategories
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
@@ -65,11 +63,18 @@ class WorkoutCategories
     }
 
     /**
-     * @return int|null
+     * @param WorkoutExercise $exercise
+     *
+     * @return $this
      */
-    public function getId(): ?int
+    public function addExercise(WorkoutExercise $exercise): self
     {
-        return $this->id;
+        if (!$this->exercises->contains($exercise)) {
+            $this->exercises[] = $exercise;
+            $exercise->addCategory($this);
+        }
+
+        return $this;
     }
 
     /**
@@ -90,6 +95,14 @@ class WorkoutCategories
     }
 
     /**
+     * @return Collection|WorkoutExercise[]
+     */
+    public function getExercises(): Collection
+    {
+        return $this->exercises;
+    }
+
+    /**
      * Get the internal primary identity key.
      *
      * @return UuidInterface|null
@@ -97,6 +110,14 @@ class WorkoutCategories
     public function getGuid(): ?UuidInterface
     {
         return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     /**
@@ -115,29 +136,6 @@ class WorkoutCategories
     public function setName(string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|WorkoutExercise[]
-     */
-    public function getExercises(): Collection
-    {
-        return $this->exercises;
-    }
-
-    /**
-     * @param WorkoutExercise $exercise
-     *
-     * @return $this
-     */
-    public function addExercise(WorkoutExercise $exercise): self
-    {
-        if (!$this->exercises->contains($exercise)) {
-            $this->exercises[] = $exercise;
-            $exercise->addCategory($this);
-        }
 
         return $this;
     }

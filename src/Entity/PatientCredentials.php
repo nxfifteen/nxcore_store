@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class PatientCredentials
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class PatientCredentials
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Patient", inversedBy="patientCredentials")
      * @ORM\JoinColumn(nullable=false)
@@ -73,14 +71,6 @@ class PatientCredentials
     private $expires;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -98,6 +88,26 @@ class PatientCredentials
     }
 
     /**
+     * @return DateTimeInterface|null
+     */
+    public function getExpires(): ?DateTimeInterface
+    {
+        return $this->expires;
+    }
+
+    /**
+     * @param DateTimeInterface|null $expires
+     *
+     * @return $this
+     */
+    public function setExpires(?DateTimeInterface $expires): self
+    {
+        $this->expires = $expires;
+
+        return $this;
+    }
+
+    /**
      * Get the internal primary identity key.
      *
      * @return UuidInterface|null
@@ -105,6 +115,14 @@ class PatientCredentials
     public function getGuid(): ?UuidInterface
     {
         return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     /**
@@ -123,6 +141,26 @@ class PatientCredentials
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRefreshToken(): ?string
+    {
+        return $this->refreshToken;
+    }
+
+    /**
+     * @param string|null $refreshToken
+     *
+     * @return $this
+     */
+    public function setRefreshToken(?string $refreshToken): self
+    {
+        $this->refreshToken = $refreshToken;
 
         return $this;
     }
@@ -163,46 +201,6 @@ class PatientCredentials
     public function setToken(string $token): self
     {
         $this->token = $token;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getRefreshToken(): ?string
-    {
-        return $this->refreshToken;
-    }
-
-    /**
-     * @param string|null $refreshToken
-     *
-     * @return $this
-     */
-    public function setRefreshToken(?string $refreshToken): self
-    {
-        $this->refreshToken = $refreshToken;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getExpires(): ?DateTimeInterface
-    {
-        return $this->expires;
-    }
-
-    /**
-     * @param DateTimeInterface|null $expires
-     *
-     * @return $this
-     */
-    public function setExpires(?DateTimeInterface $expires): self
-    {
-        $this->expires = $expires;
 
         return $this;
     }

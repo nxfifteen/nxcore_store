@@ -27,6 +27,14 @@ use Ramsey\Uuid\UuidInterface;
 class FoodDatabase
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -36,16 +44,6 @@ class FoodDatabase
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -124,14 +122,6 @@ class FoodDatabase
     private $remoteIds = [];
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -144,56 +134,6 @@ class FoodDatabase
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getProviderId(): ?string
-    {
-        return $this->providerId;
-    }
-
-    /**
-     * @param string $providerId
-     *
-     * @return $this
-     */
-    public function setProviderId(string $providerId): self
-    {
-        $this->providerId = $providerId;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string|null $name
-     *
-     * @return $this
-     */
-    public function setName(?string $name): self
-    {
-        $this->name = $name;
 
         return $this;
     }
@@ -214,86 +154,6 @@ class FoodDatabase
     public function setCalorie(?float $calorie): self
     {
         $this->calorie = $calorie;
-
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getServingAmount(): ?float
-    {
-        return $this->servingAmount;
-    }
-
-    /**
-     * @param float|null $servingAmount
-     *
-     * @return $this
-     */
-    public function setServingAmount(?float $servingAmount): self
-    {
-        $this->servingAmount = $servingAmount;
-
-        return $this;
-    }
-
-    /**
-     * @return UnitOfMeasurement|null
-     */
-    public function getServingUnit(): ?UnitOfMeasurement
-    {
-        return $this->servingUnit;
-    }
-
-    /**
-     * @param UnitOfMeasurement|null $servingUnit
-     *
-     * @return $this
-     */
-    public function setServingUnit(?UnitOfMeasurement $servingUnit): self
-    {
-        $this->servingUnit = $servingUnit;
-
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getTotalFat(): ?float
-    {
-        return $this->totalFat;
-    }
-
-    /**
-     * @param float|null $totalFat
-     *
-     * @return $this
-     */
-    public function setTotalFat(?float $totalFat): self
-    {
-        $this->totalFat = $totalFat;
-
-        return $this;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getSaturatedFat(): ?float
-    {
-        return $this->saturatedFat;
-    }
-
-    /**
-     * @param float|null $saturatedFat
-     *
-     * @return $this
-     */
-    public function setSaturatedFat(?float $saturatedFat): self
-    {
-        $this->saturatedFat = $saturatedFat;
 
         return $this;
     }
@@ -339,21 +199,39 @@ class FoodDatabase
     }
 
     /**
-     * @return float|null
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
      */
-    public function getSugar(): ?float
+    public function getGuid(): ?UuidInterface
     {
-        return $this->sugar;
+        return $this->guid;
     }
 
     /**
-     * @param float|null $sugar
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string|null $name
      *
      * @return $this
      */
-    public function setSugar(?float $sugar): self
+    public function setName(?string $name): self
     {
-        $this->sugar = $sugar;
+        $this->name = $name;
 
         return $this;
     }
@@ -374,6 +252,106 @@ class FoodDatabase
     public function setProtein(?float $protein): self
     {
         $this->protein = $protein;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getProviderId(): ?string
+    {
+        return $this->providerId;
+    }
+
+    /**
+     * @param string $providerId
+     *
+     * @return $this
+     */
+    public function setProviderId(string $providerId): self
+    {
+        $this->providerId = $providerId;
+
+        return $this;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getRemoteIds(): ?array
+    {
+        return $this->remoteIds;
+    }
+
+    /**
+     * @param array|null $remoteIds
+     *
+     * @return $this
+     */
+    public function setRemoteIds(?array $remoteIds): self
+    {
+        $this->remoteIds = $remoteIds;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getSaturatedFat(): ?float
+    {
+        return $this->saturatedFat;
+    }
+
+    /**
+     * @param float|null $saturatedFat
+     *
+     * @return $this
+     */
+    public function setSaturatedFat(?float $saturatedFat): self
+    {
+        $this->saturatedFat = $saturatedFat;
+
+        return $this;
+    }
+
+    /**
+     * @return ThirdPartyService|null
+     */
+    public function getService(): ?ThirdPartyService
+    {
+        return $this->service;
+    }
+
+    /**
+     * @param ThirdPartyService|null $service
+     *
+     * @return $this
+     */
+    public function setService(?ThirdPartyService $service): self
+    {
+        $this->service = $service;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getServingAmount(): ?float
+    {
+        return $this->servingAmount;
+    }
+
+    /**
+     * @param float|null $servingAmount
+     *
+     * @return $this
+     */
+    public function setServingAmount(?float $servingAmount): self
+    {
+        $this->servingAmount = $servingAmount;
 
         return $this;
     }
@@ -419,41 +397,61 @@ class FoodDatabase
     }
 
     /**
-     * @return ThirdPartyService|null
+     * @return UnitOfMeasurement|null
      */
-    public function getService(): ?ThirdPartyService
+    public function getServingUnit(): ?UnitOfMeasurement
     {
-        return $this->service;
+        return $this->servingUnit;
     }
 
     /**
-     * @param ThirdPartyService|null $service
+     * @param UnitOfMeasurement|null $servingUnit
      *
      * @return $this
      */
-    public function setService(?ThirdPartyService $service): self
+    public function setServingUnit(?UnitOfMeasurement $servingUnit): self
     {
-        $this->service = $service;
+        $this->servingUnit = $servingUnit;
 
         return $this;
     }
 
     /**
-     * @return array|null
+     * @return float|null
      */
-    public function getRemoteIds(): ?array
+    public function getSugar(): ?float
     {
-        return $this->remoteIds;
+        return $this->sugar;
     }
 
     /**
-     * @param array|null $remoteIds
+     * @param float|null $sugar
      *
      * @return $this
      */
-    public function setRemoteIds(?array $remoteIds): self
+    public function setSugar(?float $sugar): self
     {
-        $this->remoteIds = $remoteIds;
+        $this->sugar = $sugar;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getTotalFat(): ?float
+    {
+        return $this->totalFat;
+    }
+
+    /**
+     * @param float|null $totalFat
+     *
+     * @return $this
+     */
+    public function setTotalFat(?float $totalFat): self
+    {
+        $this->totalFat = $totalFat;
 
         return $this;
     }

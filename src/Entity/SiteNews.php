@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class SiteNews
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class SiteNews
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -98,14 +96,6 @@ class SiteNews
     private $image;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -118,96 +108,6 @@ class SiteNews
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    /**
-     * @param string $title
-     *
-     * @return $this
-     */
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getText(): ?string
-    {
-        return $this->text;
-    }
-
-    /**
-     * @param string $text
-     *
-     * @return $this
-     */
-    public function setText(string $text): self
-    {
-        $this->text = $text;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getPublished(): ?DateTimeInterface
-    {
-        return $this->published;
-    }
-
-    /**
-     * @param DateTimeInterface $published
-     *
-     * @return $this
-     */
-    public function setPublished(DateTimeInterface $published): self
-    {
-        $this->published = $published;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getExpires(): ?DateTimeInterface
-    {
-        return $this->expires;
-    }
-
-    /**
-     * @param DateTimeInterface|null $expires
-     *
-     * @return $this
-     */
-    public function setExpires(?DateTimeInterface $expires): self
-    {
-        $this->expires = $expires;
 
         return $this;
     }
@@ -233,26 +133,6 @@ class SiteNews
     }
 
     /**
-     * @return Patient|null
-     */
-    public function getPatient(): ?Patient
-    {
-        return $this->patient;
-    }
-
-    /**
-     * @param Patient|null $patient
-     *
-     * @return $this
-     */
-    public function setPatient(?Patient $patient): self
-    {
-        $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
      * @return bool|null
      */
     public function getDisplayed(): ?bool
@@ -268,6 +148,64 @@ class SiteNews
     public function setDisplayed(?bool $displayed): self
     {
         $this->displayed = $displayed;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getExpires(): ?DateTimeInterface
+    {
+        return $this->expires;
+    }
+
+    /**
+     * @param DateTimeInterface|null $expires
+     *
+     * @return $this
+     */
+    public function setExpires(?DateTimeInterface $expires): self
+    {
+        $this->expires = $expires;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string $image
+     *
+     * @return $this
+     */
+    public function setImage(string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
@@ -293,6 +231,26 @@ class SiteNews
     }
 
     /**
+     * @return Patient|null
+     */
+    public function getPatient(): ?Patient
+    {
+        return $this->patient;
+    }
+
+    /**
+     * @param Patient|null $patient
+     *
+     * @return $this
+     */
+    public function setPatient(?Patient $patient): self
+    {
+        $this->patient = $patient;
+
+        return $this;
+    }
+
+    /**
      * @return int|null
      */
     public function getPriority(): ?int
@@ -313,21 +271,61 @@ class SiteNews
     }
 
     /**
-     * @return string|null
+     * @return DateTimeInterface|null
      */
-    public function getImage(): ?string
+    public function getPublished(): ?DateTimeInterface
     {
-        return $this->image;
+        return $this->published;
     }
 
     /**
-     * @param string $image
+     * @param DateTimeInterface $published
      *
      * @return $this
      */
-    public function setImage(string $image): self
+    public function setPublished(DateTimeInterface $published): self
     {
-        $this->image = $image;
+        $this->published = $published;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getText(): ?string
+    {
+        return $this->text;
+    }
+
+    /**
+     * @param string $text
+     *
+     * @return $this
+     */
+    public function setText(string $text): self
+    {
+        $this->text = $text;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @param string $title
+     *
+     * @return $this
+     */
+    public function setTitle(string $title): self
+    {
+        $this->title = $title;
 
         return $this;
     }

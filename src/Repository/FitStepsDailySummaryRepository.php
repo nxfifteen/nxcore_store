@@ -40,62 +40,6 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a Entity by its GUID
-     *
-     * @param string $value
-     *
-     * @return mixed
-     */
-    public function findByGuid(string $value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.guid = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @param String $patientId
-     * @param        $date
-     *
-     * @return FitStepsDailySummary[]
-     */
-    public function findForDay(string $patientId, $date)
-    {
-        /** @var DateTime $dateSince */
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->andWhere('c.DateTime LIKE :startDate')
-            ->setParameter('startDate', $date . ' %')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @param String $patientId
-     * @param        $dateSince
-     *
-     * @return mixed
-     */
-    public function findSince(string $patientId, $dateSince)
-    {
-        /** @var DateTime $dateSince */
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->andWhere('c.DateTime >= :startDate')
-            ->setParameter('startDate', $dateSince->format("Y-m-d 00:00:00"))
-            ->orderBy('c.value', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * @param String $patientId
      * @param        $dateSince
      * @param        $dateTill
@@ -114,26 +58,6 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
             ->andWhere('c.DateTime <= :dateTill')
             ->setParameter('dateTill', $dateTill->format("Y-m-d 23:59:59"))
             ->orderBy('c.value', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @param String $patientId
-     * @param int    $trackingDevice
-     *
-     * @return mixed
-     */
-    public function findHighest(string $patientId, int $trackingDevice)
-    {
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.patient', 'p')
-            ->andWhere('p.uuid = :patientId')
-            ->setParameter('patientId', $patientId)
-            ->andWhere('c.trackingDevice = :trackingDevice')
-            ->setParameter('trackingDevice', $trackingDevice)
-            ->orderBy('c.value', 'DESC')
-            ->setMaxResults(1)
             ->getQuery()
             ->getResult();
     }
@@ -209,6 +133,82 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getResult();
         }
+    }
+
+    /**
+     * Find a Entity by its GUID
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public function findByGuid(string $value)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     * @param        $date
+     *
+     * @return FitStepsDailySummary[]
+     */
+    public function findForDay(string $patientId, $date)
+    {
+        /** @var DateTime $dateSince */
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime LIKE :startDate')
+            ->setParameter('startDate', $date . ' %')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     * @param int    $trackingDevice
+     *
+     * @return mixed
+     */
+    public function findHighest(string $patientId, int $trackingDevice)
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.trackingDevice = :trackingDevice')
+            ->setParameter('trackingDevice', $trackingDevice)
+            ->orderBy('c.value', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param String $patientId
+     * @param        $dateSince
+     *
+     * @return mixed
+     */
+    public function findSince(string $patientId, $dateSince)
+    {
+        /** @var DateTime $dateSince */
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->andWhere('c.DateTime >= :startDate')
+            ->setParameter('startDate', $dateSince->format("Y-m-d 00:00:00"))
+            ->orderBy('c.value', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
 }

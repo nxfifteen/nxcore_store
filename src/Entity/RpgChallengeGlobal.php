@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class RpgChallengeGlobal
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class RpgChallengeGlobal
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -100,14 +98,6 @@ class RpgChallengeGlobal
     private $unitOfMeasurement;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -125,51 +115,41 @@ class RpgChallengeGlobal
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
+     * @return bool|null
      */
-    public function getGuid(): ?UuidInterface
+    public function getActive(): ?bool
     {
-        return $this->guid;
+        return $this->active;
     }
 
     /**
-     * @return string|null
-     */
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string $name
+     * @param bool|null $active
      *
      * @return $this
      */
-    public function setName(string $name): self
+    public function setActive(?bool $active): self
     {
-        $this->name = $name;
+        $this->active = $active;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return $this|null
      */
-    public function getDescripton(): ?string
+    public function getChildOf(): ?self
     {
-        return $this->descripton;
+        return $this->childOf;
     }
 
     /**
-     * @param string|null $descripton
+     * @param RpgChallengeGlobal|null $childOf
      *
      * @return $this
      */
-    public function setDescripton(?string $descripton): self
+    public function setChildOf(?self $childOf): self
     {
-        $this->descripton = $descripton;
+        $this->childOf = $childOf;
 
         return $this;
     }
@@ -201,46 +181,6 @@ class RpgChallengeGlobal
     }
 
     /**
-     * @return $this|null
-     */
-    public function getChildOf(): ?self
-    {
-        return $this->childOf;
-    }
-
-    /**
-     * @param RpgChallengeGlobal|null $childOf
-     *
-     * @return $this
-     */
-    public function setChildOf(?self $childOf): self
-    {
-        $this->childOf = $childOf;
-
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getActive(): ?bool
-    {
-        return $this->active;
-    }
-
-    /**
-     * @param bool|null $active
-     *
-     * @return $this
-     */
-    public function setActive(?bool $active): self
-    {
-        $this->active = $active;
-
-        return $this;
-    }
-
-    /**
      * @return string|null
      */
     public function getCriteria(): ?string
@@ -261,21 +201,59 @@ class RpgChallengeGlobal
     }
 
     /**
-     * @return float|null
+     * @return string|null
      */
-    public function getTarget(): ?float
+    public function getDescripton(): ?string
     {
-        return $this->target;
+        return $this->descripton;
     }
 
     /**
-     * @param float|null $target
+     * @param string|null $descripton
      *
      * @return $this
      */
-    public function setTarget(?float $target): self
+    public function setDescripton(?string $descripton): self
     {
-        $this->target = $target;
+        $this->descripton = $descripton;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }
@@ -323,19 +301,19 @@ class RpgChallengeGlobal
     /**
      * @return float|null
      */
-    public function getXp(): ?float
+    public function getTarget(): ?float
     {
-        return $this->xp;
+        return $this->target;
     }
 
     /**
-     * @param float|null $xp
+     * @param float|null $target
      *
      * @return $this
      */
-    public function setXp(?float $xp): self
+    public function setTarget(?float $target): self
     {
-        $this->xp = $xp;
+        $this->target = $target;
 
         return $this;
     }
@@ -356,6 +334,26 @@ class RpgChallengeGlobal
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getXp(): ?float
+    {
+        return $this->xp;
+    }
+
+    /**
+     * @param float|null $xp
+     *
+     * @return $this
+     */
+    public function setXp(?float $xp): self
+    {
+        $this->xp = $xp;
 
         return $this;
     }

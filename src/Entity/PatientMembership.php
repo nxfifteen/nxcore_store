@@ -26,6 +26,14 @@ use Ramsey\Uuid\UuidInterface;
 class PatientMembership
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -35,16 +43,6 @@ class PatientMembership
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -76,14 +74,6 @@ class PatientMembership
     private $lastPaid;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -96,56 +86,6 @@ class PatientMembership
             } catch (Exception $e) {
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTear(): ?string
-    {
-        return $this->tear;
-    }
-
-    /**
-     * @param string $tear
-     *
-     * @return $this
-     */
-    public function setTear(string $tear): self
-    {
-        $this->tear = $tear;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getSince(): ?DateTimeInterface
-    {
-        return $this->since;
-    }
-
-    /**
-     * @param DateTimeInterface $since
-     *
-     * @return $this
-     */
-    public function setSince(DateTimeInterface $since): self
-    {
-        $this->since = $since;
 
         return $this;
     }
@@ -166,6 +106,44 @@ class PatientMembership
     public function setActive(bool $active): self
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getLastPaid(): ?DateTimeInterface
+    {
+        return $this->lastPaid;
+    }
+
+    /**
+     * @param DateTimeInterface $lastPaid
+     *
+     * @return $this
+     */
+    public function setLastPaid(DateTimeInterface $lastPaid): self
+    {
+        $this->lastPaid = $lastPaid;
 
         return $this;
     }
@@ -213,19 +191,39 @@ class PatientMembership
     /**
      * @return DateTimeInterface|null
      */
-    public function getLastPaid(): ?DateTimeInterface
+    public function getSince(): ?DateTimeInterface
     {
-        return $this->lastPaid;
+        return $this->since;
     }
 
     /**
-     * @param DateTimeInterface $lastPaid
+     * @param DateTimeInterface $since
      *
      * @return $this
      */
-    public function setLastPaid(DateTimeInterface $lastPaid): self
+    public function setSince(DateTimeInterface $since): self
     {
-        $this->lastPaid = $lastPaid;
+        $this->since = $since;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTear(): ?string
+    {
+        return $this->tear;
+    }
+
+    /**
+     * @param string $tear
+     *
+     * @return $this
+     */
+    public function setTear(string $tear): self
+    {
+        $this->tear = $tear;
 
         return $this;
     }

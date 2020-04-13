@@ -25,6 +25,14 @@ use Ramsey\Uuid\UuidInterface;
 class WorkoutMuscleRelation
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -34,16 +42,6 @@ class WorkoutMuscleRelation
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\WorkoutMuscle")
      * @ORM\JoinColumn(nullable=false)
@@ -60,11 +58,6 @@ class WorkoutMuscleRelation
      * @ORM\Column(type="boolean")
      */
     private $isPrimary;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * Get the internal primary identity key.
@@ -84,28 +77,6 @@ class WorkoutMuscleRelation
     }
 
     /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
-    }
-
-    public function getMuscle(): ?WorkoutMuscle
-    {
-        return $this->muscle;
-    }
-
-    public function setMuscle(?WorkoutMuscle $muscle): self
-    {
-        $this->muscle = $muscle;
-
-        return $this;
-    }
-
-    /**
      * @return WorkoutExercise|null
      */
     public function getExercise(): ?WorkoutExercise
@@ -120,6 +91,21 @@ class WorkoutMuscleRelation
         return $this;
     }
 
+    /**
+     * Get the internal primary identity key.
+     *
+     * @return UuidInterface|null
+     */
+    public function getGuid(): ?UuidInterface
+    {
+        return $this->guid;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
     public function getIsPrimary(): ?bool
     {
         return $this->isPrimary;
@@ -128,6 +114,18 @@ class WorkoutMuscleRelation
     public function setIsPrimary(bool $isPrimary): self
     {
         $this->isPrimary = $isPrimary;
+
+        return $this;
+    }
+
+    public function getMuscle(): ?WorkoutMuscle
+    {
+        return $this->muscle;
+    }
+
+    public function setMuscle(?WorkoutMuscle $muscle): self
+    {
+        $this->muscle = $muscle;
 
         return $this;
     }

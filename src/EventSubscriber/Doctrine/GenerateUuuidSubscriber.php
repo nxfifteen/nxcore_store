@@ -27,6 +27,14 @@ class GenerateUuuidSubscriber implements EventSubscriber
         ];
     }
 
+    public function index(LifecycleEventArgs $args)
+    {
+        $entity = $args->getObject();
+        if (method_exists($entity, "createGuid") && is_null($entity->getGuid())) {
+            $entity->createGuid();
+        }
+    }
+
     public function prePersist(LifecycleEventArgs $args)
     {
         $this->index($args);
@@ -35,13 +43,5 @@ class GenerateUuuidSubscriber implements EventSubscriber
     public function preUpdate(LifecycleEventArgs $args)
     {
         $this->index($args);
-    }
-
-    public function index(LifecycleEventArgs $args)
-    {
-        $entity = $args->getObject();
-        if (method_exists($entity, "createGuid") && is_null($entity->getGuid())) {
-            $entity->createGuid();
-        }
     }
 }

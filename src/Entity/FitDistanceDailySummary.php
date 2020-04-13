@@ -28,6 +28,14 @@ use Ramsey\Uuid\UuidInterface;
 class FitDistanceDailySummary
 {
     /**
+     * The internal primary identity key.
+     *
+     * @var UuidInterface|null
+     *
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $guid;
+    /**
      * The unique auto incremented primary key.
      *
      * @var int|null
@@ -37,16 +45,6 @@ class FitDistanceDailySummary
      * @ORM\Column(type="integer")
      */
     private $id;
-
-    /**
-     * The internal primary identity key.
-     *
-     * @var UuidInterface|null
-     *
-     * @ORM\Column(type="uuid", unique=true)
-     */
-    protected $guid;
-
     /**
      * @ORM\Column(type="datetime")
      */
@@ -87,14 +85,6 @@ class FitDistanceDailySummary
     private $patientGoal;
 
     /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    /**
      * Get the internal primary identity key.
      *
      * @return $this
@@ -109,16 +99,6 @@ class FitDistanceDailySummary
         }
 
         return $this;
-    }
-
-    /**
-     * Get the internal primary identity key.
-     *
-     * @return UuidInterface|null
-     */
-    public function getGuid(): ?UuidInterface
-    {
-        return $this->guid;
     }
 
     /**
@@ -142,43 +122,29 @@ class FitDistanceDailySummary
     }
 
     /**
-     * @return string|null
+     * @return PatientGoals|null
      */
-    public function getRemoteId(): ?string
+    public function getGoal(): ?PatientGoals
     {
-        return $this->RemoteId;
+        return $this->patientGoal;
     }
 
     /**
-     * @param string|null $RemoteId
+     * Get the internal primary identity key.
      *
-     * @return $this
+     * @return UuidInterface|null
      */
-    public function setRemoteId(?string $RemoteId): self
+    public function getGuid(): ?UuidInterface
     {
-        $this->RemoteId = $RemoteId;
-
-        return $this;
+        return $this->guid;
     }
 
     /**
-     * @return float|null
+     * @return int|null
      */
-    public function getValue(): ?float
+    public function getId(): ?int
     {
-        return $this->value;
-    }
-
-    /**
-     * @param float $value
-     *
-     * @return $this
-     */
-    public function setValue(float $value): self
-    {
-        $this->value = $value;
-
-        return $this;
+        return $this->id;
     }
 
     /**
@@ -197,46 +163,6 @@ class FitDistanceDailySummary
     public function setPatient(?Patient $patient): self
     {
         $this->patient = $patient;
-
-        return $this;
-    }
-
-    /**
-     * @return TrackingDevice|null
-     */
-    public function getTrackingDevice(): ?TrackingDevice
-    {
-        return $this->trackingDevice;
-    }
-
-    /**
-     * @param TrackingDevice|null $trackingDevice
-     *
-     * @return $this
-     */
-    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
-    {
-        $this->trackingDevice = $trackingDevice;
-
-        return $this;
-    }
-
-    /**
-     * @return PatientGoals|null
-     */
-    public function getGoal(): ?PatientGoals
-    {
-        return $this->patientGoal;
-    }
-
-    /**
-     * @param PatientGoals|null $patientGoal
-     *
-     * @return $this
-     */
-    public function setGoal(?PatientGoals $patientGoal): self
-    {
-        $this->patientGoal = $patientGoal;
 
         return $this;
     }
@@ -262,6 +188,46 @@ class FitDistanceDailySummary
     }
 
     /**
+     * @return string|null
+     */
+    public function getRemoteId(): ?string
+    {
+        return $this->RemoteId;
+    }
+
+    /**
+     * @param string|null $RemoteId
+     *
+     * @return $this
+     */
+    public function setRemoteId(?string $RemoteId): self
+    {
+        $this->RemoteId = $RemoteId;
+
+        return $this;
+    }
+
+    /**
+     * @return TrackingDevice|null
+     */
+    public function getTrackingDevice(): ?TrackingDevice
+    {
+        return $this->trackingDevice;
+    }
+
+    /**
+     * @param TrackingDevice|null $trackingDevice
+     *
+     * @return $this
+     */
+    public function setTrackingDevice(?TrackingDevice $trackingDevice): self
+    {
+        $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    /**
      * @return UnitOfMeasurement|null
      */
     public function getUnitOfMeasurement(): ?UnitOfMeasurement
@@ -277,6 +243,38 @@ class FitDistanceDailySummary
     public function setUnitOfMeasurement(?UnitOfMeasurement $unitOfMeasurement): self
     {
         $this->unitOfMeasurement = $unitOfMeasurement;
+
+        return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getValue(): ?float
+    {
+        return $this->value;
+    }
+
+    /**
+     * @param float $value
+     *
+     * @return $this
+     */
+    public function setValue(float $value): self
+    {
+        $this->value = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param PatientGoals|null $patientGoal
+     *
+     * @return $this
+     */
+    public function setGoal(?PatientGoals $patientGoal): self
+    {
+        $this->patientGoal = $patientGoal;
 
         return $this;
     }

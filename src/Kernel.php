@@ -39,30 +39,6 @@ class Kernel extends BaseKernel
     private const CONFIG_EXTS = '.{php,xml,yaml,yml}';
 
     /**
-     * @return iterable
-     */
-    public function registerBundles(): iterable
-    {
-        date_default_timezone_set($_ENV['TIMEZONE']);
-
-        /** @noinspection PhpIncludeInspection */
-        $contents = require $this->getProjectDir() . '/config/bundles.php';
-        foreach ($contents as $class => $envs) {
-            if ($envs[$this->environment] ?? $envs['all'] ?? false) {
-                yield new $class();
-            }
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function getProjectDir(): string
-    {
-        return dirname(__DIR__);
-    }
-
-    /**
      * @param ContainerBuilder $container
      * @param LoaderInterface  $loader
      *
@@ -92,5 +68,29 @@ class Kernel extends BaseKernel
         $routes->import($confDir . '/{routes}/' . $this->environment . '/**/*' . self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir . '/{routes}/*' . self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir . '/{routes}' . self::CONFIG_EXTS, '/', 'glob');
+    }
+
+    /**
+     * @return string
+     */
+    public function getProjectDir(): string
+    {
+        return dirname(__DIR__);
+    }
+
+    /**
+     * @return iterable
+     */
+    public function registerBundles(): iterable
+    {
+        date_default_timezone_set($_ENV['TIMEZONE']);
+
+        /** @noinspection PhpIncludeInspection */
+        $contents = require $this->getProjectDir() . '/config/bundles.php';
+        foreach ($contents as $class => $envs) {
+            if ($envs[$this->environment] ?? $envs['all'] ?? false) {
+                yield new $class();
+            }
+        }
     }
 }

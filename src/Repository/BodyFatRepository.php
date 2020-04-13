@@ -40,20 +40,15 @@ class BodyFatRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a Entity by its GUID
-     *
-     * @param string $value
+     * @param String $patientId
+     * @param String $date
      *
      * @return mixed
+     * @throws Exception
      */
-    public function findByGuid(string $value)
+    public function findByDateRange(string $patientId, string $date)
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.guid = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->getQuery()
-            ->getResult();
+        return $this->findByDateRangeHistorical($patientId, $date, 0);
     }
 
     /**
@@ -91,15 +86,20 @@ class BodyFatRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param String $patientId
-     * @param String $date
+     * Find a Entity by its GUID
+     *
+     * @param string $value
      *
      * @return mixed
-     * @throws Exception
      */
-    public function findByDateRange(string $patientId, string $date)
+    public function findByGuid(string $value)
     {
-        return $this->findByDateRangeHistorical($patientId, $date, 0);
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.guid = :val')
+            ->setParameter('val', $value)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**

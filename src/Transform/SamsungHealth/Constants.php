@@ -86,70 +86,6 @@ class Constants extends Transform
     const SAMSUNGHEALTHFOODDATABASE = "food_info";
 
     /**
-     * @param int $serviceInt
-     *
-     * @return int|string
-     */
-    protected static function convertMeal(int $serviceInt)
-    {
-        switch ($serviceInt) {
-            case 100001:
-                return "Breakfast";
-                break;
-            case 100002:
-                return "Lunch";
-                break;
-            case 100003:
-                return "Dinner";
-                break;
-            case 100004:
-                return "Morning Snack";
-                break;
-            case 100005:
-                return "Afternoon Snack";
-                break;
-            case 100006:
-                return "Evening Snack";
-                break;
-            case 900001:
-                return "Snack";
-                break;
-            default:
-                return $serviceInt;
-                break;
-        }
-    }
-
-    /**
-     * @param $serviceInt
-     *
-     * @return string
-     */
-    protected static function convertMealUnit($serviceInt)
-    {
-        switch ($serviceInt) {
-            case 120001:
-                return "Default";
-                break;
-            case 120002:
-                return "Gram";
-                break;
-            case 120003:
-                return "Ounce";
-                break;
-            case 120004:
-                return "Kilocalorie";
-                break;
-            case "meal":
-                return "Meal";
-                break;
-            default:
-                return "Not Defined";
-                break;
-        }
-    }
-
-    /**
      * @param int $serviceId
      *
      * @return string
@@ -450,6 +386,70 @@ class Constants extends Transform
                 break;
             default:
                 return "Custom type";
+                break;
+        }
+    }
+
+    /**
+     * @param int $serviceInt
+     *
+     * @return int|string
+     */
+    protected static function convertMeal(int $serviceInt)
+    {
+        switch ($serviceInt) {
+            case 100001:
+                return "Breakfast";
+                break;
+            case 100002:
+                return "Lunch";
+                break;
+            case 100003:
+                return "Dinner";
+                break;
+            case 100004:
+                return "Morning Snack";
+                break;
+            case 100005:
+                return "Afternoon Snack";
+                break;
+            case 100006:
+                return "Evening Snack";
+                break;
+            case 900001:
+                return "Snack";
+                break;
+            default:
+                return $serviceInt;
+                break;
+        }
+    }
+
+    /**
+     * @param $serviceInt
+     *
+     * @return string
+     */
+    protected static function convertMealUnit($serviceInt)
+    {
+        switch ($serviceInt) {
+            case 120001:
+                return "Default";
+                break;
+            case 120002:
+                return "Gram";
+                break;
+            case 120003:
+                return "Ounce";
+                break;
+            case 120004:
+                return "Kilocalorie";
+                break;
+            case "meal":
+                return "Meal";
+                break;
+            default:
+                return "Not Defined";
                 break;
         }
     }

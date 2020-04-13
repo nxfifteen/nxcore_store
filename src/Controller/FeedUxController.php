@@ -59,652 +59,598 @@ class FeedUxController extends AbstractController
 
     private $feed_storage;
 
-    /**
-     * @Route("/feed/activities/log", name="index_activity_log_no_param")
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function index_activity_log_no_param()
-    {
-        return $this->index_activity_log(-1, date("Y-m-d"), '1y');
+    private function buildChallengeArray(
+        RpgChallengeGlobal $dbRpgChallengeGlobal,
+        RpgChallengeGlobalPatient $challengePatientDetails = null
+    ) {
+        if (!is_null($dbRpgChallengeGlobal->getProgression())) {
+            $return = $this->findChallengeChildren($dbRpgChallengeGlobal, $challengePatientDetails);
+            if (is_null($return)) {
+                return null;
+            }
+
+            $xp = 0;
+            if (!is_null($dbRpgChallengeGlobal->getReward())) {
+                $xp = $dbRpgChallengeGlobal->getReward()->getXp();
+            } else {
+                if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                    $xp = $dbRpgChallengeGlobal->getXp();
+                }
+            }
+
+            if (is_array($return) && array_key_exists("children", $return)) {
+                foreach ($return['children'] as $parent) {
+                    if (is_array($parent) && array_key_exists("children", $parent)) {
+                        foreach ($parent['children'] as $child) {
+                            $xp = $xp + $child['reward']['xp'];
+                        }
+                    } else {
+                        $xp = $xp + $parent['reward']['xp'];
+                    }
+                }
+            }
+
+            $return['reward']['xp'] = $xp;
+        } else {
+            $return = [
+                "id" => $dbRpgChallengeGlobal->getId(),
+                "name" => $dbRpgChallengeGlobal->getName(),
+                "description" => $dbRpgChallengeGlobal->getDescripton(),
+                "criteria" => null,
+                "target" => $dbRpgChallengeGlobal->getTarget(),
+                "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
+                "reward" => null,
+                "depth" => 0,
+                "isCollapsed" => false,
+            ];
+
+            if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
+                $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
+            } else {
+                if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
+                    $return['criteria'] = strtolower(str_replace("Fit", "",
+                        str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+                }
+            }
+
+            $return = $this->participationInChallenge($return, $challengePatientDetails, $dbRpgChallengeGlobal);
+
+            if (!is_null($dbRpgChallengeGlobal->getReward())) {
+                $return['reward'] = [
+                    "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
+                    "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
+                ];
+            } else {
+                if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                    $return['reward'] = [
+                        "xp" => $dbRpgChallengeGlobal->getXp(),
+                        "badge" => null,
+                    ];
+                }
+            }
+        }
+
+        return $return;
     }
 
-    /**
-     * @Route("/feed/activities/log/from/{dateFrom}/within/{searchRange}/limited/{limit}", name="index_activity_log")
-     *
-     * @param int    $limit
-     * @param string $dateFrom
-     * @param string $searchRange
-     *
-     * @return JsonResponse
-     */
-    public function index_activity_log(int $limit, string $dateFrom, string $searchRange)
+    private function buildNewsItems(array $newsItems)
     {
+        /** @var SiteNews[] $newsItems */
+        /** @var SiteNews[] $newsItemsSorted */
+        $newsItemsSorted = [];
         $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-        $this->setupRoute();
-
-        $return['title'] = $dateFrom;
-        $return['limit'] = $limit;
-        $return['dateFrom'] = $dateFrom;
-        $return['dateBackTill'] = $dateFrom;
-        $return['searchRange'] = strtoupper($searchRange);
-        $return['nav'] = [
-            "nextMonth" => '',
-            "thisMonth" => '',
-            "prevMonth" => '',
-        ];
-
-        $return['durations'] = [];
-        $return['durationsTotal'] = 0;
-        $return['partOfDays'] = [
-            "morning" => 0,
-            "afternoon" => 0,
-            "evening" => 0,
-            "night" => 0,
-        ];
-        $return['partOfDaysTotal'] = 0;
-
-        $return['periodDurations'] = [];
-        $return['periodDurationsTotal'] = 0;
-        $return['periodPartOfDays'] = [
-            "morning" => 0,
-            "afternoon" => 0,
-            "evening" => 0,
-            "night" => 0,
-        ];
-        $return['periodPartOfDaysTotal'] = 0;
-
-        $return['results'] = [];
-
-        try {
-            $dateBackTill = new DateTime($dateFrom);
-            $nextMonth = new DateTime($dateFrom);
-            $prevMonth = new DateTime($dateFrom);
-            $dateFrom = new DateTime($dateFrom);
-
-            $return['title'] = $dateFrom->format("F, Y");
-
-            $interval = new DateInterval('P' . strtoupper($searchRange));
-            $dateBackTill->sub($interval);
-            $return['dateBackTill'] = $dateBackTill->format("Y-m-d");
-
-            $nextMonth->add($interval);
-            $prevMonth->sub($interval);
-
-            $return['nav']['thisMonth'] = date("Y-m-d");
-            if ($nextMonth->format("U") <= date("U")) {
-                $return['nav']['nextMonth'] = $nextMonth->format("Y-m-d");
-            }
-            $return['nav']['prevMonth'] = $prevMonth->format("Y-m-d");
-
-        } catch (Exception $e) {
-            $return['error'] = $e->getMessage();
-
-            $b = microtime(true);
-            $c = $b - $a;
-            $return['genTime'] = round($c, 4);
-            return $this->json($return);
+        foreach ($newsItems as $newsItem) {
+            $newsItemsSorted[$newsItem->getPublished()->format("U") . $newsItem->getId()] = $newsItem;
         }
 
-        $dbAllTimeDurations = $this->getDoctrine()
-            ->getRepository(Exercise::class)->createQueryBuilder('e')
-            ->leftJoin('e.patient', 'p')
-            ->leftJoin('e.exerciseType', 't')
-            ->andWhere('p.id = :patientId')
-            ->setParameter('patientId', $this->patient->getId())
-            ->groupBy('e.exerciseType')
-            ->select('SUM(e.duration) as duration, t.tag as name')
-            ->getQuery()->getResult();
-        if ($dbAllTimeDurations && count($dbAllTimeDurations) > 0) {
-            $newArray = ["labels" => [], "values" => []];
-            foreach ($dbAllTimeDurations as $dbAllTimeDuration) {
-                $newArray["labels"][] = ucwords($dbAllTimeDuration['name']);
-                $newArray["values"][] = intval(round(($dbAllTimeDuration['duration'] / 60), 0));
-                $return['durationsTotal'] = $return['durationsTotal'] + intval(round(($dbAllTimeDuration['duration'] / 60),
-                        0));
-            }
-            $return['durations'] = $newArray;
-        }
+        arsort($newsItemsSorted);
 
-        $dbAllTimePartOfDays = $this->getDoctrine()
-            ->getRepository(Exercise::class)->createQueryBuilder('e')
-            ->leftJoin('e.patient', 'p')
-            ->leftJoin('e.partOfDay', 't')
-            ->andWhere('p.id = :patientId')
-            ->setParameter('patientId', $this->patient->getId())
-            ->groupBy('e.partOfDay')
-            ->select('SUM(e.duration) as duration, t.name as name')
-            ->getQuery()->getResult();
-        if ($dbAllTimePartOfDays && count($dbAllTimePartOfDays) > 0) {
-            $newArray = ["labels" => [], "values" => []];
-            foreach ($dbAllTimePartOfDays as $dbAllTimePartOfDay) {
-                $newArray["labels"][] = ucwords($dbAllTimePartOfDay['name']);
-                $newArray["values"][] = intval(round(($dbAllTimePartOfDay['duration'] / 60), 0));
-                $return['partOfDaysTotal'] = $return['partOfDaysTotal'] + intval(round(($dbAllTimePartOfDay['duration'] / 60),
-                        0));
-            }
-            $return['partOfDays'] = $newArray;
-        }
+        foreach ($newsItemsSorted as $newsItem) {
+            if (is_null($newsItem->getExpires()) || $newsItem->getExpires()->format("U") > date("U")) {
+                $newReturn = [
+                    "id" => $newsItem->getId(),
+                    "title" => $newsItem->getTitle(),
+                    "text" => $newsItem->getText(),
+                    "accent" => str_replace("list-group-item-accent-", "", $newsItem->getAccent()),
+                    "displayed" => $newsItem->getDisplayed(),
+                    "expires" => $newsItem->getExpires(),
+                    "link" => $newsItem->getLink(),
+                    "priority" => $newsItem->getPriority(),
+                    "published" => $newsItem->getPublished()->format("l, F jS H:i:s"),
+                ];
 
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var Exercise[] $dbExercises */
-        if ($limit < 0) {
-            $dbExercises = $this->getDoctrine()
-                ->getRepository(Exercise::class)->createQueryBuilder('e')
-                ->leftJoin('e.patient', 'p')
-                ->where('e.dateTimeStart <= :dateFrom')
-                ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
-                ->andWhere('e.dateTimeStart >= :dateBackTill')
-                ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
-                ->andWhere('p.id = :patientId')
-                ->setParameter('patientId', $this->patient->getId())
-                ->orderBy('e.dateTimeStart', 'DESC')
-                ->getQuery()->getResult();
-        } else {
-            $dbExercises = $this->getDoctrine()
-                ->getRepository(Exercise::class)->createQueryBuilder('e')
-                ->leftJoin('e.patient', 'p')
-                ->where('e.dateTimeStart <= :dateFrom')
-                ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
-                ->andWhere('e.dateTimeStart >= :dateBackTill')
-                ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
-                ->andWhere('p.id = :patientId')
-                ->setParameter('patientId', $this->patient->getId())
-                ->orderBy('e.dateTimeStart', 'DESC')
-                ->setMaxResults($limit)
-                ->getQuery()->getResult();
-        }
-        if (!$dbExercises) {
-            $b = microtime(true);
-            $c = $b - $a;
-            $return['genTime'] = round($c, 4);
-            return $this->json($return);
-        }
-
-        foreach ($dbExercises as $dbExercise) {
-            $exerciseDate = $dbExercise->getDateTimeStart()->format("Y-m-d");
-            $exerciseDateStarted = $dbExercise->getDateTimeStart()->format("H:i:s");
-            $exerciseDateFinished = $dbExercise->getDateTimeEnd()->format("H:i:s");
-            $exerciseType = $dbExercise->getExerciseType()->getName();
-            $exerciseTag = $dbExercise->getExerciseType()->getTag();
-            $partOfDay = $dbExercise->getPartOfDay()->getName();
-
-            $dayStepTotal = 0;
-            $exerciseStepCountSum = 0;
-            if ($exerciseType == "Walking") {
-                if (is_null($dbExercise->getSteps())) {
-                    $dbIntraDaySteps = $this->getDoctrine()
-                        ->getRepository(FitStepsIntraDay::class)
-                        ->findSumDates(
-                            $this->patient->getUuid(),
-                            $exerciseDate,
-                            $exerciseDateStarted,
-                            $exerciseDateFinished,
-                            $dbExercise->getTrackingDevice()->getId()
-                        );
-                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) == 1 && array_key_exists("sum",
-                            $dbIntraDaySteps[0])) {
-                        if ($dbIntraDaySteps[0]['sum'] > 0) {
-                            $dbExercise->setSteps($dbIntraDaySteps[0]['sum']);
-
-                            $entityManager = $this->getDoctrine()->getManager();
-                            $entityManager->persist($dbExercise);
-                            $entityManager->flush();
-                        }
+                if (is_null($newsItem->getImage())) {
+                    $newReturn['imageName'] = null;
+                    $newReturn['imageHref'] = null;
+                } else {
+                    if (substr($newsItem->getImage(), 0, 4) == "http") {
+                        $newReturn['imageName'] = null;
+                        $newReturn['imageHref'] = $newsItem->getImage();
+                    } else {
+                        $newReturn['imageName'] = $newsItem->getImage();
+                        $newReturn['imageHref'] = null;
                     }
                 }
 
-                $exerciseStepCountSum = $dbExercise->getSteps();
-
-                /** @var FitStepsDailySummary[] $dbStepsForDay */
-                $dbStepsForDay = $this->getDoctrine()
-                    ->getRepository(FitStepsDailySummary::class)
-                    ->findForDay($this->patient->getUuid(), $exerciseDate);
-                if (is_array($dbStepsForDay) && count($dbStepsForDay) > 0) {
-                    $dayStepTotal = $dbStepsForDay[0]->getValue();
-                }
-            }
-
-            $return['results'][] = [
-                "id" => $dbExercise->getId(),
-                "tracker" => $dbExercise->getTrackingDevice()->getName(),
-                "partOfDay" => $partOfDay,
-                "exerciseType" => explode(',', $exerciseType)[0],
-                "exerciseTag" => $exerciseTag,
-                "date" => $exerciseDate,
-                "dateFormatted" => $dbExercise->getDateTimeStart()->format("l ") . ucfirst($partOfDay) . $dbExercise->getDateTimeStart()->format(", F jS"),
-                "started" => $exerciseDateStarted,
-                "finished" => $exerciseDateFinished,
-                "duration" => round(($dbExercise->getDuration() / 60), 0),
-                "steps" => $exerciseStepCountSum,
-                "stepsTotal" => $dayStepTotal,
-                "calorie" => round($dbExercise->getExerciseSummary()->getCalorie(), 3),
-                "distance" => round($dbExercise->getExerciseSummary()->getDistance() / 1000, 3),
-            ];
-
-            if (array_key_exists($exerciseTag, $return['periodDurations'])) {
-                $return['periodDurations'][$exerciseTag] = $return['periodDurations'][$exerciseTag] + round(($dbExercise->getDuration() / 60),
-                        0);
-            } else {
-                $return['periodDurations'][$exerciseTag] = round(($dbExercise->getDuration() / 60), 0);
-            }
-
-            if (array_key_exists($partOfDay, $return['periodPartOfDays'])) {
-                $return['periodPartOfDays'][$partOfDay] = $return['periodPartOfDays'][$partOfDay] + round(($dbExercise->getDuration() / 60),
-                        0);
-            } else {
-                $return['periodPartOfDays'][$partOfDay] = round(($dbExercise->getDuration() / 60), 0);
+                $return[] = $newReturn;
             }
         }
 
-        $newArray = ["labels" => [], "values" => []];
-        foreach ($return['periodPartOfDays'] as $key => $partOfDay) {
-            $newArray["labels"][] = ucwords($key);
-            $newArray["values"][] = $partOfDay;
-            $return['periodPartOfDaysTotal'] = $return['periodPartOfDaysTotal'] + $partOfDay;
-        }
-        $return['periodPartOfDays'] = $newArray;
-
-        $newArray = ["labels" => [], "values" => []];
-        foreach ($return['periodDurations'] as $key => $partOfDay) {
-            $newArray["labels"][] = ucwords($key);
-            $newArray["values"][] = $partOfDay;
-            $return['periodDurationsTotal'] = $return['periodDurationsTotal'] + $partOfDay;
-        }
-        $return['periodDurations'] = $newArray;
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
+        return $return;
     }
 
-    private function setupRoute(string $userRole = 'ROLE_USER')
+    private function calcChallengeDraws()
     {
+        /** @var int $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findChallengeDraws($this->patient);
+
+        return $dbChallenger;
+    }
+
+    private function calcChallengeLoses()
+    {
+        /** @var int $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findChallengeLoses($this->patient);
+
+        return $dbChallenger;
+    }
+
+    private function calcChallengeWins()
+    {
+        /** @var int $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findChallengeWins($this->patient);
+
+        return $dbChallenger;
+    }
+
+    private function findChallengeChildren(
+        RpgChallengeGlobal $dbRpgChallengeGlobal,
+        RpgChallengeGlobalPatient $challengePatientDetails = null
+    ) {
+        $return = [
+            "id" => $dbRpgChallengeGlobal->getId(),
+            "name" => $dbRpgChallengeGlobal->getName(),
+            "description" => $dbRpgChallengeGlobal->getDescripton(),
+            "progression" => $dbRpgChallengeGlobal->getProgression(),
+            "criteria" => null,
+            "target" => $dbRpgChallengeGlobal->getTarget(),
+            "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
+            "reward" => null,
+            "depth" => 0,
+            "isCollapsed" => false,
+        ];
+
+        $return = $this->participationInChallenge($return, $challengePatientDetails, $dbRpgChallengeGlobal);
+
+        if (!is_null($dbRpgChallengeGlobal->getReward())) {
+            $return['reward'] = [];
+            $return['reward']["badge"] = $dbRpgChallengeGlobal->getReward()->getName();
+            $return['reward']["xp"] = null;
+        } else {
+            if (!is_null($dbRpgChallengeGlobal->getXp())) {
+                $return['reward'] = [
+                    "xp" => null,
+                    "badge" => null,
+                ];
+            }
+        }
+
+        if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
+            $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
+        } else {
+            if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
+                $return['criteria'] = strtolower(str_replace("Fit", "",
+                    str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
+            }
+        }
+
+        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
+        $dbRpgChallengeGlobalChildren = $this->getDoctrine()
+            ->getRepository(RpgChallengeGlobal::class)
+            ->findBy(['childOf' => $dbRpgChallengeGlobal, 'active' => true], ['target' => 'asc', 'id' => 'asc']);
+
+        if ($dbRpgChallengeGlobalChildren) {
+            $return['children'] = [];
+            foreach ($dbRpgChallengeGlobalChildren as $dbRpgChallengeGlobalChild) {
+                $return['children'][] = $this->buildChallengeArray($dbRpgChallengeGlobalChild,
+                    $challengePatientDetails);
+            }
+            $return['depth'] = $return['children'][0]['depth'] + 1;
+        } else {
+            return null;
+        }
+
+        if ($return['depth'] > 0) {
+            $return['isCollapsed'] = true;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param string $getCriteria
+     *
+     * @return string
+     */
+    private function friendlyNameChallengeCriteria(string $getCriteria)
+    {
+        switch ($getCriteria) {
+            case "FitStepsDailySummary":
+                return "Steps";
+            default:
+                return $getCriteria;
+        }
+    }
+
+    /**
+     * @param int|NULL $currentHour
+     *
+     * @return array
+     */
+    private function getHoursArray(int $currentHour = null)
+    {
+        if (is_null($currentHour)) {
+            $currentHour = 23;
+        }
+        $dbHours = [];
+        for ($i = 0; $i <= $currentHour; $i++) {
+            $dbHours[$i] = 0;
+        }
+        return $dbHours;
+    }
+
+    /**
+     * @return array
+     */
+    private function getPatientAwards()
+    {
+        $returnSummary = [];
+
         if (is_null($this->patient)) {
             $this->patient = $this->getUser();
         }
-        $this->feed_storage = null;
 
-        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
-            $scope->setUser([
-                'id' => $this->patient->getId(),
-                'username' => $this->patient->getUsername(),
-                'email' => $this->patient->getEmail(),
-            ]);
-        });
+        foreach ($this->patient->getRewards() as $reward) {
+            if (array_key_exists($reward->getReward()->getId(), $returnSummary)) {
+                $returnSummary[$reward->getReward()->getId()]['count']++;
+                if (strtotime($returnSummary[$reward->getReward()->getId()]['awarded']) < $reward->getDatetime()->format("U")) {
+                    $returnSummary[$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d");
+                }
+            } else {
+                $payloadArray = json_decode($reward->getReward()->getPayload());
+                $returnSummary[$reward->getReward()->getId()] = [
+                    "id" => $reward->getReward()->getId(),
+                    "name" => $payloadArray->name,
+                    "awarded" => $reward->getDatetime()->format("Y-m-d"),
+                    "image" => $payloadArray->badge_image,
+                    "text" => $payloadArray->badge_text,
+                    "longtext" => $payloadArray->badge_longtext,
+                    "count" => 1,
+                ];
+            }
+        }
 
-        $this->hasAccess($userRole);
+        return $returnSummary;
     }
 
     /**
-     * @param String $userRole
+     * @param bool $summaryOnly
      *
-     * @throws LogicException If the Security component is not available
+     * @return array
      */
-    private function hasAccess(string $userRole = 'ROLE_USER')
+    private function getPatientChallengesFriends($summaryOnly = false)
     {
-        $this->denyAccessUnlessGranted($userRole, null, 'User tried to access a page without having ' . $userRole);
-    }
+        $runningFriendsChallenges = [];
+        $runningFriendsChallenges['score'] = [];
+        $runningFriendsChallenges['running'] = [];
+        if (!$summaryOnly) {
+            $runningFriendsChallenges['toAccept'] = [];
+        }
+        if (!$summaryOnly) {
+            $runningFriendsChallenges['pending'] = [];
+        }
+        if (!$summaryOnly) {
+            $runningFriendsChallenges['completed'] = [];
+        }
 
-    /**
-     * @Route("/feed/activities/detail/{activityId}", name="index_activity_log_detail")
-     *
-     * @param int $activityId
-     *
-     * @return JsonResponse
-     * @throws NonUniqueResultException
-     */
-    public function index_activity_log_detail(int $activityId)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-        $this->setupRoute();
+        /** @var RpgChallengeFriends[] $dbChallenger */
+        $dbChallenger = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findBy(["challenger" => $this->patient], ["endDate" => "DESC"]);
+        foreach ($dbChallenger as $challengeFriends) {
+            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges,
+                $challengeFriends);
+        }
 
-        $return['nav'] = [
-            "nextMonth" => '',
-            "thisMonth" => '',
-            "prevMonth" => '',
+        /** @var RpgChallengeFriends[] $dbChallenger */
+        $dbChallenged = $this->getDoctrine()
+            ->getRepository(RpgChallengeFriends::class)
+            ->findBy(["challenged" => $this->patient], ["endDate" => "DESC"]);
+        foreach ($dbChallenged as $challengeFriends) {
+            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges,
+                $challengeFriends);
+        }
+
+        $runningFriendsChallenges['score'] = [
+            "win" => $this->calcChallengeWins(),
+            "lose" => $this->calcChallengeLoses(),
+            "draw" => $this->calcChallengeDraws(),
         ];
 
-        /** @var Exercise[] $dbExercises */
-        $dbExercises = $this->getDoctrine()
-            ->getRepository(Exercise::class)->createQueryBuilder('e')
-            ->where('e.id = :activityId')
-            ->setParameter('activityId', $activityId)
-            ->andWhere('e.patient = :patientId')
-            ->setParameter('patientId', $this->patient)
-            ->getQuery()->getResult();
-        if (!$dbExercises) {
-            $b = microtime(true);
-            $c = $b - $a;
-            $return['exit'] = __LINE__;
-            $return['genTime'] = round($c, 4);
-            return $this->json($return);
-        }
-
-        $dbChallengedNav = $this->getDoctrine()
-            ->getRepository(Exercise::class)->createQueryBuilder('e')
-            ->andwhere('e.patient = :patientId')
-            ->setParameter('patientId', $this->patient)
-            ->andwhere('e.id > :activityId')
-            ->setParameter('activityId', $activityId)
-            ->select('e.id as id')
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(1)
-            ->getQuery()->getResult();
-        if (count($dbChallengedNav) > 0) {
-            $return['nav']['nextMonth'] = array_pop($dbChallengedNav)['id'];
-        }
-
-        $dbChallengedNav = $this->getDoctrine()
-            ->getRepository(Exercise::class)->createQueryBuilder('e')
-            ->andwhere('e.patient = :patientId')
-            ->setParameter('patientId', $this->patient)
-            ->andwhere('e.id < :activityId')
-            ->setParameter('activityId', $activityId)
-            ->select('e.id as id')
-            ->orderBy('e.id', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()->getResult();
-        if (count($dbChallengedNav) > 0) {
-            $return['nav']['prevMonth'] = array_pop($dbChallengedNav)['id'];
-        }
-
-        foreach ($dbExercises as $dbExercise) {
-            $exerciseDate = $dbExercise->getDateTimeStart()->format("Y-m-d");
-            $exerciseDateStarted = $dbExercise->getDateTimeStart()->format("H:i:s");
-            $exerciseDateFinished = $dbExercise->getDateTimeEnd()->format("H:i:s");
-            $exerciseType = $dbExercise->getExerciseType()->getName();
-            $exerciseTag = $dbExercise->getExerciseType()->getTag();
-            $partOfDay = $dbExercise->getPartOfDay()->getName();
-
-            $dayStepTotal = 0;
-            $exerciseStepCountSum = 0;
-            if ($exerciseType == "Walking") {
-                if (is_null($dbExercise->getSteps())) {
-                    $exerciseStepCount = [];
-                    /** @var FitStepsIntraDay[] $dbIntraDaySteps */
-                    $dbIntraDaySteps = $this->getDoctrine()
-                        ->getRepository(FitStepsIntraDay::class)
-                        ->findByDates(
-                            $this->patient->getUuid(),
-                            $exerciseDate,
-                            $exerciseDateStarted,
-                            $exerciseDateFinished,
-                            $dbExercise->getTrackingDevice()->getId()
-                        );
-                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) > 0) {
-                        foreach ($dbIntraDaySteps as $dbIntraDayStep) {
-                            $exerciseStepCount[] = $dbIntraDayStep->getValue();
-                        }
-
-                        $exerciseStepCountSum = array_sum($exerciseStepCount);
-                    }
-
-                    $dbExercise->setSteps($exerciseStepCountSum);
-
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($dbExercise);
-                    $entityManager->flush();
-                } else {
-                    $exerciseStepCountSum = $dbExercise->getSteps();
-                }
-
-                /** @var FitStepsDailySummary[] $dbStepsForDay */
-                $dbStepsForDay = $this->getDoctrine()
-                    ->getRepository(FitStepsDailySummary::class)
-                    ->findForDay($this->patient->getUuid(), $exerciseDate);
-                if (is_array($dbStepsForDay) && count($dbStepsForDay) > 0) {
-                    $dayStepTotal = $dbStepsForDay[0]->getValue();
-                }
-            }
-
-            $daysExerciseSum = $this->getDoctrine()->getRepository(Exercise::class)->createQueryBuilder('c')
-                ->leftJoin('c.patient', 'p')
-                ->andWhere('p.id = :patientId')
-                ->setParameter('patientId', $this->patient->getId())
-                ->andWhere('c.dateTimeStart LIKE :dateTimeStart')
-                ->setParameter('dateTimeStart', $dbExercise->getDateTimeStart()->format("Y-m-d") . "%")
-                ->select('sum(c.duration) as sum')
-                ->getQuery()->getOneOrNullResult()['sum'];
-
-            $startedTimeStamp = intval($dbExercise->getDateTimeStart()->format("U")) * 1000;
-            $return['results'] = [
-                "id" => $dbExercise->getId(),
-                "tracker" => $dbExercise->getTrackingDevice()->getName(),
-                "partOfDay" => $partOfDay,
-                "exerciseType" => $exerciseType,
-                "exerciseTag" => $exerciseTag,
-                "date" => $exerciseDate,
-                "dateFormatted" => $dbExercise->getDateTimeStart()->format("l ") . ucfirst($partOfDay) . $dbExercise->getDateTimeStart()->format(", F jS"),
-                "started" => $exerciseDateStarted,
-                "finished" => $exerciseDateFinished,
-                "duration" => round(($dbExercise->getDuration() / 60), 0),
-                "durationTotal" => round((intval($daysExerciseSum) / 60), 0),
-                "steps" => $exerciseStepCountSum,
-                "stepsTotal" => $dayStepTotal,
-                "altitudeMax" => round($dbExercise->getExerciseSummary()->getAltitudeMax(), 2),
-                "altitudeMin" => round($dbExercise->getExerciseSummary()->getAltitudeMin(), 2),
-                "altitudeGain" => round($dbExercise->getExerciseSummary()->getAltitudeMax() - $dbExercise->getExerciseSummary()->getAltitudeMin(),
-                    2),
-                "calorie" => round($dbExercise->getExerciseSummary()->getCalorie(), 2),
-                "calorieTotal" => -1,
-                "distance" => round($dbExercise->getExerciseSummary()->getDistance() / 1000, 2),
-                "distanceTotal" => -1,
-                "speedMax" => round($dbExercise->getExerciseSummary()->getSpeedMax(), 2),
-                "speedMean" => round($dbExercise->getExerciseSummary()->getSpeedMean(), 2),
-                "heartRateMax" => round($dbExercise->getExerciseSummary()->getHeartRateMax(), 2),
-                "heartRateMin" => round($dbExercise->getExerciseSummary()->getHeartRateMin(), 2),
-                "heartRateMean" => round($dbExercise->getExerciseSummary()->getHeartRateMean(), 2),
-                "startedTimeStamp" => $startedTimeStamp,
-                "maxDistance" => 0,
-                "maxSpeed" => 0,
-                "maxHeart" => 0,
-                "maxAltitude" => 0,
-                "liveData" => [],
-                "locationData" => [],
-            ];
-
-            if ($return['results']['duration'] > 59) {
-                $includeHours = true;
-            } else {
-                $includeHours = false;
-            }
-
-            $liveData = $dbExercise->getLiveDataBlob();
-            if (!is_null($liveData)) {
-                $liveData = json_decode(AppConstants::uncompressString($liveData), true);
-                $return['results']['liveData'] = [];
-
-                foreach ($liveData as $liveDatum) {
-                    if (array_key_exists('distance', $liveDatum)) {
-                        $key = 'distance';
-                        if ($liveDatum[$key] > $return['results']['maxDistance']) {
-                            $return['results']['maxDistance'] = round($liveDatum[$key], 2);
-                        }
-                    } else {
-                        if (array_key_exists('speed', $liveDatum)) {
-                            $key = 'speed';
-                            if ($liveDatum[$key] > $return['results']['maxSpeed']) {
-                                $return['results']['maxSpeed'] = round($liveDatum[$key], 2);
-                            }
-                        } else {
-                            if (array_key_exists('heart_rate', $liveDatum)) {
-                                $key = 'heart_rate';
-                                if ($liveDatum[$key] > $return['results']['maxHeart']) {
-                                    $return['results']['maxHeart'] = round($liveDatum[$key], 2);
-                                }
-                            } else {
-                                $key = null;
-                            }
-                        }
-                    }
-                    if (!is_null($key)) {
-                        if (!array_key_exists($key, $return['results']['liveData'])) {
-                            $return['results']['liveData'][$key] = [];
-                        }
-
-                        $return['results']['liveData'][$key][] = [
-                            "timestamp" => AppConstants::formatSeconds(round(($liveDatum['start_time'] - $startedTimeStamp) / 1000,
-                                0), $includeHours),
-                            "value" => round($liveDatum[$key], 2),
-                        ];
-                    }
-                }
-            }
-
-            $locationData = $dbExercise->getLocationDataBlob();
-            if (!is_null($locationData)) {
-                $locationData = json_decode(AppConstants::uncompressString($locationData), true);
-
-                foreach ($locationData as $locationDatum) {
-                    if (array_key_exists("start_time", $locationDatum)) {
-                        $newLocationArray = [];
-                        $newLocationArray['start_time'] = AppConstants::formatSeconds(round(($locationDatum['start_time'] - $startedTimeStamp) / 1000,
-                            0), $includeHours);
-                        if (array_key_exists("latitude", $locationDatum)) {
-                            $newLocationArray['latitude'] = $locationDatum['latitude'];
-                        }
-                        if (array_key_exists("longitude", $locationDatum)) {
-                            $newLocationArray['longitude'] = $locationDatum['longitude'];
-                        }
-                        $return['results']['locationData'][] = $newLocationArray;
-
-                        if (array_key_exists("altitude", $locationDatum)) {
-                            if ($locationDatum['altitude'] > $return['results']['maxAltitude']) {
-                                $return['results']['maxAltitude'] = round($locationDatum['altitude'], 2);
-                            }
-                            $return['results']['liveData']['altitude'][] = [
-                                "timestamp" => $newLocationArray['start_time'],
-                                "value" => round($locationDatum['altitude'], 2),
-                            ];
-                        }
-                    }
-                }
-            }
-
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
+        return $runningFriendsChallenges;
     }
 
     /**
-     * @Route("/feed/activities/log/limited/{limit}", name="index_activity_log_with_limit")
-     *
-     * @param int $limit
-     *
-     * @return JsonResponse
-     */
-    public function index_activity_log_with_limit(int $limit)
-    {
-        return $this->index_activity_log($limit, date("Y-m-d"), '1y');
-    }
-
-    /**
-     * @Route("/feed/activities/log/within/{searchRange}", name="index_activity_log_with_within")
-     *
-     * @param string $searchRange
-     *
-     * @return JsonResponse
-     */
-    public function index_activity_log_with_within(string $searchRange)
-    {
-        return $this->index_activity_log(-1, date("Y-m-d"), $searchRange);
-    }
-
-    /**
-     * @Route("/feed/activities/log/within/{searchRange}/limited/{limit}", name="index_activity_log_with_limit_within")
-     *
-     * @param int    $limit
-     *
-     * @param string $searchRange
-     *
-     * @return JsonResponse
-     */
-    public function index_activity_log_with_limit_within(int $limit, string $searchRange)
-    {
-        return $this->index_activity_log($limit, date("Y-m-d"), $searchRange);
-    }
-
-    /**
-     * @Route("/feed/activities/log/from/{dateFrom}/limited/{limit}", name="index_activity_log_with_limit_date")
-     *
-     * @param int    $limit
-     *
-     * @param string $dateFrom
-     *
-     * @return JsonResponse
-     */
-    public function index_activity_log_with_limit_date(int $limit, string $dateFrom)
-    {
-        return $this->index_activity_log($limit, $dateFrom, '1y');
-    }
-
-    /**
-     * @Route("/feed/activities/log/from/{dateFrom}", name="index_activity_log_with_date")
-     *
-     * @param string $dateFrom
-     *
-     * @return JsonResponse
-     */
-    public function index_activity_log_with_date(string $dateFrom)
-    {
-        return $this->index_activity_log(-1, $dateFrom, '1y');
-    }
-
-    /**
-     * @Route("/feed/activities/log/from/{dateFrom}/within/{searchRange}", name="index_activity_log_with_date_within")
-     *
-     * @param string $dateFrom
-     *
-     * @param string $searchRange
-     *
-     * @return JsonResponse
-     */
-    public function index_activity_log_with_date_within(string $dateFrom, string $searchRange)
-    {
-        return $this->index_activity_log(-1, $dateFrom, $searchRange);
-    }
-
-    /**
-     * @Route("/feed/hass", name="index_hass_digest")
-     *
-     * @return JsonResponse
+     * @return array|null
      * @throws Exception
      */
-    public function index_hass_digest()
+    private function getPatientDistance()
+    {
+        $returnSummary = [];
+
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var FitDistanceDailySummary[] $dbDistanceSummary */
+        $dbDistanceSummary = $this->getDoctrine()
+            ->getRepository(FitDistanceDailySummary::class)
+            ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 0);
+        if (count($dbDistanceSummary) == 0) {
+            return null;
+        }
+
+        $dbDistanceSummary = array_pop($dbDistanceSummary);
+
+        $returnSummary['value'] = $dbDistanceSummary->getValue();
+        $returnSummary['goal'] = $dbDistanceSummary->getGoal()->getGoal();
+        if ($returnSummary['goal'] == 0) {
+            $returnSummary['goal'] = 3000;
+        }
+        $returnSummary['progress'] = round(($returnSummary['value'] / $returnSummary['goal']) * 100, 0);
+        if ($dbDistanceSummary->getUnitOfMeasurement()->getName()) {
+            $returnSummary['value'] = round($returnSummary['value'] / 1000, 2);
+            $returnSummary['goal'] = round($returnSummary['goal'] / 1000, 2);
+            $returnSummary['units'] = "km";
+        } else {
+            $returnSummary['units'] = $dbDistanceSummary->getUnitOfMeasurement()->getName();
+        }
+        $returnSummary['intraDay'] = null;
+
+        if ($returnSummary['progress'] > 100) {
+            $returnSummary['progressBar'] = 100;
+        } else {
+            $returnSummary['progressBar'] = $returnSummary['progress'];
+        }
+
+        return $returnSummary;
+    }
+
+    /**
+     * @return array|null
+     */
+    private function getPatientFloors()
+    {
+        $returnSummary = [];
+
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var FitFloorsIntraDay[] $dbStepsSummary */
+        $dbStepsSummary = $this->getDoctrine()
+            ->getRepository(FitFloorsIntraDay::class)
+            ->findByDateRange($this->patient->getUuid(), date("Y-m-d"));
+        if (count($dbStepsSummary) == 0) {
+            return null;
+        }
+
+        $returnSummary['value'] = 0;
+        $returnSummary['goal'] = 10;
+        if (count($dbStepsSummary) > 0) {
+            /** @var FitFloorsIntraDay $item */
+            foreach ($dbStepsSummary as $item) {
+                if (is_numeric($item->getValue())) {
+                    $returnSummary['value'] = $returnSummary['value'] + $item->getValue();
+                }
+            }
+        } else {
+            return null;
+        }
+
+        if ($returnSummary['goal'] > 0) {
+            $returnSummary['progress'] = round(($returnSummary['value'] / $returnSummary['goal']) * 100, 0);
+        } else {
+            $returnSummary['progress'] = 100;
+        }
+
+        if ($returnSummary['progress'] > 100) {
+            $returnSummary['progressBar'] = 100;
+        } else {
+            $returnSummary['progressBar'] = $returnSummary['progress'];
+        }
+
+        $returnSummary['intraDay'] = $this->getPatientFloorsIntraDay($dbStepsSummary);
+
+        return $returnSummary;
+    }
+
+    /**
+     * @param array $dbStepsIntraDay
+     *
+     * @return array|null
+     */
+    private function getPatientFloorsIntraDay(array $dbStepsIntraDay)
+    {
+        /** @var FitFloorsIntraDay[] $dbStepsIntraDay */
+
+        $timeStampsInTrack = [];
+        $timeStampsInTrack['widget'] = [];
+        $timeStampsInTrack['widget']['labels'] = [];
+        $timeStampsInTrack['widget']['data'] = [];
+        $timeStampsInTrack['widget']['data']['label'] = "Steps";
+        $timeStampsInTrack['widget']['data']['data'] = [];
+
+        $dbHours = $this->getHoursArray();
+        if (count($dbStepsIntraDay) > 0) {
+            /** @var FitStepsIntraDay $item */
+            foreach ($dbStepsIntraDay as $item) {
+                if (is_numeric($item->getValue())) {
+                    $dbHours[$item->getDateTime()->format("G")] = $dbHours[$item->getDateTime()->format("G")] + $item->getValue();
+                }
+            }
+        } else {
+            return null;
+        }
+        $timeStampsInTrack['widget']['labels'] = array_keys($dbHours);
+        $timeStampsInTrack['widget']['data']['data'] = $dbHours;
+
+        return $timeStampsInTrack;
+    }
+
+    /**
+     * @param bool $summarise
+     *
+     * @return array
+     * @throws Exception
+     */
+    private function getPatientFriends(bool $summarise = false)
+    {
+        $returnSummary = [];
+
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
+
+
+        $returnSummary[0] = [
+            "uuid" => $this->patient->getUuid(),
+            "name" => $this->patient->getFirstName(),
+            "avatar" => $this->patient->getAvatar(),
+            "you" => "you",
+        ];
+
+        if (!$summarise) {
+            $yourStepCount = 0;
+
+            /** @noinspection PhpUndefinedMethodInspection */
+            /** @var FitStepsDailySummary[] $dbStepsCounts */
+            $dbStepsCounts = $this->getDoctrine()
+                ->getRepository(FitStepsDailySummary::class)
+                ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 7);
+            if (count($dbStepsCounts) > 0) {
+                foreach ($dbStepsCounts as $dbStepsCount) {
+                    $yourStepCount = $yourStepCount + $dbStepsCount->getValue();
+                }
+            }
+            $returnSummary[0]['steps'] = $yourStepCount;
+            $returnSummary[0]['steps_friendly'] = number_format($returnSummary[0]['steps'], 0);
+        }
+
+        foreach ($this->patient->getFriendsWith() as $otherPatient) {
+            $friendIndex = count($returnSummary);
+
+            $returnSummary[$friendIndex] = [
+                "uuid" => $otherPatient['uuid'],
+                "name" => $otherPatient['name'],
+                "avatar" => $otherPatient['avatar'],
+            ];
+
+            $returnSummary[$friendIndex]['you'] = "friend";
+
+            if (!$summarise) {
+                $friendStepCount = 0;
+
+                /** @noinspection PhpUndefinedMethodInspection */
+                /** @var FitStepsDailySummary[] $dbStepsCounts */
+                $dbStepsCounts = $this->getDoctrine()
+                    ->getRepository(FitStepsDailySummary::class)
+                    ->findByDateRangeHistorical($otherPatient['uuid'], date("Y-m-d"), 7);
+                if (count($dbStepsCounts) > 0) {
+                    foreach ($dbStepsCounts as $dbStepsCount) {
+                        $friendStepCount = $friendStepCount + $dbStepsCount->getValue();
+                    }
+                }
+                $returnSummary[$friendIndex]['steps'] = $friendStepCount;
+                $returnSummary[$friendIndex]['steps_friendly'] = number_format($returnSummary[$friendIndex]['steps'],
+                    0);
+            }
+        }
+
+        if (!$summarise) {
+            usort($returnSummary, function ($a, $b) {
+                return ($a["steps"] < $b["steps"]);
+            });
+        } else {
+            usort($returnSummary, function ($a, $b) {
+                return strcmp($a["name"], $b["name"]);
+            });
+        }
+
+        return $returnSummary;
+    }
+
+    /**
+     * @return null
+     */
+    private function getPatientMilestones()
     {
         $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
 
-        $this->setupRoute();
+        if (is_null($this->patient)) {
+            $this->patient = $this->getUser();
+        }
 
-        $return['uuid'] = $this->patient->getUuid();
-        $return['steps'] = $this->getPatientSteps()['value'];
-        $return['floors'] = $this->getPatientFloors()['value'];
-        $return['water'] = 0;
-        $return['weight'] = $this->getPatientWeight()['value'];
-        $return['fat'] = 0;
-        $return['bmi'] = 0;
-        $return['minutes_active'] = 0;
-        $return['calories'] = 0;
-        $return['distance'] = $this->getPatientDistance()['value'];
-        $return['weight_loss'] = 0;
-        $return['resting_heart_rate'] = 0;
+        $return['distance'] = [];
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var float $distance */
+        $distance = $this->getDoctrine()
+            ->getRepository(FitDistanceDailySummary::class)
+            ->getSumOfValues($this->patient->getUuid());
+        if (!is_numeric($distance)) {
+            return null;
+        }
+        $distance = ($distance / 1000);
 
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var RpgMilestones[] $distanceMileStonesLess */
+        $distanceMileStonesLess = $this->getDoctrine()
+            ->getRepository(RpgMilestones::class)
+            ->getLessThan('distance', $distance);
+        foreach ($distanceMileStonesLess as $distanceMileStoneLess) {
+            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance,
+                    2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var RpgMilestones[] $distanceMileStonesMore */
+        $distanceMileStonesMore = $this->getDoctrine()
+            ->getRepository(RpgMilestones::class)
+            ->getMoreThan('distance', $distance);
+
+        foreach ($distanceMileStonesMore as $distanceMileStoneMore) {
+            $times = number_format($distance / $distanceMileStoneMore->getValue(), 0);
+            if ($times == 1) {
+                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "*";
+            } else {
+                if ($times == 2) {
+                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
+                } else {
+                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
+                        . $times . "** times.";
+                }
+            }
+        }
+
+        return $return;
     }
 
     /**
@@ -806,106 +752,6 @@ class FeedUxController extends AbstractController
                 ];
             }
         }
-
-        return $timeStampsInTrack;
-    }
-
-    /**
-     * @param int|NULL $currentHour
-     *
-     * @return array
-     */
-    private function getHoursArray(int $currentHour = null)
-    {
-        if (is_null($currentHour)) {
-            $currentHour = 23;
-        }
-        $dbHours = [];
-        for ($i = 0; $i <= $currentHour; $i++) {
-            $dbHours[$i] = 0;
-        }
-        return $dbHours;
-    }
-
-    /**
-     * @return array|null
-     */
-    private function getPatientFloors()
-    {
-        $returnSummary = [];
-
-        if (is_null($this->patient)) {
-            $this->patient = $this->getUser();
-        }
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var FitFloorsIntraDay[] $dbStepsSummary */
-        $dbStepsSummary = $this->getDoctrine()
-            ->getRepository(FitFloorsIntraDay::class)
-            ->findByDateRange($this->patient->getUuid(), date("Y-m-d"));
-        if (count($dbStepsSummary) == 0) {
-            return null;
-        }
-
-        $returnSummary['value'] = 0;
-        $returnSummary['goal'] = 10;
-        if (count($dbStepsSummary) > 0) {
-            /** @var FitFloorsIntraDay $item */
-            foreach ($dbStepsSummary as $item) {
-                if (is_numeric($item->getValue())) {
-                    $returnSummary['value'] = $returnSummary['value'] + $item->getValue();
-                }
-            }
-        } else {
-            return null;
-        }
-
-        if ($returnSummary['goal'] > 0) {
-            $returnSummary['progress'] = round(($returnSummary['value'] / $returnSummary['goal']) * 100, 0);
-        } else {
-            $returnSummary['progress'] = 100;
-        }
-
-        if ($returnSummary['progress'] > 100) {
-            $returnSummary['progressBar'] = 100;
-        } else {
-            $returnSummary['progressBar'] = $returnSummary['progress'];
-        }
-
-        $returnSummary['intraDay'] = $this->getPatientFloorsIntraDay($dbStepsSummary);
-
-        return $returnSummary;
-    }
-
-    /**
-     * @param array $dbStepsIntraDay
-     *
-     * @return array|null
-     */
-    private function getPatientFloorsIntraDay(array $dbStepsIntraDay)
-    {
-        /** @var FitFloorsIntraDay[] $dbStepsIntraDay */
-
-        $timeStampsInTrack = [];
-        $timeStampsInTrack['widget'] = [];
-        $timeStampsInTrack['widget']['labels'] = [];
-        $timeStampsInTrack['widget']['data'] = [];
-        $timeStampsInTrack['widget']['data']['label'] = "Steps";
-        $timeStampsInTrack['widget']['data']['data'] = [];
-
-        $dbHours = $this->getHoursArray();
-        if (count($dbStepsIntraDay) > 0) {
-            /** @var FitStepsIntraDay $item */
-            foreach ($dbStepsIntraDay as $item) {
-                if (is_numeric($item->getValue())) {
-                    $dbHours[$item->getDateTime()->format("G")] = $dbHours[$item->getDateTime()->format("G")] + $item->getValue();
-                }
-            }
-        } else {
-            return null;
-        }
-        $timeStampsInTrack['widget']['labels'] = array_keys($dbHours);
-        $timeStampsInTrack['widget']['data']['data'] = $dbHours;
 
         return $timeStampsInTrack;
     }
@@ -1092,332 +938,48 @@ class FeedUxController extends AbstractController
     }
 
     /**
-     * @return array|null
-     * @throws Exception
+     * @param String $userRole
+     *
+     * @throws LogicException If the Security component is not available
      */
-    private function getPatientDistance()
+    private function hasAccess(string $userRole = 'ROLE_USER')
     {
-        $returnSummary = [];
-
-        if (is_null($this->patient)) {
-            $this->patient = $this->getUser();
-        }
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var FitDistanceDailySummary[] $dbDistanceSummary */
-        $dbDistanceSummary = $this->getDoctrine()
-            ->getRepository(FitDistanceDailySummary::class)
-            ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 0);
-        if (count($dbDistanceSummary) == 0) {
-            return null;
-        }
-
-        $dbDistanceSummary = array_pop($dbDistanceSummary);
-
-        $returnSummary['value'] = $dbDistanceSummary->getValue();
-        $returnSummary['goal'] = $dbDistanceSummary->getGoal()->getGoal();
-        if ($returnSummary['goal'] == 0) {
-            $returnSummary['goal'] = 3000;
-        }
-        $returnSummary['progress'] = round(($returnSummary['value'] / $returnSummary['goal']) * 100, 0);
-        if ($dbDistanceSummary->getUnitOfMeasurement()->getName()) {
-            $returnSummary['value'] = round($returnSummary['value'] / 1000, 2);
-            $returnSummary['goal'] = round($returnSummary['goal'] / 1000, 2);
-            $returnSummary['units'] = "km";
-        } else {
-            $returnSummary['units'] = $dbDistanceSummary->getUnitOfMeasurement()->getName();
-        }
-        $returnSummary['intraDay'] = null;
-
-        if ($returnSummary['progress'] > 100) {
-            $returnSummary['progressBar'] = 100;
-        } else {
-            $returnSummary['progressBar'] = $returnSummary['progress'];
-        }
-
-        return $returnSummary;
+        $this->denyAccessUnlessGranted($userRole, null, 'User tried to access a page without having ' . $userRole);
     }
 
-    /**
-     * @Route("/feed/dashboard", name="ux_aggregator")
-     *
-     * @param AwardManager $awardManager
-     *
-     * @param CommsManager $commsManager
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function index(AwardManager $awardManager, CommsManager $commsManager)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $return['status'] = "okay";
-        $return['code'] = "200";
-
-        $return['milestones'] = $this->getPatientMilestones();
-        $return['steps'] = $this->getPatientSteps();
-        $return['floors'] = $this->getPatientFloors();
-        $return['distance'] = $this->getPatientDistance();
-        $return['rpg_friends'] = $this->getPatientFriends();
-        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(true);
-        $return['awards'] = $this->getPatientAwards();
-        $return['weight'] = $this->getPatientWeight();
-
-        if (
-            is_null($this->patient->getLastLoggedIn()) ||
-            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
-        ) {
-            if (is_null($this->patient->getLastLoggedIn())) {
-                $lastRecordedLogin = 0;
-            } else {
-                $lastRecordedLogin = $this->patient->getLastLoggedIn()->format("U");
-            }
-            $currentTime = date("U");
-            $lastLoggedInWas = $currentTime - $lastRecordedLogin;
-
-            if ($lastLoggedInWas > ((60 * 60 * 24) - 120)) {
-                $this->patient->setLoginStreak(0);
+    private function participationInChallenge(
+        array $return,
+        RpgChallengeGlobalPatient $challengePatientDetails,
+        RpgChallengeGlobal $dbRpgChallengeGlobal
+    ) {
+        if (!is_null($challengePatientDetails)) {
+            if ($challengePatientDetails->getChallenge()->getId() != $dbRpgChallengeGlobal->getId()) {
+                /** @var RpgChallengeGlobalPatient $challengePatientDetails */
+                $challengePatientDetails = $this->getDoctrine()
+                    ->getRepository(RpgChallengeGlobalPatient::class)
+                    ->findOneBy(['patient' => $this->patient, 'challenge' => $dbRpgChallengeGlobal->getId()]);
             }
 
-            $this->patient->setLastLoggedIn(new DateTime());
-            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
-            // checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
-            $awardManager->checkForAwards(["reason" => "first", "length" => 0], "login", $this->patient);
-
-            $commsManager->sendNotification(
-                "First login for " . date("l jS F, Y"),
-                "You've #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                $this->patient,
-                true
-            );
-
-            if ($this->patient->getLoginStreak() % 5 == 0) {
-                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
-                    "login", $this->patient);
-            }
-
-            if ($this->patient->getLoginStreak() % 182 == 0) {
-                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
-                    "login", $this->patient);
-
-                $commsManager->sendNotification(
-                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                    null,
-                    $this->patient,
-                    false
-                );
-            } else {
-                if ($this->patient->getLoginStreak() % 30 == 0) {
-                    $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
-                        "login", $this->patient);
-
-                    $commsManager->sendNotification(
-                        "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
-                        null,
-                        $this->patient,
-                        false
-                    );
-                }
-            }
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($this->patient);
-            $entityManager->flush();
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @return null
-     */
-    private function getPatientMilestones()
-    {
-        $return = [];
-
-        if (is_null($this->patient)) {
-            $this->patient = $this->getUser();
-        }
-
-        $return['distance'] = [];
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var float $distance */
-        $distance = $this->getDoctrine()
-            ->getRepository(FitDistanceDailySummary::class)
-            ->getSumOfValues($this->patient->getUuid());
-        if (!is_numeric($distance)) {
-            return null;
-        }
-        $distance = ($distance / 1000);
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var RpgMilestones[] $distanceMileStonesLess */
-        $distanceMileStonesLess = $this->getDoctrine()
-            ->getRepository(RpgMilestones::class)
-            ->getLessThan('distance', $distance);
-        foreach ($distanceMileStonesLess as $distanceMileStoneLess) {
-            $return['distance']['less'][] = "**" . number_format($distanceMileStoneLess->getValue() - $distance,
-                    2) . " km** till you've walked *" . $distanceMileStoneLess->getMsgLess() . "*";
-        }
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var RpgMilestones[] $distanceMileStonesMore */
-        $distanceMileStonesMore = $this->getDoctrine()
-            ->getRepository(RpgMilestones::class)
-            ->getMoreThan('distance', $distance);
-
-        foreach ($distanceMileStonesMore as $distanceMileStoneMore) {
-            $times = number_format($distance / $distanceMileStoneMore->getValue(), 0);
-            if ($times == 1) {
-                $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "*";
-            } else {
-                if ($times == 2) {
-                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* and **back**!";
+            if ($challengePatientDetails) {
+                $return['participation'] = [];
+                $return['participation']['progress'] = round($challengePatientDetails->getProgress(), 0,
+                    PHP_ROUND_HALF_DOWN);
+                if (!is_null($challengePatientDetails->getStartDateTime())) {
+                    $return['participation']['startDateTime'] = $challengePatientDetails->getStartDateTime()->format("Y-m-d H:i:s");
                 } else {
-                    $return['distance']['more'][] = "You've walked *" . $distanceMileStoneMore->getMsgLess() . "* **"
-                        . $times . "** times.";
+                    $return['participation']['startDateTime'] = null;
                 }
+                if (!is_null($challengePatientDetails->getFinishDateTime())) {
+                    $return['participation']['finishDateTime'] = $challengePatientDetails->getFinishDateTime()->format("Y-m-d H:i:s");
+                } else {
+                    $return['participation']['finishDateTime'] = null;
+                }
+            } else {
+                $return['participation'] = -1;
             }
         }
 
         return $return;
-    }
-
-    /**
-     * @param bool $summarise
-     *
-     * @return array
-     * @throws Exception
-     */
-    private function getPatientFriends(bool $summarise = false)
-    {
-        $returnSummary = [];
-
-        if (is_null($this->patient)) {
-            $this->patient = $this->getUser();
-        }
-
-
-        $returnSummary[0] = [
-            "uuid" => $this->patient->getUuid(),
-            "name" => $this->patient->getFirstName(),
-            "avatar" => $this->patient->getAvatar(),
-            "you" => "you",
-        ];
-
-        if (!$summarise) {
-            $yourStepCount = 0;
-
-            /** @noinspection PhpUndefinedMethodInspection */
-            /** @var FitStepsDailySummary[] $dbStepsCounts */
-            $dbStepsCounts = $this->getDoctrine()
-                ->getRepository(FitStepsDailySummary::class)
-                ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 7);
-            if (count($dbStepsCounts) > 0) {
-                foreach ($dbStepsCounts as $dbStepsCount) {
-                    $yourStepCount = $yourStepCount + $dbStepsCount->getValue();
-                }
-            }
-            $returnSummary[0]['steps'] = $yourStepCount;
-            $returnSummary[0]['steps_friendly'] = number_format($returnSummary[0]['steps'], 0);
-        }
-
-        foreach ($this->patient->getFriendsWith() as $otherPatient) {
-            $friendIndex = count($returnSummary);
-
-            $returnSummary[$friendIndex] = [
-                "uuid" => $otherPatient['uuid'],
-                "name" => $otherPatient['name'],
-                "avatar" => $otherPatient['avatar'],
-            ];
-
-            $returnSummary[$friendIndex]['you'] = "friend";
-
-            if (!$summarise) {
-                $friendStepCount = 0;
-
-                /** @noinspection PhpUndefinedMethodInspection */
-                /** @var FitStepsDailySummary[] $dbStepsCounts */
-                $dbStepsCounts = $this->getDoctrine()
-                    ->getRepository(FitStepsDailySummary::class)
-                    ->findByDateRangeHistorical($otherPatient['uuid'], date("Y-m-d"), 7);
-                if (count($dbStepsCounts) > 0) {
-                    foreach ($dbStepsCounts as $dbStepsCount) {
-                        $friendStepCount = $friendStepCount + $dbStepsCount->getValue();
-                    }
-                }
-                $returnSummary[$friendIndex]['steps'] = $friendStepCount;
-                $returnSummary[$friendIndex]['steps_friendly'] = number_format($returnSummary[$friendIndex]['steps'],
-                    0);
-            }
-        }
-
-        if (!$summarise) {
-            usort($returnSummary, function ($a, $b) {
-                return ($a["steps"] < $b["steps"]);
-            });
-        } else {
-            usort($returnSummary, function ($a, $b) {
-                return strcmp($a["name"], $b["name"]);
-            });
-        }
-
-        return $returnSummary;
-    }
-
-    /**
-     * @param bool $summaryOnly
-     *
-     * @return array
-     */
-    private function getPatientChallengesFriends($summaryOnly = false)
-    {
-        $runningFriendsChallenges = [];
-        $runningFriendsChallenges['score'] = [];
-        $runningFriendsChallenges['running'] = [];
-        if (!$summaryOnly) {
-            $runningFriendsChallenges['toAccept'] = [];
-        }
-        if (!$summaryOnly) {
-            $runningFriendsChallenges['pending'] = [];
-        }
-        if (!$summaryOnly) {
-            $runningFriendsChallenges['completed'] = [];
-        }
-
-        /** @var RpgChallengeFriends[] $dbChallenger */
-        $dbChallenger = $this->getDoctrine()
-            ->getRepository(RpgChallengeFriends::class)
-            ->findBy(["challenger" => $this->patient], ["endDate" => "DESC"]);
-        foreach ($dbChallenger as $challengeFriends) {
-            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges,
-                $challengeFriends);
-        }
-
-        /** @var RpgChallengeFriends[] $dbChallenger */
-        $dbChallenged = $this->getDoctrine()
-            ->getRepository(RpgChallengeFriends::class)
-            ->findBy(["challenged" => $this->patient], ["endDate" => "DESC"]);
-        foreach ($dbChallenged as $challengeFriends) {
-            $runningFriendsChallenges = $this->populatePatientChallengesFriends($runningFriendsChallenges,
-                $challengeFriends);
-        }
-
-        $runningFriendsChallenges['score'] = [
-            "win" => $this->calcChallengeWins(),
-            "lose" => $this->calcChallengeLoses(),
-            "draw" => $this->calcChallengeDraws(),
-        ];
-
-        return $runningFriendsChallenges;
     }
 
     /**
@@ -1715,83 +1277,1282 @@ class FeedUxController extends AbstractController
         return $runningFriendsChallenges;
     }
 
-    /**
-     * @param string $getCriteria
-     *
-     * @return string
-     */
-    private function friendlyNameChallengeCriteria(string $getCriteria)
+    private function setupRoute(string $userRole = 'ROLE_USER')
     {
-        switch ($getCriteria) {
-            case "FitStepsDailySummary":
-                return "Steps";
-            default:
-                return $getCriteria;
-        }
-    }
-
-    private function calcChallengeWins()
-    {
-        /** @var int $dbChallenger */
-        $dbChallenger = $this->getDoctrine()
-            ->getRepository(RpgChallengeFriends::class)
-            ->findChallengeWins($this->patient);
-
-        return $dbChallenger;
-    }
-
-    private function calcChallengeLoses()
-    {
-        /** @var int $dbChallenger */
-        $dbChallenger = $this->getDoctrine()
-            ->getRepository(RpgChallengeFriends::class)
-            ->findChallengeLoses($this->patient);
-
-        return $dbChallenger;
-    }
-
-    private function calcChallengeDraws()
-    {
-        /** @var int $dbChallenger */
-        $dbChallenger = $this->getDoctrine()
-            ->getRepository(RpgChallengeFriends::class)
-            ->findChallengeDraws($this->patient);
-
-        return $dbChallenger;
-    }
-
-    /**
-     * @return array
-     */
-    private function getPatientAwards()
-    {
-        $returnSummary = [];
-
         if (is_null($this->patient)) {
             $this->patient = $this->getUser();
         }
+        $this->feed_storage = null;
 
-        foreach ($this->patient->getRewards() as $reward) {
-            if (array_key_exists($reward->getReward()->getId(), $returnSummary)) {
-                $returnSummary[$reward->getReward()->getId()]['count']++;
-                if (strtotime($returnSummary[$reward->getReward()->getId()]['awarded']) < $reward->getDatetime()->format("U")) {
-                    $returnSummary[$reward->getReward()->getId()]['awarded'] = $reward->getDatetime()->format("Y-m-d");
-                }
+        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+            $scope->setUser([
+                'id' => $this->patient->getId(),
+                'username' => $this->patient->getUsername(),
+                'email' => $this->patient->getEmail(),
+            ]);
+        });
+
+        $this->hasAccess($userRole);
+    }
+
+    /**
+     * @Route("/feed/dashboard", name="ux_aggregator")
+     *
+     * @param AwardManager $awardManager
+     *
+     * @param CommsManager $commsManager
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index(AwardManager $awardManager, CommsManager $commsManager)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+
+        $return['milestones'] = $this->getPatientMilestones();
+        $return['steps'] = $this->getPatientSteps();
+        $return['floors'] = $this->getPatientFloors();
+        $return['distance'] = $this->getPatientDistance();
+        $return['rpg_friends'] = $this->getPatientFriends();
+        $return['rpg_challenge_friends'] = $this->getPatientChallengesFriends(true);
+        $return['awards'] = $this->getPatientAwards();
+        $return['weight'] = $this->getPatientWeight();
+
+        if (
+            is_null($this->patient->getLastLoggedIn()) ||
+            $this->patient->getLastLoggedIn()->format("Y-m-d") <> date("Y-m-d")
+        ) {
+            if (is_null($this->patient->getLastLoggedIn())) {
+                $lastRecordedLogin = 0;
             } else {
-                $payloadArray = json_decode($reward->getReward()->getPayload());
-                $returnSummary[$reward->getReward()->getId()] = [
-                    "id" => $reward->getReward()->getId(),
-                    "name" => $payloadArray->name,
-                    "awarded" => $reward->getDatetime()->format("Y-m-d"),
-                    "image" => $payloadArray->badge_image,
-                    "text" => $payloadArray->badge_text,
-                    "longtext" => $payloadArray->badge_longtext,
-                    "count" => 1,
-                ];
+                $lastRecordedLogin = $this->patient->getLastLoggedIn()->format("U");
+            }
+            $currentTime = date("U");
+            $lastLoggedInWas = $currentTime - $lastRecordedLogin;
+
+            if ($lastLoggedInWas > ((60 * 60 * 24) - 120)) {
+                $this->patient->setLoginStreak(0);
+            }
+
+            $this->patient->setLastLoggedIn(new DateTime());
+            $this->patient->setLoginStreak($this->patient->getLoginStreak() + 1);
+            // checkForAwards($dataEntry, string $criteria = NULL, Patient $patient = NULL, string $citation = NULL, DateTimeInterface $dateTime = NULL)
+            $awardManager->checkForAwards(["reason" => "first", "length" => 0], "login", $this->patient);
+
+            $commsManager->sendNotification(
+                "First login for " . date("l jS F, Y"),
+                "You've #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                $this->patient,
+                true
+            );
+
+            if ($this->patient->getLoginStreak() % 5 == 0) {
+                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
+                    "login", $this->patient);
+            }
+
+            if ($this->patient->getLoginStreak() % 182 == 0) {
+                $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
+                    "login", $this->patient);
+
+                $commsManager->sendNotification(
+                    "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                    null,
+                    $this->patient,
+                    false
+                );
+            } else {
+                if ($this->patient->getLoginStreak() % 30 == 0) {
+                    $awardManager->checkForAwards(["reason" => "streak", "length" => $this->patient->getLoginStreak()],
+                        "login", $this->patient);
+
+                    $commsManager->sendNotification(
+                        "@" . $this->patient->getUuid() . " #logged in " . $this->patient->getLoginStreak() . " days in a row! :clock1:",
+                        null,
+                        $this->patient,
+                        false
+                    );
+                }
+            }
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($this->patient);
+            $entityManager->flush();
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/achievements/awards", name="index_achievements_badges")
+     */
+    public function index_achievements_badges()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $return['level'] = $this->patient->getRpgLevel();
+        $return['factor'] = $this->patient->getRpgFactor();
+        $return['xp'] = round($this->patient->getXpTotal(), 0);
+        $return['xp_next'] = ceil($return['xp'] / 100) * 100;
+        $return['level_next'] = $return['xp_next'] - $return['xp'];
+        $return['level_percentage'] = 100 - ($return['xp_next'] - $return['xp']);
+        $return['xp_log'] = [];
+        foreach ($this->patient->getXp() as $rpgXP) {
+            $return['xp_log'][] = [
+                "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
+                "log" => $rpgXP->getReason(),
+                "value" => $rpgXP->getValue(),
+            ];
+        }
+        $return['xp_log'] = array_slice(array_reverse($return['xp_log']), 0, 10);
+        $return['awards'] = $this->getPatientAwards();
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/achievements/awards/{badgeId}", name="index_achievements_badges_detail")
+     * @param int $badgeId
+     *
+     * @return JsonResponse
+     */
+    public function index_achievements_badges_detail(int $badgeId)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var RpgRewards $rewardsAwarded */
+        $rewardsAwarded = $this->getDoctrine()
+            ->getRepository(RpgRewards::class)
+            ->findOneBy(['id' => $badgeId]);
+        if ($rewardsAwarded) {
+            /** @var RpgRewardsAwarded[] $countAwards */
+            $countAwards = $this->getDoctrine()
+                ->getRepository(RpgRewardsAwarded::class)
+                ->findBy(['reward' => $rewardsAwarded, 'patient' => $this->patient]);
+
+            $payloadArray = json_decode($rewardsAwarded->getPayload());
+            $return = [
+                "id" => $rewardsAwarded->getId(),
+                "name" => $payloadArray->name,
+                "image" => $payloadArray->badge_image,
+                "text" => $payloadArray->badge_text,
+                "textLong" => $payloadArray->badge_longtext,
+                "xp" => 0,
+                "monday" => "",
+                "sunday" => "",
+                "awards" => [],
+            ];
+
+            if (date("w") == 0) { // Sunday
+                $startDateRange = date("Y-m-d", strtotime('last monday'));
+                $endDateRange = date("Y-m-d");
+            } else {
+                if (date("w") == 1) { // Monday
+                    $startDateRange = date("Y-m-d");
+                    $endDateRange = date("Y-m-d", strtotime('next sunday'));
+                } else {
+                    $startDateRange = date("Y-m-d", strtotime('last monday'));
+                    $endDateRange = date("Y-m-d", strtotime('next sunday'));
+                }
+            }
+
+            $return['monday'] = $startDateRange;
+            $return['sunday'] = $endDateRange;
+            try {
+                $awardWeekReport = [];
+
+                /** @var DateTime[] $periods */
+                $periods = new DatePeriod(
+                    new DateTime($startDateRange),
+                    new DateInterval('P1D'),
+                    new DateTime($endDateRange)
+                );
+                foreach ($periods as $period) {
+                    if (strtotime($period->format("Y-m-d")) > date("U")) {
+                        $awardWeekReport[$period->format("Y-m-d")] = 0;
+                    } else {
+                        if ($period->format("Y-m-d") == date("Y-m-d")) {
+                            $awardWeekReport[$period->format("Y-m-d")] = 2;
+                        } else {
+                            $awardWeekReport[$period->format("Y-m-d")] = 1;
+                        }
+                    }
+                }
+
+                foreach ($countAwards as $countAward) {
+                    if (array_key_exists($countAward->getDatetime()->format("Y-m-d"), $awardWeekReport)) {
+                        $awardWeekReport[$countAward->getDatetime()->format("Y-m-d")] = 3;
+                    }
+                }
+
+                foreach ($awardWeekReport as $keyDate => $value) {
+                    $return['awards'][] = [
+                        "date" => date("D", strtotime($keyDate)),
+                        "awarded" => $value,
+                    ];
+                }
+            } catch (Exception $e) {
             }
         }
 
-        return $returnSummary;
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}/within/{searchRange}/limited/{limit}", name="index_activity_log")
+     *
+     * @param int    $limit
+     * @param string $dateFrom
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log(int $limit, string $dateFrom, string $searchRange)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+        $this->setupRoute();
+
+        $return['title'] = $dateFrom;
+        $return['limit'] = $limit;
+        $return['dateFrom'] = $dateFrom;
+        $return['dateBackTill'] = $dateFrom;
+        $return['searchRange'] = strtoupper($searchRange);
+        $return['nav'] = [
+            "nextMonth" => '',
+            "thisMonth" => '',
+            "prevMonth" => '',
+        ];
+
+        $return['durations'] = [];
+        $return['durationsTotal'] = 0;
+        $return['partOfDays'] = [
+            "morning" => 0,
+            "afternoon" => 0,
+            "evening" => 0,
+            "night" => 0,
+        ];
+        $return['partOfDaysTotal'] = 0;
+
+        $return['periodDurations'] = [];
+        $return['periodDurationsTotal'] = 0;
+        $return['periodPartOfDays'] = [
+            "morning" => 0,
+            "afternoon" => 0,
+            "evening" => 0,
+            "night" => 0,
+        ];
+        $return['periodPartOfDaysTotal'] = 0;
+
+        $return['results'] = [];
+
+        try {
+            $dateBackTill = new DateTime($dateFrom);
+            $nextMonth = new DateTime($dateFrom);
+            $prevMonth = new DateTime($dateFrom);
+            $dateFrom = new DateTime($dateFrom);
+
+            $return['title'] = $dateFrom->format("F, Y");
+
+            $interval = new DateInterval('P' . strtoupper($searchRange));
+            $dateBackTill->sub($interval);
+            $return['dateBackTill'] = $dateBackTill->format("Y-m-d");
+
+            $nextMonth->add($interval);
+            $prevMonth->sub($interval);
+
+            $return['nav']['thisMonth'] = date("Y-m-d");
+            if ($nextMonth->format("U") <= date("U")) {
+                $return['nav']['nextMonth'] = $nextMonth->format("Y-m-d");
+            }
+            $return['nav']['prevMonth'] = $prevMonth->format("Y-m-d");
+
+        } catch (Exception $e) {
+            $return['error'] = $e->getMessage();
+
+            $b = microtime(true);
+            $c = $b - $a;
+            $return['genTime'] = round($c, 4);
+            return $this->json($return);
+        }
+
+        $dbAllTimeDurations = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->leftJoin('e.patient', 'p')
+            ->leftJoin('e.exerciseType', 't')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $this->patient->getId())
+            ->groupBy('e.exerciseType')
+            ->select('SUM(e.duration) as duration, t.tag as name')
+            ->getQuery()->getResult();
+        if ($dbAllTimeDurations && count($dbAllTimeDurations) > 0) {
+            $newArray = ["labels" => [], "values" => []];
+            foreach ($dbAllTimeDurations as $dbAllTimeDuration) {
+                $newArray["labels"][] = ucwords($dbAllTimeDuration['name']);
+                $newArray["values"][] = intval(round(($dbAllTimeDuration['duration'] / 60), 0));
+                $return['durationsTotal'] = $return['durationsTotal'] + intval(round(($dbAllTimeDuration['duration'] / 60),
+                        0));
+            }
+            $return['durations'] = $newArray;
+        }
+
+        $dbAllTimePartOfDays = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->leftJoin('e.patient', 'p')
+            ->leftJoin('e.partOfDay', 't')
+            ->andWhere('p.id = :patientId')
+            ->setParameter('patientId', $this->patient->getId())
+            ->groupBy('e.partOfDay')
+            ->select('SUM(e.duration) as duration, t.name as name')
+            ->getQuery()->getResult();
+        if ($dbAllTimePartOfDays && count($dbAllTimePartOfDays) > 0) {
+            $newArray = ["labels" => [], "values" => []];
+            foreach ($dbAllTimePartOfDays as $dbAllTimePartOfDay) {
+                $newArray["labels"][] = ucwords($dbAllTimePartOfDay['name']);
+                $newArray["values"][] = intval(round(($dbAllTimePartOfDay['duration'] / 60), 0));
+                $return['partOfDaysTotal'] = $return['partOfDaysTotal'] + intval(round(($dbAllTimePartOfDay['duration'] / 60),
+                        0));
+            }
+            $return['partOfDays'] = $newArray;
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        /** @var Exercise[] $dbExercises */
+        if ($limit < 0) {
+            $dbExercises = $this->getDoctrine()
+                ->getRepository(Exercise::class)->createQueryBuilder('e')
+                ->leftJoin('e.patient', 'p')
+                ->where('e.dateTimeStart <= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
+                ->andWhere('e.dateTimeStart >= :dateBackTill')
+                ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
+                ->andWhere('p.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->orderBy('e.dateTimeStart', 'DESC')
+                ->getQuery()->getResult();
+        } else {
+            $dbExercises = $this->getDoctrine()
+                ->getRepository(Exercise::class)->createQueryBuilder('e')
+                ->leftJoin('e.patient', 'p')
+                ->where('e.dateTimeStart <= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom->format("Y-m-d 23:59:59"))
+                ->andWhere('e.dateTimeStart >= :dateBackTill')
+                ->setParameter('dateBackTill', $dateBackTill->format("Y-m-d 00:00:00"))
+                ->andWhere('p.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->orderBy('e.dateTimeStart', 'DESC')
+                ->setMaxResults($limit)
+                ->getQuery()->getResult();
+        }
+        if (!$dbExercises) {
+            $b = microtime(true);
+            $c = $b - $a;
+            $return['genTime'] = round($c, 4);
+            return $this->json($return);
+        }
+
+        foreach ($dbExercises as $dbExercise) {
+            $exerciseDate = $dbExercise->getDateTimeStart()->format("Y-m-d");
+            $exerciseDateStarted = $dbExercise->getDateTimeStart()->format("H:i:s");
+            $exerciseDateFinished = $dbExercise->getDateTimeEnd()->format("H:i:s");
+            $exerciseType = $dbExercise->getExerciseType()->getName();
+            $exerciseTag = $dbExercise->getExerciseType()->getTag();
+            $partOfDay = $dbExercise->getPartOfDay()->getName();
+
+            $dayStepTotal = 0;
+            $exerciseStepCountSum = 0;
+            if ($exerciseType == "Walking") {
+                if (is_null($dbExercise->getSteps())) {
+                    $dbIntraDaySteps = $this->getDoctrine()
+                        ->getRepository(FitStepsIntraDay::class)
+                        ->findSumDates(
+                            $this->patient->getUuid(),
+                            $exerciseDate,
+                            $exerciseDateStarted,
+                            $exerciseDateFinished,
+                            $dbExercise->getTrackingDevice()->getId()
+                        );
+                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) == 1 && array_key_exists("sum",
+                            $dbIntraDaySteps[0])) {
+                        if ($dbIntraDaySteps[0]['sum'] > 0) {
+                            $dbExercise->setSteps($dbIntraDaySteps[0]['sum']);
+
+                            $entityManager = $this->getDoctrine()->getManager();
+                            $entityManager->persist($dbExercise);
+                            $entityManager->flush();
+                        }
+                    }
+                }
+
+                $exerciseStepCountSum = $dbExercise->getSteps();
+
+                /** @var FitStepsDailySummary[] $dbStepsForDay */
+                $dbStepsForDay = $this->getDoctrine()
+                    ->getRepository(FitStepsDailySummary::class)
+                    ->findForDay($this->patient->getUuid(), $exerciseDate);
+                if (is_array($dbStepsForDay) && count($dbStepsForDay) > 0) {
+                    $dayStepTotal = $dbStepsForDay[0]->getValue();
+                }
+            }
+
+            $return['results'][] = [
+                "id" => $dbExercise->getId(),
+                "tracker" => $dbExercise->getTrackingDevice()->getName(),
+                "partOfDay" => $partOfDay,
+                "exerciseType" => explode(',', $exerciseType)[0],
+                "exerciseTag" => $exerciseTag,
+                "date" => $exerciseDate,
+                "dateFormatted" => $dbExercise->getDateTimeStart()->format("l ") . ucfirst($partOfDay) . $dbExercise->getDateTimeStart()->format(", F jS"),
+                "started" => $exerciseDateStarted,
+                "finished" => $exerciseDateFinished,
+                "duration" => round(($dbExercise->getDuration() / 60), 0),
+                "steps" => $exerciseStepCountSum,
+                "stepsTotal" => $dayStepTotal,
+                "calorie" => round($dbExercise->getExerciseSummary()->getCalorie(), 3),
+                "distance" => round($dbExercise->getExerciseSummary()->getDistance() / 1000, 3),
+            ];
+
+            if (array_key_exists($exerciseTag, $return['periodDurations'])) {
+                $return['periodDurations'][$exerciseTag] = $return['periodDurations'][$exerciseTag] + round(($dbExercise->getDuration() / 60),
+                        0);
+            } else {
+                $return['periodDurations'][$exerciseTag] = round(($dbExercise->getDuration() / 60), 0);
+            }
+
+            if (array_key_exists($partOfDay, $return['periodPartOfDays'])) {
+                $return['periodPartOfDays'][$partOfDay] = $return['periodPartOfDays'][$partOfDay] + round(($dbExercise->getDuration() / 60),
+                        0);
+            } else {
+                $return['periodPartOfDays'][$partOfDay] = round(($dbExercise->getDuration() / 60), 0);
+            }
+        }
+
+        $newArray = ["labels" => [], "values" => []];
+        foreach ($return['periodPartOfDays'] as $key => $partOfDay) {
+            $newArray["labels"][] = ucwords($key);
+            $newArray["values"][] = $partOfDay;
+            $return['periodPartOfDaysTotal'] = $return['periodPartOfDaysTotal'] + $partOfDay;
+        }
+        $return['periodPartOfDays'] = $newArray;
+
+        $newArray = ["labels" => [], "values" => []];
+        foreach ($return['periodDurations'] as $key => $partOfDay) {
+            $newArray["labels"][] = ucwords($key);
+            $newArray["values"][] = $partOfDay;
+            $return['periodDurationsTotal'] = $return['periodDurationsTotal'] + $partOfDay;
+        }
+        $return['periodDurations'] = $newArray;
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/activities/detail/{activityId}", name="index_activity_log_detail")
+     *
+     * @param int $activityId
+     *
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function index_activity_log_detail(int $activityId)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+        $this->setupRoute();
+
+        $return['nav'] = [
+            "nextMonth" => '',
+            "thisMonth" => '',
+            "prevMonth" => '',
+        ];
+
+        /** @var Exercise[] $dbExercises */
+        $dbExercises = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->where('e.id = :activityId')
+            ->setParameter('activityId', $activityId)
+            ->andWhere('e.patient = :patientId')
+            ->setParameter('patientId', $this->patient)
+            ->getQuery()->getResult();
+        if (!$dbExercises) {
+            $b = microtime(true);
+            $c = $b - $a;
+            $return['exit'] = __LINE__;
+            $return['genTime'] = round($c, 4);
+            return $this->json($return);
+        }
+
+        $dbChallengedNav = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->andwhere('e.patient = :patientId')
+            ->setParameter('patientId', $this->patient)
+            ->andwhere('e.id > :activityId')
+            ->setParameter('activityId', $activityId)
+            ->select('e.id as id')
+            ->orderBy('e.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()->getResult();
+        if (count($dbChallengedNav) > 0) {
+            $return['nav']['nextMonth'] = array_pop($dbChallengedNav)['id'];
+        }
+
+        $dbChallengedNav = $this->getDoctrine()
+            ->getRepository(Exercise::class)->createQueryBuilder('e')
+            ->andwhere('e.patient = :patientId')
+            ->setParameter('patientId', $this->patient)
+            ->andwhere('e.id < :activityId')
+            ->setParameter('activityId', $activityId)
+            ->select('e.id as id')
+            ->orderBy('e.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()->getResult();
+        if (count($dbChallengedNav) > 0) {
+            $return['nav']['prevMonth'] = array_pop($dbChallengedNav)['id'];
+        }
+
+        foreach ($dbExercises as $dbExercise) {
+            $exerciseDate = $dbExercise->getDateTimeStart()->format("Y-m-d");
+            $exerciseDateStarted = $dbExercise->getDateTimeStart()->format("H:i:s");
+            $exerciseDateFinished = $dbExercise->getDateTimeEnd()->format("H:i:s");
+            $exerciseType = $dbExercise->getExerciseType()->getName();
+            $exerciseTag = $dbExercise->getExerciseType()->getTag();
+            $partOfDay = $dbExercise->getPartOfDay()->getName();
+
+            $dayStepTotal = 0;
+            $exerciseStepCountSum = 0;
+            if ($exerciseType == "Walking") {
+                if (is_null($dbExercise->getSteps())) {
+                    $exerciseStepCount = [];
+                    /** @var FitStepsIntraDay[] $dbIntraDaySteps */
+                    $dbIntraDaySteps = $this->getDoctrine()
+                        ->getRepository(FitStepsIntraDay::class)
+                        ->findByDates(
+                            $this->patient->getUuid(),
+                            $exerciseDate,
+                            $exerciseDateStarted,
+                            $exerciseDateFinished,
+                            $dbExercise->getTrackingDevice()->getId()
+                        );
+                    if (is_array($dbIntraDaySteps) && count($dbIntraDaySteps) > 0) {
+                        foreach ($dbIntraDaySteps as $dbIntraDayStep) {
+                            $exerciseStepCount[] = $dbIntraDayStep->getValue();
+                        }
+
+                        $exerciseStepCountSum = array_sum($exerciseStepCount);
+                    }
+
+                    $dbExercise->setSteps($exerciseStepCountSum);
+
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $entityManager->persist($dbExercise);
+                    $entityManager->flush();
+                } else {
+                    $exerciseStepCountSum = $dbExercise->getSteps();
+                }
+
+                /** @var FitStepsDailySummary[] $dbStepsForDay */
+                $dbStepsForDay = $this->getDoctrine()
+                    ->getRepository(FitStepsDailySummary::class)
+                    ->findForDay($this->patient->getUuid(), $exerciseDate);
+                if (is_array($dbStepsForDay) && count($dbStepsForDay) > 0) {
+                    $dayStepTotal = $dbStepsForDay[0]->getValue();
+                }
+            }
+
+            $daysExerciseSum = $this->getDoctrine()->getRepository(Exercise::class)->createQueryBuilder('c')
+                ->leftJoin('c.patient', 'p')
+                ->andWhere('p.id = :patientId')
+                ->setParameter('patientId', $this->patient->getId())
+                ->andWhere('c.dateTimeStart LIKE :dateTimeStart')
+                ->setParameter('dateTimeStart', $dbExercise->getDateTimeStart()->format("Y-m-d") . "%")
+                ->select('sum(c.duration) as sum')
+                ->getQuery()->getOneOrNullResult()['sum'];
+
+            $startedTimeStamp = intval($dbExercise->getDateTimeStart()->format("U")) * 1000;
+            $return['results'] = [
+                "id" => $dbExercise->getId(),
+                "tracker" => $dbExercise->getTrackingDevice()->getName(),
+                "partOfDay" => $partOfDay,
+                "exerciseType" => $exerciseType,
+                "exerciseTag" => $exerciseTag,
+                "date" => $exerciseDate,
+                "dateFormatted" => $dbExercise->getDateTimeStart()->format("l ") . ucfirst($partOfDay) . $dbExercise->getDateTimeStart()->format(", F jS"),
+                "started" => $exerciseDateStarted,
+                "finished" => $exerciseDateFinished,
+                "duration" => round(($dbExercise->getDuration() / 60), 0),
+                "durationTotal" => round((intval($daysExerciseSum) / 60), 0),
+                "steps" => $exerciseStepCountSum,
+                "stepsTotal" => $dayStepTotal,
+                "altitudeMax" => round($dbExercise->getExerciseSummary()->getAltitudeMax(), 2),
+                "altitudeMin" => round($dbExercise->getExerciseSummary()->getAltitudeMin(), 2),
+                "altitudeGain" => round($dbExercise->getExerciseSummary()->getAltitudeMax() - $dbExercise->getExerciseSummary()->getAltitudeMin(),
+                    2),
+                "calorie" => round($dbExercise->getExerciseSummary()->getCalorie(), 2),
+                "calorieTotal" => -1,
+                "distance" => round($dbExercise->getExerciseSummary()->getDistance() / 1000, 2),
+                "distanceTotal" => -1,
+                "speedMax" => round($dbExercise->getExerciseSummary()->getSpeedMax(), 2),
+                "speedMean" => round($dbExercise->getExerciseSummary()->getSpeedMean(), 2),
+                "heartRateMax" => round($dbExercise->getExerciseSummary()->getHeartRateMax(), 2),
+                "heartRateMin" => round($dbExercise->getExerciseSummary()->getHeartRateMin(), 2),
+                "heartRateMean" => round($dbExercise->getExerciseSummary()->getHeartRateMean(), 2),
+                "startedTimeStamp" => $startedTimeStamp,
+                "maxDistance" => 0,
+                "maxSpeed" => 0,
+                "maxHeart" => 0,
+                "maxAltitude" => 0,
+                "liveData" => [],
+                "locationData" => [],
+            ];
+
+            if ($return['results']['duration'] > 59) {
+                $includeHours = true;
+            } else {
+                $includeHours = false;
+            }
+
+            $liveData = $dbExercise->getLiveDataBlob();
+            if (!is_null($liveData)) {
+                $liveData = json_decode(AppConstants::uncompressString($liveData), true);
+                $return['results']['liveData'] = [];
+
+                foreach ($liveData as $liveDatum) {
+                    if (array_key_exists('distance', $liveDatum)) {
+                        $key = 'distance';
+                        if ($liveDatum[$key] > $return['results']['maxDistance']) {
+                            $return['results']['maxDistance'] = round($liveDatum[$key], 2);
+                        }
+                    } else {
+                        if (array_key_exists('speed', $liveDatum)) {
+                            $key = 'speed';
+                            if ($liveDatum[$key] > $return['results']['maxSpeed']) {
+                                $return['results']['maxSpeed'] = round($liveDatum[$key], 2);
+                            }
+                        } else {
+                            if (array_key_exists('heart_rate', $liveDatum)) {
+                                $key = 'heart_rate';
+                                if ($liveDatum[$key] > $return['results']['maxHeart']) {
+                                    $return['results']['maxHeart'] = round($liveDatum[$key], 2);
+                                }
+                            } else {
+                                $key = null;
+                            }
+                        }
+                    }
+                    if (!is_null($key)) {
+                        if (!array_key_exists($key, $return['results']['liveData'])) {
+                            $return['results']['liveData'][$key] = [];
+                        }
+
+                        $return['results']['liveData'][$key][] = [
+                            "timestamp" => AppConstants::formatSeconds(round(($liveDatum['start_time'] - $startedTimeStamp) / 1000,
+                                0), $includeHours),
+                            "value" => round($liveDatum[$key], 2),
+                        ];
+                    }
+                }
+            }
+
+            $locationData = $dbExercise->getLocationDataBlob();
+            if (!is_null($locationData)) {
+                $locationData = json_decode(AppConstants::uncompressString($locationData), true);
+
+                foreach ($locationData as $locationDatum) {
+                    if (array_key_exists("start_time", $locationDatum)) {
+                        $newLocationArray = [];
+                        $newLocationArray['start_time'] = AppConstants::formatSeconds(round(($locationDatum['start_time'] - $startedTimeStamp) / 1000,
+                            0), $includeHours);
+                        if (array_key_exists("latitude", $locationDatum)) {
+                            $newLocationArray['latitude'] = $locationDatum['latitude'];
+                        }
+                        if (array_key_exists("longitude", $locationDatum)) {
+                            $newLocationArray['longitude'] = $locationDatum['longitude'];
+                        }
+                        $return['results']['locationData'][] = $newLocationArray;
+
+                        if (array_key_exists("altitude", $locationDatum)) {
+                            if ($locationDatum['altitude'] > $return['results']['maxAltitude']) {
+                                $return['results']['maxAltitude'] = round($locationDatum['altitude'], 2);
+                            }
+                            $return['results']['liveData']['altitude'][] = [
+                                "timestamp" => $newLocationArray['start_time'],
+                                "value" => round($locationDatum['altitude'], 2),
+                            ];
+                        }
+                    }
+                }
+            }
+
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/activities/log", name="index_activity_log_no_param")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_activity_log_no_param()
+    {
+        return $this->index_activity_log(-1, date("Y-m-d"), '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}", name="index_activity_log_with_date")
+     *
+     * @param string $dateFrom
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_date(string $dateFrom)
+    {
+        return $this->index_activity_log(-1, $dateFrom, '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}/within/{searchRange}", name="index_activity_log_with_date_within")
+     *
+     * @param string $dateFrom
+     *
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_date_within(string $dateFrom, string $searchRange)
+    {
+        return $this->index_activity_log(-1, $dateFrom, $searchRange);
+    }
+
+    /**
+     * @Route("/feed/activities/log/limited/{limit}", name="index_activity_log_with_limit")
+     *
+     * @param int $limit
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_limit(int $limit)
+    {
+        return $this->index_activity_log($limit, date("Y-m-d"), '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/from/{dateFrom}/limited/{limit}", name="index_activity_log_with_limit_date")
+     *
+     * @param int    $limit
+     *
+     * @param string $dateFrom
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_limit_date(int $limit, string $dateFrom)
+    {
+        return $this->index_activity_log($limit, $dateFrom, '1y');
+    }
+
+    /**
+     * @Route("/feed/activities/log/within/{searchRange}/limited/{limit}", name="index_activity_log_with_limit_within")
+     *
+     * @param int    $limit
+     *
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_limit_within(int $limit, string $searchRange)
+    {
+        return $this->index_activity_log($limit, date("Y-m-d"), $searchRange);
+    }
+
+    /**
+     * @Route("/feed/activities/log/within/{searchRange}", name="index_activity_log_with_within")
+     *
+     * @param string $searchRange
+     *
+     * @return JsonResponse
+     */
+    public function index_activity_log_with_within(string $searchRange)
+    {
+        return $this->index_activity_log(-1, date("Y-m-d"), $searchRange);
+    }
+
+    /**
+     * @Route("/feed/body/weight/{readings}", name="angular_body_weight")
+     * @param int $readings A users UUID
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_body_weight(int $readings)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+        $return['weight'] = $this->getPatientWeight(false, date("Y-m-d"), $readings);
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/pve/challenges/all", name="index_global_challenge")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_global_challenge()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+
+        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
+        $dbRpgChallengeGlobals = $this->getDoctrine()
+            ->getRepository(RpgChallengeGlobal::class)
+            ->findBy(['childOf' => null, 'active' => true], ['id' => 'asc']);
+
+        if ($dbRpgChallengeGlobals) {
+            $return['challenges'] = [];
+            foreach ($dbRpgChallengeGlobals as $dbRpgChallengeGlobal) {
+                $arrayIndex = count($return['challenges']);
+
+                $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal);
+                if (is_null($return['challenges'][$arrayIndex])) {
+                    unset($return['challenges'][$arrayIndex]);
+                }
+            }
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/pve/challenges", name="index_global_challenge_in")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_global_challenge_in()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        /** @var RpgChallengeGlobalPatient[] $dbRpgChallengeGlobalIn */
+        $dbRpgChallengeGlobalIn = $this->getDoctrine()
+            ->getRepository(RpgChallengeGlobalPatient::class)
+            ->findBy(['patient' => $this->patient], ['startDateTime' => 'asc', 'challenge' => 'asc']);
+
+        if ($dbRpgChallengeGlobalIn) {
+            $return['challenges'] = [];
+            foreach ($dbRpgChallengeGlobalIn as $dbRpgChallengeGlobal) {
+                $this->feed_storage = 0;
+                if (is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
+                    $arrayIndex = count($return['challenges']);
+                    $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal->getChallenge(),
+                        $dbRpgChallengeGlobal);
+                    if (is_null($return['challenges'][$arrayIndex])) {
+                        unset($return['challenges'][$arrayIndex]);
+                    }
+                }
+            }
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/feed/hass", name="index_hass_digest")
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_hass_digest()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $return['uuid'] = $this->patient->getUuid();
+        $return['steps'] = $this->getPatientSteps()['value'];
+        $return['floors'] = $this->getPatientFloors()['value'];
+        $return['water'] = 0;
+        $return['weight'] = $this->getPatientWeight()['value'];
+        $return['fat'] = 0;
+        $return['bmi'] = 0;
+        $return['minutes_active'] = 0;
+        $return['calories'] = 0;
+        $return['distance'] = $this->getPatientDistance()['value'];
+        $return['weight_loss'] = 0;
+        $return['resting_heart_rate'] = 0;
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/loggedin/{deviceId}", name="index_loggedin_feedback")
+     * @param string          $deviceId
+     * @param ManagerRegistry $doctrine
+     * @param Request         $request
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function index_loggedin_feedback(string $deviceId, ManagerRegistry $doctrine, Request $request)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $requestBody = $request->getContent();
+        $requestBody = str_replace("'", "\"", $requestBody);
+        $requestBody = str_replace('&#39;', "'", $requestBody);
+        $requestJson = json_decode($requestBody, false);
+
+        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+
+        if (property_exists($requestJson, "deviceInfo")) {
+            $requestDeviceInfo = $requestJson->deviceInfo;
+            $app = $requestJson->cordova;
+            if ($requestJson->production == "development") {
+                $version = $requestJson->version . "-dev";
+                $production = false;
+            } else {
+                $version = $requestJson->version;
+                $production = true;
+            }
+            if ($requestDeviceInfo->device == "Unknown") {
+                $requestDeviceInfo->device = $requestJson->cordova;
+            }
+        } else {
+            $requestDeviceInfo = $requestJson;
+            $version = 'legacy';
+            $app = 'unknown';
+            $production = true;
+        }
+
+        $accessDevice = null;
+        if ($deviceId > 0) {
+            /** @var PatientDevice $accessDevice */
+            $accessDevice = $this->getDoctrine()
+                ->getRepository(PatientDevice::class)
+                ->findOneBy([
+                    'patient' => $this->patient,
+                    'id' => $deviceId,
+                    'production' => $production,
+                ]);
+        }
+
+        if (!$accessDevice) {
+            $deviceId = -1;
+
+            /** @var PatientDevice $accessDevice */
+            $accessDevice = $this->getDoctrine()
+                ->getRepository(PatientDevice::class)
+                ->findOneBy([
+                    'patient' => $this->patient,
+                    'os' => $requestDeviceInfo->os,
+                    'browser' => $requestDeviceInfo->browser,
+                    'device' => $requestDeviceInfo->device,
+                    'os_version' => $requestDeviceInfo->os_version,
+                    'browser_version' => $requestDeviceInfo->browser_version,
+                    'production' => $production,
+                ]);
+        }
+
+        if ($accessDevice && $deviceId > 0) {
+            $accessDevice->setBrowser($requestDeviceInfo->browser);
+            $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
+            $accessDevice->setDevice($requestDeviceInfo->device);
+            $accessDevice->setOs($requestDeviceInfo->os);
+            $accessDevice->setOsVersion($requestDeviceInfo->os_version);
+            $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
+            $accessDevice->setVersion($version);
+            $accessDevice->setApp($app);
+            $accessDevice->setProduction($production);
+            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Updated');
+        } else {
+            if ($accessDevice) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Found');
+            } else {
+                $accessDevice = new PatientDevice();
+                $accessDevice->setPatient($this->patient);
+                $accessDevice->setBrowser($requestDeviceInfo->browser);
+                $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
+                $accessDevice->setDevice($requestDeviceInfo->device);
+                $accessDevice->setOs($requestDeviceInfo->os);
+                $accessDevice->setOsVersion($requestDeviceInfo->os_version);
+                $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
+                $accessDevice->setVersion($version);
+                $accessDevice->setApp($app);
+                $accessDevice->setProduction($production);
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' New device');
+            }
+        }
+        $accessDevice->setLastSeen(new DateTime());
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->persist($accessDevice);
+        $entityManager->flush();
+
+        $return['id'] = $accessDevice->getId();
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/news/personal", name="index_news_personal")
+     */
+    public function index_news_personal()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        /** @var SiteNews[] $newsItemsSite */
+        $newsItemsSite = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => null], ['published' => 'DESC']);
+
+        /** @var SiteNews[] $newsItemsPersonal */
+        $newsItemsPersonal = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
+
+        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
+        if ($newsItems) {
+            $return['items'] = $this->buildNewsItems($newsItems);
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/news/push", name="index_news_push")
+     */
+    public function index_news_push()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        /** @var SiteNews[] $newsItems */
+        $newsItemsFalse = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => false], ['published' => 'DESC']);
+
+        /** @var SiteNews[] $newsItems */
+        $newsItemsNull = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => null], ['published' => 'DESC']);
+
+        $newsItems = array_merge($newsItemsNull, $newsItemsFalse);
+
+        if ($newsItems && is_array($newsItems) && count($newsItems) > 0) {
+            $return['items'] = $this->buildNewsItems($newsItems);
+        } else {
+            $return['items'] = [];
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/news/push/seen", name="index_news_push_seen")
+     * @param ManagerRegistry $doctrine
+     * @param Request         $request
+     *
+     * @return JsonResponse
+     */
+    public function index_news_push_seen(ManagerRegistry $doctrine, Request $request)
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $requestBody = $request->getContent();
+        $requestBody = str_replace("'", "\"", $requestBody);
+        $requestBody = str_replace('&#39;', "'", $requestBody);
+        $requestJson = json_decode($requestBody, false);
+
+        if (is_object($requestJson)) {
+            if (property_exists($requestJson, "toastId") && $requestJson->toastId > 0) {
+                /** @var SiteNews[] $newsItems */
+                $newsItems = $this->getDoctrine()
+                    ->getRepository(SiteNews::class)
+                    ->findBy(['patient' => $this->patient, 'id' => $requestJson->toastId]);
+            } else {
+                /** @var SiteNews[] $newsItems */
+                $newsItems = $this->getDoctrine()
+                    ->getRepository(SiteNews::class)
+                    ->findBy(['patient' => $this->patient, 'text' => $requestJson->message]);
+            }
+
+            if ($newsItems) {
+                $entityManager = $doctrine->getManager();
+                foreach ($newsItems as $newsItem) {
+                    $newsItem->setDisplayed(true);
+                    $entityManager->persist($newsItem);
+                }
+                $entityManager->flush();
+            }
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/news/site", name="index_news_site")
+     */
+    public function index_news_site()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        /** @var SiteNews[] $newsItemsSite */
+        $newsItemsSite = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => null], ['published' => 'DESC']);
+
+        /** @var SiteNews[] $newsItemsPersonal */
+        $newsItemsPersonal = $this->getDoctrine()
+            ->getRepository(SiteNews::class)
+            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
+
+        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
+        if ($newsItems) {
+            $return['items'] = $this->buildNewsItems($newsItems);
+        }
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/forms/challenges/new", name="index_pvp_challenge_options")
+     * @throws Exception
+     */
+    public function index_pvp_challenge_options()
+    {
+        $return = [];
+        $return['genTime'] = -1;
+        $a = microtime(true);
+
+        $this->setupRoute();
+
+        $return['status'] = "okay";
+        $return['code'] = "200";
+
+        $return['friends'] = $this->getPatientFriends(true);
+        $return['criteria'] = [
+            "steps",
+        ];
+        $return['targets'] = [
+            10000,
+            30000,
+            50000,
+            70000,
+            100000,
+        ];
+        $return['durations'] = [
+            1,
+            2,
+            3,
+            5,
+            7,
+            10,
+            14,
+            31,
+        ];
+
+        $b = microtime(true);
+        $c = $b - $a;
+        $return['genTime'] = round($c, 4);
+        return $this->json($return);
     }
 
     /**
@@ -2222,49 +2983,6 @@ class FeedUxController extends AbstractController
     }
 
     /**
-     * @Route("/forms/challenges/new", name="index_pvp_challenge_options")
-     * @throws Exception
-     */
-    public function index_pvp_challenge_options()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $return['status'] = "okay";
-        $return['code'] = "200";
-
-        $return['friends'] = $this->getPatientFriends(true);
-        $return['criteria'] = [
-            "steps",
-        ];
-        $return['targets'] = [
-            10000,
-            30000,
-            50000,
-            70000,
-            100000,
-        ];
-        $return['durations'] = [
-            1,
-            2,
-            3,
-            5,
-            7,
-            10,
-            14,
-            31,
-        ];
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
      * @Route("/feed/pvp/leaderboard", name="ux_aggregator_index_pvp_leaderboard")
      * @throws Exception
      */
@@ -2284,296 +3002,6 @@ class FeedUxController extends AbstractController
         foreach ($return['friends'] as $friend) {
             if ($friend['steps'] > $return['maxSteps']) {
                 $return['maxSteps'] = $friend['steps'];
-            }
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/feed/achievements/awards/{badgeId}", name="index_achievements_badges_detail")
-     * @param int $badgeId
-     *
-     * @return JsonResponse
-     */
-    public function index_achievements_badges_detail(int $badgeId)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        /** @var RpgRewards $rewardsAwarded */
-        $rewardsAwarded = $this->getDoctrine()
-            ->getRepository(RpgRewards::class)
-            ->findOneBy(['id' => $badgeId]);
-        if ($rewardsAwarded) {
-            /** @var RpgRewardsAwarded[] $countAwards */
-            $countAwards = $this->getDoctrine()
-                ->getRepository(RpgRewardsAwarded::class)
-                ->findBy(['reward' => $rewardsAwarded, 'patient' => $this->patient]);
-
-            $payloadArray = json_decode($rewardsAwarded->getPayload());
-            $return = [
-                "id" => $rewardsAwarded->getId(),
-                "name" => $payloadArray->name,
-                "image" => $payloadArray->badge_image,
-                "text" => $payloadArray->badge_text,
-                "textLong" => $payloadArray->badge_longtext,
-                "xp" => 0,
-                "monday" => "",
-                "sunday" => "",
-                "awards" => [],
-            ];
-
-            if (date("w") == 0) { // Sunday
-                $startDateRange = date("Y-m-d", strtotime('last monday'));
-                $endDateRange = date("Y-m-d");
-            } else {
-                if (date("w") == 1) { // Monday
-                    $startDateRange = date("Y-m-d");
-                    $endDateRange = date("Y-m-d", strtotime('next sunday'));
-                } else {
-                    $startDateRange = date("Y-m-d", strtotime('last monday'));
-                    $endDateRange = date("Y-m-d", strtotime('next sunday'));
-                }
-            }
-
-            $return['monday'] = $startDateRange;
-            $return['sunday'] = $endDateRange;
-            try {
-                $awardWeekReport = [];
-
-                /** @var DateTime[] $periods */
-                $periods = new DatePeriod(
-                    new DateTime($startDateRange),
-                    new DateInterval('P1D'),
-                    new DateTime($endDateRange)
-                );
-                foreach ($periods as $period) {
-                    if (strtotime($period->format("Y-m-d")) > date("U")) {
-                        $awardWeekReport[$period->format("Y-m-d")] = 0;
-                    } else {
-                        if ($period->format("Y-m-d") == date("Y-m-d")) {
-                            $awardWeekReport[$period->format("Y-m-d")] = 2;
-                        } else {
-                            $awardWeekReport[$period->format("Y-m-d")] = 1;
-                        }
-                    }
-                }
-
-                foreach ($countAwards as $countAward) {
-                    if (array_key_exists($countAward->getDatetime()->format("Y-m-d"), $awardWeekReport)) {
-                        $awardWeekReport[$countAward->getDatetime()->format("Y-m-d")] = 3;
-                    }
-                }
-
-                foreach ($awardWeekReport as $keyDate => $value) {
-                    $return['awards'][] = [
-                        "date" => date("D", strtotime($keyDate)),
-                        "awarded" => $value,
-                    ];
-                }
-            } catch (Exception $e) {
-            }
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/news/site", name="index_news_site")
-     */
-    public function index_news_site()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @var SiteNews[] $newsItemsSite */
-        $newsItemsSite = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => null], ['published' => 'DESC']);
-
-        /** @var SiteNews[] $newsItemsPersonal */
-        $newsItemsPersonal = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
-
-        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
-        if ($newsItems) {
-            $return['items'] = $this->buildNewsItems($newsItems);
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    private function buildNewsItems(array $newsItems)
-    {
-        /** @var SiteNews[] $newsItems */
-        /** @var SiteNews[] $newsItemsSorted */
-        $newsItemsSorted = [];
-        $return = [];
-        foreach ($newsItems as $newsItem) {
-            $newsItemsSorted[$newsItem->getPublished()->format("U") . $newsItem->getId()] = $newsItem;
-        }
-
-        arsort($newsItemsSorted);
-
-        foreach ($newsItemsSorted as $newsItem) {
-            if (is_null($newsItem->getExpires()) || $newsItem->getExpires()->format("U") > date("U")) {
-                $newReturn = [
-                    "id" => $newsItem->getId(),
-                    "title" => $newsItem->getTitle(),
-                    "text" => $newsItem->getText(),
-                    "accent" => str_replace("list-group-item-accent-", "", $newsItem->getAccent()),
-                    "displayed" => $newsItem->getDisplayed(),
-                    "expires" => $newsItem->getExpires(),
-                    "link" => $newsItem->getLink(),
-                    "priority" => $newsItem->getPriority(),
-                    "published" => $newsItem->getPublished()->format("l, F jS H:i:s"),
-                ];
-
-                if (is_null($newsItem->getImage())) {
-                    $newReturn['imageName'] = null;
-                    $newReturn['imageHref'] = null;
-                } else {
-                    if (substr($newsItem->getImage(), 0, 4) == "http") {
-                        $newReturn['imageName'] = null;
-                        $newReturn['imageHref'] = $newsItem->getImage();
-                    } else {
-                        $newReturn['imageName'] = $newsItem->getImage();
-                        $newReturn['imageHref'] = null;
-                    }
-                }
-
-                $return[] = $newReturn;
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * @Route("/news/personal", name="index_news_personal")
-     */
-    public function index_news_personal()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @var SiteNews[] $newsItemsSite */
-        $newsItemsSite = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => null], ['published' => 'DESC']);
-
-        /** @var SiteNews[] $newsItemsPersonal */
-        $newsItemsPersonal = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
-
-        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
-        if ($newsItems) {
-            $return['items'] = $this->buildNewsItems($newsItems);
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/news/push", name="index_news_push")
-     */
-    public function index_news_push()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @var SiteNews[] $newsItems */
-        $newsItemsFalse = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => false], ['published' => 'DESC']);
-
-        /** @var SiteNews[] $newsItems */
-        $newsItemsNull = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => null], ['published' => 'DESC']);
-
-        $newsItems = array_merge($newsItemsNull, $newsItemsFalse);
-
-        if ($newsItems && is_array($newsItems) && count($newsItems) > 0) {
-            $return['items'] = $this->buildNewsItems($newsItems);
-        } else {
-            $return['items'] = [];
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/news/push/seen", name="index_news_push_seen")
-     * @param ManagerRegistry $doctrine
-     * @param Request         $request
-     *
-     * @return JsonResponse
-     */
-    public function index_news_push_seen(ManagerRegistry $doctrine, Request $request)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $requestBody = $request->getContent();
-        $requestBody = str_replace("'", "\"", $requestBody);
-        $requestBody = str_replace('&#39;', "'", $requestBody);
-        $requestJson = json_decode($requestBody, false);
-
-        if (is_object($requestJson)) {
-            if (property_exists($requestJson, "toastId") && $requestJson->toastId > 0) {
-                /** @var SiteNews[] $newsItems */
-                $newsItems = $this->getDoctrine()
-                    ->getRepository(SiteNews::class)
-                    ->findBy(['patient' => $this->patient, 'id' => $requestJson->toastId]);
-            } else {
-                /** @var SiteNews[] $newsItems */
-                $newsItems = $this->getDoctrine()
-                    ->getRepository(SiteNews::class)
-                    ->findBy(['patient' => $this->patient, 'text' => $requestJson->message]);
-            }
-
-            if ($newsItems) {
-                $entityManager = $doctrine->getManager();
-                foreach ($newsItems as $newsItem) {
-                    $newsItem->setDisplayed(true);
-                    $entityManager->persist($newsItem);
-                }
-                $entityManager->flush();
             }
         }
 
@@ -2631,181 +3059,6 @@ class FeedUxController extends AbstractController
     }
 
     /**
-     * @Route("/loggedin/{deviceId}", name="index_loggedin_feedback")
-     * @param string          $deviceId
-     * @param ManagerRegistry $doctrine
-     * @param Request         $request
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function index_loggedin_feedback(string $deviceId, ManagerRegistry $doctrine, Request $request)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $requestBody = $request->getContent();
-        $requestBody = str_replace("'", "\"", $requestBody);
-        $requestBody = str_replace('&#39;', "'", $requestBody);
-        $requestJson = json_decode($requestBody, false);
-
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
-
-        if (property_exists($requestJson, "deviceInfo")) {
-            $requestDeviceInfo = $requestJson->deviceInfo;
-            $app = $requestJson->cordova;
-            if ($requestJson->production == "development") {
-                $version = $requestJson->version . "-dev";
-                $production = false;
-            } else {
-                $version = $requestJson->version;
-                $production = true;
-            }
-            if ($requestDeviceInfo->device == "Unknown") {
-                $requestDeviceInfo->device = $requestJson->cordova;
-            }
-        } else {
-            $requestDeviceInfo = $requestJson;
-            $version = 'legacy';
-            $app = 'unknown';
-            $production = true;
-        }
-
-        $accessDevice = null;
-        if ($deviceId > 0) {
-            /** @var PatientDevice $accessDevice */
-            $accessDevice = $this->getDoctrine()
-                ->getRepository(PatientDevice::class)
-                ->findOneBy([
-                    'patient' => $this->patient,
-                    'id' => $deviceId,
-                    'production' => $production,
-                ]);
-        }
-
-        if (!$accessDevice) {
-            $deviceId = -1;
-
-            /** @var PatientDevice $accessDevice */
-            $accessDevice = $this->getDoctrine()
-                ->getRepository(PatientDevice::class)
-                ->findOneBy([
-                    'patient' => $this->patient,
-                    'os' => $requestDeviceInfo->os,
-                    'browser' => $requestDeviceInfo->browser,
-                    'device' => $requestDeviceInfo->device,
-                    'os_version' => $requestDeviceInfo->os_version,
-                    'browser_version' => $requestDeviceInfo->browser_version,
-                    'production' => $production,
-                ]);
-        }
-
-        if ($accessDevice && $deviceId > 0) {
-            $accessDevice->setBrowser($requestDeviceInfo->browser);
-            $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
-            $accessDevice->setDevice($requestDeviceInfo->device);
-            $accessDevice->setOs($requestDeviceInfo->os);
-            $accessDevice->setOsVersion($requestDeviceInfo->os_version);
-            $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
-            $accessDevice->setVersion($version);
-            $accessDevice->setApp($app);
-            $accessDevice->setProduction($production);
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Updated');
-        } else {
-            if ($accessDevice) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Found');
-            } else {
-                $accessDevice = new PatientDevice();
-                $accessDevice->setPatient($this->patient);
-                $accessDevice->setBrowser($requestDeviceInfo->browser);
-                $accessDevice->setBrowserVersion($requestDeviceInfo->browser_version);
-                $accessDevice->setDevice($requestDeviceInfo->device);
-                $accessDevice->setOs($requestDeviceInfo->os);
-                $accessDevice->setOsVersion($requestDeviceInfo->os_version);
-                $accessDevice->setUserAgent($requestDeviceInfo->userAgent);
-                $accessDevice->setVersion($version);
-                $accessDevice->setApp($app);
-                $accessDevice->setProduction($production);
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' New device');
-            }
-        }
-        $accessDevice->setLastSeen(new DateTime());
-
-        $entityManager = $doctrine->getManager();
-        $entityManager->persist($accessDevice);
-        $entityManager->flush();
-
-        $return['id'] = $accessDevice->getId();
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/feed/achievements/awards", name="index_achievements_badges")
-     */
-    public function index_achievements_badges()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $return['level'] = $this->patient->getRpgLevel();
-        $return['factor'] = $this->patient->getRpgFactor();
-        $return['xp'] = round($this->patient->getXpTotal(), 0);
-        $return['xp_next'] = ceil($return['xp'] / 100) * 100;
-        $return['level_next'] = $return['xp_next'] - $return['xp'];
-        $return['level_percentage'] = 100 - ($return['xp_next'] - $return['xp']);
-        $return['xp_log'] = [];
-        foreach ($this->patient->getXp() as $rpgXP) {
-            $return['xp_log'][] = [
-                "datetime" => str_replace(" 00:00:00", "", $rpgXP->getDatetime()->format("Y-m-d H:i:s")),
-                "log" => $rpgXP->getReason(),
-                "value" => $rpgXP->getValue(),
-            ];
-        }
-        $return['xp_log'] = array_slice(array_reverse($return['xp_log']), 0, 10);
-        $return['awards'] = $this->getPatientAwards();
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/feed/body/weight/{readings}", name="angular_body_weight")
-     * @param int $readings A users UUID
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function index_body_weight(int $readings)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $return['status'] = "okay";
-        $return['code'] = "200";
-        $return['weight'] = $this->getPatientWeight(false, date("Y-m-d"), $readings);
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
      * @Route("/cmd/update/cordova/{currentVersion}", name="index_update_cordova")
      * @param string $currentVersion A users UUID
      *
@@ -2826,259 +3079,6 @@ class FeedUxController extends AbstractController
             $return['updateAvailable'] = true;
         } else {
             $return['updateAvailable'] = false;
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/feed/pve/challenges", name="index_global_challenge_in")
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function index_global_challenge_in()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @var RpgChallengeGlobalPatient[] $dbRpgChallengeGlobalIn */
-        $dbRpgChallengeGlobalIn = $this->getDoctrine()
-            ->getRepository(RpgChallengeGlobalPatient::class)
-            ->findBy(['patient' => $this->patient], ['startDateTime' => 'asc', 'challenge' => 'asc']);
-
-        if ($dbRpgChallengeGlobalIn) {
-            $return['challenges'] = [];
-            foreach ($dbRpgChallengeGlobalIn as $dbRpgChallengeGlobal) {
-                $this->feed_storage = 0;
-                if (is_null($dbRpgChallengeGlobal->getChallenge()->getChildOf())) {
-                    $arrayIndex = count($return['challenges']);
-                    $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal->getChallenge(),
-                        $dbRpgChallengeGlobal);
-                    if (is_null($return['challenges'][$arrayIndex])) {
-                        unset($return['challenges'][$arrayIndex]);
-                    }
-                }
-            }
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    private function buildChallengeArray(
-        RpgChallengeGlobal $dbRpgChallengeGlobal,
-        RpgChallengeGlobalPatient $challengePatientDetails = null
-    ) {
-        if (!is_null($dbRpgChallengeGlobal->getProgression())) {
-            $return = $this->findChallengeChildren($dbRpgChallengeGlobal, $challengePatientDetails);
-            if (is_null($return)) {
-                return null;
-            }
-
-            $xp = 0;
-            if (!is_null($dbRpgChallengeGlobal->getReward())) {
-                $xp = $dbRpgChallengeGlobal->getReward()->getXp();
-            } else {
-                if (!is_null($dbRpgChallengeGlobal->getXp())) {
-                    $xp = $dbRpgChallengeGlobal->getXp();
-                }
-            }
-
-            if (is_array($return) && array_key_exists("children", $return)) {
-                foreach ($return['children'] as $parent) {
-                    if (is_array($parent) && array_key_exists("children", $parent)) {
-                        foreach ($parent['children'] as $child) {
-                            $xp = $xp + $child['reward']['xp'];
-                        }
-                    } else {
-                        $xp = $xp + $parent['reward']['xp'];
-                    }
-                }
-            }
-
-            $return['reward']['xp'] = $xp;
-        } else {
-            $return = [
-                "id" => $dbRpgChallengeGlobal->getId(),
-                "name" => $dbRpgChallengeGlobal->getName(),
-                "description" => $dbRpgChallengeGlobal->getDescripton(),
-                "criteria" => null,
-                "target" => $dbRpgChallengeGlobal->getTarget(),
-                "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
-                "reward" => null,
-                "depth" => 0,
-                "isCollapsed" => false,
-            ];
-
-            if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
-                $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
-            } else {
-                if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
-                    $return['criteria'] = strtolower(str_replace("Fit", "",
-                        str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
-                }
-            }
-
-            $return = $this->participationInChallenge($return, $challengePatientDetails, $dbRpgChallengeGlobal);
-
-            if (!is_null($dbRpgChallengeGlobal->getReward())) {
-                $return['reward'] = [
-                    "xp" => $dbRpgChallengeGlobal->getReward()->getXp(),
-                    "badge" => $dbRpgChallengeGlobal->getReward()->getName(),
-                ];
-            } else {
-                if (!is_null($dbRpgChallengeGlobal->getXp())) {
-                    $return['reward'] = [
-                        "xp" => $dbRpgChallengeGlobal->getXp(),
-                        "badge" => null,
-                    ];
-                }
-            }
-        }
-
-        return $return;
-    }
-
-    private function findChallengeChildren(
-        RpgChallengeGlobal $dbRpgChallengeGlobal,
-        RpgChallengeGlobalPatient $challengePatientDetails = null
-    ) {
-        $return = [
-            "id" => $dbRpgChallengeGlobal->getId(),
-            "name" => $dbRpgChallengeGlobal->getName(),
-            "description" => $dbRpgChallengeGlobal->getDescripton(),
-            "progression" => $dbRpgChallengeGlobal->getProgression(),
-            "criteria" => null,
-            "target" => $dbRpgChallengeGlobal->getTarget(),
-            "targetHuman" => number_format($dbRpgChallengeGlobal->getTarget(), 0),
-            "reward" => null,
-            "depth" => 0,
-            "isCollapsed" => false,
-        ];
-
-        $return = $this->participationInChallenge($return, $challengePatientDetails, $dbRpgChallengeGlobal);
-
-        if (!is_null($dbRpgChallengeGlobal->getReward())) {
-            $return['reward'] = [];
-            $return['reward']["badge"] = $dbRpgChallengeGlobal->getReward()->getName();
-            $return['reward']["xp"] = null;
-        } else {
-            if (!is_null($dbRpgChallengeGlobal->getXp())) {
-                $return['reward'] = [
-                    "xp" => null,
-                    "badge" => null,
-                ];
-            }
-        }
-
-        if (!is_null($dbRpgChallengeGlobal->getUnitOfMeasurement())) {
-            $return['criteria'] = $dbRpgChallengeGlobal->getUnitOfMeasurement()->getName() . "(s)";
-        } else {
-            if (!is_null($dbRpgChallengeGlobal->getCriteria())) {
-                $return['criteria'] = strtolower(str_replace("Fit", "",
-                    str_replace("DailySummary", "", $dbRpgChallengeGlobal->getCriteria())));
-            }
-        }
-
-        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
-        $dbRpgChallengeGlobalChildren = $this->getDoctrine()
-            ->getRepository(RpgChallengeGlobal::class)
-            ->findBy(['childOf' => $dbRpgChallengeGlobal, 'active' => true], ['target' => 'asc', 'id' => 'asc']);
-
-        if ($dbRpgChallengeGlobalChildren) {
-            $return['children'] = [];
-            foreach ($dbRpgChallengeGlobalChildren as $dbRpgChallengeGlobalChild) {
-                $return['children'][] = $this->buildChallengeArray($dbRpgChallengeGlobalChild,
-                    $challengePatientDetails);
-            }
-            $return['depth'] = $return['children'][0]['depth'] + 1;
-        } else {
-            return null;
-        }
-
-        if ($return['depth'] > 0) {
-            $return['isCollapsed'] = true;
-        }
-
-        return $return;
-    }
-
-    private function participationInChallenge(
-        array $return,
-        RpgChallengeGlobalPatient $challengePatientDetails,
-        RpgChallengeGlobal $dbRpgChallengeGlobal
-    ) {
-        if (!is_null($challengePatientDetails)) {
-            if ($challengePatientDetails->getChallenge()->getId() != $dbRpgChallengeGlobal->getId()) {
-                /** @var RpgChallengeGlobalPatient $challengePatientDetails */
-                $challengePatientDetails = $this->getDoctrine()
-                    ->getRepository(RpgChallengeGlobalPatient::class)
-                    ->findOneBy(['patient' => $this->patient, 'challenge' => $dbRpgChallengeGlobal->getId()]);
-            }
-
-            if ($challengePatientDetails) {
-                $return['participation'] = [];
-                $return['participation']['progress'] = round($challengePatientDetails->getProgress(), 0,
-                    PHP_ROUND_HALF_DOWN);
-                if (!is_null($challengePatientDetails->getStartDateTime())) {
-                    $return['participation']['startDateTime'] = $challengePatientDetails->getStartDateTime()->format("Y-m-d H:i:s");
-                } else {
-                    $return['participation']['startDateTime'] = null;
-                }
-                if (!is_null($challengePatientDetails->getFinishDateTime())) {
-                    $return['participation']['finishDateTime'] = $challengePatientDetails->getFinishDateTime()->format("Y-m-d H:i:s");
-                } else {
-                    $return['participation']['finishDateTime'] = null;
-                }
-            } else {
-                $return['participation'] = -1;
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * @Route("/feed/pve/challenges/all", name="index_global_challenge")
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function index_global_challenge()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $return['status'] = "okay";
-        $return['code'] = "200";
-
-        /** @var RpgChallengeGlobal[] $dbRpgChallengeGlobals */
-        $dbRpgChallengeGlobals = $this->getDoctrine()
-            ->getRepository(RpgChallengeGlobal::class)
-            ->findBy(['childOf' => null, 'active' => true], ['id' => 'asc']);
-
-        if ($dbRpgChallengeGlobals) {
-            $return['challenges'] = [];
-            foreach ($dbRpgChallengeGlobals as $dbRpgChallengeGlobal) {
-                $arrayIndex = count($return['challenges']);
-
-                $return['challenges'][$arrayIndex] = $this->buildChallengeArray($dbRpgChallengeGlobal);
-                if (is_null($return['challenges'][$arrayIndex])) {
-                    unset($return['challenges'][$arrayIndex]);
-                }
-            }
         }
 
         $b = microtime(true);

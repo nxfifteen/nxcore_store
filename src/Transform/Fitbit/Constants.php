@@ -55,6 +55,50 @@ class Constants extends Transform
     const FITBITEXERCISE = "TrackingDevice::Exercise";
 
     /**
+     * @param int $serviceId
+     *
+     * @return string
+     */
+    protected static function convertExerciseType(int $serviceId)
+    {
+        switch ($serviceId) {
+            case 90013:
+                return "Walking";
+                break;
+            default:
+                return "Custom type";
+                break;
+        }
+    }
+
+    /**
+     * @param $endpoint
+     *
+     * @return array|null
+     */
+    public static function convertSubscriptionToClass($endpoint)
+    {
+        switch ($endpoint) {
+            case 'activities':
+                return [
+                    "TrackingDevice",
+                    "FitStepsDailySummary",
+                    "Exercise",
+                ];
+                break;
+            case 'body':
+                return [
+                    "TrackingDevice",
+                    "BodyWeight",
+                ];
+                break;
+
+            default:
+                return null;
+        }
+    }
+
+    /**
      * @param string $endpoint
      *
      * @return string|null
@@ -99,49 +143,5 @@ class Constants extends Transform
         }
 
         return FITBIT_COM . "/1/user/-$path";
-    }
-
-    /**
-     * @param $endpoint
-     *
-     * @return array|null
-     */
-    public static function convertSubscriptionToClass($endpoint)
-    {
-        switch ($endpoint) {
-            case 'activities':
-                return [
-                    "TrackingDevice",
-                    "FitStepsDailySummary",
-                    "Exercise",
-                ];
-                break;
-            case 'body':
-                return [
-                    "TrackingDevice",
-                    "BodyWeight",
-                ];
-                break;
-
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * @param int $serviceId
-     *
-     * @return string
-     */
-    protected static function convertExerciseType(int $serviceId)
-    {
-        switch ($serviceId) {
-            case 90013:
-                return "Walking";
-                break;
-            default:
-                return "Custom type";
-                break;
-        }
     }
 }
