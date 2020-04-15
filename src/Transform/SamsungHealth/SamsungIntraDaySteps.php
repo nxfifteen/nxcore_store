@@ -21,6 +21,7 @@ use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Service\AwardManager;
+use App\Transform\Base\BaseIntraDaySteps;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
@@ -30,7 +31,7 @@ use Exception;
  *
  * @package App\Transform\SamsungHealth
  */
-class SamsungIntraDaySteps extends Constants
+class SamsungIntraDaySteps extends BaseIntraDaySteps
 {
     /**
      * @param ManagerRegistry $doctrine
@@ -72,7 +73,7 @@ class SamsungIntraDaySteps extends Constants
             }
 
             /** @var ThirdPartyService $thirdPartyService */
-            $thirdPartyService = self::getThirdPartyService($doctrine, self::SAMSUNGHEALTHSERVICE);
+            $thirdPartyService = self::getThirdPartyService($doctrine, Constants::SAMSUNGHEALTHSERVICE);
             if (is_null($thirdPartyService)) {
                 return null;
             }

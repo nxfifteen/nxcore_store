@@ -18,6 +18,7 @@ use App\Entity\Patient;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\CommsManager;
+use App\Transform\Base\BaseEntry;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -28,7 +29,7 @@ use Sentry;
  *
  * @package App\Transform\SamsungHealth
  */
-class Entry
+class Entry extends BaseEntry
 {
 
     /**
@@ -168,12 +169,16 @@ class Entry
                 $entityManager->persist($translateEntity);
                 $entityManager->flush();
                 $returnId = $translateEntity->getId();
+
+                $this->postToMirror($translateEntity);
             } else {
                 $returnId = [];
                 foreach ($translateEntity as $item) {
                     if (!is_null($item)) {
                         $entityManager->persist($item);
                         $entityManager->flush();
+
+                        $this->postToMirror($translateEntity);
                         array_push($returnId, $item->getId());
                     }
                 }
