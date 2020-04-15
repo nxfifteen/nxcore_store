@@ -32,5 +32,5 @@ class Constants extends Transform
     /**
      *
      */
-    const COREINTRADAYSTEPS = "IntraDaySteps";
+    const COREINTRADAYSTEPS = "FitStepsIntraDay";
 }
