@@ -170,16 +170,16 @@ class Entry extends BaseEntry
                 $entityManager->flush();
                 $returnId = $translateEntity->getId();
 
-                $this->postToMirror($translateEntity);
+                // $this->postToMirror($translateEntity);
             } else {
                 $returnId = [];
                 foreach ($translateEntity as $item) {
                     if (!is_null($item)) {
                         $entityManager->persist($item);
                         $entityManager->flush();
-
-                        $this->postToMirror($translateEntity);
                         array_push($returnId, $item->getId());
+
+                        // $this->postToMirror($translateEntity);
                     }
                 }
             }
