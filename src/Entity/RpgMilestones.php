@@ -71,7 +71,7 @@ class RpgMilestones
     {
         if (is_null($this->guid)) {
             try {
-                $this->guid = Uuid::uuid4();
+                $this->guid = Uuid::uuid1();
             } catch (Exception $e) {
             }
         }
