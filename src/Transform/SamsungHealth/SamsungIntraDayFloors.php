@@ -15,6 +15,7 @@
 namespace App\Transform\SamsungHealth;
 
 
+use App\AppConstants;
 use App\Entity\FitFloorsIntraDay;
 use App\Entity\Patient;
 use App\Entity\PatientGoals;
@@ -95,6 +96,21 @@ class SamsungIntraDayFloors extends Constants
             ]);
             if (!$dataEntry) {
                 $dataEntry = new FitFloorsIntraDay();
+                $safeGuid = false;
+                $i = 0;
+                do {
+                    $i++;
+                    $dataEntry->createGuid(true);
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(FitFloorsIntraDay::class)
+                        ->findByGuid($dataEntry->getGuid());
+                    if (empty($dataEntryGuidCheck)) {
+                        $safeGuid = true;
+                    } else {
+                        AppConstants::writeToLog('debug_transform.txt',
+                            __FILE__ . '@' . __LINE__ . ': Added a GUID (' . $i . ')');
+                    }
+                } while (!$safeGuid);
             }
 
             if (property_exists($jsonContent, "goal")) {

@@ -14,6 +14,7 @@
 
 namespace App\Transform\SamsungHealth;
 
+use App\AppConstants;
 use App\Entity\BodyFat;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
@@ -106,6 +107,25 @@ class SamsungBodyFat extends Constants
             ]);
             if (!$dataEntry) {
                 $dataEntry = new BodyFat();
+                $safeGuid = false;
+                $i = 0;
+                do {
+                    $i++;
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': Added a GUID (' . $i . ')');
+                    $dataEntry->createGuid(true);
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(BodyFat::class)
+                        ->findByGuid($dataEntry->getGuid());
+                    if (empty($dataEntryGuidCheck)) {
+                        $safeGuid = true;
+                    }
+
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': ' . gettype($dataEntryGuidCheck));
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': ' . count($dataEntryGuidCheck));
+                } while (!$safeGuid);
             }
 
             $dataEntry->setPatient($patient);

@@ -14,6 +14,7 @@
 
 namespace App\Transform\SamsungHealth;
 
+use App\AppConstants;
 use App\Entity\FoodDatabase;
 use App\Entity\FoodDiary;
 use App\Entity\FoodMeals;
@@ -93,6 +94,21 @@ class SamsungFood extends Constants
 
             if (!$dataEntry) {
                 $dataEntry = new FoodNutrition();
+                $safeGuid = false;
+                $i = 0;
+                do {
+                    $i++;
+                    $dataEntry->createGuid(true);
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(FoodNutrition::class)
+                        ->findByGuid($dataEntry->getGuid());
+                    if (empty($dataEntryGuidCheck)) {
+                        $safeGuid = true;
+                    } else {
+                        AppConstants::writeToLog('debug_transform.txt',
+                            __FILE__ . '@' . __LINE__ . ': Added a GUID (' . $i . ')');
+                    }
+                } while (!$safeGuid);
             }
 
             $dataEntry->setPatient($patient);

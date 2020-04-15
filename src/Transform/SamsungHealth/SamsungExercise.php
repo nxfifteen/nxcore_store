@@ -121,6 +121,25 @@ class SamsungExercise extends Constants
             if (!$dataEntryExercise) {
                 $newItem = true;
                 $dataEntryExercise = new Exercise();
+                $safeGuid = false;
+                $i = 0;
+                do {
+                    $i++;
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': Added a GUID (' . $i . ')');
+                    $dataEntryExercise->createGuid(true);
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(Exercise::class)
+                        ->findByGuid($dataEntryExercise->getGuid());
+                    if (empty($dataEntryGuidCheck)) {
+                        $safeGuid = true;
+                    }
+
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': ' . gettype($dataEntryGuidCheck));
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': ' . count($dataEntryGuidCheck));
+                } while (!$safeGuid);
             }
 
             $dataEntryExercise->setPatient($patient);

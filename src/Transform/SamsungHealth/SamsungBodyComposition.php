@@ -14,6 +14,7 @@
 
 namespace App\Transform\SamsungHealth;
 
+use App\AppConstants;
 use App\Entity\BodyComposition;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
@@ -96,6 +97,27 @@ class SamsungBodyComposition extends Constants
             ]);
             if (!$dataEntry) {
                 $dataEntry = new BodyComposition();
+                $safeGuid = false;
+                $i = 0;
+                do {
+                    $i++;
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': Added a GUID (' . $i . ')');
+                    $dataEntry->createGuid(true);
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': ' . $dataEntry->getGuid()->toString());
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(BodyComposition::class)
+                        ->findByGuid($dataEntry->getGuid());
+                    if (empty($dataEntryGuidCheck) || (is_array($dataEntryGuidCheck) && count($dataEntryGuidCheck) == 0)) {
+                        $safeGuid = true;
+                    }
+
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': ' . gettype($dataEntryGuidCheck));
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __FILE__ . '@' . __LINE__ . ': ' . count($dataEntryGuidCheck));
+                } while (!$safeGuid);
             }
 
             $dataEntry->setPatient($patient);

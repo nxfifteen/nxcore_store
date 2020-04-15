@@ -15,6 +15,7 @@
 namespace App\Transform\SamsungHealth;
 
 
+use App\AppConstants;
 use App\Entity\FitStepsIntraDay;
 use App\Entity\Patient;
 use App\Entity\ThirdPartyService;
@@ -98,6 +99,22 @@ class SamsungIntraDaySteps extends Constants
             ]);
             if (!$dataEntry) {
                 $dataEntry = new FitStepsIntraDay();
+                $safeGuid = false;
+                $i = 0;
+                do {
+                    $i++;
+                    $dataEntry->createGuid(true);
+                    /** @var FitStepsIntraDay[] $dataEntryGuidCheck */
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(FitStepsIntraDay::class)
+                        ->findByGuid($dataEntry->getGuid());
+                    if (empty($dataEntryGuidCheck)) {
+                        $safeGuid = true;
+                    } else {
+                        AppConstants::writeToLog('debug_transform.txt',
+                            __FILE__ . '@' . __LINE__ . ': Added a GUID (' . $i . ')');
+                    }
+                } while (!$safeGuid);
             }
 
             $dataEntry->setPatient($patient);

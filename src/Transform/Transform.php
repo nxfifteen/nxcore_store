@@ -259,6 +259,19 @@ class Transform
         } else {
             $entityManager = $doctrine->getManager();
             $thirdPartyService = new ThirdPartyService();
+            $safeGuid = false;
+            $i = 0;
+            while ($safeGuid == false) {
+                $i++;
+                AppConstants::writeToLog('debug_transform.txt', 'Added a GUID (' . $i . ')');
+                $thirdPartyService->createGuid();
+                $dataEntryGuidCheck = $doctrine
+                    ->getRepository(ThirdPartyService::class)
+                    ->findByGuid($thirdPartyService->getGuid());
+                if (empty($dataEntryGuidCheck)) {
+                    $safeGuid = true;
+                }
+            }
             $thirdPartyService->setName($serviceName);
             $entityManager->persist($thirdPartyService);
             $entityManager->flush();
@@ -295,6 +308,19 @@ class Transform
         } else {
             $entityManager = $doctrine->getManager();
             $deviceTracking = new TrackingDevice();
+            $safeGuid = false;
+            $i = 0;
+            while ($safeGuid == false) {
+                $i++;
+                AppConstants::writeToLog('debug_transform.txt', 'Added a GUID (' . $i . ')');
+                $deviceTracking->createGuid();
+                $dataEntryGuidCheck = $doctrine
+                    ->getRepository(TrackingDevice::class)
+                    ->findByGuid($deviceTracking->getGuid());
+                if (empty($dataEntryGuidCheck)) {
+                    $safeGuid = true;
+                }
+            }
             $deviceTracking->setPatient($patient);
             $deviceTracking->setService($thirdPartyService);
             $deviceTracking->setRemoteId($remote_id);
