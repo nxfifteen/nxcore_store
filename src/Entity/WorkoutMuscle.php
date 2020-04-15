@@ -63,11 +63,13 @@ class WorkoutMuscle
     /**
      * Get the internal primary identity key.
      *
+     * @param bool $force
+     *
      * @return $this
      */
-    public function createGuid()
+    public function createGuid(bool $force = false)
     {
-        if (is_null($this->guid)) {
+        if ($force || is_null($this->guid)) {
             try {
                 $this->guid = Uuid::uuid1();
             } catch (Exception $e) {
