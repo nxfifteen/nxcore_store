@@ -39,6 +39,47 @@ use Symfony\Component\Routing\Annotation\Route;
 class SyncUploadController extends AbstractController
 {
     /**
+     * @param Request $request
+     */
+    private function postToMirror(Request $request)
+    {
+        $ch = curl_init($_ENV['MESH_MIRROR'] . $request->getRequestUri());
+        if ($request->getContentType() == "json") {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
+        }
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getContent());
+//        curl_exec($ch);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec($ch);
+        if (!empty($response)) {
+            $response = json_decode($response);
+            if ($response->success) {
+                AppConstants::writeToLog('mirror.txt',
+                    '[' . $_ENV['MESH_MIRROR'] . '] Accepted the post to ' . $request->getRequestUri());
+            } else {
+                if ($response->status != 200) {
+                    AppConstants::writeToLog('mirror.txt',
+                        '[' . $_ENV['MESH_MIRROR'] . '] Failed to accept the post to ' . $request->getRequestUri());
+                    AppConstants::writeToLog('mirror.txt',
+                        '[' . $_ENV['MESH_MIRROR'] . '] responded with ' . json_encode($response));
+                } else {
+                    AppConstants::writeToLog('mirror.txt',
+                        '[' . $_ENV['MESH_MIRROR'] . '] responded with ' . $response->status);
+                }
+            }
+        } else {
+            AppConstants::writeToLog('mirror.txt',
+                '[' . $_ENV['MESH_MIRROR'] . '] sent an empty responce');
+        }
+
+        curl_close($ch);
+    }
+
+    /**
      * @Route("/sync/upload/{service}/{data_set}", name="sync_upload_post", methods={"POST"})
      * @param String          $service
      * @param String          $data_set
@@ -93,9 +134,12 @@ class SyncUploadController extends AbstractController
             } else {
                 $transformerClass = new $transformerClassName($logger);
             }
-            /** @noinspection PhpUndefinedMethodInspection */
             $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine(),
                 $awardManager, $challengePve, $commsManager);
+        }
+
+        if (array_key_exists("MESH_MIRROR", $_ENV)) {
+            $this->postToMirror($request);
         }
 
         if (is_array($savedId)) {
@@ -115,6 +159,7 @@ class SyncUploadController extends AbstractController
                 ]);
             } else {
                 if ($savedId == -1) {
+//                    AppConstants::writeToLog('debug_transform.txt', __LINE__);
                     return $this->json([
                         'success' => false,
                         'status' => 500,
@@ -122,6 +167,7 @@ class SyncUploadController extends AbstractController
                     ]);
                 } else {
                     if ($savedId == -2) {
+//                        AppConstants::writeToLog('debug_transform.txt', __LINE__);
                         return $this->json([
                             'success' => false,
                             'status' => 500,
@@ -129,16 +175,22 @@ class SyncUploadController extends AbstractController
                         ]);
                     } else {
                         if ($savedId == -3) {
+//                            AppConstants::writeToLog('debug_transform.txt', __LINE__);
                             return $this->json([
                                 'success' => false,
                                 'status' => 500,
                                 'message' => "Unknown data set '$data_set' in '$service'",
                             ]);
                         } else {
+//                            AppConstants::writeToLog('debug_transform.txt',
+//                                'I\'m about to respond with a 500 error after ' . $data_set);
+//                            AppConstants::writeToLog('debug_transform.txt',
+//                                $request->getContent());
+
                             return $this->json([
                                 'success' => false,
                                 'status' => 500,
-                                'message' => "Unknown error",
+                                'message' => "Unknown error, saved is '" . $savedId . "'",
                             ]);
                         }
                     }
@@ -159,8 +211,17 @@ class SyncUploadController extends AbstractController
      */
     public function sync_webhook_get(string $service, LoggerInterface $logger)
     {
+        $request = Request::createFromGlobals();
+
+        if (array_key_exists("MESH_MIRROR", $_ENV)) {
+            if (is_array($_GET) && array_key_exists("verify", $_GET)) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ":: Skiiping verify posts");
+            } else {
+                $this->postToMirror(clone($request));
+            }
+        }
+
         if (strtolower($service) == "habitica") {
-            $request = Request::createFromGlobals();
             $jsonContent = json_decode($request->getContent(), false);
 
             AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - ' . $jsonContent->user->_id);
@@ -186,7 +247,6 @@ class SyncUploadController extends AbstractController
             return $response;
         }
 
-        $request = Request::createFromGlobals();
         $jsonContent = json_decode($request->getContent(), false);
 
         $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
@@ -205,6 +265,7 @@ class SyncUploadController extends AbstractController
                 }
 
                 if (!is_null($queueEndpoints)) {
+                    /** @var PatientCredentials $patientCredential */
                     $patientCredential = $this->getDoctrine()
                         ->getRepository(PatientCredentials::class)
                         ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
