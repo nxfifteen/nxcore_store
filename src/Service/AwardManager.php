@@ -232,10 +232,7 @@ class AwardManager
     {
         //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Origin class = ' . get_class($dataEntry));
 
-        if ($dataEntry->getDateTime()->format("Y-m-d") != date("Y-m-d")) {
-            AppConstants::writeToLog('debug_transform.txt',
-                __METHOD__ . '@' . __LINE__ . ': FitStepsDailySummary::DateMissMatch');
-        } else {
+        if ($dataEntry->getDateTime()->format("Y-m-d") == date("Y-m-d")) {
             if ($dataEntry->getValue() >= $dataEntry->getGoal()->getGoal()) {
                 //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ': Value is greater than Goal');
                 $indicatorDataSet = str_ireplace("App\\Entity\\", "", get_class($dataEntry));
@@ -271,36 +268,38 @@ class AwardManager
      */
     private function checkForFitStepsIntraDay(FitStepsIntraDay $dataEntry)
     {
-        /** @var FitStepsIntraDay[] $product */
-        $product = $this->doctrine
-            ->getRepository(FitStepsIntraDay::class)
-            ->findByForHour($dataEntry->getPatient()->getUuid(), $dataEntry->getDateTime()->format("Y-m-d"),
-                $dataEntry->getHour(), $dataEntry->getTrackingDevice()->getId());
+        if ($dataEntry->getDateTime()->format("Y-m-d") == date("Y-m-d")) {
+            /** @var FitStepsIntraDay[] $product */
+            $product = $this->doctrine
+                ->getRepository(FitStepsIntraDay::class)
+                ->findByForHour($dataEntry->getPatient()->getUuid(), $dataEntry->getDateTime()->format("Y-m-d"),
+                    $dataEntry->getHour(), $dataEntry->getTrackingDevice()->getId());
 
-        $value = 0;
-        foreach ($product as $item) {
-            $value = $value + $item->getValue();
-        }
+            $value = 0;
+            foreach ($product as $item) {
+                $value = $value + $item->getValue();
+            }
 
-        if ($value > 5000) {
-            $this->findAndDeliveryRewards("intraday", "steps", "5000",
-                new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
-        } else {
-            if ($value > 3000) {
-                $this->findAndDeliveryRewards("intraday", "steps", "3000",
+            if ($value > 5000) {
+                $this->findAndDeliveryRewards("intraday", "steps", "5000",
                     new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
             } else {
-                if ($value > 2500) {
-                    $this->findAndDeliveryRewards("intraday", "steps", "2500",
+                if ($value > 3000) {
+                    $this->findAndDeliveryRewards("intraday", "steps", "3000",
                         new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
                 } else {
-                    if ($value > 1500) {
-                        $this->findAndDeliveryRewards("intraday", "steps", "1500",
+                    if ($value > 2500) {
+                        $this->findAndDeliveryRewards("intraday", "steps", "2500",
                             new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
                     } else {
-                        if ($value > 250) {
-                            $this->findAndDeliveryRewards("intraday", "steps", "250",
+                        if ($value > 1500) {
+                            $this->findAndDeliveryRewards("intraday", "steps", "1500",
                                 new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+                        } else {
+                            if ($value > 250) {
+                                $this->findAndDeliveryRewards("intraday", "steps", "250",
+                                    new DateTime($dataEntry->getDateTime()->format("Y-m-d " . $dataEntry->getHour() . ":00:00")));
+                            }
                         }
                     }
                 }
