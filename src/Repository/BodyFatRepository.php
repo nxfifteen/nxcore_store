@@ -48,7 +48,32 @@ class BodyFatRepository extends ServiceEntityRepository
      */
     public function findByDateRange(string $patientId, string $date)
     {
-        return $this->findByDateRangeHistorical($patientId, $date, 0);
+        return $this->findSingleDate($patientId, $date);
+    }
+
+    /**
+     * @param String $patientId
+     * @param String $date
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function findSingleDate(string $patientId, string $date)
+    {
+        $today = $date . " 00:00:00";
+        $todayEnd = $date . " 23:59:00";
+
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.patient', 'p')
+            ->andWhere('c.DateTime >= :val')
+            ->setParameter('val', $today)
+            ->andWhere('c.DateTime <= :valEnd')
+            ->setParameter('valEnd', $todayEnd)
+            ->andWhere('p.uuid = :patientId')
+            ->setParameter('patientId', $patientId)
+            ->orderBy('c.DateTime', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
