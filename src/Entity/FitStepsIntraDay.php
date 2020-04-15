@@ -258,4 +258,52 @@ class FitStepsIntraDay
 
         return $this;
     }
+
+    /**
+     * Helper method to create json string from entiry
+     *
+     * @return string|null
+     */
+    public function toJson(): ?string
+    {
+        $returnString = [];
+        foreach (get_class_methods($this) as $classMethod) {
+            unset($holdValue);
+            if (substr($classMethod, 0, 3) === "get" && $classMethod != "getId" && $classMethod != "getRemoteId") {
+                $methodValue = str_ireplace("get", "", $classMethod);
+                $holdValue = $this->$classMethod();
+                switch (gettype($holdValue)) {
+                    case "string":
+                    case "integer":
+                        $returnString[$methodValue] = $holdValue;
+                        break;
+                    case "object":
+                        switch (get_class($holdValue)) {
+                            case "DateTime":
+                                /** @var $holdValue DateTimeInterface */
+                                $returnString[$methodValue] = $holdValue->format("U");
+                                break;
+                            case "Ramsey\\Uuid\\Uuid":
+                                /** @var $holdValue UuidInterface */
+                                $returnString[$methodValue] = $holdValue->toString();
+                                break;
+                            case "App\\Entity\\Patient":
+                            case "Proxies\\__CG__\\App\\Entity\\TrackingDevice":
+                                /** @var $holdValue TrackingDevice */
+                                $returnString[$methodValue] = $holdValue->getGuid();
+                                break;
+                            default:
+                                $returnString[$methodValue] = get_class($holdValue);
+                                break;
+                        }
+                        break;
+                    default:
+                        $returnString[$methodValue] = gettype($holdValue);
+                        break;
+                }
+            }
+        }
+
+        return json_encode($returnString);
+    }
 }
