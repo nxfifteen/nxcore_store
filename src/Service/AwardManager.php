@@ -424,6 +424,19 @@ class AwardManager
     {
         //AppConstants::writeToLog('debug_transform.txt', __METHOD__ . '@' . __LINE__ . ' getProjectDir::' . $this->appKernel->getProjectDir());
         $standard = [
+            'intraday' => [
+                'steps' => [
+                    '250' => [
+                        [
+                            'name' => 'You took 250 steps',
+                            'text' => "Stay active by taking 250 steps an hour",
+                            'text_long' => "Stay active by taking 250 steps an hour",
+                            'type' => "xp",
+                            'payload' => 5,
+                        ],
+                    ],
+                ],
+            ],
             'FitStepsDailySummary' => [
                 'goal' => [
                     '>300%' => [
