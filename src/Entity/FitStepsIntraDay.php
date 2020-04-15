@@ -280,20 +280,18 @@ class FitStepsIntraDay
                     case "object":
                         switch (get_class($holdValue)) {
                             case "DateTime":
-                                /** @var $holdValue DateTimeInterface */
                                 $returnString[$methodValue] = $holdValue->format("U");
                                 break;
                             case "Ramsey\\Uuid\\Uuid":
                                 /** @var $holdValue UuidInterface */
                                 $returnString[$methodValue] = $holdValue->toString();
                                 break;
-                            case "App\\Entity\\Patient":
-                            case "Proxies\\__CG__\\App\\Entity\\TrackingDevice":
-                                /** @var $holdValue TrackingDevice */
-                                $returnString[$methodValue] = $holdValue->getGuid();
-                                break;
                             default:
-                                $returnString[$methodValue] = get_class($holdValue);
+                                if (substr(get_class($holdValue), 0, strlen("App\Entity\\")) === "App\Entity\\") {
+                                    $returnString[$methodValue] = $holdValue->getGuid();
+                                } else {
+                                    $returnString[$methodValue] = get_class($holdValue);
+                                }
                                 break;
                         }
                         break;
