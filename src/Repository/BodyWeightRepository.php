@@ -109,7 +109,7 @@ class BodyWeightRepository extends ServiceEntityRepository
         /** @var BodyWeight $previousWeightRecord */
         $previousWeightRecord = null;
         for ($i = 0; $i <= ($lastDays - 1); $i++) {
-            if ($weightRecords[$loopWeightCount]->getDateTime()->format("Y-m-d") == $dateArray[$i]->format('Y-m-d')) {
+            if (count($weightRecords) <= $loopWeightCount && $weightRecords[$loopWeightCount]->getDateTime()->format("Y-m-d") == $dateArray[$i]->format('Y-m-d')) {
                 $previousWeightRecord = clone $weightRecords[$loopWeightCount];
                 $weightReturnData[] = clone $weightRecords[$loopWeightCount];
                 $loopWeightCount++;
