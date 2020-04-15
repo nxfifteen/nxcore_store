@@ -211,7 +211,7 @@ class Entry
             if (!is_array($translateEntity) && is_object($translateEntity)) {
                 /** @var Object $translateEntity */
                 $entityManager->persist($translateEntity);
-                /** @noinspection PhpUndefinedMethodInspection */
+                $entityManager->flush();
                 $returnId = $translateEntity->getId();
             } else {
                 $returnId = [];
@@ -222,13 +222,13 @@ class Entry
                         } else {
                             if (is_object($item)) {
                                 $entityManager->persist($item);
+                                $entityManager->flush();
                                 array_push($returnId, $item->getId());
                             }
                         }
                     }
                 }
             }
-            $entityManager->flush();
 
             return $returnId;
         } else {

@@ -107,17 +107,18 @@ class Entry
             $entityManager = $doctrine->getManager();
             if (!is_array($translateEntity)) {
                 $entityManager->persist($translateEntity);
+                $entityManager->flush();
                 $returnId = $translateEntity->getId();
             } else {
                 $returnId = [];
                 foreach ($translateEntity as $item) {
                     if (!is_null($item)) {
                         $entityManager->persist($item);
+                        $entityManager->flush();
                         array_push($returnId, $item->getId());
                     }
                 }
             }
-            $entityManager->flush();
 
             return $returnId;
         } else {
