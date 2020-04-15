@@ -176,33 +176,34 @@ class FeedJsonController extends AbstractController
     {
         $this->setupRoute();
 
+        $timeStampsInTrack = [];
+
         /** @var BodyWeight[] $bodyWeights */
         $bodyWeights = $this->getDoctrine()
             ->getRepository(BodyWeight::class)
             ->findByDateRange($this->patient->getUuid(), $date);
-        if (count($bodyWeights) == 0) {
-            /** @noinspection PhpUndefinedMethodInspection */
+        if (!is_array($bodyWeights) || count($bodyWeights) == 0) {
             /** @var BodyWeight[] $productFirst */
             $bodyWeights = $this->getDoctrine()
                 ->getRepository(BodyWeight::class)
-                ->findFirst($this->patient->getUuid());
+                ->findLast($this->patient->getUuid());
         }
-        $bodyWeights = $bodyWeights[0];
+        if (is_array($bodyWeights)) {
+            $bodyWeights = array_pop($bodyWeights);
+        }
 
         /** @var BodyFat[] $bodyFats */
         $bodyFats = $this->getDoctrine()
             ->getRepository(BodyFat::class)
             ->findByDateRange($this->patient->getUuid(), $date);
-        if (count($bodyFats) == 0) {
-            /** @noinspection PhpUndefinedMethodInspection */
+        if (!is_array($bodyFats) || count($bodyFats) == 0) {
             /** @var BodyWeight[] $productFirst */
             $bodyFats = $this->getDoctrine()
                 ->getRepository(BodyFat::class)
                 ->findFirst($this->patient->getUuid());
         }
-        $bodyFats = $bodyFats[0];
+        $bodyFats = array_pop($bodyFats);
 
-        $timeStampsInTrack = [];
         $timeStampsInTrack['uuid'] = $this->patient->getUuid();
         $timeStampsInTrack['today'] = $bodyWeights->getDateTime()->format("Y-m-d");
         $timeStampsInTrack['lastReading'] = $bodyWeights->getDateTime()->format("H:i:s");
