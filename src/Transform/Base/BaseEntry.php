@@ -51,11 +51,11 @@ class BaseEntry
                 $response = json_decode($response);
                 if ($response->success) {
                     AppConstants::writeToLog('mirror.txt',
-                        '[' . $_ENV['MESH_MIRROR'] . '] Accepted the post to ' . $request->getRequestUri());
+                        '[' . $_ENV['MESH_MIRROR'] . '] Accepted the post to ' . $mirror_url);
                 } else {
                     if ($response->status != 200) {
                         AppConstants::writeToLog('mirror.txt',
-                            '[' . $_ENV['MESH_MIRROR'] . '] Failed to accept the post to ' . $request->getRequestUri());
+                            '[' . $_ENV['MESH_MIRROR'] . '] Failed to accept the post to ' . $mirror_url);
                         AppConstants::writeToLog('mirror.txt',
                             '[' . $_ENV['MESH_MIRROR'] . '] responded with ' . json_encode($response));
                     } else {
@@ -63,6 +63,7 @@ class BaseEntry
                             '[' . $_ENV['MESH_MIRROR'] . '] responded with ' . $response->status);
                     }
                 }
+
             } else {
                 AppConstants::writeToLog('mirror.txt',
                     '[' . $_ENV['MESH_MIRROR'] . '] sent an empty responce');
