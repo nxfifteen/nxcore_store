@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -124,12 +123,12 @@ class RegistrationController extends AbstractController
         $requestJson = json_decode($requestBody, false);
         $requestJson->username = strtolower($requestJson->username);
 
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r([
+        /*AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r([
                 "username" => $requestJson->username,
                 "email" => $requestJson->email,
                 "invite" => $requestJson->invite,
                 "password" => $requestJson->password,
-            ], true));
+            ], true));*/
         AppConstants::writeToLog('debug_transform.txt',
             __LINE__ . ' New user registration ' . $requestJson->username . ' ' . $requestJson->email);
 
