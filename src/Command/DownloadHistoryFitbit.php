@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -20,6 +19,8 @@ use App\Entity\PatientCredentials;
 use App\Entity\PatientSettings;
 use App\Entity\ThirdPartyService;
 use App\Service\AwardManager;
+use App\Service\ChallengePve;
+use App\Service\CommsManager;
 use App\Transform\Fitbit\Constants;
 use DateTime;
 use djchen\OAuth2\Client\Provider\Fitbit;
@@ -80,16 +81,14 @@ class DownloadHistoryFitbit extends Command
      */
     private $hasHistoryMembership;
 
-    /*private function setupCommand()
-    {
-        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
-            $scope->setUser([
-                'id' => $this->patient->getId(),
-                'username' => $this->patient->getUsername(),
-                'email' => $this->patient->getEmail(),
-            ]);
-        });
-    }*/
+    /**
+     * @var ChallengePve
+     */
+    private $challengePve;
+    /**
+     * @var CommsManager
+     */
+    private $commsManager;
 
     /**
      * @param DateTime $serviceBirth
@@ -375,18 +374,18 @@ class DownloadHistoryFitbit extends Command
     }
 
     /**
-     * @param string   $transformerClassName
-     * @param DateTime $servicePullFrom
-     * @param array    $supportedEndpoint
-     * @param array    $patientServiceProfile
+     * @param string       $transformerClassName
+     * @param DateTime     $servicePullFrom
+     * @param array|string $supportedEndpoint
+     * @param object       $patientServiceProfile
      *
      * @return mixed
      */
     private function saveFitStepsPeriodSummary(
         string $transformerClassName,
         DateTime $servicePullFrom,
-        array $supportedEndpoint,
-        array $patientServiceProfile
+        $supportedEndpoint,
+        $patientServiceProfile
     ) {
         $processDataArray = [];
         $processDataArray[0] = [
@@ -403,10 +402,9 @@ class DownloadHistoryFitbit extends Command
             }
         }
 
-        $transformerClass = new $transformerClassName($this->logger);
-        /** @noinspection PhpUndefinedMethodInspection */
+        $transformerClass = new $transformerClassName($this->logger, $this->patient);
         $savedId = $transformerClass->transform($supportedEndpoint, $processDataArray, $this->doctrine,
-            $this->awardManager);
+            $this->awardManager, $this->challengePve, $this->commsManager);
 
         return $patientServiceProfile->{'activities-steps'}[0]->dateTime;
     }
@@ -417,7 +415,7 @@ class DownloadHistoryFitbit extends Command
      */
     private function updateUserSetting(string $string, string $serviceBirth)
     {
-        $this->log("Updating " . $this->patient->getFirstName() . " for " . $this->service->getName() . " key " . $string . " to " . $serviceBirth);
+        // $this->log("Updating " . $this->patient->getFirstName() . " for " . $this->service->getName() . " key " . $string . " to " . $serviceBirth);
 
         /** @var PatientSettings $dbPatientSettings */
         $dbPatientSetting = $this->doctrine
@@ -485,80 +483,87 @@ class DownloadHistoryFitbit extends Command
                 }
 
                 if (!is_null($serviceBirth)) {
-                    [$servicePullFrom, $premiumString] = $this->calcServicePullFromDate($serviceBirth);
-                    /** @var DateTime $serviceOldestPull */
                     try {
-                        $serviceOldestPull = $this->getPatientSetting("oldestPull", true);
-                        if (is_null($serviceOldestPull)) {
+                        $supportedEndpoints = $this->getPatientSetting("enabledEndpoints");
+                    } catch (Exception $e) {
+                        break;
+                    }
+
+                    [$servicePullFrom, $premiumString] = $this->calcServicePullFromDate($serviceBirth);
+                    $this->log("Downloading history for " . $premiumString . " " . $this->patient->getUsername());
+                    foreach ($supportedEndpoints as $supportedEndpoint) {
+                        $supportedEndpoint = str_ireplace("Daily", "Period", $supportedEndpoint);
+
+                        /** @var DateTime $serviceOldestPull */
+                        try {
+                            $serviceOldestPull = $this->getPatientSetting("oldestPull" . $supportedEndpoint, true);
+                            if (is_null($serviceOldestPull)) {
+                                if (!is_null($serviceDeath)) {
+                                    $serviceOldestPull = $serviceDeath;
+                                } else {
+                                    $serviceOldestPull = new DateTime();
+                                }
+                            }
+                        } catch (Exception $e) {
                             if (!is_null($serviceDeath)) {
                                 $serviceOldestPull = $serviceDeath;
                             } else {
                                 $serviceOldestPull = new DateTime();
                             }
                         }
-                    } catch (Exception $e) {
-                        if (!is_null($serviceDeath)) {
-                            $serviceOldestPull = $serviceDeath;
-                        } else {
-                            $serviceOldestPull = new DateTime();
-                        }
-                    }
 
-                    if ($serviceOldestPull->format("U") > $servicePullFrom->format("U")) {
-                        $this->log("Downloading history for " . $premiumString . " " . $this->patient->getUsername() . " since " . $servicePullFrom->format("Y-m-d"));
-
-                        try {
-                            $supportedEndpoints = $this->getPatientSetting("enabledEndpoints");
-                        } catch (Exception $e) {
-                            break;
-                        }
-
-                        foreach ($supportedEndpoints as $supportedEndpoint) {
+                        if ($serviceOldestPull->format("U") > $servicePullFrom->format("U")) {
                             $transformerClassName = 'App\\Transform\\Fitbit\\Entry';
                             if (!class_exists($transformerClassName)) {
-                                $this->log("Couldn't find a Transformer for Fitbit");
+                                $this->log(" Couldn't find a Transformer for Fitbit");
                             } else {
-                                $supportedEndpoint = str_ireplace("Daily", "Period", $supportedEndpoint);
                                 if (
-                                    $supportedEndpoint == "Exercise" ||
-                                    ($supportedEndpoint !== "TrackingDevice" && strpos($supportedEndpoint,
-                                            'Period') !== false)
+                                    /*$supportedEndpoint == "Exercise" ||*/
+                                ($supportedEndpoint !== "TrackingDevice" && strpos($supportedEndpoint,
+                                        'Period') !== false)
                                 ) {
+                                    $this->log(" Downloading " . $supportedEndpoint . " since " . $servicePullFrom->format("Y-m-d"));
+
                                     $loopWatchCount = 0;
-                                    $loopWatchCountMax = 3;
+                                    $loopWatchCountMax = 5;
                                     $loopWatchRef = strtotime('now');
                                     $loopWatchRefMax = $servicePullFrom->format('U');
 
                                     while ($loopWatchCount < $loopWatchCountMax && $loopWatchRef > $loopWatchRefMax) {
                                         $loopWatchCount++;
-                                        $this->log("Pulling $supportedEndpoint since " . $serviceOldestPull->format("Y-m-d") . ", loop " . $loopWatchCount);
+                                        $this->log("  Pulling $supportedEndpoint since " . $serviceOldestPull->format("Y-m-d") . ", loop " . $loopWatchCount);
 
-//                                        $patientServiceProfile = $this->pullBabel($this->getAccessToken($patientCredential), $serviceOldestPull, $serviceBirth, $supportedEndpoint);
-//                                        if (!is_null($patientServiceProfile) && property_exists($patientServiceProfile, "activities-steps")) {
-//                                            $lastDateTime = null;
-//                                            if ($supportedEndpoint == "FitStepsPeriodSummary") {
-//                                                $lastDateTime = $this->saveFitStepsPeriodSummary($transformerClassName, $servicePullFrom, $supportedEndpoint, $patientServiceProfile);
-//                                            }
-//
-//                                            if (!is_null($lastDateTime)) {
-//                                                $loopWatchCount = $loopWatchCountMax + 1;
-//                                                $this->log("An DB error occurred");
-//                                            } else {
-//                                                $loopWatchRef = strtotime($lastDateTime);
-//                                                $serviceOldestPull->setTimestamp($loopWatchRef);
-//                                                $this->updateUserSetting("oldestPull", $lastDateTime);
-//                                            }
-//
-//                                        } else {
-//                                            $loopWatchCount = $loopWatchCountMax + 1;
-//                                            $this->log("An API error occurred");
-//                                        }
+                                        $patientServiceProfile = $this->pullBabel($this->getAccessToken($patientCredential),
+                                            $serviceOldestPull, $serviceBirth, $supportedEndpoint);
+                                        if (!is_null($patientServiceProfile) && property_exists($patientServiceProfile,
+                                                "activities-steps")) {
+                                            $lastDateTime = null;
+
+                                            if ($supportedEndpoint == "FitStepsPeriodSummary") {
+                                                $lastDateTime = $this->saveFitStepsPeriodSummary($transformerClassName,
+                                                    $servicePullFrom, $supportedEndpoint, $patientServiceProfile);
+                                            }
+
+                                            if (is_null($lastDateTime)) {
+                                                $loopWatchCount = $loopWatchCountMax + 1;
+                                                $this->log("  An DB error occurred");
+                                            } else {
+                                                $loopWatchRef = strtotime($lastDateTime);
+                                                $serviceOldestPull->setTimestamp($loopWatchRef);
+                                                $this->updateUserSetting("oldestPull" . $supportedEndpoint,
+                                                    $lastDateTime);
+                                            }
+
+                                        } else {
+                                            $loopWatchCount = $loopWatchCountMax + 1;
+                                            $this->log("  An API error occurred");
+                                        }
                                     }
                                 }
                             }
+                        } else {
+                            $this->log(" History for " . $premiumString . " " . $this->patient->getUsername() . " is fully up to date ");
                         }
-                    } else {
-                        $this->log("History for " . $premiumString . " " . $this->patient->getUsername() . " is fully up to date ");
                     }
                 }
 
@@ -573,14 +578,20 @@ class DownloadHistoryFitbit extends Command
      * @param ManagerRegistry $doctrine
      * @param LoggerInterface $logger
      * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param CommsManager    $commsManager
      */
     public function dependencyInjection(
         ManagerRegistry $doctrine,
         LoggerInterface $logger,
-        AwardManager $awardManager
+        AwardManager $awardManager,
+        ChallengePve $challengePve,
+        CommsManager $commsManager
     ): void {
         $this->doctrine = $doctrine;
         $this->logger = $logger;
         $this->awardManager = $awardManager;
+        $this->challengePve = $challengePve;
+        $this->commsManager = $commsManager;
     }
 }
