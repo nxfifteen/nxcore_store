@@ -102,13 +102,14 @@ class PkiManager
 
     /**
      * @param string $data
+     * @param mixed  $publicKey
      *
      * @return string
      */
-    public function encryptData(string $data)
+    public function encryptData(string $data, $publicKey)
     {
         // Encrypt the data using the public key
-        openssl_public_encrypt($data, $encryptedData, $this->getPublicKey());
+        openssl_public_encrypt($data, $encryptedData, $publicKey);
 
         // Return encrypted data
         return base64_encode($encryptedData);
