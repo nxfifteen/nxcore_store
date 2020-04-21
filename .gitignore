@@ -12,5 +12,5 @@
 /.idea/
 /bin/test/
 
-/src/Controller/DummyController.php
 /.gtm/
+/src/Controller/TestStuff/
