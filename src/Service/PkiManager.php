@@ -44,7 +44,7 @@ class PkiManager
     {
         $this->pkiClassVersion = "1.0.0";
         $this->filesystem = new Filesystem();
-        $this->keyStoragePath = $appKernel->getProjectDir() . '/var/private/encyption_test.pem';
+        $this->keyStoragePath = $appKernel->getProjectDir() . '/var/private/server_comms_key.pem';
     }
 
     /**
