@@ -30,7 +30,8 @@
     "symfony/swiftmailer-bundle": "^3.2",
     "symfony/yaml": "4.3.*",
     "webonyx/graphql-php": "^0.13.8",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "ext-openssl": "*"
   },
   "require-dev": {
     "doctrine/doctrine-fixtures-bundle": "^3.2",
