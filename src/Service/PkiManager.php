@@ -45,6 +45,10 @@ class PkiManager
         $this->pkiClassVersion = "1.0.0";
         $this->filesystem = new Filesystem();
         $this->keyStoragePath = $appKernel->getProjectDir() . '/var/private/server_comms_key.pem';
+        if (!$this->filesystem->exists($appKernel->getProjectDir() . '/var/private/')) {
+            $this->filesystem->mkdir($appKernel->getProjectDir() . '/var/private/');
+            chmod($appKernel->getProjectDir() . '/var/private/', 0755);
+        }
     }
 
     /**
