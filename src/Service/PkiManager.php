@@ -93,30 +93,36 @@ class PkiManager
     /**
      * @param string $data
      *
+     * @param string $env_key
+     *
      * @return mixed
      */
-    public function decryptData(string $data)
+    public function decryptData(string $data, string $env_key)
     {
+//        $env_key = base64_decode($env_key);
+
         // Decrypt the data using the private key
-        openssl_private_decrypt(base64_decode($data), $decryptedData, $this->getPrivateKey());
+        openssl_open(base64_decode($data), $decryptedData, base64_decode($env_key), $this->getPrivateKey());
 
         // Return decrypted data
-        return $decryptedData;
+        return $this->uncompressString($decryptedData);
     }
 
     /**
      * @param string $data
      * @param mixed  $publicKey
      *
-     * @return string
+     * @return array
      */
     public function encryptData(string $data, $publicKey)
     {
         // Encrypt the data using the public key
-        openssl_public_encrypt($data, $encryptedData, $publicKey);
+        openssl_seal($this->compressString($data), $encryptedData, $eKeys, [$publicKey]);
+
+        $eKeys = base64_encode($eKeys[0]);
 
         // Return encrypted data
-        return base64_encode($encryptedData);
+        return [base64_encode($encryptedData), $eKeys];
     }
 
     /**
@@ -173,4 +179,27 @@ class PkiManager
         return base64_encode($signature);
     }
 
+    /**
+     * @param $stringToUncompress
+     *
+     * @return false|string
+     */
+    private function uncompressString($stringToUncompress)
+    {
+        //$uncompressedString = gzuncompress(substr($stringToUncompress, 4));
+
+        return $stringToUncompress;
+    }
+
+    /**
+     * @param $stringToCompress
+     *
+     * @return string
+     */
+    private function compressString($stringToCompress)
+    {
+        //$compressedString = "\x1f\x8b\x08\x00" . gzcompress($stringToCompress);
+
+        return $stringToCompress;
+    }
 }
