@@ -37,8 +37,8 @@ class GitlabExceptionListener
         AppConstants::writeToLog('debug_transform.txt', "[Exception::getPrevious] - " . $exception->getPrevious());
         AppConstants::writeToLog('debug_transform.txt',
             "[Exception::getTraceAsString] - " . $exception->getTraceAsString());
-        AppConstants::writeToLog('debug_transform.txt',
-            "[Exception::getTrace] - " . print_r($exception->getTrace(), true));
+//        AppConstants::writeToLog('debug_transform.txt',
+//            "[Exception::getTrace] - " . print_r($exception->getTrace(), true));
 
 //        if (!$exception instanceof PublishedMessageException) {
 //            return;
