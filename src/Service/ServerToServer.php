@@ -182,25 +182,27 @@ class ServerToServer
         curl_exec($ch);
 
         $info = curl_getinfo($ch);
-        switch ($info['http_code']) {
-            case JsonResponse::HTTP_FORBIDDEN;
-                $info['http_code'] = "Forbidden";
-                break;
-            case JsonResponse::HTTP_NO_CONTENT;
-                $info['http_code'] = "Okay";
-                break;
-            case JsonResponse::HTTP_NOT_ACCEPTABLE;
-                $info['http_code'] = "Not Acceptable";
-                break;
-            case JsonResponse::HTTP_NOT_IMPLEMENTED;
-                $info['http_code'] = "Not Implemented";
-                break;
-            case JsonResponse::HTTP_PRECONDITION_FAILED;
-                $info['http_code'] = "Precondition Failed";
-                break;
+        if ($info['http_code'] != 204) {
+            switch ($info['http_code']) {
+                case JsonResponse::HTTP_FORBIDDEN;
+                    $info['http_code'] = "Forbidden";
+                    break;
+                case JsonResponse::HTTP_NO_CONTENT;
+                    $info['http_code'] = "Okay";
+                    break;
+                case JsonResponse::HTTP_NOT_ACCEPTABLE;
+                    $info['http_code'] = "Not Acceptable";
+                    break;
+                case JsonResponse::HTTP_NOT_IMPLEMENTED;
+                    $info['http_code'] = "Not Implemented";
+                    break;
+                case JsonResponse::HTTP_PRECONDITION_FAILED;
+                    $info['http_code'] = "Precondition Failed";
+                    break;
+            }
+            AppConstants::writeToLog('debug_transform.txt',
+                ' Responded in ' . $info['total_time'] . ' seconds with code ' . $info['http_code']);
         }
-//        AppConstants::writeToLog('debug_transform.txt',
-//            'Responded in ' . $info['total_time'] . ' seconds with code ' . $info['http_code']);
 
         curl_close($ch);
     }
