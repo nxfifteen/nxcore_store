@@ -27,12 +27,6 @@ class ShareEntitiesWithMembers implements EventSubscriber
         $this->serverComms = $serverComms;
     }
 
-    private function postToMemberserver(LifecycleEventArgs $args)
-    {
-        $entity = $args->getObject();
-        $this->serverComms->sentToMembers($entity);
-    }
-
     /**
      * @inheritDoc
      */
@@ -41,16 +35,25 @@ class ShareEntitiesWithMembers implements EventSubscriber
         return [
             Events::postPersist,
             Events::postUpdate,
+            Events::postRemove,
         ];
     }
 
     public function postPersist(LifecycleEventArgs $args)
     {
-        $this->postToMemberserver($args);
+        $entity = $args->getObject();
+        $this->serverComms->sentToMembers($entity, "persist");
     }
 
     public function postUpdate(LifecycleEventArgs $args)
     {
-        $this->postToMemberserver($args);
+        $entity = $args->getObject();
+        $this->serverComms->sentToMembers($entity, "update");
+    }
+
+    public function postRemove(LifecycleEventArgs $args)
+    {
+        $entity = $args->getObject();
+        $this->serverComms->sentToMembers($entity, "remove");
     }
 }

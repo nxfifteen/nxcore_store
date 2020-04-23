@@ -325,11 +325,13 @@ class ServerToServer
     }
 
     /**
-     * @param $dataEntity
+     * @param        $dataEntity
+     *
+     * @param string $event
      *
      * @return bool
      */
-    public function sentToMembers($dataEntity)
+    public function sentToMembers($dataEntity, string $event = "unset")
     {
         if ($this->isPrivateEntity(get_class($dataEntity))) {
             AppConstants::writeToLog('debug_transform.txt', '' . __LINE__);
@@ -337,15 +339,15 @@ class ServerToServer
         }
 
         $dataObject = [
+            "version" => $this->databaseVersion,
             "className" => get_class($dataEntity),
+            "event" => $event,
             "data" => $dataEntity,
         ];
 
         if (is_object($dataObject['data'])) {
             $dataObject['data'] = AppConstants::toJson($dataObject['data']);
         }
-
-        $dataObject['version'] = $this->databaseVersion;
 
         $dataObject = json_encode($dataObject);
 
