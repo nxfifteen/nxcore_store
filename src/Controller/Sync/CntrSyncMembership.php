@@ -12,6 +12,7 @@
 namespace App\Controller\Sync;
 
 
+use App\AppConstants;
 use App\Service\ServerToServer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,6 +32,16 @@ class CntrSyncMembership extends AbstractController
     {
         $request = Request::createFromGlobals();
         $recivedData = $request->getContent();
-        return $serverComms->recievedFromMember($recivedData);
+        $messageTranslated = $serverComms->recievedFromMember($recivedData);
+        if (is_int($messageTranslated)) {
+            $response = new JsonResponse();
+            $response->setStatusCode($messageTranslated);
+            return $response;
+        } else {
+            AppConstants::writeToLog('debug_transform.txt', 'Decypted Data = ' . print_r($messageTranslated, true));
+            $response = new JsonResponse();
+            $response->setStatusCode(204);
+            return $response;
+        }
     }
 }
