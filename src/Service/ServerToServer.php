@@ -322,8 +322,7 @@ class ServerToServer
             }
         }
 
-        AppConstants::writeToLog('debug_transform.txt', 'Decypted Data = ' . print_r($decryptedData, true));
-        return $this->returnOkay();
+        return $decryptedData;
     }
 
     /**
