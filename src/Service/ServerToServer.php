@@ -9,8 +9,6 @@
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */
 
-/** @noinspection PhpUnusedPrivateMethodInspection */
-
 namespace App\Service;
 
 
@@ -224,16 +222,6 @@ class ServerToServer
     {
         $response = new JsonResponse();
         $response->setStatusCode(JsonResponse::HTTP_FORBIDDEN);
-        return $response;
-    }
-
-    /**
-     * @return JsonResponse
-     */
-    private function returnOkay()
-    {
-        $response = new JsonResponse();
-        $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
         return $response;
     }
 
