@@ -28,6 +28,27 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class AppConstants
 {
+    private static function findIdMethod($entity)
+    {
+        $get_class = get_class($entity);
+        switch ($get_class) {
+            case "App\Entity\Patient":
+                return json_encode(["Email" => $entity->getEmail()]);
+                break;
+            case "App\Entity\ThirdPartyService":
+                return json_encode(["Name" => $entity->getName()]);
+                break;
+            case "App\Entity\PatientCredentials":
+                return json_encode([
+                    "Patient" => $entity->getPatient()->getEmail(),
+                    "Service" => $entity->getService()->getName(),
+                ]);
+                break;
+        }
+
+        return json_encode(["Guid" => $entity->getGuid()]);
+    }
+
     /**
      * @param $stringToCompress
      *
@@ -126,6 +147,71 @@ class AppConstants
     }
 
     /**
+     * Helper method to create json string from entiry
+     *
+     * @param $inputEntity
+     *
+     * @return string
+     */
+    static function toJson($inputEntity)
+    {
+        $pirvateMethods = [
+            "getId",
+            "getRemoteId",
+            "getPassword",
+            "getSalt",
+            "getGuid",
+        ];
+
+        $returnString = [];
+        foreach (get_class_methods($inputEntity) as $classMethod) {
+            unset($holdValue);
+            if (substr($classMethod, 0, 3) === "get" && !in_array($classMethod, $pirvateMethods)) {
+                $methodValue = str_ireplace("get", "", $classMethod);
+                $holdValue = $inputEntity->$classMethod();
+                switch (gettype($holdValue)) {
+                    case "string":
+                    case "integer":
+                        $returnString[$methodValue] = $holdValue;
+                        break;
+                    case "object":
+                        switch (get_class($holdValue)) {
+                            case "DateTime":
+                                $returnString[$methodValue] = $holdValue->format("U");
+                                break;
+                            case "boolean":
+                                $returnString[$methodValue] = $holdValue;
+                                break;
+                            case "array":
+                                $returnString[$methodValue] = json_encode($holdValue);
+                                break;
+                            case "Doctrine\ORM\PersistentCollection":
+                                //
+                                break;
+                            case "Ramsey\\Uuid\\Uuid":
+                                /** @var $holdValue UuidInterface */
+                                $returnString[$methodValue] = $holdValue->toString();
+                                break;
+                            default:
+                                if (substr(get_class($holdValue), 0, strlen("App\Entity\\")) === "App\Entity\\") {
+                                    $returnString[$methodValue] = "@" . get_class($holdValue) . "|" . self::findIdMethod($holdValue);
+                                } else {
+                                    $returnString[$methodValue] = "#" . get_class($holdValue);
+                                }
+                                break;
+                        }
+                        break;
+                    default:
+                        $returnString[$methodValue] = gettype($holdValue);
+                        break;
+                }
+            }
+        }
+
+        return json_encode($returnString);
+    }
+
+    /**
      * @param $stringToUncompress
      *
      * @return false|string
@@ -165,69 +251,5 @@ class AppConstants
                 echo "An error occurred while creating your directory at " . $exception->getPath();
             }
         }
-    }
-
-    /**
-     * Helper method to create json string from entiry
-     *
-     * @param $inputEntity
-     *
-     * @return string
-     */
-    static function toJson($inputEntity)
-    {
-        $pirvateMethods = [
-            "getId",
-            "getRemoteId",
-            "getPassword",
-            "getSalt",
-        ];
-
-        $returnString = [];
-        foreach (get_class_methods($inputEntity) as $classMethod) {
-            unset($holdValue);
-            if (substr($classMethod, 0, 3) === "get" && !in_array($classMethod, $pirvateMethods)) {
-                $methodValue = str_ireplace("get", "", $classMethod);
-                $holdValue = $inputEntity->$classMethod();
-                switch (gettype($holdValue)) {
-                    case "string":
-                    case "integer":
-                        $returnString[$methodValue] = $holdValue;
-                        break;
-                    case "object":
-                        switch (get_class($holdValue)) {
-                            case "DateTime":
-                                $returnString[$methodValue] = $holdValue->format("U");
-                                break;
-                            case "boolean":
-                                $returnString[$methodValue] = $holdValue;
-                                break;
-                            case "array":
-                                $returnString[$methodValue] = json_encode($holdValue);
-                                break;
-                            case "Doctrine\ORM\PersistentCollection":
-                                //
-                                break;
-                            case "Ramsey\\Uuid\\Uuid":
-                                /** @var $holdValue UuidInterface */
-                                $returnString[$methodValue] = $holdValue->toString();
-                                break;
-                            default:
-                                if (substr(get_class($holdValue), 0, strlen("App\Entity\\")) === "App\Entity\\") {
-                                    $returnString[$methodValue] = get_class($holdValue) . "|" . $holdValue->getGuid();
-                                } else {
-                                    $returnString[$methodValue] = get_class($holdValue);
-                                }
-                                break;
-                        }
-                        break;
-                    default:
-                        $returnString[$methodValue] = gettype($holdValue);
-                        break;
-                }
-            }
-        }
-
-        return json_encode($returnString);
     }
 }
