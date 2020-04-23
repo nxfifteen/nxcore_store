@@ -17,6 +17,7 @@ namespace App;
 use App\Entity\ThirdPartyService;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -164,5 +165,69 @@ class AppConstants
                 echo "An error occurred while creating your directory at " . $exception->getPath();
             }
         }
+    }
+
+    /**
+     * Helper method to create json string from entiry
+     *
+     * @param $inputEntity
+     *
+     * @return string
+     */
+    static function toJson($inputEntity)
+    {
+        $pirvateMethods = [
+            "getId",
+            "getRemoteId",
+            "getPassword",
+            "getSalt",
+        ];
+
+        $returnString = [];
+        foreach (get_class_methods($inputEntity) as $classMethod) {
+            unset($holdValue);
+            if (substr($classMethod, 0, 3) === "get" && !in_array($classMethod, $pirvateMethods)) {
+                $methodValue = str_ireplace("get", "", $classMethod);
+                $holdValue = $inputEntity->$classMethod();
+                switch (gettype($holdValue)) {
+                    case "string":
+                    case "integer":
+                        $returnString[$methodValue] = $holdValue;
+                        break;
+                    case "object":
+                        switch (get_class($holdValue)) {
+                            case "DateTime":
+                                $returnString[$methodValue] = $holdValue->format("U");
+                                break;
+                            case "boolean":
+                                $returnString[$methodValue] = $holdValue;
+                                break;
+                            case "array":
+                                $returnString[$methodValue] = json_encode($holdValue);
+                                break;
+                            case "Doctrine\ORM\PersistentCollection":
+                                //
+                                break;
+                            case "Ramsey\\Uuid\\Uuid":
+                                /** @var $holdValue UuidInterface */
+                                $returnString[$methodValue] = $holdValue->toString();
+                                break;
+                            default:
+                                if (substr(get_class($holdValue), 0, strlen("App\Entity\\")) === "App\Entity\\") {
+                                    $returnString[$methodValue] = get_class($holdValue) . "|" . $holdValue->getGuid();
+                                } else {
+                                    $returnString[$methodValue] = get_class($holdValue);
+                                }
+                                break;
+                        }
+                        break;
+                    default:
+                        $returnString[$methodValue] = gettype($holdValue);
+                        break;
+                }
+            }
+        }
+
+        return json_encode($returnString);
     }
 }

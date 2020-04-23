@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -132,49 +131,5 @@ class WorkoutMuscleRelation
         return $this;
     }
 
-    /**
-     * Helper method to create json string from entiry
-     *
-     * @return string|null
-     */
-    public function toJson(): ?string
-    {
-        $returnString = [];
-        foreach (get_class_methods($this) as $classMethod) {
-            unset($holdValue);
-            if (substr($classMethod, 0, 3) === "get" && $classMethod != "getId" && $classMethod != "getRemoteId") {
-                $methodValue = str_ireplace("get", "", $classMethod);
-                $holdValue = $this->$classMethod();
-                switch (gettype($holdValue)) {
-                    case "string":
-                    case "integer":
-                        $returnString[$methodValue] = $holdValue;
-                        break;
-                    case "object":
-                        switch (get_class($holdValue)) {
-                            case "DateTime":
-                                $returnString[$methodValue] = $holdValue->format("U");
-                                break;
-                            case "Ramsey\\Uuid\\Uuid":
-                                /** @var $holdValue UuidInterface */
-                                $returnString[$methodValue] = $holdValue->toString();
-                                break;
-                            default:
-                                if (substr(get_class($holdValue), 0, strlen("App\Entity\\")) === "App\Entity\\") {
-                                    $returnString[$methodValue] = $holdValue->getGuid();
-                                } else {
-                                    $returnString[$methodValue] = get_class($holdValue);
-                                }
-                                break;
-                        }
-                        break;
-                    default:
-                        $returnString[$methodValue] = gettype($holdValue);
-                        break;
-                }
-            }
-        }
 
-        return json_encode($returnString);
-    }
 }
