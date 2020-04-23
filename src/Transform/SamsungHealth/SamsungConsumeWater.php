@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -14,7 +13,6 @@
 
 namespace App\Transform\SamsungHealth;
 
-use App\AppConstants;
 use App\Entity\ConsumeWater;
 use App\Entity\PartOfDay;
 use App\Entity\Patient;
@@ -114,8 +112,6 @@ class SamsungConsumeWater extends Constants
                 $i = 0;
                 do {
                     $i++;
-                    AppConstants::writeToLog('debug_transform.txt',
-                        __FILE__ . '@' . __LINE__ . ': Added a GUID (' . $i . ')');
                     $dataEntry->createGuid(true);
                     $dataEntryGuidCheck = $doctrine
                         ->getRepository(ConsumeWater::class)
@@ -123,11 +119,6 @@ class SamsungConsumeWater extends Constants
                     if (empty($dataEntryGuidCheck)) {
                         $safeGuid = true;
                     }
-
-                    AppConstants::writeToLog('debug_transform.txt',
-                        __FILE__ . '@' . __LINE__ . ': ' . gettype($dataEntryGuidCheck));
-                    AppConstants::writeToLog('debug_transform.txt',
-                        __FILE__ . '@' . __LINE__ . ': ' . count($dataEntryGuidCheck));
                 } while (!$safeGuid);
             }
 
