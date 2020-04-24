@@ -230,7 +230,7 @@ class AppConstants
     static function writeToLog(string $fileName, string $body)
     {
         try {
-            $path = sys_get_temp_dir() . '/nxcore.fitness';
+            $path = dirname(__FILE__) . '/../var/log';
         } catch (Exception $exception) {
             echo $exception->getMessage();
         }
