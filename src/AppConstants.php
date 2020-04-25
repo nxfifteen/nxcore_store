@@ -35,7 +35,7 @@ class AppConstants
 
     static function findIdMethod($entity)
     {
-        $get_class = get_class($entity);
+        $get_class = str_ireplace("Proxies\__CG__\\", "", get_class($entity));
         switch ($get_class) {
             case "App\Entity\Patient":
                 return json_encode(["email" => $entity->getEmail()]);
