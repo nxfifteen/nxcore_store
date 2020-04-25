@@ -41,7 +41,10 @@ class AppConstants
                 return json_encode(["email" => $entity->getEmail()]);
                 break;
             case "App\Entity\PatientMembership":
-                return json_encode(["~patient" => $entity->getPatient()->getEmail()]);
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                ]);
                 break;
             case "App\Entity\ThirdPartyService":
                 return json_encode(["name" => $entity->getName()]);
@@ -195,10 +198,11 @@ class AppConstants
                                 $returnString[$methodValue] = $holdValue->toString();
                                 break;
                             default:
-                                if (substr(get_class($holdValue), 0, strlen("App\Entity\\")) === "App\Entity\\") {
-                                    $returnString[$methodValue] = "@" . get_class($holdValue) . "|" . self::findIdMethod($holdValue);
+                                $holdValueClass = str_ireplace("Proxies\__CG__\\", "", get_class($holdValue));
+                                if (substr($holdValueClass, 0, strlen("App\Entity\\")) === "App\Entity\\") {
+                                    $returnString[$methodValue] = "@" . $holdValueClass . "|" . self::findIdMethod($holdValue);
                                 } else {
-                                    $returnString[$methodValue] = "#" . get_class($holdValue);
+                                    $returnString[$methodValue] = "#" . $holdValueClass;
                                 }
                                 break;
                         }
