@@ -49,6 +49,32 @@ class AppConstants
             case "App\Entity\ThirdPartyService":
                 return json_encode(["name" => $entity->getName()]);
                 break;
+            case "App\Entity\PatientGoals":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "goal" => $entity->getGoal(),
+                    "entity" => $entity->getEntity(),
+                ]);
+                break;
+            case "App\Entity\PatientSettings":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "service" => sprintf('@App\Entity\ThirdPartyService|{"name":"%s"}',
+                        $entity->getService()->getName()),
+                    "name" => $entity->getName(),
+                ]);
+                break;
+            case "App\Entity\TrackingDevice":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "service" => sprintf('@App\Entity\ThirdPartyService|{"name":"%s"}',
+                        $entity->getService()->getName()),
+                    "remoteId" => $entity->getRemoteId(),
+                ]);
+                break;
         }
 
         return json_encode(["guid" => $entity->getGuid()]);
