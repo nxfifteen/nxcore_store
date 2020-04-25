@@ -157,7 +157,7 @@ class AppConstants
             "getRemoteId",
             "getPassword",
             "getSalt",
-            "getGuid",
+            "getApiToken",
         ];
 
         $returnString = [];
@@ -168,21 +168,21 @@ class AppConstants
                 $holdValue = $inputEntity->$classMethod();
                 switch (gettype($holdValue)) {
                     case "string":
+                    case "boolean":
                     case "integer":
+                    case "double":
                         $returnString[$methodValue] = $holdValue;
+                        break;
+                    case "array":
+                        $returnString[$methodValue] = json_encode($holdValue);
                         break;
                     case "object":
                         switch (get_class($holdValue)) {
                             case "DateTime":
-                                $returnString[$methodValue] = $holdValue->format("U");
-                                break;
-                            case "boolean":
-                                $returnString[$methodValue] = $holdValue;
-                                break;
-                            case "array":
-                                $returnString[$methodValue] = json_encode($holdValue);
+                                $returnString[$methodValue] = "%DateTime%" . $holdValue->format("U");
                                 break;
                             case "Doctrine\ORM\PersistentCollection":
+                            case "App\Entity\PatientMembership":
                                 //
                                 break;
                             case "Ramsey\\Uuid\\Uuid":
@@ -197,6 +197,9 @@ class AppConstants
                                 }
                                 break;
                         }
+                        break;
+                    case "NULL":
+                        //
                         break;
                     default:
                         $returnString[$methodValue] = gettype($holdValue);
