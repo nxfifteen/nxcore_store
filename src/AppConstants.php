@@ -28,6 +28,11 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class AppConstants
 {
+    const LOG_PROGRESSION_NONE = 0;
+    const LOG_PROGRESSION_START = 1;
+    const LOG_PROGRESSION_CONTINUE = 2;
+    const LOG_PROGRESSION_STOP = 3;
+
     static function findIdMethod($entity)
     {
         $get_class = get_class($entity);
@@ -224,10 +229,11 @@ class AppConstants
     }
 
     /**
-     * @param String $fileName
-     * @param String $body
+     * @param String      $fileName
+     * @param String|null $body
+     * @param int         $progession
      */
-    static function writeToLog(string $fileName, string $body)
+    static function writeToLog(string $fileName, ?string $body, int $progession = self::LOG_PROGRESSION_NONE)
     {
         try {
             $path = dirname(__FILE__) . '/../var/log';
@@ -242,9 +248,37 @@ class AppConstants
             try {
                 $fileSystem->mkdir($path);
                 if ($fileSystem->exists($file)) {
-                    $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    if ($progession == self::LOG_PROGRESSION_NONE) {
+                        $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    } else {
+                        if ($progession == self::LOG_PROGRESSION_START) {
+                            $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . " ");
+                        } else {
+                            if ($progession == self::LOG_PROGRESSION_CONTINUE) {
+                                $fileSystem->appendToFile($file, ".");
+                            } else {
+                                if ($progession == self::LOG_PROGRESSION_STOP) {
+                                    $fileSystem->appendToFile($file, "\n");
+                                }
+                            }
+                        }
+                    }
                 } else {
-                    $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    if ($progession == self::LOG_PROGRESSION_NONE) {
+                        $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    } else {
+                        if ($progession == self::LOG_PROGRESSION_START) {
+                            $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                        } else {
+                            if ($progession == self::LOG_PROGRESSION_CONTINUE) {
+                                $fileSystem->dumpFile($file, ".");
+                            } else {
+                                if ($progession == self::LOG_PROGRESSION_STOP) {
+                                    $fileSystem->dumpFile($file, " [DONE]\n");
+                                }
+                            }
+                        }
+                    }
                 }
 
             } catch (IOExceptionInterface $exception) {
