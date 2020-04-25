@@ -117,6 +117,8 @@ class MigrationsListener implements EventSubscriber
             $hasChildRelationShip = false;
         }
 
+        $_ENV['EntityEnv'] = 'Migrate';
+
         $entityManager = $this->managerRegistry->getManager();
         foreach ($newDataSet['data'] as $newData) {
             $i++;
@@ -158,6 +160,7 @@ class MigrationsListener implements EventSubscriber
                 $this->write(" Skipped item " . $i . " of " . count($newDataSet['data']));
             }
         }
+        unset($_ENV['EntityEnv']);
     }
 
     /**
@@ -1046,12 +1049,7 @@ class MigrationsListener implements EventSubscriber
         $yourMembershipTemplate = $this->appKernel->getProjectDir() . '/var/private/your_membership.yml';
         $membershipFile = $this->appKernel->getProjectDir() . '/var/private/membership.yml';
 
-        if ($this->pkiManager->isKeyAvailable()) {
-            $this->write("PKI Key already present");
-        } else {
-            $this->write("Creating new PKI Key");
-            $this->pkiManager->createNewKey();
-        }
+        $this->pkiManager->createNewKey();
 
         if ($filesystem->exists($yourMembershipTemplate)) {
             $filesystem->remove($yourMembershipTemplate);
@@ -1061,6 +1059,17 @@ class MigrationsListener implements EventSubscriber
             [
                 "host" => $_ENV['INSTALL_URL'],
                 "contact" => $_ENV['SITE_EMAIL_ADDRESS'],
+                "allowed" => [
+                    "App\Entity\ExerciseType",
+                    "App\Entity\FoodDatabase",
+                    "App\Entity\FoodDiary",
+                    "App\Entity\FoodMeals",
+                    "App\Entity\FoodNutrition",
+                    "App\Entity\WorkoutCategories",
+                    "App\Entity\WorkoutEquipment",
+                    "App\Entity\WorkoutExercise",
+                    "App\Entity\WorkoutMuscleRelation",
+                ],
                 "public_key" => $this->pkiManager->getPublicKey(),
             ],
         ];
