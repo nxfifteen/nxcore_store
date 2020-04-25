@@ -282,8 +282,8 @@ class ServerToServer
             return $this->returnNotAMember();
         }
 
-        AppConstants::writeToLog('debug_transform.txt',
-            'Incomming from ' . $this->membershipServer['host'] . '(' . $this->membershipServer['contact'] . ')');
+//        AppConstants::writeToLog('debug_transform.txt',
+//            'Incomming packet from ' . $this->membershipServer['host']);
 
         if (!$this->isProticalOld($recivedData['protical'])) {
             return $this->returnSentFromProticalOld();
