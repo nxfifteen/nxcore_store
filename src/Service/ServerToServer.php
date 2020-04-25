@@ -300,6 +300,7 @@ class ServerToServer
         $decryptedData = $this->pkiManager->decryptData($recivedData['data'], $recivedData['keys']);
 
         $decryptedData = json_decode($decryptedData, true);
+        $decryptedData['search'] = json_decode($decryptedData['search'], true);
         $decryptedData['data'] = json_decode($decryptedData['data'], true);
 
         if ($decryptedData['version'] < $this->databaseVersion) {
@@ -331,6 +332,7 @@ class ServerToServer
             "version" => $this->databaseVersion,
             "className" => get_class($dataEntity),
             "event" => $event,
+            "search" => AppConstants::findIdMethod($dataEntity),
             "data" => $dataEntity,
         ];
 

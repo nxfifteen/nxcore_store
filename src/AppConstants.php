@@ -28,25 +28,22 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class AppConstants
 {
-    private static function findIdMethod($entity)
+    static function findIdMethod($entity)
     {
         $get_class = get_class($entity);
         switch ($get_class) {
             case "App\Entity\Patient":
-                return json_encode(["Email" => $entity->getEmail()]);
+                return json_encode(["email" => $entity->getEmail()]);
+                break;
+            case "App\Entity\PatientMembership":
+                return json_encode(["~patient" => $entity->getPatient()->getEmail()]);
                 break;
             case "App\Entity\ThirdPartyService":
-                return json_encode(["Name" => $entity->getName()]);
-                break;
-            case "App\Entity\PatientCredentials":
-                return json_encode([
-                    "Patient" => $entity->getPatient()->getEmail(),
-                    "Service" => $entity->getService()->getName(),
-                ]);
+                return json_encode(["name" => $entity->getName()]);
                 break;
         }
 
-        return json_encode(["Guid" => $entity->getGuid()]);
+        return json_encode(["guid" => $entity->getGuid()]);
     }
 
     /**
