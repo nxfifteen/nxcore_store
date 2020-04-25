@@ -342,10 +342,12 @@ class ServerToServer
 
         $dataObject = json_encode($dataObject);
 
+        AppConstants::writeToLog('debug_transform.txt',
+            'Sending ' . get_class($dataEntity) . ' to members', AppConstants::LOG_PROGRESSION_START);
         foreach ($this->membershipServers as $membershipServer) {
             if ($this->isAllowedEntity(get_class($dataEntity), $membershipServer)) {
                 AppConstants::writeToLog('debug_transform.txt',
-                    'Sending ' . get_class($dataEntity) . ' to ' . $membershipServer['host']);
+                    null, AppConstants::LOG_PROGRESSION_CONTINUE);
 
                 $messagePacket = [
                     "protical" => $this->protical,
@@ -369,6 +371,8 @@ class ServerToServer
                 }
             }
         }
+        AppConstants::writeToLog('debug_transform.txt',
+            'Sending members', AppConstants::LOG_PROGRESSION_STOP);
 
         return true;
     }
