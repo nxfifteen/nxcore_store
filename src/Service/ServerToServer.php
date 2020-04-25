@@ -31,7 +31,7 @@ class ServerToServer
     private $membershipServers;
 
     /** @var string $protical */
-    private $protical = "0.0.1";
+    private $protical = "0.0.2";
 
     /** @var array $membershipServer */
     private $membershipServer;
