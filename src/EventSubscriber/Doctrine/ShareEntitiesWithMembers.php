@@ -12,6 +12,7 @@
 namespace App\EventSubscriber\Doctrine;
 
 
+use App\AppConstants;
 use App\Service\ServerToServer;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
@@ -39,21 +40,53 @@ class ShareEntitiesWithMembers implements EventSubscriber
         ];
     }
 
+    /** @noinspection DuplicatedCode */
     public function postPersist(LifecycleEventArgs $args)
     {
-        $entity = $args->getObject();
-        $this->serverComms->sentToMembers($entity, "persist");
+        if (!array_key_exists("EntityEnv", $_ENV)) {
+            $entity = $args->getObject();
+            $this->serverComms->sentToMembers($entity, "persist");
+        } else {
+            if ($_ENV['EntityEnv'] == "ServerComms" || $_ENV['EntityEnv'] == "Migrate") {
+                AppConstants::writeToLog('debug_transform.txt',
+                    "EntityEnv: " . $_ENV['EntityEnv'] . " ServerComms blocked");
+            } else {
+                $entity = $args->getObject();
+                $this->serverComms->sentToMembers($entity, "persist");
+            }
+        }
     }
 
     public function postUpdate(LifecycleEventArgs $args)
     {
-        $entity = $args->getObject();
-        $this->serverComms->sentToMembers($entity, "update");
+        if (!array_key_exists("EntityEnv", $_ENV)) {
+            $entity = $args->getObject();
+            $this->serverComms->sentToMembers($entity, "update");
+        } else {
+            if ($_ENV['EntityEnv'] == "ServerComms" || $_ENV['EntityEnv'] == "Migrate") {
+                AppConstants::writeToLog('debug_transform.txt',
+                    "EntityEnv: " . $_ENV['EntityEnv'] . " ServerComms blocked");
+            } else {
+                $entity = $args->getObject();
+                $this->serverComms->sentToMembers($entity, "update");
+            }
+        }
     }
 
+    /** @noinspection DuplicatedCode */
     public function postRemove(LifecycleEventArgs $args)
     {
-        $entity = $args->getObject();
-        $this->serverComms->sentToMembers($entity, "remove");
+        if (!array_key_exists("EntityEnv", $_ENV)) {
+            $entity = $args->getObject();
+            $this->serverComms->sentToMembers($entity, "remove");
+        } else {
+            if ($_ENV['EntityEnv'] == "ServerComms" || $_ENV['EntityEnv'] == "Migrate") {
+                AppConstants::writeToLog('debug_transform.txt',
+                    "EntityEnv: " . $_ENV['EntityEnv'] . " ServerComms blocked");
+            } else {
+                $entity = $args->getObject();
+                $this->serverComms->sentToMembers($entity, "remove");
+            }
+        }
     }
 }
