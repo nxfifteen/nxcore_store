@@ -16,6 +16,7 @@ use App\AppConstants;
 use App\Entity\PatientMembership;
 use App\Service\ServerToServer;
 use DateTime;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +27,78 @@ class Membership extends AbstractController
 {
     /** @var UserPasswordEncoderInterface $passwordEncoder */
     private $passwordEncoder;
+
+    /** @var bool $debug */
+    private $debug = false;
+
+    private function checkForReferencesData($datum)
+    {
+        $datumOrig = $datum;
+
+        if (gettype($datum) == "string" && substr($datum, 0, 1) == "[") {
+            $datum = json_decode($datum, true);
+        } else {
+            if (gettype($datum) == "string" && substr($datum, 0, 10) == "%DateTime%") {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                $datum = new DateTime(date("Y-m-d H:i:s", str_ireplace("%DateTime%", "", $datum)));
+            } else {
+                if (gettype($datum) == "string" && substr($datum, 0, 1) == "@") {
+                    $entitySearchParam = explode('|', $datum, 2);
+                    $entitySearchClass = substr($entitySearchParam[0], 1, strlen($entitySearchParam[0]) - 1);
+                    $entitySearchArgs = json_decode($entitySearchParam[1], true);
+
+                    if (is_array($entitySearchArgs)) {
+                        foreach ($entitySearchArgs as $key => $entitySearchArg) {
+                            $entitySearchArgs[$key] = $this->checkForReferencesData($entitySearchArg);
+                        }
+                    }
+
+                    if ($this->debug) {
+                        AppConstants::writeToLog('debug_transform.txt',
+                            __LINE__ . ' $entitySearchClass = ' . $entitySearchClass);
+                    }
+
+                    if ($entitySearchClass == "App\Entity\ThirdPartyService") {
+                        $datum = AppConstants::getThirdPartyService($this->getDoctrine(), $entitySearchArgs['name']);
+                    } else {
+                        $entitySearchDB = $this->getDoctrine()
+                            ->getRepository($entitySearchClass)
+                            ->findOneBy($entitySearchArgs);
+                        if (!is_null($entitySearchDB)) {
+                            $datum = $entitySearchDB;
+                        } else {
+                            if ($this->debug) {
+                                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' died');
+                            }
+                            die();
+                        }
+                    }
+
+                }
+            }
+        }
+
+        if ($datumOrig !== $datum) {
+            if ($this->debug) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . '  $datumOrig = ' . $datumOrig);
+            }
+            if ($this->debug) {
+                AppConstants::writeToLog('debug_transform.txt', __LINE__ . '   gettype($datum) = ' . gettype($datum));
+            }
+            if (gettype($datum) == "object") {
+                if ($this->debug) {
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __LINE__ . '   get_class($datum) = ' . get_class($datum));
+                }
+            } elseif (gettype($datum) == "array") {
+                if ($this->debug) {
+                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . '   $datum = ' . print_r($datum, true));
+                }
+            }
+        }
+
+        return $datum;
+    }
 
     /**
      * @Route("/sync/membership/", name="sync_server_comms")
@@ -41,42 +114,60 @@ class Membership extends AbstractController
         $recivedData = $request->getContent();
 
         $messageTranslated = $serverComms->recievedFromMember($recivedData);
+        if (
+            $messageTranslated['className'] != 'App\Entity\Patient' &&
+            $messageTranslated['className'] != 'App\Entity\ThirdPartyService' &&
+            $messageTranslated['className'] != 'App\Entity\PatientSettings' &&
+            $messageTranslated['className'] != 'App\Entity\PatientGoals' &&
+            $messageTranslated['className'] != 'App\Entity\TrackingDevice' &&
+            $messageTranslated['className'] != 'App\Entity\FitStepsDailySummary'
+        ) {
+            $this->debug = true;
+        }
+        if ($this->debug) AppConstants::writeToLog('debug_transform.txt',
+            '---------------------------------------------------------');
+        if ($this->debug) AppConstants::writeToLog('debug_transform.txt',
+            __LINE__ . ' Packet ' . print_r($messageTranslated, true));
 
         if (is_int($messageTranslated)) {
+            if ($this->debug) AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' died');
+
             $response = new JsonResponse();
             $response->setStatusCode($messageTranslated);
             return $response;
         } else {
-//            $this->passwordEncoder = $passwordEncoder;
-//
-//            AppConstants::writeToLog('debug_transform.txt', 'Decypted Data = ' . print_r($messageTranslated, true));
-//            $newEntity = $this->getDoctrine()
-//                ->getRepository($messageTranslated['className'])
-//                ->findOneBy($messageTranslated['search']);
-//            if (is_null($newEntity)) {
-//                AppConstants::writeToLog('debug_transform.txt', 'Decypted Data = ' . __LINE__);
-//                $newEntity = new $messageTranslated['className']();
-//                $updateEntity = false;
-//            } else {
-//                $updateEntity = true;
-//            }
-//
-//            $entityAdditonMethod = "add" . str_ireplace("App\Entity\\", "", $messageTranslated['className']) . "Entity";
-//            if (method_exists($this, $entityAdditonMethod)) {
-//                AppConstants::writeToLog('debug_transform.txt', 'Found ' . $entityAdditonMethod);
-//                $newEntity = $this->$entityAdditonMethod($newEntity, $messageTranslated, $updateEntity);
-//            } else {
-//                AppConstants::writeToLog('debug_transform.txt', 'Looked for ' . $entityAdditonMethod);
-//                $newEntity = $this->addDefaultEntity($newEntity, $messageTranslated, $updateEntity);
-//            }
-//
-//            if (!is_null($newEntity)) {
-//                $_ENV['EntityEnv'] = 'ServerComms';
-//                $entityManager = $this->getDoctrine()->getManager();
-//                $entityManager->persist($newEntity);
-//                $entityManager->flush();
-//                unset($_ENV['EntityEnv']);
-//            }
+            $this->passwordEncoder = $passwordEncoder;
+
+            foreach ($messageTranslated['search'] as $key => $search) {
+                $messageTranslated['search'][$key] = $this->checkForReferencesData($search);
+            }
+
+            $newEntity = $this->getDoctrine()
+                ->getRepository($messageTranslated['className'])
+                ->findOneBy($messageTranslated['search']);
+            if (is_null($newEntity)) {
+                $newEntity = new $messageTranslated['className']();
+                $updateEntity = false;
+            } else {
+                $updateEntity = true;
+            }
+
+            $entityAdditonMethod = "add" . str_ireplace("App\Entity\\", "", $messageTranslated['className']) . "Entity";
+            if (method_exists($this, $entityAdditonMethod)) {
+                $newEntity = $this->$entityAdditonMethod($newEntity, $messageTranslated, $updateEntity);
+            } else {
+                if ($this->debug) AppConstants::writeToLog('debug_transform.txt',
+                    __LINE__ . ' Looked for ' . $entityAdditonMethod);
+                $newEntity = $this->addDefaultEntity($newEntity, $messageTranslated, $updateEntity);
+            }
+
+            if (!is_null($newEntity)) {
+                $_ENV['EntityEnv'] = 'ServerComms';
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($newEntity);
+                $entityManager->flush();
+                unset($_ENV['EntityEnv']);
+            }
 
             $response = new JsonResponse();
             $response->setStatusCode(204);
@@ -84,6 +175,30 @@ class Membership extends AbstractController
         }
     }
 
+    /**
+     * @param $newEntity
+     * @param $messageTranslated
+     * @param $updateEntity
+     *
+     * @return mixed
+     * @noinspection PhpUnusedPrivateMethodInspection
+     */
+    private function addPatientMembershipEntity($newEntity, $messageTranslated, $updateEntity)
+    {
+        $newEntity = $this->addDefaultEntity($newEntity, $messageTranslated, $updateEntity);
+        $newEntity->setSince(new DateTime());
+        $newEntity->setSince(new DateTime());
+        return $newEntity;
+    }
+
+    /**
+     * @param $newEntity
+     * @param $messageTranslated
+     * @param $updateEntity
+     *
+     * @return null
+     * @noinspection PhpUnusedPrivateMethodInspection
+     */
     private function addPatientEntity($newEntity, $messageTranslated, $updateEntity)
     {
         $newEntity = $this->addDefaultEntity($newEntity, $messageTranslated, $updateEntity);
@@ -93,8 +208,10 @@ class Membership extends AbstractController
         }
 
         if (!$updateEntity || is_null($newEntity->getApiToken())) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $newEntity->setApiToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
+            try {
+                $newEntity->setApiToken(rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
+            } catch (Exception $e) {
+            }
         }
 
         $_ENV['EntityEnv'] = 'ServerComms';
@@ -125,35 +242,55 @@ class Membership extends AbstractController
         return null;
     }
 
+    /**
+     * @param $newEntity
+     * @param $messageTranslated
+     * @param $updateEntity
+     *
+     * @return mixed
+     */
     private function addDefaultEntity($newEntity, $messageTranslated, $updateEntity)
     {
         foreach ($messageTranslated['data'] as $key => $datum) {
             $methodName = "set" . $key;
-//            AppConstants::writeToLog('debug_transform.txt', 'Decypted gettype = ' . gettype($datum));
-//            AppConstants::writeToLog('debug_transform.txt', 'Decypted $methodName = ' . $methodName);
             if (method_exists($newEntity, $methodName)) {
-                if (gettype($datum) == "string" && substr($datum, 0, 1) == "[") {
-                    $datum = json_decode($datum, true);
-                } else {
-                    if (gettype($datum) == "string" && substr($datum, 0, 10) == "%DateTime%") {
-                        /** @noinspection PhpUnhandledExceptionInspection */
-                        $datum = new DateTime(date("Y-m-d H:i:s", str_ireplace("%DateTime%", "", $datum)));
-                    }
-                }
+                $datum = $this->checkForReferencesData($datum);
 
                 switch (gettype($datum)) {
                     case "string":
                     case "boolean":
                     case "integer":
                     case "array":
-//                        AppConstants::writeToLog('debug_transform.txt', 'Decypted Data = ' . __LINE__);
                         $newEntity->$methodName($datum);
                         break;
+                    case "object":
+                        switch (get_class($datum)) {
+                            case "DateTime":
+                            case "App\Entity\Patient":
+                            case "App\Entity\ThirdPartyService":
+                            case "App\Entity\PatientGoals":
+                            case "App\Entity\TrackingDevice":
+                                $newEntity->$methodName($datum);
+                                break;
+                            default:
+                                if ($this->debug) AppConstants::writeToLog('debug_transform.txt',
+                                    __LINE__ . ' Decypted gettype = ' . get_class($datum));
+                                break;
+                        }
+                        break;
                     default:
-                        AppConstants::writeToLog('debug_transform.txt', 'Decypted Data = ' . __LINE__);
-                        AppConstants::writeToLog('debug_transform.txt', 'Decypted gettype = ' . gettype($datum));
+                        if ($this->debug) AppConstants::writeToLog('debug_transform.txt',
+                            __LINE__ . ' Decypted gettype = ' . gettype($datum));
                         break;
                 }
+            }
+
+            if (
+                method_exists($newEntity, "setRemoteId") &&
+                !array_key_exists("RemoteId", $messageTranslated['data']) &&
+                array_key_exists("Guid", $messageTranslated['data'])
+            ) {
+                $newEntity->setRemoteId($messageTranslated['data']['Guid']);
             }
         }
 
