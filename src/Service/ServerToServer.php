@@ -30,8 +30,8 @@ class ServerToServer
     /** @var array $membershipServers */
     private $membershipServers;
 
-    /** @var string $protical */
-    private $protical = "0.0.2";
+    /** @var string $proticol */
+    private $proticol = "0.0.2";
 
     /** @var array $membershipServer */
     private $membershipServer;
@@ -126,22 +126,22 @@ class ServerToServer
         return in_array($get_class, $privateEntities);
     }
 
-    private function isProticalNew($protical)
+    private function isProticolNew($proticol)
     {
-        $testLocalProtical = str_ireplace(".", "", $this->protical);
-        $testRemoteProtical = str_ireplace(".", "", $protical);
-        if ($testLocalProtical < $testRemoteProtical) {
+        $testLocalProticol = str_ireplace(".", "", $this->proticol);
+        $testRemoteProticol = str_ireplace(".", "", $proticol);
+        if ($testLocalProticol < $testRemoteProticol) {
             return false;
         }
 
         return true;
     }
 
-    private function isProticalOld($protical)
+    private function isProticolOld($proticol)
     {
-        $testLocalProtical = str_ireplace(".", "", $this->protical);
-        $testRemoteProtical = str_ireplace(".", "", $protical);
-        if ($testLocalProtical > $testRemoteProtical) {
+        $testLocalProticol = str_ireplace(".", "", $this->proticol);
+        $testRemoteProticol = str_ireplace(".", "", $proticol);
+        if ($testLocalProticol > $testRemoteProticol) {
             return false;
         }
 
@@ -151,7 +151,7 @@ class ServerToServer
     private function isSigValid($recivedData)
     {
         $dataThatWasHashed = hash("sha256",
-            $recivedData['protical'] . $recivedData['origin'] . $recivedData['data'] . $recivedData['timestamp']);
+            $recivedData['proticol'] . $recivedData['origin'] . $recivedData['data'] . $recivedData['timestamp']);
         return $this->pkiManager->isSigVerifiable($dataThatWasHashed, $recivedData['signature'],
             $this->membershipServer['public_key']);
     }
@@ -248,7 +248,7 @@ class ServerToServer
     /**
      * @return JsonResponse
      */
-    private function returnSentFromProticalNew()
+    private function returnSentFromProticolNew()
     {
         $response = new JsonResponse();
         $response->setStatusCode(JsonResponse::HTTP_NOT_IMPLEMENTED);
@@ -258,7 +258,7 @@ class ServerToServer
     /**
      * @return JsonResponse
      */
-    private function returnSentFromProticalOld()
+    private function returnSentFromProticolOld()
     {
         $response = new JsonResponse();
         $response->setStatusCode(JsonResponse::HTTP_PRECONDITION_FAILED);
@@ -285,12 +285,12 @@ class ServerToServer
 //        AppConstants::writeToLog('debug_transform.txt',
 //            'Incomming packet from ' . $this->membershipServer['host']);
 
-        if (!$this->isProticalOld($recivedData['protical'])) {
-            return $this->returnSentFromProticalOld();
+        if (!$this->isProticolOld($recivedData['proticol'])) {
+            return $this->returnSentFromProticolOld();
         }
 
-        if (!$this->isProticalNew($recivedData['protical'])) {
-            return $this->returnSentFromProticalNew();
+        if (!$this->isProticolNew($recivedData['proticol'])) {
+            return $this->returnSentFromProticolNew();
         }
 
         if (!$this->isSigValid($recivedData)) {
@@ -350,7 +350,7 @@ class ServerToServer
                     null, AppConstants::LOG_PROGRESSION_CONTINUE);
 
                 $messagePacket = [
-                    "protical" => $this->protical,
+                    "proticol" => $this->proticol,
                     "origin" => $_ENV['INSTALL_URL'],
                     "timestamp" => date("U"),
                 ];
@@ -359,7 +359,7 @@ class ServerToServer
                     $membershipServer['public_key']);
 
                 $dataToHash = hash("sha256",
-                    $messagePacket['protical'] . $messagePacket['origin'] . $messagePacket['data'] . $messagePacket['timestamp']);
+                    $messagePacket['proticol'] . $messagePacket['origin'] . $messagePacket['data'] . $messagePacket['timestamp']);
                 $messagePacket['signature'] = $this->pkiManager->signData($dataToHash);
 
                 $signed = $this->pkiManager->isSigVerifiable($dataToHash, $messagePacket['signature'],
