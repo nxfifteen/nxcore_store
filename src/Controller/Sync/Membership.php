@@ -120,7 +120,8 @@ class Membership extends AbstractController
             $messageTranslated['className'] != 'App\Entity\PatientSettings' &&
             $messageTranslated['className'] != 'App\Entity\PatientGoals' &&
             $messageTranslated['className'] != 'App\Entity\TrackingDevice' &&
-            $messageTranslated['className'] != 'App\Entity\FitStepsDailySummary'
+            $messageTranslated['className'] != 'App\Entity\FitStepsDailySummary' &&
+            $messageTranslated['className'] != 'App\Entity\PatientCredentials'
         ) {
             $this->debug = true;
         }
