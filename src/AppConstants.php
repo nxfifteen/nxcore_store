@@ -49,6 +49,14 @@ class AppConstants
             case "App\Entity\ThirdPartyService":
                 return json_encode(["name" => $entity->getName()]);
                 break;
+            case "App\Entity\PatientFriends":
+                return json_encode([
+                    "friendA" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getFriendA()->getEmail()),
+                    "friendB" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getFriendB()->getEmail()),
+                ]);
+                break;
             case "App\Entity\PatientGoals":
                 return json_encode([
                     "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
