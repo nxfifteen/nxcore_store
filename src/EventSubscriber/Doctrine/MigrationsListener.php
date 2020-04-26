@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -14,11 +13,14 @@ namespace App\EventSubscriber\Doctrine;
 
 use App\AppConstants;
 use App\Entity\RpgChallengeGlobal;
+use App\Service\PkiManager;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\Migrations\Event\MigrationsEventArgs;
 use Doctrine\Migrations\Event\MigrationsVersionEventArgs;
 use Doctrine\Migrations\Events;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Class MigrationsListener
@@ -32,13 +34,23 @@ class MigrationsListener implements EventSubscriber
      */
     private $managerRegistry;
 
+    /** @var PkiManager $pkiManager */
+    private $pkiManager;
+
+    /** @var KernelInterface $appKernel */
+    private $appKernel;
+
     /**
      * MigrationsListener constructor.
      *
      * @param ManagerRegistry $managerRegistry
+     * @param PkiManager      $pkiManager
+     * @param KernelInterface $appKernel
      */
-    public function __construct(ManagerRegistry $managerRegistry)
+    public function __construct(ManagerRegistry $managerRegistry, PkiManager $pkiManager, KernelInterface $appKernel)
     {
+        $this->pkiManager = $pkiManager;
+        $this->appKernel = $appKernel;
         $this->managerRegistry = $managerRegistry;
     }
 
@@ -105,6 +117,8 @@ class MigrationsListener implements EventSubscriber
             $hasChildRelationShip = false;
         }
 
+        $_ENV['EntityEnv'] = 'Migrate';
+
         $entityManager = $this->managerRegistry->getManager();
         foreach ($newDataSet['data'] as $newData) {
             $i++;
@@ -146,6 +160,7 @@ class MigrationsListener implements EventSubscriber
                 $this->write(" Skipped item " . $i . " of " . count($newDataSet['data']));
             }
         }
+        unset($_ENV['EntityEnv']);
     }
 
     /**
@@ -990,30 +1005,9 @@ class MigrationsListener implements EventSubscriber
     public function getSubscribedEvents(): array
     {
         return [
-            Events::onMigrationsMigrating,
-            Events::onMigrationsMigrated,
             Events::onMigrationsVersionExecuting,
             Events::onMigrationsVersionExecuted,
-            Events::onMigrationsVersionSkipped,
         ];
-    }
-
-    /** @noinspection PhpUnused */
-    /**
-     * @param MigrationsEventArgs $args
-     */
-    public function onMigrationsMigrated(MigrationsEventArgs $args): void
-    {
-        //
-    }
-
-    /** @noinspection PhpUnused */
-    /**
-     * @param MigrationsEventArgs $args
-     */
-    public function onMigrationsMigrating(MigrationsEventArgs $args): void
-    {
-        //
     }
 
     /** @noinspection PhpUnused */
@@ -1046,13 +1040,45 @@ class MigrationsListener implements EventSubscriber
         }
     }
 
-    /** @noinspection PhpUnused */
     /**
-     * @param MigrationsVersionEventArgs $args
+     *
      */
-    public function onMigrationsVersionSkipped(MigrationsVersionEventArgs $args): void
+    public function postMigrationUp20200421180458()
     {
-        //
+        $filesystem = new Filesystem();
+        $yourMembershipTemplate = $this->appKernel->getProjectDir() . '/var/private/your_membership.yml';
+        $membershipFile = $this->appKernel->getProjectDir() . '/var/private/membership.yml';
+
+        $this->pkiManager->createNewKey();
+
+        if ($filesystem->exists($yourMembershipTemplate)) {
+            $filesystem->remove($yourMembershipTemplate);
+        }
+
+        $membership = [
+            [
+                "host" => $_ENV['INSTALL_URL'],
+                "contact" => $_ENV['SITE_EMAIL_ADDRESS'],
+                "allowed" => [
+                    "App\Entity\ExerciseType",
+                    "App\Entity\FoodDatabase",
+                    "App\Entity\FoodDiary",
+                    "App\Entity\FoodMeals",
+                    "App\Entity\FoodNutrition",
+                    "App\Entity\WorkoutCategories",
+                    "App\Entity\WorkoutEquipment",
+                    "App\Entity\WorkoutExercise",
+                    "App\Entity\WorkoutMuscleRelation",
+                ],
+                "public_key" => $this->pkiManager->getPublicKey(),
+            ],
+        ];
+
+        file_put_contents($yourMembershipTemplate, Yaml::dump($membership, 2, 4, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK));
+
+        if (!$filesystem->exists($membershipFile)) {
+            file_put_contents($membershipFile, "## Copy membership blocks from other server you want to talk to here");
+        }
     }
 
     /**

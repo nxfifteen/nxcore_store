@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -18,6 +17,7 @@ namespace App;
 use App\Entity\ThirdPartyService;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -28,6 +28,58 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class AppConstants
 {
+    const LOG_PROGRESSION_NONE = 0;
+    const LOG_PROGRESSION_START = 1;
+    const LOG_PROGRESSION_CONTINUE = 2;
+    const LOG_PROGRESSION_STOP = 3;
+
+    static function findIdMethod($entity)
+    {
+        $get_class = str_ireplace("Proxies\__CG__\\", "", get_class($entity));
+        switch ($get_class) {
+            case "App\Entity\Patient":
+                return json_encode(["email" => $entity->getEmail()]);
+                break;
+            case "App\Entity\PatientMembership":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                ]);
+                break;
+            case "App\Entity\ThirdPartyService":
+                return json_encode(["name" => $entity->getName()]);
+                break;
+            case "App\Entity\PatientGoals":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "goal" => $entity->getGoal(),
+                    "entity" => $entity->getEntity(),
+                ]);
+                break;
+            case "App\Entity\PatientSettings":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "service" => sprintf('@App\Entity\ThirdPartyService|{"name":"%s"}',
+                        $entity->getService()->getName()),
+                    "name" => $entity->getName(),
+                ]);
+                break;
+            case "App\Entity\TrackingDevice":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "service" => sprintf('@App\Entity\ThirdPartyService|{"name":"%s"}',
+                        $entity->getService()->getName()),
+                    "remoteId" => $entity->getRemoteId(),
+                ]);
+                break;
+        }
+
+        return json_encode(["guid" => $entity->getGuid()]);
+    }
+
     /**
      * @param $stringToCompress
      *
@@ -126,6 +178,75 @@ class AppConstants
     }
 
     /**
+     * Helper method to create json string from entiry
+     *
+     * @param $inputEntity
+     *
+     * @return string
+     */
+    static function toJson($inputEntity)
+    {
+        $pirvateMethods = [
+            "getId",
+            "getRemoteId",
+            "getPassword",
+            "getSalt",
+            "getApiToken",
+        ];
+
+        $returnString = [];
+        foreach (get_class_methods($inputEntity) as $classMethod) {
+            unset($holdValue);
+            if (substr($classMethod, 0, 3) === "get" && !in_array($classMethod, $pirvateMethods)) {
+                $methodValue = str_ireplace("get", "", $classMethod);
+                $holdValue = $inputEntity->$classMethod();
+                switch (gettype($holdValue)) {
+                    case "string":
+                    case "boolean":
+                    case "integer":
+                    case "double":
+                        $returnString[$methodValue] = $holdValue;
+                        break;
+                    case "array":
+                        $returnString[$methodValue] = json_encode($holdValue);
+                        break;
+                    case "object":
+                        switch (get_class($holdValue)) {
+                            case "DateTime":
+                                $returnString[$methodValue] = "%DateTime%" . $holdValue->format("U");
+                                break;
+                            case "Doctrine\ORM\PersistentCollection":
+                            case "App\Entity\PatientMembership":
+                                //
+                                break;
+                            case "Ramsey\\Uuid\\Uuid":
+                                /** @var $holdValue UuidInterface */
+                                $returnString[$methodValue] = $holdValue->toString();
+                                break;
+                            default:
+                                $holdValueClass = str_ireplace("Proxies\__CG__\\", "", get_class($holdValue));
+                                if (substr($holdValueClass, 0, strlen("App\Entity\\")) === "App\Entity\\") {
+                                    $returnString[$methodValue] = "@" . $holdValueClass . "|" . self::findIdMethod($holdValue);
+                                } else {
+                                    $returnString[$methodValue] = "#" . $holdValueClass;
+                                }
+                                break;
+                        }
+                        break;
+                    case "NULL":
+                        //
+                        break;
+                    default:
+                        $returnString[$methodValue] = gettype($holdValue);
+                        break;
+                }
+            }
+        }
+
+        return json_encode($returnString);
+    }
+
+    /**
      * @param $stringToUncompress
      *
      * @return false|string
@@ -138,13 +259,14 @@ class AppConstants
     }
 
     /**
-     * @param String $fileName
-     * @param String $body
+     * @param String      $fileName
+     * @param String|null $body
+     * @param int         $progession
      */
-    static function writeToLog(string $fileName, string $body)
+    static function writeToLog(string $fileName, ?string $body, int $progession = self::LOG_PROGRESSION_NONE)
     {
         try {
-            $path = sys_get_temp_dir() . '/sync_upload_post';
+            $path = dirname(__FILE__) . '/../var/log';
         } catch (Exception $exception) {
             echo $exception->getMessage();
         }
@@ -156,9 +278,37 @@ class AppConstants
             try {
                 $fileSystem->mkdir($path);
                 if ($fileSystem->exists($file)) {
-                    $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    if ($progession == self::LOG_PROGRESSION_NONE) {
+                        $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    } else {
+                        if ($progession == self::LOG_PROGRESSION_START) {
+                            $fileSystem->appendToFile($file, date("Y-m-d H:i:s") . ":: " . $body . " ");
+                        } else {
+                            if ($progession == self::LOG_PROGRESSION_CONTINUE) {
+                                $fileSystem->appendToFile($file, ".");
+                            } else {
+                                if ($progession == self::LOG_PROGRESSION_STOP) {
+                                    $fileSystem->appendToFile($file, "\n");
+                                }
+                            }
+                        }
+                    }
                 } else {
-                    $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    if ($progession == self::LOG_PROGRESSION_NONE) {
+                        $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                    } else {
+                        if ($progession == self::LOG_PROGRESSION_START) {
+                            $fileSystem->dumpFile($file, date("Y-m-d H:i:s") . ":: " . $body . "\n");
+                        } else {
+                            if ($progession == self::LOG_PROGRESSION_CONTINUE) {
+                                $fileSystem->dumpFile($file, ".");
+                            } else {
+                                if ($progession == self::LOG_PROGRESSION_STOP) {
+                                    $fileSystem->dumpFile($file, " [DONE]\n");
+                                }
+                            }
+                        }
+                    }
                 }
 
             } catch (IOExceptionInterface $exception) {
