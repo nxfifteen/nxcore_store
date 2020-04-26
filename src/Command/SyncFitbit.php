@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -310,7 +309,7 @@ class SyncFitbit extends Command
                 $serviceSyncQueue->getCredentials()->getService(), $requestedEndpoint);
 
         $path = $this->getApiPath($requestedEndpoint, $apiAccessLog);
-        /*if ($requestedEndpoint == "BodyWeight") {
+        /*if ($requestedEndpoint == "BaseBodyWeight") {
             AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . $path);
         }*/
 
@@ -332,7 +331,7 @@ class SyncFitbit extends Command
                 $response = $this->getLibrary()->getParsedResponse($request);
 
                 $responseObject = json_decode(json_encode($response), false);
-                /*if ($requestedEndpoint == "BodyWeight") {
+                /*if ($requestedEndpoint == "BaseBodyWeight") {
                     AppConstants::writeToLog('debug_transform.txt', "[" . SyncFitbit::$defaultName . "] - " . ' ' . print_r($responseObject, true));
                 }*/
 
