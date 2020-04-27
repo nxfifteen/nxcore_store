@@ -32,7 +32,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class UploadSamsungHealth extends AbstractController
 {
     /**
-     * @Route("/sync/upload/samasung/{data_set}", name="sync_upload_post", methods={"POST"})
+     * @Route("/sync/upload/SamsungHealth/{data_set}", name="sync_upload_post", methods={"POST"})
      * @param String          $data_set
      *
      * @param LoggerInterface $logger
@@ -144,6 +144,10 @@ class UploadSamsungHealth extends AbstractController
 //                }
 //            }
 //        }
+
+        $response = new JsonResponse();
+        $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+        return $response;
 
     }
 }
