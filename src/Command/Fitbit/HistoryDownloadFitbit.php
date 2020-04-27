@@ -22,13 +22,10 @@ use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\CommsManager;
 use App\Transform\Fitbit\CommonFitbit;
-use App\Transform\Fitbit\Constants;
 use DateInterval;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use League\OAuth2\Client\Token\AccessToken;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -136,138 +133,6 @@ class HistoryDownloadFitbit extends Command
             $servicePullFrom = clone $serviceBirth;
         }
         return [$servicePullFrom, $premiumString];
-    }
-
-    /**
-     * @param $syncDate
-     *
-     * @return float|string
-     */
-    private function calculateLastSyncPeriod($syncDate)
-    {
-        $daysSince = round((date("U") - strtotime($syncDate)) / (60 * 60 * 24), PHP_ROUND_HALF_UP);
-        if ($daysSince < 8) {
-            $daysSince = "7d";
-        } else {
-            if ($daysSince < 30) {
-                $daysSince = "30d";
-            } else {
-                if ($daysSince < 90) {
-                    $daysSince = "3m";
-                } else {
-                    if ($daysSince < 180) {
-                        $daysSince = "6m";
-                    } else {
-                        if ($daysSince < 364) {
-                            $daysSince = "1y";
-                        } else {
-                            $daysSince = "1y";
-                        }
-                    }
-                }
-            }
-        }
-
-        return $daysSince;
-    }
-
-    /**
-     * @param string $endpoint
-     *
-     * @return string|null
-     */
-    private function getFitbitApiPathFromEndpoint(string $endpoint)
-    {
-        switch ($endpoint) {
-            case 'BodyWeight':
-                $path = '/body/log/weight/date/{date}/1m{ext}';
-                break;
-
-            default:
-                return null;
-        }
-
-        return Constants::FITBIT_COM . "/1/user/-$path";
-    }
-
-    /**
-     * @param AccessToken $accessToken
-     * @param DateTime    $referenceTodayDate
-     * @param DateTime    $apiAccessLog
-     * @param string      $requestedEndpoint
-     *
-     * @return array[string, object]
-     */
-    private function getFitbitApiResponce(
-        AccessToken $accessToken,
-        DateTime $referenceTodayDate,
-        DateTime $apiAccessLog,
-        string $requestedEndpoint
-    ) {
-        if (!$accessToken->hasExpired()) {
-            $path = $this->getFitbitApiUrl($requestedEndpoint, $referenceTodayDate, $apiAccessLog);
-            //$this->log('$path is ' . $path);
-
-            try {
-                $fitbitApp = CommonFitbit::getLibrary();
-                $request = $fitbitApp->getAuthenticatedRequest('GET', $path, $accessToken);
-                $response = $fitbitApp->getParsedResponse($request);
-
-                $responseObject = json_decode(json_encode($response), false);
-
-                return [$path, $responseObject];
-            } catch (IdentityProviderException $e) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    "[" . HistoryDownloadFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
-            }
-        } else {
-            $this->log("Token Expired, will retry later");
-        }
-
-        return [null, null];
-    }
-
-    /**
-     * @param                   $requestedEndpoint
-     * @param DateTime          $referenceTodayDate
-     * @param DateTime          $apiAccessLog
-     *
-     * @return string|null
-     */
-    private function getFitbitApiUrl($requestedEndpoint, DateTime $referenceTodayDate, DateTime $apiAccessLog)
-    {
-        $path = $this->getFitbitApiPathFromEndpoint($requestedEndpoint);
-
-        if (is_null($path)) {
-            return null;
-        }
-
-        if (strpos($path, "{date}") !== false || strpos($path, "{period}") !== false) {
-            $daysSince = round(($referenceTodayDate->format("U") - $apiAccessLog->format("U")) / (60 * 60 * 24), 0,
-                PHP_ROUND_HALF_UP);
-            $syncDate = clone $apiAccessLog;
-            if ($daysSince > 0) {
-                $syncDate->modify("+ " . $daysSince . " days");
-                if ($syncDate->format("Y-m-d") > $syncDate->format("Y-m-d")) {
-                    $syncDate = $syncDate->setTimestamp(strtotime('now'));
-                }
-            }
-
-            if (strpos($path, "{period}") !== false) {
-                $syncPeriod = $this->calculateLastSyncPeriod($apiAccessLog->format("Y-m-d"));
-                $path = str_replace("{period}", $syncPeriod, $path);
-            }
-
-            if (strpos($path, "{date}") !== false) {
-                $path = str_replace("{date}", $syncDate->format("Y-m-d"), $path);
-            }
-        }
-
-        if (strpos($path, "{ext}") !== false) {
-            $path = str_replace("{ext}", '.json', $path);
-        }
-
-        return $path;
     }
 
     /**
@@ -434,7 +299,7 @@ class HistoryDownloadFitbit extends Command
 
                 if (is_null($serviceBirth)) {
                     /** @noinspection PhpUnusedLocalVariableInspection */
-                    [$patientServiceUrl, $patientServiceProfile] = $this->getFitbitApiResponce(
+                    [$patientServiceUrl, $patientServiceProfile] = CommonFitbit::getResponceFromApi(
                         CommonFitbit::getAccessToken($patientCredential),
                         new DateTime(),
                         new DateTime(),
@@ -501,7 +366,7 @@ class HistoryDownloadFitbit extends Command
                                         $loopWatchCount++;
                                         $this->log("  Pulling $supportedEndpoint since " . $serviceOldestPull->format("Y-m-d") . ", loop " . $loopWatchCount);
 
-                                        [$apiEndPointCalled, $apiEndPointResult] = $this->getFitbitApiResponce(
+                                        [$apiEndPointCalled, $apiEndPointResult] = CommonFitbit::getResponceFromApi(
                                             CommonFitbit::getAccessToken($patientCredential),
                                             $serviceOldestPull,
                                             $serviceBirth,
