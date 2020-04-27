@@ -45,7 +45,6 @@ class UploadSamsungHealth extends AbstractController
      * @return JsonResponse
      */
     public function index_post(
-        string $service,
         string $data_set,
         LoggerInterface $logger,
         AwardManager $awardManager,
