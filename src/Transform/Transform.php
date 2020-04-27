@@ -464,7 +464,8 @@ class Transform
                 }
             }
 
-            self::updateApi($this->getDoctrine(), $entityTargetClass, $entityDataArray['Patient'],
+            self::updateApi($this->getDoctrine(), str_ireplace("App\Entity\\", "", $entityTargetClass),
+                $entityDataArray['Patient'],
                 $entityDataArray['thirdPartyService'], $dataEntry->getDateTime());
 
             $entityManager = $this->getDoctrine()->getManager();
