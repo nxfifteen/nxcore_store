@@ -114,10 +114,6 @@ class BodyWeight extends BaseBodyMeasurments
 
     public function processData()
     {
-//        $this->log("User: " . $this->getPatientEntity()->getFirstName());
-//        $this->log("There are " . count($this->rawApiData) . " records");
-//        $this->log("We'll be using setup " . $this->apiDataType);
-
         $this->thirdPartyService = self::getThirdPartyService($this->getDoctrine(), Constants::FITBITSERVICE);
 
         if ($this->apiDataType == BodyWeight::ENDPOINT_STANDARD) {
@@ -130,14 +126,12 @@ class BodyWeight extends BaseBodyMeasurments
                 $i = 1;
                 $this->log(" Creating " . count($recordSetWeights) . " new BodyWeight entity");
                 foreach ($recordSetWeights as $recordSetWeight) {
-                    //$this->log(" Creating new BodyWeight entity " . $i . " of " . count($recordSetWeights)); $i++;
                     $this->saveEntityFromArray("App\Entity\BodyWeight", $recordSetWeight);
                 }
 
                 $i = 1;
                 $this->log(" Creating " . count($recordSetFats) . " new BodyFat entity");
                 foreach ($recordSetFats as $recordSetFat) {
-                    //$this->log(" Creating new BodyFat entity " . $i . " of " . count($recordSetFats)); $i++;
                     $this->saveEntityFromArray("App\Entity\BodyFat", $recordSetFat);
                 }
 
