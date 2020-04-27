@@ -77,7 +77,7 @@ class QueuePopulateFitbit extends Command
             ->findBy(["service" => $service]);
 
         if (count($patientCredentials) > 0) {
-            $this->log(count($patientCredentials) . ' users are connected with Fitbit');
+            $this->log(count($patientCredentials) . ' user(s) are connected with Fitbit');
             foreach ($patientCredentials as $patientCredential) {
                 /** @var SyncQueue[] $patientCredentials */
                 $serviceSyncQueues = $this->doctrine
@@ -108,7 +108,7 @@ class QueuePopulateFitbit extends Command
 
                     if ($patientSettings) {
                         foreach ($patientSettings->getValue() as $patientSetting) {
-                            $this->log('... ' . $patientSetting);
+                            $this->log(' Checking ' . $patientSetting);
 
                             /** @var ApiAccessLog $patient */
                             $apiAccessLog = $this->doctrine
@@ -117,8 +117,8 @@ class QueuePopulateFitbit extends Command
                                     $patientSetting);
 
                             if (!is_null($apiAccessLog)) {
-                                if ($apiAccessLog->getCooldown()->format("U") < strtotime("+1 day")) {
-                                    $this->log('Refreshing ' . $patientSetting . ' for ' . $patientCredential->getPatient()->getUsername());
+                                if ($apiAccessLog->getCooldown()->format("U") < strtotime("now")) {
+                                    $this->log('  Adding to ' . $patientCredential->getPatient()->getUsername() . '\'s sync queue');
 
                                     $entityManager = $this->doctrine->getManager();
                                     $serviceSyncQueue = new SyncQueue();
