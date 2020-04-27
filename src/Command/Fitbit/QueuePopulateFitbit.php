@@ -11,7 +11,7 @@
 
 /** @noinspection DuplicatedCode */
 
-namespace App\Command;
+namespace App\Command\Fitbit;
 
 use App\AppConstants;
 use App\Entity\ApiAccessLog;
@@ -31,7 +31,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @Cron(minute="/5", noLogs=true, server="web")
  */
-class QueueSyncFitbit extends Command
+class QueuePopulateFitbit extends Command
 {
     /**
      * @var string
@@ -42,6 +42,26 @@ class QueueSyncFitbit extends Command
      * @var ManagerRegistry
      */
     private $doctrine;
+
+    /**
+     * @param $patientServiceProfile
+     */
+    private function log($patientServiceProfile)
+    {
+        if (!is_string($patientServiceProfile)) {
+            AppConstants::writeToLog(
+                'debug_transform.txt',
+                "[" . self::$defaultName . "] - " . print_r($patientServiceProfile, true)
+            );
+            echo "[" . self::$defaultName . "] - " . print_r($patientServiceProfile, true) . "\n";
+        } else {
+            AppConstants::writeToLog(
+                'debug_transform.txt',
+                "[" . self::$defaultName . "] - " . $patientServiceProfile
+            );
+            echo "[" . self::$defaultName . "] - " . $patientServiceProfile . "\n";
+        }
+    }
 
     /**
      * {@inheritdoc}
@@ -57,23 +77,15 @@ class QueueSyncFitbit extends Command
             ->findBy(["service" => $service]);
 
         if (count($patientCredentials) > 0) {
-            AppConstants::writeToLog('debug_transform.txt',
-                "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . count($patientCredentials) . ' users are connected with Fitbit');
+            $this->log(count($patientCredentials) . ' users are connected with Fitbit');
             foreach ($patientCredentials as $patientCredential) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                 /** @var SyncQueue[] $patientCredentials */
                 $serviceSyncQueues = $this->doctrine
                     ->getRepository(SyncQueue::class)
                     ->findBy(['service' => $service, 'credentials' => $patientCredential]);
                 if ($serviceSyncQueues) {
-                    AppConstants::writeToLog('debug_transform.txt',
-                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
-                    AppConstants::writeToLog('debug_transform.txt',
-                        "[" . QueueSyncFitbit::$defaultName . "] - " . $patientCredential->getPatient()->getUsername() . ' already has steps in the queue');
+                    $this->log($patientCredential->getPatient()->getUsername() . ' already has something in the queue');
                 } else {
-                    AppConstants::writeToLog('debug_transform.txt',
-                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                     /** @var PatientSettings $patientSettings */
                     $patientSettings = $this->doctrine
                         ->getRepository(PatientSettings::class)
@@ -84,8 +96,6 @@ class QueueSyncFitbit extends Command
                         ]);
 
                     if (!$patientSettings) {
-                        AppConstants::writeToLog('debug_transform.txt',
-                            "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                         /** @var PatientSettings $patientSettings */
                         $patientSettings = $this->doctrine
                             ->getRepository(PatientSettings::class)
@@ -95,15 +105,11 @@ class QueueSyncFitbit extends Command
                                 'name' => 'enabledEndpoints',
                             ]);
                     }
-                    AppConstants::writeToLog('debug_transform.txt',
-                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
 
                     if ($patientSettings) {
-                        AppConstants::writeToLog('debug_transform.txt',
-                            "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                         foreach ($patientSettings->getValue() as $patientSetting) {
-                            AppConstants::writeToLog('debug_transform.txt',
-                                "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
+                            $this->log('... ' . $patientSetting);
+
                             /** @var ApiAccessLog $patient */
                             $apiAccessLog = $this->doctrine
                                 ->getRepository(ApiAccessLog::class)
@@ -111,20 +117,15 @@ class QueueSyncFitbit extends Command
                                     $patientSetting);
 
                             if (!is_null($apiAccessLog)) {
-                                AppConstants::writeToLog('debug_transform.txt',
-                                    "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
-                                if ($apiAccessLog->getCooldown()->format("U") < strtotime("now")) {
-                                    AppConstants::writeToLog('debug_transform.txt',
-                                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
-                                    AppConstants::writeToLog('debug_transform.txt',
-                                        "[" . QueueSyncFitbit::$defaultName . "] - " . ' Refreshing ' . $patientSetting . ' for ' . $patientCredential->getPatient()->getUsername());
+                                if ($apiAccessLog->getCooldown()->format("U") < strtotime("+1 day")) {
+                                    $this->log('Refreshing ' . $patientSetting . ' for ' . $patientCredential->getPatient()->getUsername());
 
                                     $entityManager = $this->doctrine->getManager();
                                     $serviceSyncQueue = new SyncQueue();
                                     $serviceSyncQueue->setService($service);
                                     $serviceSyncQueue->setDatetime(new DateTime());
                                     $serviceSyncQueue->setCredentials($patientCredential);
-                                    $serviceSyncQueue->setEndpoint("TrackingDevice::" . $patientSetting);
+                                    $serviceSyncQueue->setEndpoint($patientSetting);
                                     $entityManager->persist($serviceSyncQueue);
 
                                     $subscriptionSyncQueue = new SyncQueue();
@@ -142,8 +143,7 @@ class QueueSyncFitbit extends Command
                 }
             }
         } else {
-            AppConstants::writeToLog('debug_transform.txt',
-                "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . 'There are not Fitbit users');
+            $this->log('There are not Fitbit users');
         }
     }
 
