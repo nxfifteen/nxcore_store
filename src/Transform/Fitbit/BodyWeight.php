@@ -112,6 +112,10 @@ class BodyWeight extends BaseBodyMeasurments
         }
     }
 
+    /**
+     * @return string|null
+     * @noinspection PhpUnused
+     */
     public function processData()
     {
         $this->thirdPartyService = self::getThirdPartyService($this->getDoctrine(), Constants::FITBITSERVICE);
@@ -147,11 +151,21 @@ class BodyWeight extends BaseBodyMeasurments
         return null;
     }
 
+    /**
+     * @param $apiEndPointResult
+     *
+     * @noinspection PhpUnused
+     */
     public function setApiReturn($apiEndPointResult)
     {
         $this->rawApiData = $apiEndPointResult->weight;
     }
 
+    /**
+     * @param $apiEndPointCalled
+     *
+     * @noinspection PhpUnused
+     */
     public function setCalledUrl($apiEndPointCalled)
     {
         $this->apiUrl = $apiEndPointCalled;
