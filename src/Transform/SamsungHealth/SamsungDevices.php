@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -37,7 +36,7 @@ class SamsungDevices extends Constants
     {
         $jsonContent = self::decodeJson($getContent);
         if (property_exists($jsonContent, "remoteId")) {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too TrackingDevice for " . $jsonContent->remoteId);
+            ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - New call too TrackingDevice for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);

@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -50,10 +49,10 @@ class SamsungFood extends Constants
     public static function translateFood(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " -  translateFood: " . print_r($jsonContent, TRUE));
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " -  translateFood: " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FoodNutrition for " . $jsonContent->remoteId);
+            ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - New call too FoodNutrition for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);
@@ -205,7 +204,7 @@ class SamsungFood extends Constants
     public static function translateFoodInfo(ManagerRegistry $doctrine, string $getContent, AwardManager $awardManager)
     {
         $jsonContent = self::decodeJson($getContent);
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateFoodInfo : " . print_r($jsonContent, TRUE));
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - translateFoodInfo : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
 
@@ -223,7 +222,7 @@ class SamsungFood extends Constants
 
             if (property_exists($jsonContent,
                     "name") && !empty($jsonContent->name) && self::startsWith($jsonContent->name, "MyFitnessPal")) {
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FoodDatabase for " . $jsonContent->remoteId);
+                ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - New call too FoodDatabase for " . $jsonContent->remoteId);
 
                 self::updateApi($doctrine, "FoodDatabase", $patient, $thirdPartyService, new DateTime());
 
@@ -250,15 +249,15 @@ class SamsungFood extends Constants
                     $jsonContent->meal_type = $regs['meal_id'];
                     $jsonContent->dateTime = $regs['date'] . " " . $regs['year'];
                 } else {
-                    ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . $jsonContent->remoteId);
+                    ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - " . $jsonContent->remoteId);
                     $jsonContent->dateTime = str_ireplace($jsonContent->meal_type . "-", "", $jsonContent->remoteId);
-                    ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . $jsonContent->dateTime);
+                    ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - " . $jsonContent->dateTime);
                     $jsonContent->dateTime = str_ireplace("GMT+01:00 ", "", $jsonContent->dateTime);
                     $jsonContent->dateTime = str_ireplace("GMT ", "", $jsonContent->dateTime);
-                    ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . $jsonContent->dateTime);
+                    ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - " . $jsonContent->dateTime);
                     $jsonContent->dateTime = date('Y-m-d H:i:s', strtotime($jsonContent->dateTime));
                 }
-                ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - " . $jsonContent->remoteId);
+                ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - " . $jsonContent->remoteId);
                 ///AppConstants::writeToLog('debug_transform.txt', "    - " . $jsonContent->meal_type);
                 ///AppConstants::writeToLog('debug_transform.txt', "    - " . $jsonContent->dateTime);
 
@@ -355,14 +354,14 @@ class SamsungFood extends Constants
         AwardManager $awardManager
     ) {
         $jsonContent = self::decodeJson($getContent);
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateFoodIntake : " . print_r($jsonContent, TRUE));
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - translateFoodIntake : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid") &&
             property_exists($jsonContent, "name") &&
             !empty($jsonContent->food_info_id) &&
             $jsonContent->food_info_id != "meal_removed" &&
             $jsonContent->food_info_id != "meal_auto_filled") {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too FoodIntake for " . $jsonContent->remoteId);
+            ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - New call too FoodIntake for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);

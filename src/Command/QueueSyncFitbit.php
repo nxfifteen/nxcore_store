@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -61,14 +60,20 @@ class QueueSyncFitbit extends Command
             AppConstants::writeToLog('debug_transform.txt',
                 "[" . QueueSyncFitbit::$defaultName . "] - " . ' ' . count($patientCredentials) . ' users are connected with Fitbit');
             foreach ($patientCredentials as $patientCredential) {
+                AppConstants::writeToLog('debug_transform.txt',
+                    "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                 /** @var SyncQueue[] $patientCredentials */
                 $serviceSyncQueues = $this->doctrine
                     ->getRepository(SyncQueue::class)
                     ->findBy(['service' => $service, 'credentials' => $patientCredential]);
                 if ($serviceSyncQueues) {
                     AppConstants::writeToLog('debug_transform.txt',
+                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
+                    AppConstants::writeToLog('debug_transform.txt',
                         "[" . QueueSyncFitbit::$defaultName . "] - " . $patientCredential->getPatient()->getUsername() . ' already has steps in the queue');
                 } else {
+                    AppConstants::writeToLog('debug_transform.txt',
+                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                     /** @var PatientSettings $patientSettings */
                     $patientSettings = $this->doctrine
                         ->getRepository(PatientSettings::class)
@@ -79,6 +84,8 @@ class QueueSyncFitbit extends Command
                         ]);
 
                     if (!$patientSettings) {
+                        AppConstants::writeToLog('debug_transform.txt',
+                            "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                         /** @var PatientSettings $patientSettings */
                         $patientSettings = $this->doctrine
                             ->getRepository(PatientSettings::class)
@@ -88,9 +95,15 @@ class QueueSyncFitbit extends Command
                                 'name' => 'enabledEndpoints',
                             ]);
                     }
+                    AppConstants::writeToLog('debug_transform.txt',
+                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
 
                     if ($patientSettings) {
+                        AppConstants::writeToLog('debug_transform.txt',
+                            "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                         foreach ($patientSettings->getValue() as $patientSetting) {
+                            AppConstants::writeToLog('debug_transform.txt',
+                                "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                             /** @var ApiAccessLog $patient */
                             $apiAccessLog = $this->doctrine
                                 ->getRepository(ApiAccessLog::class)
@@ -98,7 +111,11 @@ class QueueSyncFitbit extends Command
                                     $patientSetting);
 
                             if (!is_null($apiAccessLog)) {
+                                AppConstants::writeToLog('debug_transform.txt',
+                                    "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                                 if ($apiAccessLog->getCooldown()->format("U") < strtotime("now")) {
+                                    AppConstants::writeToLog('debug_transform.txt',
+                                        "[" . QueueSyncFitbit::$defaultName . "] - " . __LINE__);
                                     AppConstants::writeToLog('debug_transform.txt',
                                         "[" . QueueSyncFitbit::$defaultName . "] - " . ' Refreshing ' . $patientSetting . ' for ' . $patientCredential->getPatient()->getUsername());
 

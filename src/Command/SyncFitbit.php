@@ -227,7 +227,7 @@ class SyncFitbit extends Command
             $path = str_replace("{period}", $syncPeriod, $path);
         }
 
-        // AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Path = ' . $path);
+        // AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . ' Path = ' . $path);
 
         return $path;
     }

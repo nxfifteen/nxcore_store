@@ -53,10 +53,10 @@ class SamsungBodyWeight extends Constants
         CommsManager $commsManager
     ) {
         $jsonContent = self::decodeJson($getContent);
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
-            ///AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - New call too BaseBodyWeight for " . $jsonContent->remoteId);
+            ///AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - New call too BaseBodyWeight for " . $jsonContent->remoteId);
 
             /** @var Patient $patient */
             $patient = self::getPatient($doctrine, $jsonContent->uuid);

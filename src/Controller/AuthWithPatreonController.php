@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -73,8 +72,10 @@ class AuthWithPatreonController extends AbstractController
         $queryCallback = explode('/auth/with/patreon', $request->getMasterRequest()->getUri())[0];
         $queryCallback = $queryCallback . '/auth/callback/patreon';
         $queryCallback = str_replace("http://", "https://", $queryCallback);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $uuid . ' initiated a Fitbit auth ');
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $queryCallback);
+        AppConstants::writeToLog('debug_transform.txt',
+            __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' ' . $uuid . ' initiated a Fitbit auth ');
+        AppConstants::writeToLog('debug_transform.txt',
+            __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' ' . $queryCallback);
 
         $_SESSION['uuid'] = $uuid;
         $_SESSION['key'] = $request->getMasterRequest()->get("key");
@@ -92,7 +93,7 @@ class AuthWithPatreonController extends AbstractController
             ->withAddedScope('identity')
             ->withAddedScope('identity[email]');
 
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $href);
+        AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' ' . $href);
 
         // Redirect the user to the authorization URL.
         header('Location: ' . $href);

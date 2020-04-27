@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -45,7 +44,7 @@ class FitbitBodyWeight extends Constants
      *
      * @param CommsManager    $commsManager
      *
-     * @return BodyWeight|null
+     * @return BaseBodyWeight|null
      * @throws Exception
      */
     public static function translate(
@@ -107,7 +106,7 @@ class FitbitBodyWeight extends Constants
             $remoteId = $jsonContent[0]->remoteId . 'FitbitBodyWeight' . (new DateTime($jsonContent[0]->dateTime))->format("Y-m-d");
 
             $newItem = false;
-            /** @var BodyWeight $dataEntry */
+            /** @var BaseBodyWeight $dataEntry */
             $dataEntry = $doctrine->getRepository(BodyWeight::class)->findOneBy([
                 'RemoteId' => $remoteId,
                 'patient' => $patient,
@@ -150,7 +149,7 @@ class FitbitBodyWeight extends Constants
                         }
                     }
 
-                    /* @var BodyWeight $sevenDayAgoWeight */
+                    /* @var BaseBodyWeight $sevenDayAgoWeight */
                     $sevenDayAgoWeight = $doctrine->getRepository(BodyWeight::class)
                         ->findSevenDayAgo($patient->getId(), new DateTime());
                     if (!is_null($sevenDayAgoWeight)) {
@@ -184,7 +183,7 @@ class FitbitBodyWeight extends Constants
                         }
                     }
 
-                    /* @var BodyWeight[] $firstReading */
+                    /* @var BaseBodyWeight[] $firstReading */
                     $firstReading = $doctrine->getRepository(BodyWeight::class)
                         ->findFirst($patient->getUuid());
                     $firstReading = $firstReading[0];

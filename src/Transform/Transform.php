@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -25,11 +24,15 @@ use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
 use App\Entity\TrackingDevice;
 use App\Entity\UnitOfMeasurement;
+use App\Service\AwardManager;
+use App\Service\ChallengePve;
+use App\Service\CommsManager;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Transform
@@ -38,6 +41,46 @@ use Exception;
  */
 class Transform
 {
+    /** @var ManagerRegistry */
+    private $doctrine;
+
+    /** @var LoggerInterface */
+    private $logger;
+
+    /** @var AwardManager */
+    private $awardManager;
+
+    /** @var ChallengePve */
+    private $challengePve;
+
+    /** @var CommsManager */
+    private $commsManager;
+
+    /** @var Patient */
+    private $patient;
+
+    /**
+     * BodyWeight constructor.
+     *
+     * @param ManagerRegistry $doctrine
+     * @param LoggerInterface $logger
+     * @param AwardManager    $awardManager
+     * @param ChallengePve    $challengePve
+     * @param CommsManager    $commsManager
+     */
+    public function __construct(
+        ManagerRegistry $doctrine,
+        LoggerInterface $logger,
+        AwardManager $awardManager,
+        ChallengePve $challengePve,
+        CommsManager $commsManager
+    ) {
+        $this->doctrine = $doctrine;
+        $this->logger = $logger;
+        $this->awardManager = $awardManager;
+        $this->challengePve = $challengePve;
+        $this->commsManager = $commsManager;
+    }
 
     /**
      * @param String $getContent
@@ -63,14 +106,46 @@ class Transform
     }
 
     /**
-     * @param Object $getContent
+     * @param $getContent
      *
      * @return mixed
      */
-    protected static function encodeJson(Object $getContent)
+    protected static function encodeJson($getContent)
     {
         $jsonObject = json_encode($getContent);
         return $jsonObject;
+    }
+
+    /**
+     * @return AwardManager
+     */
+    protected function getAwardManager(): AwardManager
+    {
+        return $this->awardManager;
+    }
+
+    /**
+     * @return ChallengePve
+     */
+    protected function getChallengePve(): ChallengePve
+    {
+        return $this->challengePve;
+    }
+
+    /**
+     * @return CommsManager
+     */
+    protected function getCommsManager(): CommsManager
+    {
+        return $this->commsManager;
+    }
+
+    /**
+     * @return ManagerRegistry
+     */
+    protected function getDoctrine(): ManagerRegistry
+    {
+        return $this->doctrine;
     }
 
     /**
@@ -94,6 +169,14 @@ class Transform
 
             return $thirdPartyService;
         }
+    }
+
+    /**
+     * @return LoggerInterface
+     */
+    protected function getLogger(): LoggerInterface
+    {
+        return $this->logger;
     }
 
     /**
@@ -195,6 +278,14 @@ class Transform
     }
 
     /**
+     * @return Patient
+     */
+    protected function getPatientEntity(): Patient
+    {
+        return $this->patient;
+    }
+
+    /**
      * @param ManagerRegistry   $doctrine
      * @param String            $serviceName
      *
@@ -284,75 +375,22 @@ class Transform
      * @param ManagerRegistry   $doctrine
      * @param Patient           $patient
      * @param ThirdPartyService $thirdPartyService
-     * @param String            $remote_id
+     * @param String            $deviceName
      *
      * @param array             $options
      *
      * @return TrackingDevice|null
+     * @deprecated use AppConstants::getTrackingDevice instead
+     *
      */
     protected static function getTrackingDevice(
         ManagerRegistry $doctrine,
         Patient $patient,
         ThirdPartyService $thirdPartyService,
-        string $remote_id,
+        string $deviceName,
         array $options = []
     ) {
-        /** @var TrackingDevice $deviceTracking */
-        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
-            'remoteId' => $remote_id,
-            'patient' => $patient,
-            'service' => $thirdPartyService,
-        ]);
-        if ($deviceTracking) {
-            return $deviceTracking;
-        } else {
-            $entityManager = $doctrine->getManager();
-            $deviceTracking = new TrackingDevice();
-            $safeGuid = false;
-            $i = 0;
-            while ($safeGuid == false) {
-                $i++;
-                AppConstants::writeToLog('debug_transform.txt', 'Added a GUID (' . $i . ')');
-                $deviceTracking->createGuid();
-                $dataEntryGuidCheck = $doctrine
-                    ->getRepository(TrackingDevice::class)
-                    ->findByGuid($deviceTracking->getGuid());
-                if (empty($dataEntryGuidCheck)) {
-                    $safeGuid = true;
-                }
-            }
-            $deviceTracking->setPatient($patient);
-            $deviceTracking->setService($thirdPartyService);
-            $deviceTracking->setRemoteId($remote_id);
-            $deviceTracking->setName($remote_id);
-            $deviceTracking->setType("Unknown");
-
-            if (count($options) > 0) {
-                if (array_key_exists("name", $options)) {
-                    $deviceTracking->setName($options['name']);
-                }
-                if (array_key_exists("comment", $options)) {
-                    $deviceTracking->setComment($options['comment']);
-                }
-                if (array_key_exists("battery", $options)) {
-                    $deviceTracking->setBattery($options['battery']);
-                }
-                if (array_key_exists("type", $options)) {
-                    $deviceTracking->setType($options['type']);
-                }
-                if (array_key_exists("manufacturer", $options)) {
-                    $deviceTracking->setManufacturer($options['manufacturer']);
-                }
-                if (array_key_exists("model", $options)) {
-                    $deviceTracking->setModel($options['model']);
-                }
-            }
-
-            $entityManager->persist($deviceTracking);
-            $entityManager->flush();
-
-            return $deviceTracking;
-        }
+        return AppConstants::getTrackingDevice($doctrine, $patient, $thirdPartyService, $deviceName, $options);
     }
 
     /**
@@ -375,6 +413,65 @@ class Transform
             $entityManager->flush();
 
             return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param $logMessage
+     */
+    protected function log($logMessage)
+    {
+        if (!is_string($logMessage)) {
+            AppConstants::writeToLog(
+                'debug_transform.txt',
+                "[Transform] - " . print_r($logMessage, true)
+            );
+            echo "[Transform] - " . print_r($logMessage, true) . "\n";
+        } else {
+            AppConstants::writeToLog(
+                'debug_transform.txt',
+                "[Transform] - " . $logMessage
+            );
+            echo "[Transform] - " . $logMessage . "\n";
+        }
+    }
+
+    /**
+     * @param $entityTargetClass
+     * @param $entityDataArray
+     *
+     * @throws Exception
+     */
+    protected function saveEntityFromArray($entityTargetClass, $entityDataArray)
+    {
+        if (class_exists($entityTargetClass)) {
+            $dataEntry = $this->getDoctrine()->getRepository($entityTargetClass)->findOneBy($entityDataArray['searchFields']);
+            if (!$dataEntry) {
+                if ($entityDataArray['DateTime']->format("Y-m-d") == date("Y-m-d")) {
+                    $newItem = true;
+                }
+                $dataEntry = new $entityTargetClass();
+            }
+
+            foreach ($entityDataArray as $entityDataKey => $entityDataItem) {
+                if ($entityDataKey != "searchFields" && $entityDataKey != "thirdPartyService") {
+                    $targetMethodName = "set" . $entityDataKey;
+                    if (method_exists($dataEntry, $targetMethodName)) {
+                        $dataEntry->$targetMethodName($entityDataItem);
+                    } else {
+                        $this->log("There is no method called " . $targetMethodName);
+                    }
+                }
+            }
+
+            self::updateApi($this->getDoctrine(), $entityTargetClass, $entityDataArray['Patient'],
+                $entityDataArray['thirdPartyService'], $dataEntry->getDateTime());
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($dataEntry);
+            $entityManager->flush();
+        } else {
+            $this->log("Unable to find the " . $entityTargetClass . " class");
         }
     }
 
@@ -408,7 +505,7 @@ class Transform
         ThirdPartyService $service,
         DateTimeInterface $dateTime
     ) {
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - translateEntity class type is : " . $fullClassName);
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - translateEntity class type is : " . $fullClassName);
         /** @var ApiAccessLog $dataEntry */
         $dataEntry = $doctrine->getRepository(ApiAccessLog::class)->findOneBy([
             'entity' => $fullClassName,
@@ -432,5 +529,10 @@ class Transform
         $entityManager->flush();
 
         return $dataEntry;
+    }
+
+    public function setPatientEntity(Patient $patient)
+    {
+        $this->patient = $patient;
     }
 }

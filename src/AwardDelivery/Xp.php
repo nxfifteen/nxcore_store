@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -89,7 +88,7 @@ class Xp extends AwardDelivery
             ]);
             if (!$xpAlreadyAwarded) {
                 AppConstants::writeToLog('debug_transform.txt',
-                    __LINE__ . ' Awarding ' . $this->patient->getFirstName() . ' ' . $this->reward->getPayload() . 'XP for ' . $reasoning);
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' Awarding ' . $this->patient->getFirstName() . ' ' . $this->reward->getPayload() . 'XP for ' . $reasoning);
 
                 $xpToAward = round(($this->reward->getPayload() * $this->patient->getRpgFactor()), 0,
                     PHP_ROUND_HALF_DOWN);
@@ -104,7 +103,8 @@ class Xp extends AwardDelivery
                 $entityManager->persist($xpAward);
                 $entityManager->flush();
 
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Final award will be ' . $xpToAward . 'XP');
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' Final award will be ' . $xpToAward . 'XP');
             }
         }
 

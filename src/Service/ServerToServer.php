@@ -67,10 +67,12 @@ class ServerToServer
      */
     private function findMember($origin)
     {
-        foreach ($this->membershipServers as $membershipServer) {
-            if ($membershipServer['host'] == $origin) {
-                $this->membershipServer = $membershipServer;
-                return true;
+        if (count($this->membershipServers) > 0) {
+            foreach ($this->membershipServers as $membershipServer) {
+                if ($membershipServer['host'] == $origin) {
+                    $this->membershipServer = $membershipServer;
+                    return true;
+                }
             }
         }
 
@@ -323,56 +325,59 @@ class ServerToServer
      */
     public function sentToMembers($dataEntity, string $event = "unset")
     {
-        if ($this->isPrivateEntity(get_class($dataEntity))) {
-            AppConstants::writeToLog('debug_transform.txt', '' . __LINE__);
-            return false;
-        }
+        if (is_array($this->membershipServers) && count($this->membershipServers) > 0) {
+            if ($this->isPrivateEntity(get_class($dataEntity))) {
+                AppConstants::writeToLog('debug_transform.txt', '' . __LINE__);
+                return false;
+            }
 
-        $dataObject = [
-            "version" => $this->databaseVersion,
-            "className" => get_class($dataEntity),
-            "event" => $event,
-            "search" => AppConstants::findIdMethod($dataEntity),
-            "data" => $dataEntity,
-        ];
+            $dataObject = [
+                "version" => $this->databaseVersion,
+                "className" => get_class($dataEntity),
+                "event" => $event,
+                "search" => AppConstants::findIdMethod($dataEntity),
+                "data" => $dataEntity,
+            ];
 
-        if (is_object($dataObject['data'])) {
-            $dataObject['data'] = AppConstants::toJson($dataObject['data']);
-        }
+            if (is_object($dataObject['data'])) {
+                $dataObject['data'] = AppConstants::toJson($dataObject['data']);
+            }
 
-        $dataObject = json_encode($dataObject);
+            $dataObject = json_encode($dataObject);
 
-        AppConstants::writeToLog('debug_transform.txt',
-            'Sending ' . get_class($dataEntity) . ' to members', AppConstants::LOG_PROGRESSION_START);
-        foreach ($this->membershipServers as $membershipServer) {
-            if ($this->isAllowedEntity(get_class($dataEntity), $membershipServer)) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    null, AppConstants::LOG_PROGRESSION_CONTINUE);
+            AppConstants::writeToLog('debug_transform.txt',
+                'Sending ' . get_class($dataEntity) . ' to members', AppConstants::LOG_PROGRESSION_START);
+            foreach ($this->membershipServers as $membershipServer) {
+                if ($this->isAllowedEntity(get_class($dataEntity), $membershipServer)) {
+                    AppConstants::writeToLog('debug_transform.txt',
+                        null, AppConstants::LOG_PROGRESSION_CONTINUE);
 
-                $messagePacket = [
-                    "proticol" => $this->proticol,
-                    "origin" => $_ENV['INSTALL_URL'],
-                    "timestamp" => date("U"),
-                ];
+                    $messagePacket = [
+                        "proticol" => $this->proticol,
+                        "origin" => $_ENV['INSTALL_URL'],
+                        "timestamp" => date("U"),
+                    ];
 
-                [$messagePacket['data'], $messagePacket['keys']] = $this->pkiManager->encryptData($dataObject,
-                    $membershipServer['public_key']);
+                    [$messagePacket['data'], $messagePacket['keys']] = $this->pkiManager->encryptData($dataObject,
+                        $membershipServer['public_key']);
 
-                $dataToHash = hash("sha256",
-                    $messagePacket['proticol'] . $messagePacket['origin'] . $messagePacket['data'] . $messagePacket['timestamp']);
-                $messagePacket['signature'] = $this->pkiManager->signData($dataToHash);
+                    $dataToHash = hash("sha256",
+                        $messagePacket['proticol'] . $messagePacket['origin'] . $messagePacket['data'] . $messagePacket['timestamp']);
+                    $messagePacket['signature'] = $this->pkiManager->signData($dataToHash);
 
-                $signed = $this->pkiManager->isSigVerifiable($dataToHash, $messagePacket['signature'],
-                    $this->pkiManager->getPublicKey());
-                if ($signed) {
-                    $this->postToMirror(json_encode($messagePacket), $membershipServer['host'] . 'sync/membership/');
-                } else {
-                    AppConstants::writeToLog('debug_transform.txt', 'Some when wrong checking the signature');
+                    $signed = $this->pkiManager->isSigVerifiable($dataToHash, $messagePacket['signature'],
+                        $this->pkiManager->getPublicKey());
+                    if ($signed) {
+                        $this->postToMirror(json_encode($messagePacket),
+                            $membershipServer['host'] . 'sync/membership/');
+                    } else {
+                        AppConstants::writeToLog('debug_transform.txt', 'Some when wrong checking the signature');
+                    }
                 }
             }
+            AppConstants::writeToLog('debug_transform.txt',
+                'Sending members', AppConstants::LOG_PROGRESSION_STOP);
         }
-        AppConstants::writeToLog('debug_transform.txt',
-            'Sending members', AppConstants::LOG_PROGRESSION_STOP);
 
         return true;
     }

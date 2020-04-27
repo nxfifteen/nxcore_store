@@ -59,7 +59,28 @@ class Membership extends AbstractController
                     }
 
                     if ($entitySearchClass == "App\Entity\ThirdPartyService") {
+                        $_ENV['EntityEnv'] = 'ServerComms';
                         $datum = AppConstants::getThirdPartyService($this->getDoctrine(), $entitySearchArgs['name']);
+                        unset($_ENV['EntityEnv']);
+                    } elseif ($entitySearchClass == "App\Entity\TrackingDevice") {
+                        $_ENV['EntityEnv'] = 'ServerComms';
+                        $datum = AppConstants::getTrackingDevice(
+                            $this->getDoctrine(),
+                            $entitySearchArgs['patient'],
+                            $entitySearchArgs['service'],
+                            $entitySearchArgs['remoteId']
+                        );
+                        unset($_ENV['EntityEnv']);
+                    } elseif ($entitySearchClass == "App\Entity\PatientGoals") {
+                        $_ENV['EntityEnv'] = 'ServerComms';
+                        $datum = AppConstants::getPatientGoal($this->getDoctrine(),
+                            $entitySearchArgs['entity'],
+                            $entitySearchArgs['goal'],
+                            $entitySearchArgs['unitOfMeasurement'],
+                            $entitySearchArgs['patient'],
+                            true
+                        );
+                        unset($_ENV['EntityEnv']);
                     } else {
                         $entitySearchDB = $this->getDoctrine()
                             ->getRepository($entitySearchClass)
@@ -67,8 +88,11 @@ class Membership extends AbstractController
                         if (!is_null($entitySearchDB)) {
                             $datum = $entitySearchDB;
                         } else {
+                            AppConstants::writeToLog('debug_transform.txt',
+                                __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' died');
                             if ($this->debug) {
-                                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' died');
+                                AppConstants::writeToLog('debug_transform.txt',
+                                    'Couldn\'t find an entity (' . $entitySearchClass . ')');
                             }
                             die();
                         }
@@ -80,10 +104,12 @@ class Membership extends AbstractController
 
         if ($datumOrig !== $datum) {
             if ($this->debug) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . '  $datumOrig = ' . $datumOrig);
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . '  $datumOrig = ' . $datumOrig);
             }
             if ($this->debug) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . '   gettype($datum) = ' . gettype($datum));
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . '   gettype($datum) = ' . gettype($datum));
             }
             if (gettype($datum) == "object") {
                 if ($this->debug) {
@@ -92,7 +118,8 @@ class Membership extends AbstractController
                 }
             } elseif (gettype($datum) == "array") {
                 if ($this->debug) {
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . '   $datum = ' . print_r($datum, true));
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . '   $datum = ' . print_r($datum, true));
                 }
             }
         }
@@ -122,7 +149,10 @@ class Membership extends AbstractController
             $messageTranslated['className'] != 'App\Entity\TrackingDevice' &&
             $messageTranslated['className'] != 'App\Entity\FitStepsDailySummary' &&
             $messageTranslated['className'] != 'App\Entity\PatientCredentials' &&
-            $messageTranslated['className'] != 'App\Entity\PatientFriends'
+            $messageTranslated['className'] != 'App\Entity\PatientFriends' &&
+            $messageTranslated['className'] != 'App\Entity\ApiAccessLog' &&
+            $messageTranslated['className'] != 'App\Entity\BodyWeight' &&
+            $messageTranslated['className'] != 'App\Entity\BodyFat'
         ) {
             $this->debug = true;
         }
@@ -132,7 +162,10 @@ class Membership extends AbstractController
             __LINE__ . ' Packet ' . print_r($messageTranslated, true));
 
         if (is_int($messageTranslated)) {
-            if ($this->debug) AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' died');
+            if ($this->debug) {
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' died');
+            }
 
             $response = new JsonResponse();
             $response->setStatusCode($messageTranslated);
@@ -156,6 +189,10 @@ class Membership extends AbstractController
 
             $entityAdditonMethod = "add" . str_ireplace("App\Entity\\", "", $messageTranslated['className']) . "Entity";
             if (method_exists($this, $entityAdditonMethod)) {
+                if ($this->debug) {
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __LINE__ . ' Looked for ' . $entityAdditonMethod);
+                }
                 $newEntity = $this->$entityAdditonMethod($newEntity, $messageTranslated, $updateEntity);
             } else {
                 if ($this->debug) AppConstants::writeToLog('debug_transform.txt',
@@ -258,25 +295,40 @@ class Membership extends AbstractController
             if (method_exists($newEntity, $methodName)) {
                 $datum = $this->checkForReferencesData($datum);
 
+                if ($this->debug) {
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __LINE__ . ' Decypted gettype = ' . gettype($datum));
+                }
                 switch (gettype($datum)) {
                     case "string":
                     case "boolean":
                     case "integer":
                     case "array":
+                    case "float":
+                    case "double":
                         $newEntity->$methodName($datum);
                         break;
                     case "object":
+                        if ($this->debug) {
+                            AppConstants::writeToLog('debug_transform.txt',
+                                __LINE__ . ' Decypted gettype = ' . get_class($datum));
+                        }
                         switch (get_class($datum)) {
                             case "DateTime":
                             case "App\Entity\Patient":
                             case "App\Entity\ThirdPartyService":
                             case "App\Entity\PatientGoals":
                             case "App\Entity\TrackingDevice":
+                            case "App\Entity\UnitOfMeasurement":
+                            case "App\Entity\PartOfDay":
                                 $newEntity->$methodName($datum);
                                 break;
                             default:
-                                if ($this->debug) AppConstants::writeToLog('debug_transform.txt',
-                                    __LINE__ . ' Decypted gettype = ' . get_class($datum));
+                                if ($this->debug) {
+                                    AppConstants::writeToLog('debug_transform.txt',
+                                        __LINE__ . ' Decypted gettype = ' . get_class($datum));
+                                }
+                                $newEntity->$methodName($datum);
                                 break;
                         }
                         break;

@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -159,7 +158,7 @@ class SyncUploadController extends AbstractController
                 ]);
             } else {
                 if ($savedId == -1) {
-//                    AppConstants::writeToLog('debug_transform.txt', __LINE__);
+//                    AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__);
                     return $this->json([
                         'success' => false,
                         'status' => 500,
@@ -167,7 +166,7 @@ class SyncUploadController extends AbstractController
                     ]);
                 } else {
                     if ($savedId == -2) {
-//                        AppConstants::writeToLog('debug_transform.txt', __LINE__);
+//                        AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__);
                         return $this->json([
                             'success' => false,
                             'status' => 500,
@@ -175,7 +174,7 @@ class SyncUploadController extends AbstractController
                         ]);
                     } else {
                         if ($savedId == -3) {
-//                            AppConstants::writeToLog('debug_transform.txt', __LINE__);
+//                            AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__);
                             return $this->json([
                                 'success' => false,
                                 'status' => 500,
@@ -215,7 +214,8 @@ class SyncUploadController extends AbstractController
 
         if (array_key_exists("MESH_MIRROR", $_ENV)) {
             if (is_array($_GET) && array_key_exists("verify", $_GET)) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ":: Skiiping verify posts");
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ":: Skiiping verify posts");
             } else {
                 $this->postToMirror(clone($request));
             }
@@ -233,10 +233,13 @@ class SyncUploadController extends AbstractController
         }
 
         if (is_array($_GET) && array_key_exists("verify", $_GET)) {
-            if ($_GET['verify'] != "c9dc17fc026d90cf8ddb6d7e1960828962265bac03605449054fb2e9033c927c") {
+            if ($_GET['verify'] != "42277fd08d12f9f93fafafc59001f4f4c192eb4dd3619d1ba80ff52955a791ac") {
                 AppConstants::writeToLog('debug_transform.txt',
                     '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
-                throw $this->createNotFoundException('404');
+
+                $response = new JsonResponse();
+                $response->setStatusCode(JsonResponse::HTTP_NOT_FOUND);
+                return $response;
             } else {
                 AppConstants::writeToLog('debug_transform.txt',
                     '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code valid');

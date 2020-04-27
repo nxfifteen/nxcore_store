@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -92,7 +91,8 @@ class SyncPatreon extends Command
             $patientMembership->setLastPaid(new DateTime('1900-01-01 00:00:00'));
         }
 
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Patreon ' . print_r($settingsTear, true));
+        AppConstants::writeToLog('debug_transform.txt',
+            __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' Patreon ' . print_r($settingsTear, true));
 
         $patientMembership->setTear($this->getTearFromPaidCent($settingsTear[0]));
         if (strtolower($settingsStatus[1]) == "paid") {
@@ -283,7 +283,8 @@ class SyncPatreon extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Refreshing Patreon\'s');
+        AppConstants::writeToLog('debug_transform.txt',
+            __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' Refreshing Patreon\'s');
         $this->syncServicePatreon();
     }
 

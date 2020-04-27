@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -54,7 +53,7 @@ class SamsungExercise extends Constants
         CommsManager $commsManager
     ) {
         $jsonContent = self::decodeJson($getContent);
-        // AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - : " . print_r($jsonContent, TRUE));
+        // AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - : " . print_r($jsonContent, TRUE));
 
         if (property_exists($jsonContent, "uuid")) {
             try {
@@ -97,7 +96,7 @@ class SamsungExercise extends Constants
             if ($deviceTracking->getId() == 7) {
                 return null;
             }
-//            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - device " . $deviceTracking->getName());
+//            AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - device " . $deviceTracking->getName());
 
             /** @var PartOfDay $partOfDay */
             $partOfDay = self::getPartOfDay($doctrine, $jsonContent->dateTime);
@@ -110,7 +109,7 @@ class SamsungExercise extends Constants
             if (is_null($exerciseType)) {
                 return null;
             }
-//            AppConstants::writeToLog('debug_transform.txt', __LINE__ . " - exerciseType " . $exerciseType->getName());
+//            AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - exerciseType " . $exerciseType->getName());
 
             $newItem = false;
             /** @var Exercise $dataEntryExercise */

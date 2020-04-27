@@ -2266,7 +2266,7 @@ class FeedUxController extends AbstractController
         $requestBody = str_replace('&#39;', "'", $requestBody);
         $requestJson = json_decode($requestBody, false);
 
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . ' ' . print_r($requestJson, true));
 
         if (property_exists($requestJson, "deviceInfo")) {
             $requestDeviceInfo = $requestJson->deviceInfo;
@@ -2327,10 +2327,12 @@ class FeedUxController extends AbstractController
             $accessDevice->setVersion($version);
             $accessDevice->setApp($app);
             $accessDevice->setProduction($production);
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Updated');
+            AppConstants::writeToLog('debug_transform.txt',
+                __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' Device Updated');
         } else {
             if ($accessDevice) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Device Found');
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' Device Found');
             } else {
                 $accessDevice = new PatientDevice();
                 $accessDevice->setPatient($this->patient);
@@ -2343,7 +2345,8 @@ class FeedUxController extends AbstractController
                 $accessDevice->setVersion($version);
                 $accessDevice->setApp($app);
                 $accessDevice->setProduction($production);
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' New device');
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' New device');
             }
         }
         $accessDevice->setLastSeen(new DateTime());
@@ -3027,7 +3030,7 @@ class FeedUxController extends AbstractController
         $requestBody = str_replace('&#39;', "'", $requestBody);
         $requestJson = json_decode($requestBody, false);
 
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . ' ' . print_r($requestJson, true));
 
         /** @var PatientDevice $accessDevice */
         $accessDevice = $this->getDoctrine()
