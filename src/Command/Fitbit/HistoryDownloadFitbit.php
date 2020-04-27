@@ -11,7 +11,7 @@
 
 /** @noinspection DuplicatedCode */
 
-namespace App\Command;
+namespace App\Command\Fitbit;
 
 use App\AppConstants;
 use App\Entity\Patient;
@@ -21,10 +21,10 @@ use App\Entity\ThirdPartyService;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\CommsManager;
+use App\Transform\Fitbit\CommonFitbit;
 use App\Transform\Fitbit\Constants;
 use DateInterval;
 use DateTime;
-use djchen\OAuth2\Client\Provider\Fitbit;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
@@ -40,7 +40,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @Cron(minute="/5", noLogs=true, server="web")
  */
-class DownloadHistoryFitbit extends Command
+class HistoryDownloadFitbit extends Command
 {
     /**
      * @var string
@@ -172,18 +172,6 @@ class DownloadHistoryFitbit extends Command
     }
 
     /**
-     * @return Fitbit
-     */
-    private function getFibitLibrary()
-    {
-        return new Fitbit([
-            'clientId' => $_ENV['FITBIT_ID'],
-            'clientSecret' => $_ENV['FITBIT_SECRET'],
-            'redirectUri' => $_ENV['INSTALL_URL'] . '/auth/refresh/fitbit',
-        ]);
-    }
-
-    /**
      * @param string $endpoint
      *
      * @return string|null
@@ -221,35 +209,22 @@ class DownloadHistoryFitbit extends Command
             //$this->log('$path is ' . $path);
 
             try {
-                $request = $this->getFibitLibrary()->getAuthenticatedRequest('GET', $path, $accessToken);
-                $response = $this->getFibitLibrary()->getParsedResponse($request);
+                $fitbitApp = CommonFitbit::getLibrary();
+                $request = $fitbitApp->getAuthenticatedRequest('GET', $path, $accessToken);
+                $response = $fitbitApp->getParsedResponse($request);
 
                 $responseObject = json_decode(json_encode($response), false);
 
                 return [$path, $responseObject];
             } catch (IdentityProviderException $e) {
                 AppConstants::writeToLog('debug_transform.txt',
-                    "[" . DownloadHistoryFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
+                    "[" . HistoryDownloadFitbit::$defaultName . "] - " . ' ' . $e->getMessage());
             }
         } else {
             $this->log("Token Expired, will retry later");
         }
 
         return [null, null];
-    }
-
-    /**
-     * @param PatientCredentials $credentials
-     *
-     * @return AccessToken
-     */
-    private function getFitbitApiTokens(PatientCredentials $credentials)
-    {
-        return new AccessToken([
-            'access_token' => $credentials->getToken(),
-            'refresh_token' => $credentials->getRefreshToken(),
-            'expires' => $credentials->getExpires()->format("U"),
-        ]);
     }
 
     /**
@@ -326,15 +301,15 @@ class DownloadHistoryFitbit extends Command
         if (!is_string($patientServiceProfile)) {
             AppConstants::writeToLog(
                 'debug_transform.txt',
-                "[" . DownloadHistoryFitbit::$defaultName . "] - " . print_r($patientServiceProfile, true)
+                "[" . HistoryDownloadFitbit::$defaultName . "] - " . print_r($patientServiceProfile, true)
             );
-            echo "[" . DownloadHistoryFitbit::$defaultName . "] - " . print_r($patientServiceProfile, true) . "\n";
+            echo "[" . HistoryDownloadFitbit::$defaultName . "] - " . print_r($patientServiceProfile, true) . "\n";
         } else {
             AppConstants::writeToLog(
                 'debug_transform.txt',
-                "[" . DownloadHistoryFitbit::$defaultName . "] - " . $patientServiceProfile
+                "[" . HistoryDownloadFitbit::$defaultName . "] - " . $patientServiceProfile
             );
-            echo "[" . DownloadHistoryFitbit::$defaultName . "] - " . $patientServiceProfile . "\n";
+            echo "[" . HistoryDownloadFitbit::$defaultName . "] - " . $patientServiceProfile . "\n";
         }
     }
 
@@ -366,7 +341,7 @@ class DownloadHistoryFitbit extends Command
 
             if (!$dbPatientSettings) {
                 AppConstants::writeToLog('debug_transform.txt',
-                    "[" . DownloadHistoryFitbit::$defaultName . "] - No Settings");
+                    "[" . HistoryDownloadFitbit::$defaultName . "] - No Settings");
                 return null;
             }
 
@@ -460,7 +435,7 @@ class DownloadHistoryFitbit extends Command
                 if (is_null($serviceBirth)) {
                     /** @noinspection PhpUnusedLocalVariableInspection */
                     [$patientServiceUrl, $patientServiceProfile] = $this->getFitbitApiResponce(
-                        $this->getFitbitApiTokens($patientCredential),
+                        CommonFitbit::getAccessToken($patientCredential),
                         new DateTime(),
                         new DateTime(),
                         'serviceProfile'
@@ -527,7 +502,7 @@ class DownloadHistoryFitbit extends Command
                                         $this->log("  Pulling $supportedEndpoint since " . $serviceOldestPull->format("Y-m-d") . ", loop " . $loopWatchCount);
 
                                         [$apiEndPointCalled, $apiEndPointResult] = $this->getFitbitApiResponce(
-                                            $this->getFitbitApiTokens($patientCredential),
+                                            CommonFitbit::getAccessToken($patientCredential),
                                             $serviceOldestPull,
                                             $serviceBirth,
                                             $supportedEndpoint
