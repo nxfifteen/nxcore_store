@@ -11,7 +11,7 @@
 
 /** @noinspection DuplicatedCode */
 
-namespace App\Controller;
+namespace App\Controller\Upload;
 
 use App\AppConstants;
 use App\Service\AwardManager;
@@ -29,7 +29,7 @@ use Symfony\Component\Routing\Annotation\Route;
  *
  * @package App\Controller
  */
-class SyncUploadController extends AbstractController
+class UploadSamsungHealth extends AbstractController
 {
     /**
      * @Route("/sync/upload/{service}/{data_set}", name="sync_upload_post", methods={"POST"})
