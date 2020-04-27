@@ -14,14 +14,21 @@
 namespace App\Command\Fitbit;
 
 use App\AppConstants;
+use App\Entity\ApiAccessLog;
 use App\Entity\Patient;
+use App\Entity\PatientSettings;
 use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\CommsManager;
 use App\Transform\Fitbit\CommonFitbit;
+use DateInterval;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use League\OAuth2\Client\Token\AccessToken;
 use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -71,6 +78,92 @@ class QueueFetchFitbit extends Command
     private $patient;
 
     /**
+     * @var ThirdPartyService
+     */
+    private $service;
+
+    /**
+     * @var AccessToken
+     */
+    private $accessToken;
+
+    /**
+     * @param SyncQueue $serviceSyncQueue
+     *
+     * @noinspection PhpUnusedPrivateMethodInspection
+     */
+    private function actionSubscriptions(SyncQueue $serviceSyncQueue)
+    {
+        /** @var PatientSettings $enabledEndpoints */
+        $enabledEndpoints = $this->doctrine
+            ->getRepository(PatientSettings::class)
+            ->findOneBy([
+                'patient' => $this->patient,
+                'service' => $this->service,
+                'name' => 'enabledEndpoints',
+            ]);
+
+        if (!$enabledEndpoints) {
+            $this->log('  No supported end points');
+        } else {
+            //$this->log(' Permission over ' . print_r($enabledEndpoints->getValue(), true));
+            foreach ($enabledEndpoints->getValue() as $settingsEndpoint) {
+                $serviceEndpoint = CommonFitbit::convertEndpointToSubscription($settingsEndpoint);
+
+                $subscriptionFound = false;
+                $subscriptionId = -1;
+
+                if (!is_null($serviceEndpoint)) {
+                    $this->log('  ' . $settingsEndpoint . ' is equal too ' . $serviceEndpoint);
+
+                    $userSubscriptions = $this->pullSubscription();
+                    if (count($userSubscriptions) > 0) {
+                        foreach ($userSubscriptions as $apiSubscription) {
+                            if ($apiSubscription->collectionType == $serviceEndpoint) {
+                                $subscriptionFound = true;
+                                $subscriptionId = $apiSubscription->subscriptionId;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!$subscriptionFound) {
+                        $this->log('   subscribing too ' . $serviceEndpoint . ' as ' . $this->patient->getId() . "_" . $serviceEndpoint);
+                        $subRequest = $this->postSubscription("/" . $serviceEndpoint,
+                            $this->patient->getId() . "_" . $serviceEndpoint);
+                    } /*else {
+                        $this->log('   already subscribed too ' . $serviceEndpoint . ' as ' . $subscriptionId);
+                    }*/
+                } /*else {
+                    $this->log('  ' . $settingsEndpoint . ' has no endpoint');
+                }*/
+            }
+        }
+    }
+
+    /**
+     * @param string $endpoint
+     * @param string $subId
+     *
+     * @return array|mixed
+     */
+    private function postSubscription($endpoint = "", $subId = "")
+    {
+        $path = "https://api.fitbit.com/1/user/-" . $endpoint . "/apiSubscriptions/" . $subId . ".json";
+
+        try {
+            $fitbitApp = CommonFitbit::getLibrary();
+            $request = $fitbitApp->getAuthenticatedRequest('POST', $path, $this->accessToken);
+            $response = $fitbitApp->getResponse($request);
+            return json_decode(json_encode($response), false);
+        } catch (Exception $e) {
+            $this->log($e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
      * @param $patientServiceProfile
      */
     private function log($patientServiceProfile)
@@ -106,18 +199,87 @@ class QueueFetchFitbit extends Command
         if (count($serviceSyncQueues) > 0) {
             foreach ($serviceSyncQueues as $serviceSyncQueue) {
                 /** @var SyncQueue $serviceSyncQueue */
-                $accessToken = CommonFitbit::getAccessToken($serviceSyncQueue->getCredentials());
-                if (!$accessToken->hasExpired()) {
+                $this->accessToken = CommonFitbit::getAccessToken($serviceSyncQueue->getCredentials());
+                if (!$this->accessToken->hasExpired()) {
                     $this->patient = $serviceSyncQueue->getCredentials()->getPatient();
+                    $this->service = $serviceSyncQueue->getCredentials()->getService();
+
                     $this->log("Downloading " . $serviceSyncQueue->getEndpoint() . " for " . $this->patient->getUsername());
 
+                    $internalSyncQueueMethod = "action" . ucfirst($serviceSyncQueue->getEndpoint());
+                    $this->log(" Looking for internal method: " . $internalSyncQueueMethod);
+
+                    if (method_exists($this, $internalSyncQueueMethod)) {
+                        $this->$internalSyncQueueMethod($serviceSyncQueue);
+                    } else {
+                        $transformerClassName = 'App\\Transform\\Fitbit\\' . ucfirst($serviceSyncQueue->getEndpoint());
+                        if (class_exists($transformerClassName)) {
+                            $this->log(" find the Transformer class: " . $transformerClassName . " for " . $serviceSyncQueue->getEndpoint());
+
+                            /** @var DateTime $pullFromThisDate */
+                            $pullFromThisDate = null;
+
+                            /** @var ApiAccessLog $apiAccessLog */
+                            $apiAccessLog = $this->doctrine
+                                ->getRepository(ApiAccessLog::class)
+                                ->findLastAccess($this->patient, $this->service, $serviceSyncQueue->getEndpoint());
+
+                            if (!is_null($apiAccessLog)) {
+                                $pullFromThisDate = clone $apiAccessLog->getLastRetrieved();
+                                $pullFromThisDate->add(new DateInterval("P2D"));
+                                $this->log("  The last pulled date was " . $pullFromThisDate->format("Y-m-d H:i:s"));
+                            } else {
+                                $this->log("  Didnt find a record in the API log");
+                            }
+
+                            if (!is_null($pullFromThisDate)) {
+                                [$apiEndPointCalled, $apiEndPointResult] = CommonFitbit::getResponceFromApi(
+                                    $this->accessToken,
+                                    new DateTime(),
+                                    $pullFromThisDate,
+                                    $serviceSyncQueue->getEndpoint()
+                                );
+
+                                if (!is_null($apiEndPointCalled) && !is_null($apiEndPointResult)) {
+                                    $transformerClass = new $transformerClassName($this->doctrine,
+                                        $this->logger, $this->awardManager, $this->challengePve,
+                                        $this->commsManager);
+                                    $transformerClass->setPatientEntity($this->patient);
+                                    $transformerClass->setCalledUrl($apiEndPointCalled);
+                                    $transformerClass->setApiReturn($apiEndPointResult);
+                                    $lastDateTime = $transformerClass->processData();
+                                    if (is_null($lastDateTime)) {
+                                        $this->log(__CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . "  An DB error occurred");
+                                    }
+                                } else {
+                                    $this->log(__CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . "  An API error occurred");
+                                    if (is_null($apiEndPointCalled)) {
+                                        $this->log('   $apiEndPointCalled is NULL');
+                                    }
+                                    if (is_null($apiEndPointResult)) {
+                                        $this->log('   $apiEndPointResult is NULL');
+                                    }
+                                }
+                            }
+                        } else {
+                            $this->log(" Couldn't find the Transformer class: " . $transformerClassName);
+                        }
+                    }
+
+                    $entityManager = $this->doctrine->getManager();
+                    $entityManager->remove($serviceSyncQueue);
+                    $entityManager->flush();
                 } else {
                     $this->log('Credentials have expired for ' . $serviceSyncQueue->getCredentials()->getPatient()->getFirstName() . '. Will retry later');
                 }
+
+                unset($this->patient);
+                unset($this->service);
+                unset($this->accessToken);
             }
-        } else {
+        } /*else {
             $this->log('No Fitbit jobs in the sync queue');
-        }
+        }*/
     }
 
     /**
@@ -143,4 +305,37 @@ class QueueFetchFitbit extends Command
         $this->commsManager = $commsManager;
     }
 
+    /**
+     * @param string $endpoint
+     *
+     * @return array
+     */
+    private function pullSubscription($endpoint = "")
+    {
+        $paths = [
+            "https://api.fitbit.com/1/user/-/apiSubscriptions.json",
+            "https://api.fitbit.com/1/user/-/activities/apiSubscriptions.json",
+            "https://api.fitbit.com/1/user/-/foods/apiSubscriptions.json",
+            "https://api.fitbit.com/1/user/-/sleep/apiSubscriptions.json",
+            "https://api.fitbit.com/1/user/-/body/apiSubscriptions.json",
+        ];
+
+        $subReturn = [];
+
+        foreach ($paths as $path) {
+            try {
+                $fitbitApp = CommonFitbit::getLibrary();
+                $request = $fitbitApp->getAuthenticatedRequest('GET', $path, $this->accessToken);
+                $response = $fitbitApp->getParsedResponse($request);
+
+                foreach (json_decode(json_encode($response), false)->apiSubscriptions as $item) {
+                    $item->path = $path;
+                    $subReturn[] = $item;
+                }
+            } catch (IdentityProviderException $e) {
+            }
+        }
+
+        return $subReturn;
+    }
 }
