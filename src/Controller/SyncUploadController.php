@@ -14,15 +14,9 @@
 namespace App\Controller;
 
 use App\AppConstants;
-use App\Entity\Patient;
-use App\Entity\PatientCredentials;
-use App\Entity\SyncQueue;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\CommsManager;
-use App\Transform\Fitbit\Constants;
-use DateTime;
-use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,47 +31,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class SyncUploadController extends AbstractController
 {
-    /**
-     * @param Request $request
-     */
-    private function postToMirror(Request $request)
-    {
-        $ch = curl_init($_ENV['MESH_MIRROR'] . $request->getRequestUri());
-        if ($request->getContentType() == "json") {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
-        }
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getContent());
-//        curl_exec($ch);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        $response = curl_exec($ch);
-        if (!empty($response)) {
-            $response = json_decode($response);
-            if ($response->success) {
-                AppConstants::writeToLog('mirror.txt',
-                    '[' . $_ENV['MESH_MIRROR'] . '] Accepted the post to ' . $request->getRequestUri());
-            } else {
-                if ($response->status != 200) {
-                    AppConstants::writeToLog('mirror.txt',
-                        '[' . $_ENV['MESH_MIRROR'] . '] Failed to accept the post to ' . $request->getRequestUri());
-                    AppConstants::writeToLog('mirror.txt',
-                        '[' . $_ENV['MESH_MIRROR'] . '] responded with ' . json_encode($response));
-                } else {
-                    AppConstants::writeToLog('mirror.txt',
-                        '[' . $_ENV['MESH_MIRROR'] . '] responded with ' . $response->status);
-                }
-            }
-        } else {
-            AppConstants::writeToLog('mirror.txt',
-                '[' . $_ENV['MESH_MIRROR'] . '] sent an empty responce');
-        }
-
-        curl_close($ch);
-    }
-
     /**
      * @Route("/sync/upload/{service}/{data_set}", name="sync_upload_post", methods={"POST"})
      * @param String          $service
@@ -137,10 +90,6 @@ class SyncUploadController extends AbstractController
                 $awardManager, $challengePve, $commsManager);
         }
 
-        if (array_key_exists("MESH_MIRROR", $_ENV)) {
-            $this->postToMirror($request);
-        }
-
         if (is_array($savedId)) {
             return $this->json([
                 'success' => true,
@@ -197,123 +146,5 @@ class SyncUploadController extends AbstractController
             }
         }
 
-    }
-
-    /**
-     * @Route("/sync/webhook/{service}", name="sync_webhook_get", methods={"GET"})
-     * @param String          $service
-     *
-     * @param LoggerInterface $logger
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function sync_webhook_get(string $service, LoggerInterface $logger)
-    {
-        $request = Request::createFromGlobals();
-
-        if (array_key_exists("MESH_MIRROR", $_ENV)) {
-            if (is_array($_GET) && array_key_exists("verify", $_GET)) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ":: Skiiping verify posts");
-            } else {
-                $this->postToMirror(clone($request));
-            }
-        }
-
-        if (strtolower($service) == "habitica") {
-            $jsonContent = json_decode($request->getContent(), false);
-
-            AppConstants::writeToLog('debug_transform.txt', '[webhook:' . $service . '] - ' . $jsonContent->user->_id);
-            AppConstants::writeToLog('webhook_' . $service . '.txt', $request->getContent());
-
-            $response = new JsonResponse();
-            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
-            return $response;
-        }
-
-        if (is_array($_GET) && array_key_exists("verify", $_GET)) {
-            if ($_GET['verify'] != "42277fd08d12f9f93fafafc59001f4f4c192eb4dd3619d1ba80ff52955a791ac") {
-                AppConstants::writeToLog('debug_transform.txt',
-                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code invalid');
-
-                $response = new JsonResponse();
-                $response->setStatusCode(JsonResponse::HTTP_NOT_FOUND);
-                return $response;
-            } else {
-                AppConstants::writeToLog('debug_transform.txt',
-                    '[webhook:' . $service . '] - Verification ' . $_GET['verify'] . ' code valid');
-            }
-
-            $response = new JsonResponse();
-            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
-            return $response;
-        }
-
-        $jsonContent = json_decode($request->getContent(), false);
-
-        $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
-        foreach ($jsonContent as $item) {
-            $patient = $this->getDoctrine()
-                ->getRepository(Patient::class)
-                ->findOneBy(['id' => $item->subscriptionId]);
-
-            if (!$patient) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    '[webhook:' . $service . '] - No patient with this ID ' . $item->subscriptionId);
-            } else {
-                $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
-                if (is_array($queueEndpoints)) {
-                    $queueEndpoints = join("::", $queueEndpoints);
-                }
-
-                if (!is_null($queueEndpoints)) {
-                    /** @var PatientCredentials $patientCredential */
-                    $patientCredential = $this->getDoctrine()
-                        ->getRepository(PatientCredentials::class)
-                        ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
-
-                    $serviceSyncQueue = $this->getDoctrine()
-                        ->getRepository(SyncQueue::class)
-                        ->findOneBy([
-                            'credentials' => $patientCredential,
-                            'service' => $serviceObject,
-                            'endpoint' => $queueEndpoints,
-                        ]);
-
-                    if (!$serviceSyncQueue) {
-                        $serviceSyncQueue = new SyncQueue();
-                        $serviceSyncQueue->setService($serviceObject);
-                        $serviceSyncQueue->setDatetime(new DateTime());
-                        $serviceSyncQueue->setCredentials($patientCredential);
-                        $serviceSyncQueue->setEndpoint($queueEndpoints);
-
-                        $entityManager = $this->getDoctrine()->getManager();
-                        $entityManager->persist($serviceSyncQueue);
-                        $entityManager->flush();
-                    }
-                }
-
-            }
-
-        }
-
-        $response = new JsonResponse();
-        $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
-        return $response;
-    }
-
-    /**
-     * @Route("/sync/webhook/{service}", name="sync_webhook_post", methods={"POST"})
-     * @param String          $service
-     *
-     * @param LoggerInterface $logger
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function sync_webhook_post(string $service, LoggerInterface $logger)
-    {
-        return $this->sync_webhook_get($service, $logger);
     }
 }
