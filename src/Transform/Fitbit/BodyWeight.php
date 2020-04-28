@@ -24,12 +24,7 @@ class BodyWeight extends BaseBodyMeasurments
     const ENDPOINT_UNKNOWN = 0;
     const ENDPOINT_STANDARD = 1;
     const ENDPOINT_TIMESERIES = 2;
-    /** @var array */
-    private $rawApiData;
-    /** @var string */
-    private $apiUrl;
-    /** @var string */
-    private $apiDataType;
+
     /** @var ThirdPartyService */
     private $thirdPartyService;
 

@@ -59,6 +59,13 @@ class Transform
     /** @var Patient */
     private $patient;
 
+    /** @var array */
+    protected $rawApiData;
+    /** @var string */
+    protected $apiUrl;
+    /** @var string */
+    protected $apiDataType;
+
     /**
      * BodyWeight constructor.
      *
