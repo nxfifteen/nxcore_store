@@ -12,6 +12,7 @@
 namespace App\Transform\Fitbit;
 
 
+use App\AppConstants;
 use App\Entity\ThirdPartyService;
 use App\Transform\Base\BaseBodyMeasurments;
 use DateInterval;
@@ -44,10 +45,10 @@ class BodyWeight extends BaseBodyMeasurments
             $dateTime = new DateTime($rawApiDatum->date . ' ' . $rawApiDatum->time);
             $partOfDay = self::getPartOfDay($this->getDoctrine(), $dateTime);
             if (array_key_exists("source", $rawApiDatum)) {
-                $trackingDevice = self::getTrackingDevice($this->getDoctrine(), $this->getPatientEntity(),
+                $trackingDevice = AppConstants::getTrackingDevice($this->getDoctrine(), $this->getPatientEntity(),
                     $this->thirdPartyService, $rawApiDatum->source);
             } else {
-                $trackingDevice = self::getTrackingDevice($this->getDoctrine(), $this->getPatientEntity(),
+                $trackingDevice = AppConstants::getTrackingDevice($this->getDoctrine(), $this->getPatientEntity(),
                     $this->thirdPartyService, "History");
             }
             $uomKg = self::getUnitOfMeasurement($this->getDoctrine(), "kg");
@@ -128,13 +129,11 @@ class BodyWeight extends BaseBodyMeasurments
                     return "nill";
                 }
 
-                $i = 1;
                 $this->log(" Creating " . count($recordSetWeights) . " new BodyWeight entity");
                 foreach ($recordSetWeights as $recordSetWeight) {
                     $this->saveEntityFromArray("App\Entity\BodyWeight", $recordSetWeight, new DateInterval('PT6H'));
                 }
 
-                $i = 1;
                 $this->log(" Creating " . count($recordSetFats) . " new BodyFat entity");
                 foreach ($recordSetFats as $recordSetFat) {
                     $this->saveEntityFromArray("App\Entity\BodyFat", $recordSetFat, new DateInterval('PT6H'));
@@ -153,16 +152,6 @@ class BodyWeight extends BaseBodyMeasurments
     }
 
     /**
-     * @param $apiEndPointResult
-     *
-     * @noinspection PhpUnused
-     */
-    public function setApiReturn($apiEndPointResult)
-    {
-        $this->rawApiData = $apiEndPointResult->weight;
-    }
-
-    /**
      * @param $apiEndPointCalled
      *
      * @noinspection PhpUnused
@@ -171,5 +160,15 @@ class BodyWeight extends BaseBodyMeasurments
     {
         $this->apiUrl = $apiEndPointCalled;
         $this->whichDataDoWeHave();
+    }
+
+    /**
+     * @param $apiEndPointResult
+     *
+     * @noinspection PhpUnused
+     */
+    public function setApiReturn($apiEndPointResult)
+    {
+        $this->rawApiData = $apiEndPointResult->weight;
     }
 }
