@@ -16,6 +16,7 @@ use App\AppConstants;
 use App\Entity\Patient;
 use App\Entity\PatientCredentials;
 use App\Entity\SyncQueue;
+use App\Entity\ThirdPartyService;
 use App\Transform\Fitbit\Constants;
 use DateTime;
 use Exception;
@@ -26,6 +27,32 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class FitbitWebhook extends AbstractController
 {
+    private function addItemToQueue(
+        ThirdPartyService $serviceObject,
+        PatientCredentials $patientCredential,
+        $queueEndpoints
+    ) {
+        $serviceSyncQueue = $this->getDoctrine()
+            ->getRepository(SyncQueue::class)
+            ->findOneBy([
+                'credentials' => $patientCredential,
+                'service' => $serviceObject,
+                'endpoint' => $queueEndpoints,
+            ]);
+
+        if (!$serviceSyncQueue) {
+            $serviceSyncQueue = new SyncQueue();
+            $serviceSyncQueue->setService($serviceObject);
+            $serviceSyncQueue->setDatetime(new DateTime());
+            $serviceSyncQueue->setCredentials($patientCredential);
+            $serviceSyncQueue->setEndpoint($queueEndpoints);
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($serviceSyncQueue);
+            $entityManager->flush();
+        }
+    }
+
     /**
      * @Route("/sync/webhook/fitbit", name="sync_webhook_fitbit_get", methods={"GET"})
      *
@@ -54,49 +81,31 @@ class FitbitWebhook extends AbstractController
         $jsonContent = json_decode($request->getContent(), false);
 
         $serviceObject = AppConstants::getThirdPartyService($this->getDoctrine(), "Fitbit");
-        foreach ($jsonContent as $item) {
-            $patient = $this->getDoctrine()
-                ->getRepository(Patient::class)
-                ->findOneBy(['id' => $item->subscriptionId]);
+        if (!is_null($serviceObject)) {
+            foreach ($jsonContent as $item) {
+                $patient = $this->getDoctrine()
+                    ->getRepository(Patient::class)
+                    ->findOneBy(['id' => $item->subscriptionId]);
 
-            if (!$patient) {
-                AppConstants::writeToLog('debug_transform.txt',
-                    '[webhook:fitbit] - No patient with this ID ' . $item->subscriptionId);
-            } else {
-                $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
-                if (is_array($queueEndpoints)) {
-                    $queueEndpoints = join("::", $queueEndpoints);
-                }
-
-                if (!is_null($queueEndpoints)) {
+                if (!$patient) {
+                    AppConstants::writeToLog('debug_transform.txt',
+                        '[webhook:fitbit] - No patient with this ID ' . $item->subscriptionId);
+                } else {
                     /** @var PatientCredentials $patientCredential */
                     $patientCredential = $this->getDoctrine()
                         ->getRepository(PatientCredentials::class)
                         ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
 
-                    $serviceSyncQueue = $this->getDoctrine()
-                        ->getRepository(SyncQueue::class)
-                        ->findOneBy([
-                            'credentials' => $patientCredential,
-                            'service' => $serviceObject,
-                            'endpoint' => $queueEndpoints,
-                        ]);
-
-                    if (!$serviceSyncQueue) {
-                        $serviceSyncQueue = new SyncQueue();
-                        $serviceSyncQueue->setService($serviceObject);
-                        $serviceSyncQueue->setDatetime(new DateTime());
-                        $serviceSyncQueue->setCredentials($patientCredential);
-                        $serviceSyncQueue->setEndpoint($queueEndpoints);
-
-                        $entityManager = $this->getDoctrine()->getManager();
-                        $entityManager->persist($serviceSyncQueue);
-                        $entityManager->flush();
+                    $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
+                    if (is_array($queueEndpoints)) {
+                        foreach ($queueEndpoints as $queueEndpoint) {
+                            $this->addItemToQueue($serviceObject, $patientCredential, $queueEndpoint);
+                        }
+                    } else {
+                        $this->addItemToQueue($serviceObject, $patientCredential, $queueEndpoints);
                     }
                 }
-
             }
-
         }
 
         $response = new JsonResponse();
