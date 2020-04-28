@@ -17,7 +17,7 @@ use App\Entity\Patient;
 use App\Entity\PatientCredentials;
 use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
-use App\Transform\Fitbit\Constants;
+use App\Transform\Fitbit\CommonFitbit;
 use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -96,7 +96,7 @@ class FitbitWebhook extends AbstractController
                         ->getRepository(PatientCredentials::class)
                         ->findOneBy(["service" => $serviceObject, "patient" => $patient]);
 
-                    $queueEndpoints = Constants::convertSubscriptionToClass($item->collectionType);
+                    $queueEndpoints = CommonFitbit::convertSubscriptionToClass($item->collectionType);
                     if (is_array($queueEndpoints)) {
                         foreach ($queueEndpoints as $queueEndpoint) {
                             $this->addItemToQueue($serviceObject, $patientCredential, $queueEndpoint);

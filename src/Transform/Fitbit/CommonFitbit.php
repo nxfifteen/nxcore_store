@@ -22,6 +22,15 @@ use League\OAuth2\Client\Token\AccessToken;
 class CommonFitbit
 {
 
+    /**
+     *
+     */
+    const FITBITSERVICE = "Fitbit";
+
+    /**
+     *
+     */
+    const FITBIT_COM = "https://api.fitbit.com";
 
     /**
      * @param PatientCredentials $credentials
@@ -160,11 +169,39 @@ class CommonFitbit
                 $path = '/body/log/weight/date/{date}/1m{ext}';
                 break;
 
+            case 'serviceProfile':
+                $path = '/profile';
+                break;
+
+            case 'Exercise':
+                $path = '/activities/list{ext}?afterDate={date}&offset=0&limit=20&sort=asc';
+                break;
+
+            case 'FitStepsDailySummary':
+                $path = '/activities/date/{date}';
+                break;
+
+            case 'FitStepsPeriodSummary':
+                $path = '/activities/steps/date/{date}/{period}';
+                break;
+
+            case 'PatientGoals':
+                $path = '/activities/goals/daily';
+                break;
+
+            case 'TrackingDevice':
+                $path = '/devices';
+                break;
+
+            case 'apiSubscriptions':
+                $path = '/apiSubscriptions';
+                break;
+
             default:
                 return null;
         }
 
-        return Constants::FITBIT_COM . "/1/user/-$path";
+        return self::FITBIT_COM . "/1/user/-$path";
     }
 
     /**
@@ -198,5 +235,32 @@ class CommonFitbit
         }
 
         return $daysSince;
+    }
+
+    /**
+     * @param $endpoint
+     *
+     * @return array|null
+     */
+    public static function convertSubscriptionToClass($endpoint)
+    {
+        switch ($endpoint) {
+            case 'activities':
+                return [
+                    "TrackingDevice",
+                    "FitStepsDailySummary",
+                    "Exercise",
+                ];
+                break;
+            case 'body':
+                return [
+                    "TrackingDevice",
+                    "BodyWeight",
+                ];
+                break;
+
+            default:
+                return null;
+        }
     }
 }

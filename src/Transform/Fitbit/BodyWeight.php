@@ -115,7 +115,7 @@ class BodyWeight extends BaseBodyMeasurments
      */
     public function processData()
     {
-        $this->thirdPartyService = self::getThirdPartyService($this->getDoctrine(), Constants::FITBITSERVICE);
+        $this->thirdPartyService = self::getThirdPartyService($this->getDoctrine(), CommonFitbit::FITBITSERVICE);
 
         if ($this->apiDataType == BodyWeight::ENDPOINT_STANDARD) {
             try {
