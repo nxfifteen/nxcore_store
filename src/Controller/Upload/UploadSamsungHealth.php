@@ -14,11 +14,12 @@
 namespace App\Controller\Upload;
 
 use App\AppConstants;
+use App\Controller\Common;
 use App\Service\AwardManager;
 use App\Service\ChallengePve;
 use App\Service\CommsManager;
+use App\Transform\SamsungHealth\CommonSamsung;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,8 +30,26 @@ use Symfony\Component\Routing\Annotation\Route;
  *
  * @package App\Controller
  */
-class UploadSamsungHealth extends AbstractController
+class UploadSamsungHealth extends Common
 {
+    /**
+     * @param $patientServiceProfile
+     */
+    private function log($patientServiceProfile)
+    {
+        if (!is_string($patientServiceProfile)) {
+            AppConstants::writeToLog(
+                'debug_transform.txt',
+                "[UploadSamsungHealth] - " . print_r($patientServiceProfile, true)
+            );
+        } else {
+            AppConstants::writeToLog(
+                'debug_transform.txt',
+                "[UploadSamsungHealth] - " . $patientServiceProfile
+            );
+        }
+    }
+
     /**
      * @Route("/sync/upload/SamsungHealth/{data_set}", name="sync_upload_post", methods={"POST"})
      * @param String          $data_set
@@ -50,30 +69,41 @@ class UploadSamsungHealth extends AbstractController
         AwardManager $awardManager,
         ChallengePve $challengePve,
         CommsManager $commsManager
-    )
-    {
+    ) {
+        $this->setupRoute();
+
         $request = Request::createFromGlobals();
 
         $service = "SamsungHealth";
 
-        AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
+        $entityType = CommonSamsung::convertDatasetToEntity($data_set);
+        if (is_null($entityType)) {
+            AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
+            $response = new JsonResponse();
+            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+            return $response;
+        }
 
-//        if ($data_set != "count_daily_steps" &&
-//            $data_set != "tracking_devices" &&
-//            $data_set != "intraday_steps" &&
-//            $data_set != "count_daily_floors" &&
-//            $data_set != "water_intakes" &&
-//            $data_set != "caffeine_intakes" &&
-//            $data_set != "body_weights" &&
-//            $data_set != "body_fats" &&
-//            $data_set != "exercises" &&
-//            $data_set != "count_daily_calories" &&
-//            $data_set != "count_daily_distances" &&
-//            $data_set != "food" &&
-//            $data_set != "food_intake" &&
-//            $data_set != "food_info") {
-//            AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
-//        }
+        $this->log("Receiving $entityType for " . $this->patient->getUsername());
+
+        $internalSyncQueueMethod = "action" . ucfirst($entityType);
+        //$this->log(" Looking for internal method: " . $internalSyncQueueMethod);
+
+        if (method_exists($this, $internalSyncQueueMethod)) {
+            $this->$internalSyncQueueMethod($request->getContent());
+        } else {
+            $transformerClassName = 'App\\Transform\\SamsungHealth\\' . ucfirst($entityType);
+            if (class_exists($transformerClassName)) {
+                $transformerClass = new $transformerClassName($this->getDoctrine(),
+                    $logger, $awardManager, $challengePve,
+                    $commsManager);
+                $transformerClass->setPatientEntity($this->patient);
+                $transformerClass->setApiReturn(json_decode($request->getContent(), true));
+                $transformerClass->processData();
+            } else {
+                $this->log(" Couldn't find the Transformer class: " . $transformerClassName);
+            }
+        }
 
 //        $transformerClassName = 'App\\Transform\\' . $service . '\\Entry';
 //        if (!class_exists($transformerClassName)) {
