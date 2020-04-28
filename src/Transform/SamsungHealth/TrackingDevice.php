@@ -74,7 +74,8 @@ class TrackingDevice extends BaseTrackingDevice
      */
     public function processData()
     {
-        $this->thirdPartyService = self::getThirdPartyService($this->getDoctrine(), Constants::SAMSUNGHEALTHSERVICE);
+        $this->thirdPartyService = self::getThirdPartyService($this->getDoctrine(),
+            CommonSamsung::SAMSUNGHEALTHSERVICE);
         $this->saveEntityFromArray("App\Entity\TrackingDevice", $this->prepFromJson());
 
         return null;

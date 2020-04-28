@@ -16,6 +16,10 @@ use App\AppConstants;
 
 class CommonSamsung
 {
+    /**
+     *
+     */
+    const SAMSUNGHEALTHSERVICE = "Samsung Health";
 
     /**
      * @param $endpoint
