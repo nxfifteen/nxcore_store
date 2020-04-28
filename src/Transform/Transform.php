@@ -454,9 +454,7 @@ class Transform
         if (class_exists($entityTargetClass)) {
             $dataEntry = $this->getDoctrine()->getRepository($entityTargetClass)->findOneBy($entityDataArray['searchFields']);
             if (!$dataEntry) {
-                if ($entityDataArray['DateTime']->format("Y-m-d") == date("Y-m-d")) {
-                    $newItem = true;
-                }
+                $newItem = true;
                 $dataEntry = new $entityTargetClass();
             }
 
