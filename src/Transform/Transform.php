@@ -469,9 +469,19 @@ class Transform
                 }
             }
 
+            if (method_exists($dataEntry, "getDateTime")) {
+                $lastAccessed = $dataEntry->getDateTime();
+            } else {
+                if (method_exists($dataEntry, "LastSynced")) {
+                    $lastAccessed = $dataEntry->getLastSynced();
+                } else {
+                    $lastAccessed = new DateTime();
+                }
+            }
+
             self::updateApi($this->getDoctrine(), str_ireplace("App\Entity\\", "", $entityTargetClass),
                 $entityDataArray['Patient'],
-                $entityDataArray['thirdPartyService'], $dataEntry->getDateTime(), $interval);
+                $entityDataArray['thirdPartyService'], $lastAccessed, $interval);
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($dataEntry);
