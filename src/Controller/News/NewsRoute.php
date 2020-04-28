@@ -11,13 +11,13 @@
 
 namespace App\Controller\News;
 
-
 use App\Entity\SiteNews;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+/** @noinspection PhpUnused */
 class NewsRoute extends CommonNews
 {
 
