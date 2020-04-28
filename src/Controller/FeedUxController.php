@@ -22,7 +22,6 @@ use App\Entity\FitDistanceDailySummary;
 use App\Entity\FitFloorsIntraDay;
 use App\Entity\FitStepsDailySummary;
 use App\Entity\FitStepsIntraDay;
-use App\Entity\Patient;
 use App\Entity\PatientDevice;
 use App\Entity\RpgChallengeFriends;
 use App\Entity\RpgChallengeGlobal;
@@ -30,7 +29,6 @@ use App\Entity\RpgChallengeGlobalPatient;
 use App\Entity\RpgMilestones;
 use App\Entity\RpgRewards;
 use App\Entity\RpgRewardsAwarded;
-use App\Entity\SiteNews;
 use App\Service\AwardManager;
 use App\Service\CommsManager;
 use DateInterval;
@@ -39,9 +37,6 @@ use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
-use LogicException;
-use Sentry;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -51,12 +46,8 @@ use Symfony\Component\Routing\Annotation\Route;
  *
  * @package App\Controller
  */
-class FeedUxController extends AbstractController
+class FeedUxController extends Common
 {
-    /** @var Patient $patient */
-    private $patient;
-
-    private $feed_storage;
 
     private function buildChallengeArray(
         RpgChallengeGlobal $dbRpgChallengeGlobal,
@@ -126,52 +117,6 @@ class FeedUxController extends AbstractController
                         "badge" => null,
                     ];
                 }
-            }
-        }
-
-        return $return;
-    }
-
-    private function buildNewsItems(array $newsItems)
-    {
-        /** @var SiteNews[] $newsItems */
-        /** @var SiteNews[] $newsItemsSorted */
-        $newsItemsSorted = [];
-        $return = [];
-        foreach ($newsItems as $newsItem) {
-            $newsItemsSorted[$newsItem->getPublished()->format("U") . $newsItem->getId()] = $newsItem;
-        }
-
-        arsort($newsItemsSorted);
-
-        foreach ($newsItemsSorted as $newsItem) {
-            if (is_null($newsItem->getExpires()) || $newsItem->getExpires()->format("U") > date("U")) {
-                $newReturn = [
-                    "id" => $newsItem->getId(),
-                    "title" => $newsItem->getTitle(),
-                    "text" => $newsItem->getText(),
-                    "accent" => str_replace("list-group-item-accent-", "", $newsItem->getAccent()),
-                    "displayed" => $newsItem->getDisplayed(),
-                    "expires" => $newsItem->getExpires(),
-                    "link" => $newsItem->getLink(),
-                    "priority" => $newsItem->getPriority(),
-                    "published" => $newsItem->getPublished()->format("l, F jS H:i:s"),
-                ];
-
-                if (is_null($newsItem->getImage())) {
-                    $newReturn['imageName'] = null;
-                    $newReturn['imageHref'] = null;
-                } else {
-                    if (substr($newsItem->getImage(), 0, 4) == "http") {
-                        $newReturn['imageName'] = null;
-                        $newReturn['imageHref'] = $newsItem->getImage();
-                    } else {
-                        $newReturn['imageName'] = $newsItem->getImage();
-                        $newReturn['imageHref'] = null;
-                    }
-                }
-
-                $return[] = $newReturn;
             }
         }
 
@@ -933,16 +878,6 @@ class FeedUxController extends AbstractController
         return $returnSummary;
     }
 
-    /**
-     * @param String $userRole
-     *
-     * @throws LogicException If the Security component is not available
-     */
-    private function hasAccess(string $userRole = 'ROLE_USER')
-    {
-        $this->denyAccessUnlessGranted($userRole, null, 'User tried to access a page without having ' . $userRole);
-    }
-
     private function participationInChallenge(
         array $return,
         RpgChallengeGlobalPatient $challengePatientDetails,
@@ -1271,24 +1206,6 @@ class FeedUxController extends AbstractController
         }
 
         return $runningFriendsChallenges;
-    }
-
-    private function setupRoute(string $userRole = 'ROLE_USER')
-    {
-        if (is_null($this->patient)) {
-            $this->patient = $this->getUser();
-        }
-        $this->feed_storage = null;
-
-        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
-            $scope->setUser([
-                'id' => $this->patient->getId(),
-                'username' => $this->patient->getUsername(),
-                'email' => $this->patient->getEmail(),
-            ]);
-        });
-
-        $this->hasAccess($userRole);
     }
 
     /**
@@ -2356,154 +2273,6 @@ class FeedUxController extends AbstractController
         $entityManager->flush();
 
         $return['id'] = $accessDevice->getId();
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/news/personal", name="index_news_personal")
-     */
-    public function index_news_personal()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @var SiteNews[] $newsItemsSite */
-        $newsItemsSite = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => null], ['published' => 'DESC']);
-
-        /** @var SiteNews[] $newsItemsPersonal */
-        $newsItemsPersonal = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
-
-        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
-        if ($newsItems) {
-            $return['items'] = $this->buildNewsItems($newsItems);
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/news/push", name="index_news_push")
-     */
-    public function index_news_push()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @var SiteNews[] $newsItems */
-        $newsItemsFalse = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => false], ['published' => 'DESC']);
-
-        /** @var SiteNews[] $newsItems */
-        $newsItemsNull = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient, 'priority' => 3, 'displayed' => null], ['published' => 'DESC']);
-
-        $newsItems = array_merge($newsItemsNull, $newsItemsFalse);
-
-        if ($newsItems && is_array($newsItems) && count($newsItems) > 0) {
-            $return['items'] = $this->buildNewsItems($newsItems);
-        } else {
-            $return['items'] = [];
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/news/push/seen", name="index_news_push_seen")
-     * @param ManagerRegistry $doctrine
-     * @param Request         $request
-     *
-     * @return JsonResponse
-     */
-    public function index_news_push_seen(ManagerRegistry $doctrine, Request $request)
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        $requestBody = $request->getContent();
-        $requestBody = str_replace("'", "\"", $requestBody);
-        $requestBody = str_replace('&#39;', "'", $requestBody);
-        $requestJson = json_decode($requestBody, false);
-
-        if (is_object($requestJson)) {
-            if (property_exists($requestJson, "toastId") && $requestJson->toastId > 0) {
-                /** @var SiteNews[] $newsItems */
-                $newsItems = $this->getDoctrine()
-                    ->getRepository(SiteNews::class)
-                    ->findBy(['patient' => $this->patient, 'id' => $requestJson->toastId]);
-            } else {
-                /** @var SiteNews[] $newsItems */
-                $newsItems = $this->getDoctrine()
-                    ->getRepository(SiteNews::class)
-                    ->findBy(['patient' => $this->patient, 'text' => $requestJson->message]);
-            }
-
-            if ($newsItems) {
-                $entityManager = $doctrine->getManager();
-                foreach ($newsItems as $newsItem) {
-                    $newsItem->setDisplayed(true);
-                    $entityManager->persist($newsItem);
-                }
-                $entityManager->flush();
-            }
-        }
-
-        $b = microtime(true);
-        $c = $b - $a;
-        $return['genTime'] = round($c, 4);
-        return $this->json($return);
-    }
-
-    /**
-     * @Route("/news/site", name="index_news_site")
-     */
-    public function index_news_site()
-    {
-        $return = [];
-        $return['genTime'] = -1;
-        $a = microtime(true);
-
-        $this->setupRoute();
-
-        /** @var SiteNews[] $newsItemsSite */
-        $newsItemsSite = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => null], ['published' => 'DESC']);
-
-        /** @var SiteNews[] $newsItemsPersonal */
-        $newsItemsPersonal = $this->getDoctrine()
-            ->getRepository(SiteNews::class)
-            ->findBy(['patient' => $this->patient], ['published' => 'DESC']);
-
-        $newsItems = array_merge($newsItemsSite, $newsItemsPersonal);
-        if ($newsItems) {
-            $return['items'] = $this->buildNewsItems($newsItems);
-        }
 
         $b = microtime(true);
         $c = $b - $a;
