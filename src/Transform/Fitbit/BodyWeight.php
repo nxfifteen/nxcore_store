@@ -14,6 +14,7 @@ namespace App\Transform\Fitbit;
 
 use App\Entity\ThirdPartyService;
 use App\Transform\Base\BaseBodyMeasurments;
+use DateInterval;
 use DateTime;
 use Exception;
 
@@ -130,13 +131,13 @@ class BodyWeight extends BaseBodyMeasurments
                 $i = 1;
                 $this->log(" Creating " . count($recordSetWeights) . " new BodyWeight entity");
                 foreach ($recordSetWeights as $recordSetWeight) {
-                    $this->saveEntityFromArray("App\Entity\BodyWeight", $recordSetWeight);
+                    $this->saveEntityFromArray("App\Entity\BodyWeight", $recordSetWeight, new DateInterval('PT6H'));
                 }
 
                 $i = 1;
                 $this->log(" Creating " . count($recordSetFats) . " new BodyFat entity");
                 foreach ($recordSetFats as $recordSetFat) {
-                    $this->saveEntityFromArray("App\Entity\BodyFat", $recordSetFat);
+                    $this->saveEntityFromArray("App\Entity\BodyFat", $recordSetFat, new DateInterval('PT6H'));
                 }
 
                 $this->log(" Last date was " . $recordSetWeights[0]['DateTime']->format("Y-m-d H:i:s"));

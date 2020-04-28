@@ -437,12 +437,12 @@ class Transform
     }
 
     /**
-     * @param $entityTargetClass
-     * @param $entityDataArray
+     * @param                   $entityTargetClass
+     * @param                   $entityDataArray
      *
-     * @throws Exception
+     * @param DateInterval|null $interval
      */
-    protected function saveEntityFromArray($entityTargetClass, $entityDataArray)
+    protected function saveEntityFromArray($entityTargetClass, $entityDataArray, DateInterval $interval = null)
     {
         if (class_exists($entityTargetClass)) {
             $dataEntry = $this->getDoctrine()->getRepository($entityTargetClass)->findOneBy($entityDataArray['searchFields']);
@@ -466,7 +466,7 @@ class Transform
 
             self::updateApi($this->getDoctrine(), str_ireplace("App\Entity\\", "", $entityTargetClass),
                 $entityDataArray['Patient'],
-                $entityDataArray['thirdPartyService'], $dataEntry->getDateTime());
+                $entityDataArray['thirdPartyService'], $dataEntry->getDateTime(), $interval);
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($dataEntry);
@@ -496,15 +496,17 @@ class Transform
      * @param ThirdPartyService $service
      * @param DateTimeInterface $dateTime
      *
+     * @param DateInterval|null $interval
+     *
      * @return ApiAccessLog
-     * @throws Exception
      */
     protected static function updateApi(
         ManagerRegistry $doctrine,
         string $fullClassName,
         Patient $patient,
         ThirdPartyService $service,
-        DateTimeInterface $dateTime
+        DateTimeInterface $dateTime,
+        DateInterval $interval = null
     ) {
         //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . " - translateEntity class type is : " . $fullClassName);
         /** @var ApiAccessLog $dataEntry */
@@ -522,7 +524,9 @@ class Transform
         $dataEntry->setEntity($fullClassName);
         $dataEntry->setLastRetrieved($dateTime);
         $dataEntry->setLastPulled(new DateTime());
-        $interval = new DateInterval('PT40M');
+        if (is_null($interval)) {
+            $interval = new DateInterval('PT40M');
+        }
         $dataEntry->setCooldown((new DateTime())->add($interval));
 
         $entityManager = $doctrine->getManager();
