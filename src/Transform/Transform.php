@@ -547,4 +547,33 @@ class Transform
     {
         $this->patient = $patient;
     }
+
+    /**
+     * @return string|null
+     * @noinspection PhpUnused
+     */
+    public function processData()
+    {
+        return null;
+    }
+
+    /**
+     * @param $apiEndPointResult
+     *
+     * @noinspection PhpUnused
+     */
+    public function setApiReturn($apiEndPointResult)
+    {
+        $this->rawApiData = $apiEndPointResult;
+    }
+
+    /**
+     * @param $apiEndPointCalled
+     *
+     * @noinspection PhpUnused
+     */
+    public function setCalledUrl($apiEndPointCalled)
+    {
+        $this->apiUrl = $apiEndPointCalled;
+    }
 }
