@@ -31,7 +31,6 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Exception;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -66,14 +65,17 @@ class Transform
     /** @var string */
     protected $apiDataType;
 
+    /** @var ThirdPartyService */
+    protected $thirdPartyService;
+
     /**
      * BodyWeight constructor.
      *
      * @param ManagerRegistry $doctrine
      * @param LoggerInterface $logger
-     * @param AwardManager    $awardManager
-     * @param ChallengePve    $challengePve
-     * @param CommsManager    $commsManager
+     * @param AwardManager $awardManager
+     * @param ChallengePve $challengePve
+     * @param CommsManager $commsManager
      */
     public function __construct(
         ManagerRegistry $doctrine,
@@ -304,7 +306,6 @@ class Transform
      * @param bool              $matchGoal
      *
      * @return PatientGoals|null
-     * @throws Exception
      */
     protected static function getPatientGoal(
         ManagerRegistry $doctrine,
@@ -448,6 +449,8 @@ class Transform
      * @param                   $entityDataArray
      *
      * @param DateInterval|null $interval
+     *
+     * @return mixed
      */
     protected function saveEntityFromArray($entityTargetClass, $entityDataArray, DateInterval $interval = null)
     {
@@ -464,7 +467,9 @@ class Transform
                     if (method_exists($dataEntry, $targetMethodName)) {
                         $dataEntry->$targetMethodName($entityDataItem);
                     } else {
-                        $this->log("There is no method called " . $targetMethodName);
+                        if ($entityDataKey != "DateTime" && $entityDataKey != "Patient") {
+                            $this->log("There is no method called " . $targetMethodName);
+                        }
                     }
                 }
             }
@@ -486,9 +491,13 @@ class Transform
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($dataEntry);
             $entityManager->flush();
+
+            return $dataEntry;
         } else {
             $this->log("Unable to find the " . $entityTargetClass . " class");
         }
+
+        return null;
     }
 
     /**

@@ -13,7 +13,6 @@ namespace App\Transform\Fitbit;
 
 
 use App\AppConstants;
-use App\Entity\ThirdPartyService;
 use App\Transform\Base\BaseBodyMeasurments;
 use DateInterval;
 use DateTime;
@@ -24,9 +23,6 @@ class BodyWeight extends BaseBodyMeasurments
     const ENDPOINT_UNKNOWN = 0;
     const ENDPOINT_STANDARD = 1;
     const ENDPOINT_TIMESERIES = 2;
-
-    /** @var ThirdPartyService */
-    private $thirdPartyService;
 
     /**
      * @return array[]

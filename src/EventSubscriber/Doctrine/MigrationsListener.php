@@ -1019,7 +1019,7 @@ class MigrationsListener implements EventSubscriber
         $customUpgradeMethod = "postMigration" . ucwords($args->getDirection()) . $args->getConfiguration()->getCurrentVersion();
         if (method_exists($this, $customUpgradeMethod)) {
             $this->write("Running customer upgrade method for version " . $args->getConfiguration()->getCurrentVersion());
-            $this->$customUpgradeMethod();
+            //$this->$customUpgradeMethod();
         } else {
             $this->write("No post-flight method named " . $customUpgradeMethod);
         }
@@ -1034,7 +1034,7 @@ class MigrationsListener implements EventSubscriber
         $customUpgradeMethod = "preMigration" . ucwords($args->getDirection()) . $args->getConfiguration()->getNextVersion();
         if (method_exists($this, $customUpgradeMethod)) {
             $this->write("Running customer upgrade method for version " . $args->getConfiguration()->getNextVersion());
-            $this->$customUpgradeMethod();
+            //$this->$customUpgradeMethod();
         } else {
             $this->write("No pre-flight method named " . $customUpgradeMethod);
         }

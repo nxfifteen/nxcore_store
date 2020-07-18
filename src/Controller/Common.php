@@ -13,7 +13,6 @@ namespace App\Controller;
 
 use App\Entity\Patient;
 use LogicException;
-use Sentry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class Common extends AbstractController
@@ -40,13 +39,13 @@ class Common extends AbstractController
         }
         $this->feed_storage = null;
 
-        Sentry\configureScope(function (Sentry\State\Scope $scope): void {
+        /*Sentry\configureScope(function (Sentry\State\Scope $scope): void {
             $scope->setUser([
                 'id' => $this->patient->getId(),
                 'username' => $this->patient->getUsername(),
                 'email' => $this->patient->getEmail(),
             ]);
-        });
+        });*/
 
         $this->hasAccess($userRole);
     }

@@ -277,59 +277,69 @@ class AppConstants
     ) {
         /** @var TrackingDevice $deviceTracking */
         $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
-            'name' => $deviceName,
+            'remoteId' => $deviceName,
             'patient' => $patient,
             'service' => $thirdPartyService,
         ]);
         if ($deviceTracking) {
             return $deviceTracking;
         } else {
-            $entityManager = $doctrine->getManager();
-            $deviceTracking = new TrackingDevice();
-            $safeGuid = false;
-            $i = 0;
-            while ($safeGuid == false) {
-                $i++;
-                AppConstants::writeToLog('debug_transform.txt', 'Added a GUID (' . $i . ')');
-                $deviceTracking->createGuid();
-                $dataEntryGuidCheck = $doctrine
-                    ->getRepository(TrackingDevice::class)
-                    ->findByGuid($deviceTracking->getGuid());
-                if (empty($dataEntryGuidCheck)) {
-                    $safeGuid = true;
+            /** @var TrackingDevice $deviceTracking */
+            $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
+                'name' => $deviceName,
+                'patient' => $patient,
+                'service' => $thirdPartyService,
+            ]);
+            if ($deviceTracking) {
+                return $deviceTracking;
+            } else {
+                $entityManager = $doctrine->getManager();
+                $deviceTracking = new TrackingDevice();
+                $safeGuid = false;
+                $i = 0;
+                while ($safeGuid == false) {
+                    $i++;
+                    AppConstants::writeToLog('debug_transform.txt', 'Added a GUID (' . $i . ')');
+                    $deviceTracking->createGuid();
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(TrackingDevice::class)
+                        ->findByGuid($deviceTracking->getGuid());
+                    if (empty($dataEntryGuidCheck)) {
+                        $safeGuid = true;
+                    }
                 }
+                $deviceTracking->setPatient($patient);
+                $deviceTracking->setService($thirdPartyService);
+                $deviceTracking->setRemoteId($deviceName);
+                $deviceTracking->setName($deviceName);
+                $deviceTracking->setType("Unknown");
+
+                if (count($options) > 0) {
+                    if (array_key_exists("name", $options)) {
+                        $deviceTracking->setName($options['name']);
+                    }
+                    if (array_key_exists("comment", $options)) {
+                        $deviceTracking->setComment($options['comment']);
+                    }
+                    if (array_key_exists("battery", $options)) {
+                        $deviceTracking->setBattery($options['battery']);
+                    }
+                    if (array_key_exists("type", $options)) {
+                        $deviceTracking->setType($options['type']);
+                    }
+                    if (array_key_exists("manufacturer", $options)) {
+                        $deviceTracking->setManufacturer($options['manufacturer']);
+                    }
+                    if (array_key_exists("model", $options)) {
+                        $deviceTracking->setModel($options['model']);
+                    }
+                }
+
+                $entityManager->persist($deviceTracking);
+                $entityManager->flush();
+
+                return $deviceTracking;
             }
-            $deviceTracking->setPatient($patient);
-            $deviceTracking->setService($thirdPartyService);
-            $deviceTracking->setRemoteId($deviceName);
-            $deviceTracking->setName($deviceName);
-            $deviceTracking->setType("Unknown");
-
-            if (count($options) > 0) {
-                if (array_key_exists("name", $options)) {
-                    $deviceTracking->setName($options['name']);
-                }
-                if (array_key_exists("comment", $options)) {
-                    $deviceTracking->setComment($options['comment']);
-                }
-                if (array_key_exists("battery", $options)) {
-                    $deviceTracking->setBattery($options['battery']);
-                }
-                if (array_key_exists("type", $options)) {
-                    $deviceTracking->setType($options['type']);
-                }
-                if (array_key_exists("manufacturer", $options)) {
-                    $deviceTracking->setManufacturer($options['manufacturer']);
-                }
-                if (array_key_exists("model", $options)) {
-                    $deviceTracking->setModel($options['model']);
-                }
-            }
-
-            $entityManager->persist($deviceTracking);
-            $entityManager->flush();
-
-            return $deviceTracking;
         }
     }
 

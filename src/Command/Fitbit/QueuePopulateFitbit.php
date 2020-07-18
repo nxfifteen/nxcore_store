@@ -21,7 +21,6 @@ use App\Entity\SyncQueue;
 use App\Entity\ThirdPartyService;
 use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -38,6 +37,8 @@ class QueuePopulateFitbit extends Command
      */
     protected static $defaultName = 'queue:populate:fitbit';
 
+    private $printLogs = false;
+
     /**
      * @var ManagerRegistry
      */
@@ -49,13 +50,13 @@ class QueuePopulateFitbit extends Command
     private function log($patientServiceProfile)
     {
         if (!is_string($patientServiceProfile)) {
-            AppConstants::writeToLog(
+            if ($this->printLogs) AppConstants::writeToLog(
                 'debug_transform.txt',
                 "[" . self::$defaultName . "] - " . print_r($patientServiceProfile, true)
             );
             echo "[" . self::$defaultName . "] - " . print_r($patientServiceProfile, true) . "\n";
         } else {
-            AppConstants::writeToLog(
+            if ($this->printLogs) AppConstants::writeToLog(
                 'debug_transform.txt',
                 "[" . self::$defaultName . "] - " . $patientServiceProfile
             );

@@ -22,7 +22,6 @@ use App\Transform\SamsungHealth\CommonSamsung;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 
 
 /**
@@ -76,15 +75,21 @@ class UploadSamsungHealth extends Common
 
         $service = "SamsungHealth";
 
-        $entityType = CommonSamsung::convertDatasetToEntity($data_set);
-        if (is_null($entityType)) {
-            AppConstants::writeToLog($service . '_' . $data_set . '.txt', $request->getContent());
+        if ($data_set == "body_fats" || $data_set == "body_weights") {
             $response = new JsonResponse();
             $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
             return $response;
         }
 
-        $this->log("Receiving $entityType for " . $this->patient->getUsername());
+        $entityType = CommonSamsung::convertDatasetToEntity($data_set);
+        if (is_null($entityType)) {
+            AppConstants::writeToLog($service . '_' . $data_set . '.md', $request->getContent());
+            $response = new JsonResponse();
+            $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);
+            return $response;
+        }
+
+        //$this->log("Receiving $entityType for " . $this->patient->getUsername());
 
         $internalSyncQueueMethod = "action" . ucfirst($entityType);
         //$this->log(" Looking for internal method: " . $internalSyncQueueMethod);
@@ -104,76 +109,6 @@ class UploadSamsungHealth extends Common
                 $this->log(" Couldn't find the Transformer class: " . $transformerClassName);
             }
         }
-
-//        $transformerClassName = 'App\\Transform\\' . $service . '\\Entry';
-//        if (!class_exists($transformerClassName)) {
-//            $logger->error('I could not find a Entry class for ' . $service);
-//            $savedId = -2;
-//        } else {
-//            if (!is_null($this->getUser()) && is_object($this->getUser()) && get_class($this->getUser()) == "App\Entity\Patient") {
-//                $transformerClass = new $transformerClassName($logger, $this->getUser());
-//            } else {
-//                $transformerClass = new $transformerClassName($logger);
-//            }
-//            $savedId = $transformerClass->transform($data_set, $request->getContent(), $this->getDoctrine(),
-//                $awardManager, $challengePve, $commsManager);
-//        }
-//
-//        if (is_array($savedId)) {
-//            return $this->json([
-//                'success' => true,
-//                'status' => 200,
-//                'message' => "Saved multiple '$service/$data_set' entitles",
-//                'entity_id' => $savedId,
-//            ]);
-//        } else {
-//            if ($savedId > 0) {
-//                return $this->json([
-//                    'success' => true,
-//                    'status' => 200,
-//                    'message' => "Saved '$service/$data_set' as " . $savedId,
-//                    'entity_id' => $savedId,
-//                ]);
-//            } else {
-//                if ($savedId == -1) {
-////                    AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__);
-//                    return $this->json([
-//                        'success' => false,
-//                        'status' => 500,
-//                        'message' => "Unable to save entity",
-//                    ]);
-//                } else {
-//                    if ($savedId == -2) {
-////                        AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__);
-//                        return $this->json([
-//                            'success' => false,
-//                            'status' => 500,
-//                            'message' => "Unknown service '$service'",
-//                        ]);
-//                    } else {
-//                        if ($savedId == -3) {
-////                            AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__);
-//                            return $this->json([
-//                                'success' => false,
-//                                'status' => 500,
-//                                'message' => "Unknown data set '$data_set' in '$service'",
-//                            ]);
-//                        } else {
-////                            AppConstants::writeToLog('debug_transform.txt',
-////                                'I\'m about to respond with a 500 error after ' . $data_set);
-////                            AppConstants::writeToLog('debug_transform.txt',
-////                                $request->getContent());
-//
-//                            return $this->json([
-//                                'success' => false,
-//                                'status' => 500,
-//                                'message' => "Unknown error, saved is '" . $savedId . "'",
-//                            ]);
-//                        }
-//                    }
-//                }
-//            }
-//        }
 
         $response = new JsonResponse();
         $response->setStatusCode(JsonResponse::HTTP_NO_CONTENT);

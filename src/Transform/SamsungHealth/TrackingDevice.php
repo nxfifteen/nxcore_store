@@ -12,15 +12,11 @@
 namespace App\Transform\SamsungHealth;
 
 
-use App\Entity\ThirdPartyService;
 use App\Transform\Base\BaseTrackingDevice;
 use DateTime;
 
 class TrackingDevice extends BaseTrackingDevice
 {
-
-    /** @var ThirdPartyService */
-    private $thirdPartyService;
 
     private function inputKeyToEntityKey(string $key)
     {

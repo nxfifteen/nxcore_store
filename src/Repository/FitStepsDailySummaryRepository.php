@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -65,7 +64,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
     /**
      * @param String $patientId
      * @param String $date
-     * @param int    $trackingDevice
+     * @param int $trackingDevice
      *
      * @return mixed
      * @throws Exception
@@ -79,8 +78,8 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
     /**
      * @param String $patientId
      * @param String $date
-     * @param int    $lastDays
-     * @param int    $trackingDevice
+     * @param int $lastDays
+     * @param int $trackingDevice
      *
      * @return mixed
      * @throws Exception
@@ -90,7 +89,8 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
         string $date,
         int $lastDays = 0,
         int $trackingDevice = 0
-    ) {
+    )
+    {
         $dateObject = new DateTime($date);
 
         if ($lastDays > 0) {
@@ -173,7 +173,7 @@ class FitStepsDailySummaryRepository extends ServiceEntityRepository
 
     /**
      * @param String $patientId
-     * @param int    $trackingDevice
+     * @param int $trackingDevice
      *
      * @return mixed
      */

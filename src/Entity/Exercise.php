@@ -14,7 +14,6 @@
 namespace App\Entity;
 
 use DateTimeInterface;
-use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -92,11 +91,6 @@ class Exercise
     private $exerciseType;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $steps;
-
-    /**
      * @ORM\Column(type="blob", nullable=true)
      */
     private $liveDataBlob;
@@ -105,6 +99,21 @@ class Exercise
      * @ORM\Column(type="blob", nullable=true)
      */
     private $locationDataBlob;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $count;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $countType;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $comment;
 
     /**
      * Exercise constructor.
@@ -368,7 +377,7 @@ class Exercise
      */
     public function getSteps(): ?int
     {
-        return $this->steps;
+        return $this->getCount();
     }
 
     /**
@@ -378,9 +387,7 @@ class Exercise
      */
     public function setSteps(?int $steps): self
     {
-        $this->steps = $steps;
-
-        return $this;
+        return $this->setCount($steps);
     }
 
     /**
@@ -399,6 +406,42 @@ class Exercise
     public function setTrackingDevice(?TrackingDevice $trackingDevice): self
     {
         $this->trackingDevice = $trackingDevice;
+
+        return $this;
+    }
+
+    public function getCount(): ?int
+    {
+        return $this->count;
+    }
+
+    public function setCount(?int $count): self
+    {
+        $this->count = $count;
+
+        return $this;
+    }
+
+    public function getCountType(): ?string
+    {
+        return $this->countType;
+    }
+
+    public function setCountType(?string $countType): self
+    {
+        $this->countType = $countType;
+
+        return $this;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
 
         return $this;
     }

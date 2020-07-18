@@ -6,6 +6,14 @@
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
+ */ /**
+ * This file is part of NxFIFTEEN Fitness Core.
+ *
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
+ * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
+ * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
+ * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
  */ /** @noinspection DuplicatedCode */
 
 namespace App\Controller\Feeds;
@@ -976,7 +984,7 @@ class CommonFeeds extends Common
         /** @var FitStepsDailySummary[] $dbStepsSummary */
         $dbStepsSummary = $this->getDoctrine()
             ->getRepository(FitStepsDailySummary::class)
-            ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 0);
+            ->findByDateRangeHistorical($this->patient->getUuid(), date("Y-m-d"), 0, 11);
         if (count($dbStepsSummary) == 0) {
             return null;
         }
