@@ -2,9 +2,8 @@
 /**
  * This file is part of NxFIFTEEN Fitness Core.
  *
- * @link      https://nxfifteen.me.uk/projects/nx-health/store
- * @link      https://nxfifteen.me.uk/projects/nx-health/
- * @link      https://git.nxfifteen.rocks/nx-health/store
+ * @link      https://nxfifteen.me.uk/projects/nxcore/
+ * @link      https://gitlab.com/nx-core/store
  * @author    Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @copyright Copyright (c) 2020. Stuart McCulloch Anderson <stuart@nxfifteen.me.uk>
  * @license   https://nxfifteen.me.uk/api/license/mit/license.html MIT
@@ -132,7 +131,8 @@ class CommsManager
 
         $thirdPartyService = $this->doctrine->getRepository(ThirdPartyService::class)->findOneBy(['name' => "Synology Chat"]);
         if ($thirdPartyService) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $message);
+            AppConstants::writeToLog('debug_transform.txt',
+                __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' ' . $message);
 
             if ($private) {
                 $message = str_replace("@" . $patient->getUuid(), "You", $message);
@@ -140,7 +140,8 @@ class CommsManager
 
             preg_match_all('/@([\w]+)/m', $message, $regs, PREG_PATTERN_ORDER);
             foreach ($regs[1] as $reg) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' UUID = ' . $reg);
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' UUID = ' . $reg);
 
                 $userChatId = null;
                 try {
@@ -156,7 +157,8 @@ class CommsManager
                 }
 
                 if (!is_null($userChatId) && is_numeric($userChatId)) {
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' userChatId = ' . $userChatId);
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' userChatId = ' . $userChatId);
                     $message = str_replace("@" . $reg, "@u:" . $userChatId, $message);
                 }
             }
@@ -194,7 +196,7 @@ class CommsManager
         } catch (ServerExceptionInterface $e) {
         }
 
-        //AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($contents, TRUE));
+        //AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . ' ' . print_r($contents, TRUE));
 
         return $contents;
     }
@@ -289,13 +291,16 @@ class CommsManager
                 ->findOneBy(['patient' => $patient, 'service' => $thirdPartyService]);
 
             if (!$dbSynologyAccount) {
-                AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' User doesnt have a Synology account');
+                AppConstants::writeToLog('debug_transform.txt',
+                    __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' User doesnt have a Synology account');
                 AppConstants::writeToLog('debug_transform.txt',
                     __LINE__ . ' Registered Email address is ' . $patient->getEmail());
                 $foundUser = $this->findUserInChat($patient->getEmail());
                 if (!is_null($foundUser)) {
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . '  The Bot can see the user');
-                    AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($foundUser, true));
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . '  The Bot can see the user');
+                    AppConstants::writeToLog('debug_transform.txt',
+                        __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' ' . print_r($foundUser, true));
 
                     $dbSynologyAccount = new PatientCredentials();
                     $dbSynologyAccount->setPatient($patient);

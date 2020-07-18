@@ -123,7 +123,7 @@ class RegistrationController extends AbstractController
         $requestJson = json_decode($requestBody, false);
         $requestJson->username = strtolower($requestJson->username);
 
-        /*AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r([
+        /*AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . ' ' . print_r([
                 "username" => $requestJson->username,
                 "email" => $requestJson->email,
                 "invite" => $requestJson->invite,
@@ -259,7 +259,8 @@ class RegistrationController extends AbstractController
      */
     public function index_invite_code(string $inviteCode)
     {
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' Invite Code ' . $inviteCode);
+        AppConstants::writeToLog('debug_transform.txt',
+            __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' Invite Code ' . $inviteCode);
 
         return $this->json(["status" => true]);
     }
@@ -278,14 +279,14 @@ class RegistrationController extends AbstractController
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
         $requestJson = json_decode($requestBody, FALSE);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+        AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . ' ' . print_r($requestJson, true));
 
         $patient = $this->getDoctrine()
             ->getRepository(Patient::class)
             ->findOneBy(['uuid' => $requestJson->username]);
 
         if (!$patient) {
-            AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' No matching user');
+            AppConstants::writeToLog('debug_transform.txt', __CLASS__ . '::' . __FUNCTION__ . '|' .__LINE__ . ' No matching user');
             $exception = $this->createAccessDeniedException("User tried to access another users information");
             throw $exception;
         }
@@ -316,7 +317,8 @@ class RegistrationController extends AbstractController
         $requestBody = $request->getContent();
         $requestBody = str_replace("'", "\"", $requestBody);
         $requestJson = json_decode($requestBody, false);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . print_r($requestJson, true));
+        AppConstants::writeToLog('debug_transform.txt',
+            __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' ' . print_r($requestJson, true));
 
         $entityManager = $doctrine->getManager();
 

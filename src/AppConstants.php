@@ -14,7 +14,12 @@
 namespace App;
 
 
+use App\Entity\Patient;
+use App\Entity\PatientGoals;
 use App\Entity\ThirdPartyService;
+use App\Entity\TrackingDevice;
+use App\Entity\UnitOfMeasurement;
+use DateTime;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use Ramsey\Uuid\UuidInterface;
@@ -40,14 +45,48 @@ class AppConstants
             case "App\Entity\Patient":
                 return json_encode(["email" => $entity->getEmail()]);
                 break;
+            case "App\Entity\ApiAccessLog":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "thirdPartyService" => sprintf('@App\Entity\ThirdPartyService|{"name":"%s"}',
+                        $entity->getThirdPartyService()->getName()),
+                    "entity" => $entity->getEntity(),
+                ]);
+                break;
+            case "App\Entity\BodyFat":
+            case "App\Entity\BodyWeight":
+                return json_encode([
+                    "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getPatient()->getEmail()),
+                    "DateTime" => '%DateTime%' . $entity->getDateTime()->format("U"),
+                    "trackingDevice" => '@App\Entity\TrackingDevice|' . json_encode([
+                            "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                                $entity->getPatient()->getEmail()),
+                            "service" => sprintf('@App\Entity\ThirdPartyService|{"name":"%s"}',
+                                $entity->getTrackingDevice()->getService()->getName()),
+                            "remoteId" => $entity->getTrackingDevice()->getName(),
+                        ]),
+                ]);
+                break;
             case "App\Entity\PatientMembership":
                 return json_encode([
                     "patient" => sprintf('@App\Entity\Patient|{"email":"%s"}',
                         $entity->getPatient()->getEmail()),
                 ]);
                 break;
+            case "App\Entity\UnitOfMeasurement":
             case "App\Entity\ThirdPartyService":
+            case "App\Entity\PartOfDay":
                 return json_encode(["name" => $entity->getName()]);
+                break;
+            case "App\Entity\PatientFriends":
+                return json_encode([
+                    "friendA" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getFriendA()->getEmail()),
+                    "friendB" => sprintf('@App\Entity\Patient|{"email":"%s"}',
+                        $entity->getFriendB()->getEmail()),
+                ]);
                 break;
             case "App\Entity\PatientGoals":
                 return json_encode([
@@ -55,6 +94,8 @@ class AppConstants
                         $entity->getPatient()->getEmail()),
                     "goal" => $entity->getGoal(),
                     "entity" => $entity->getEntity(),
+                    "unitOfMeasurement" => sprintf('@App\Entity\UnitOfMeasurement|{"name":"%s"}',
+                        $entity->getUnitOfMeasurement()->getName()),
                 ]);
                 break;
             case "App\Entity\PatientSettings":
@@ -162,6 +203,143 @@ class AppConstants
             $entityManager->flush();
 
             return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param String            $serviceName
+     *
+     * @param float             $serviceGoal
+     *
+     * @param UnitOfMeasurement $unitOfMeasurement
+     * @param Patient           $patient
+     *
+     * @param bool              $matchGoal
+     *
+     * @return PatientGoals|null
+     * @throws Exception
+     */
+    static function getPatientGoal(
+        ManagerRegistry $doctrine,
+        string $serviceName,
+        float $serviceGoal,
+        $unitOfMeasurement,
+        Patient $patient,
+        bool $matchGoal = null
+    ) {
+        $serviceGoal = floatval($serviceGoal);
+
+        if (!is_null($matchGoal) && $matchGoal) {
+            $findBy = ['entity' => $serviceName, 'patient' => $patient, 'goal' => $serviceGoal];
+        } else {
+            $findBy = ['entity' => $serviceName, 'patient' => $patient];
+        }
+
+        /** @var PatientGoals $thirdPartyService */
+        $thirdPartyService = $doctrine->getRepository(PatientGoals::class)->findOneBy($findBy, ['dateSet' => 'DESC']);
+        if ($thirdPartyService) {
+            return $thirdPartyService;
+        } else {
+            $entityManager = $doctrine->getManager();
+            $thirdPartyService = new PatientGoals();
+            $thirdPartyService->setPatient($patient);
+            $thirdPartyService->setGoal($serviceGoal);
+            $thirdPartyService->setEntity($serviceName);
+            $thirdPartyService->setDateSet(new DateTime());
+            if (!is_null($unitOfMeasurement)) {
+                $thirdPartyService->setUnitOfMeasurement($unitOfMeasurement);
+            }
+
+            $entityManager->persist($thirdPartyService);
+            $entityManager->flush();
+
+            return $thirdPartyService;
+        }
+    }
+
+    /**
+     * @param ManagerRegistry   $doctrine
+     * @param Patient           $patient
+     * @param ThirdPartyService $thirdPartyService
+     * @param String            $deviceName
+     *
+     * @param array             $options
+     *
+     * @return TrackingDevice|null
+     */
+    public static function getTrackingDevice(
+        ManagerRegistry $doctrine,
+        Patient $patient,
+        ThirdPartyService $thirdPartyService,
+        string $deviceName,
+        array $options = []
+    ) {
+        /** @var TrackingDevice $deviceTracking */
+        $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
+            'remoteId' => $deviceName,
+            'patient' => $patient,
+            'service' => $thirdPartyService,
+        ]);
+        if ($deviceTracking) {
+            return $deviceTracking;
+        } else {
+            /** @var TrackingDevice $deviceTracking */
+            $deviceTracking = $doctrine->getRepository(TrackingDevice::class)->findOneBy([
+                'name' => $deviceName,
+                'patient' => $patient,
+                'service' => $thirdPartyService,
+            ]);
+            if ($deviceTracking) {
+                return $deviceTracking;
+            } else {
+                $entityManager = $doctrine->getManager();
+                $deviceTracking = new TrackingDevice();
+                $safeGuid = false;
+                $i = 0;
+                while ($safeGuid == false) {
+                    $i++;
+                    AppConstants::writeToLog('debug_transform.txt', 'Added a GUID (' . $i . ')');
+                    $deviceTracking->createGuid();
+                    $dataEntryGuidCheck = $doctrine
+                        ->getRepository(TrackingDevice::class)
+                        ->findByGuid($deviceTracking->getGuid());
+                    if (empty($dataEntryGuidCheck)) {
+                        $safeGuid = true;
+                    }
+                }
+                $deviceTracking->setPatient($patient);
+                $deviceTracking->setService($thirdPartyService);
+                $deviceTracking->setRemoteId($deviceName);
+                $deviceTracking->setName($deviceName);
+                $deviceTracking->setType("Unknown");
+
+                if (count($options) > 0) {
+                    if (array_key_exists("name", $options)) {
+                        $deviceTracking->setName($options['name']);
+                    }
+                    if (array_key_exists("comment", $options)) {
+                        $deviceTracking->setComment($options['comment']);
+                    }
+                    if (array_key_exists("battery", $options)) {
+                        $deviceTracking->setBattery($options['battery']);
+                    }
+                    if (array_key_exists("type", $options)) {
+                        $deviceTracking->setType($options['type']);
+                    }
+                    if (array_key_exists("manufacturer", $options)) {
+                        $deviceTracking->setManufacturer($options['manufacturer']);
+                    }
+                    if (array_key_exists("model", $options)) {
+                        $deviceTracking->setModel($options['model']);
+                    }
+                }
+
+                $entityManager->persist($deviceTracking);
+                $entityManager->flush();
+
+                return $deviceTracking;
+            }
         }
     }
 

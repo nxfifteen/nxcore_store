@@ -13,15 +13,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeInterface;
-use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\SiteNewsRepository")
  */
 class SiteNews

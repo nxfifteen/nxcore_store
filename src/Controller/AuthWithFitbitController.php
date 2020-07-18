@@ -84,7 +84,8 @@ class AuthWithFitbitController extends AbstractController
         $queryCallback = explode('/auth/with/fitbit', $request->getMasterRequest()->getUri())[0];
         $queryCallback = $queryCallback . '/auth/callback/fitbit';
         $queryCallback = str_replace("http://", "https://", $queryCallback);
-        AppConstants::writeToLog('debug_transform.txt', __LINE__ . ' ' . $uuid . ' initiated a Fitbit auth ');
+        AppConstants::writeToLog('debug_transform.txt',
+            __CLASS__ . '::' . __FUNCTION__ . '|' . __LINE__ . ' ' . $uuid . ' initiated a Fitbit auth ');
 
         $provider = new Fitbit([
             'clientId' => $_ENV['FITBIT_ID'],

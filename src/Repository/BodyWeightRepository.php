@@ -13,7 +13,6 @@
 
 namespace App\Repository;
 
-use App\AppConstants;
 use App\Entity\BodyWeight;
 use DateInterval;
 use DatePeriod;
@@ -89,66 +88,73 @@ class BodyWeightRepository extends ServiceEntityRepository
      */
     public function findByDateRangeHistorical(string $patientId, string $date, int $lastDays)
     {
-        $dateObject = new DateTime($date);
+
+        $lastDays = $lastDays - 1;
+
+        $startDateObject = new DateTime($date);
+        $endDateObject = new DateTime($date);
 
         try {
             $interval = new DateInterval('P' . $lastDays . 'D');
-            $dateObject->sub($interval);
-            $today = $dateObject->format("Y-m-d") . " 00:00:00";
+            $startDateObject->sub($interval);
+            $startDateYMD = $startDateObject->format("Y-m-d") . " 00:00:00";
         } catch (Exception $e) {
-            $today = $date . " 00:00:00";
+            $startDateYMD = $date . " 00:00:00";
         }
-        $todayEnd = $date . " 23:59:00";
+
+        try {
+            $interval = new DateInterval('P1D');
+            $endDateObject->add($interval);
+            $endDateYMD = $endDateObject->format("Y-m-d") . " 23:59:00";
+        } catch (Exception $e) {
+            $endDateYMD = $date . " 23:59:00";
+        }
 
         /** @var BodyWeight[] $weightRecords */
         $weightRecords = $this->createQueryBuilder('c')
             ->leftJoin('c.patient', 'p')
             ->andWhere('c.DateTime >= :val')
-            ->setParameter('val', $today)
+            ->setParameter('val', $startDateYMD)
             ->andWhere('c.DateTime <= :valEnd')
-            ->setParameter('valEnd', $todayEnd)
+            ->setParameter('valEnd', $endDateYMD)
             ->andWhere('p.uuid = :patientId')
             ->setParameter('patientId', $patientId)
             ->orderBy('c.DateTime', 'ASC')
             ->getQuery()
             ->getResult();
-        AppConstants::writeToLog("mirror.txt", count($weightRecords));
-
 
         if (count($weightRecords) == 0) {
             return [];
         }
 
-        /** @var DateTime[] $period */
-        $period = new DatePeriod(
-            $dateObject,
-            new DateInterval('P1D'),
-            new DateTime($date)
-        );
-        $dateArray = [];
-        foreach ($period as $key => $value) {
-            $dateArray[] = $value;
+        $weightRecordDatedArray = [];
+        // Convert to returned value to a searchable array
+        foreach ($weightRecords as $weightRecord) {
+            $weightRecordDatedArray[$weightRecord->getDateTime()->format("Y-m-d")] = $weightRecord;
         }
 
-        $loopDateCount = 0;
-        $loopWeightCount = 0;
-        $weightReturnData = [];
+        /** @var DateTime[] $period */
+        $period = new DatePeriod(
+            $startDateObject,
+            new DateInterval('P1D'),
+            $endDateObject
+        );
+
         /** @var BodyWeight $previousWeightRecord */
+        $weightReturnData = [];
         $previousWeightRecord = null;
-        for ($i = 0; $i <= ($lastDays - 1); $i++) {
-            if (count($weightRecords) > $loopWeightCount && $weightRecords[$loopWeightCount]->getDateTime()->format("Y-m-d") == $dateArray[$i]->format('Y-m-d')) {
-                $previousWeightRecord = clone $weightRecords[$loopWeightCount];
-                $weightReturnData[] = clone $weightRecords[$loopWeightCount];
-                $loopWeightCount++;
+        foreach ($period as $key => $value) {
+            if (array_key_exists($value->format('Y-m-d'), $weightRecordDatedArray)) {
+                $previousWeightRecord = clone $weightRecordDatedArray[$value->format('Y-m-d')];
+                $weightReturnData[] = clone $weightRecordDatedArray[$value->format('Y-m-d')];
             } else {
                 if (!is_null($previousWeightRecord)) {
-                    $previousWeightRecord->setDateTime($dateArray[$i]);
+                    $previousWeightRecord->setDateTime($value);
                     $weightReturnData[] = clone $previousWeightRecord;
                 }
             }
         }
 
-        AppConstants::writeToLog("mirror.txt", count($weightReturnData));
         return $weightReturnData;
     }
 
